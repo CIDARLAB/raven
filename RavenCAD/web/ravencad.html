@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>RavenCAD</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="shortcut icon" href="images/shortcutIcon.ico">
+        <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+        <link href="css/override.css" rel="stylesheet" media="screen">
+        <style>
+            select.fixedHeight {list-style-type: none;    
+                                width: 20em;
+                                height: 20em;
+                                line-height: 2em;
+                                border: 1px solid #ccc;
+                                padding: 0;
+                                margin: 0;
+                                overflow: scroll;
+                                overflow-x: hidden;
+            }
+        </style>
+    </head>
+    <body  data-spy="scroll" data-target="#sidebar">
+        <div class="navbar navbar-fixed-top" >
+            <div class="navbar-inner"> <a class="brand" href="index.html">RavenCAD</a>
+                <ul class="nav">
+                    <li class="active"><a href="ravencad.html">Design</a></li>
+                    <li><a href="import.html">Your Data</a></li>
+                    <li><a href="documentation.html">How to</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="page-header" style="margin-top:50px">
+            <h1>RavenCAD <small>A simple and intuitive tool for designing your cloning experiment</small></h1>
+        </div>
+        <div class="container">
+            <div class="row-fluid">
+                <div class="span2">
+                    <div id="sidebar">
+                        <ul  class=" well nav nav-list affix">
+                            <li><a href="#target">Target</a></li>
+                            <li><a href="#library">Library</a></li>
+                            <li><a href="#intermediate">Intermediates</a></li>
+                            <li><a href="#run">Run</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="span10">
+                    <div id="designTabs" class="tabbable">
+                        <ul id="designTabHeader" class="nav nav-tabs">
+                            <li class="active"><a href="#currentDesign" data-toggle="tab">Current Design</a></li>
+                        </ul>
+                        <div id="designTabContent" class="tab-content">
+                            <div id="currentDesign" class="tab-pane active">
+                                <div class="well" id="target">
+                                    <h3>Target</h3> 
+                                    <hr/>
+                                    <h4>Select the parts you want to assemble</h4>
+                                    <div class="row-fluid">
+                                        <div class="span4">
+                                            <h5>Available Target Parts</h5>
+                                            <div id="availableTargetPartListArea">
+                                                <select class="fixedHeight" multiple="multiple">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class ="span2">
+                                            <div class="btn-group btn-group-vertical" style="margin-top:100px;">
+                                                <button type="button" class="btn" id="targetSelectAllButton" style="width:100%">Select All</button>
+                                                <button type="button" class="btn" id="targetSelectButton" style="width:100%">Select</button>
+                                                <button type="button" class="btn" id="targetDeselectButton" style="width:100%">Deselect</button>
+                                                <button type="button" class="btn" id="targetDeselectAllButton" style="width:100%">Deselect All</button>
+                                            </div>
+                                        </div>
+                                        <div class="span4">
+                                            <h5>Selected Target Parts</h5>
+                                            <select id="targetPartList" multiple="multiple" class="fixedHeight">
+                                            </select>
+
+                                        </div>
+                                    </div>
+                                    <h5>Select the assembly method you want to use</h5>
+                                    <select id="methodSelection">
+                                        <option>BioBrick</option>
+                                        <option>CPEC</option>
+                                        <option>Gibson</option>
+                                        <option>Golden Gate</option>
+                                        <option>MoClo</option>
+                                        <option>SLIC</option>
+                                    </select>
+                                    <hr/>
+                                </div>
+                                <div class="well" id="library">
+                                    <h3>Library</h3>
+                                    <hr/>
+                                    <h4>Select the parts you want to include in your library</h4>
+                                    <div class="tabbable">
+                                        <ul id="libraryTabHeader" class="nav nav-tabs">
+                                            <li class="active"><a href="#libraryPartArea" data-toggle="tab">Parts</a></li>
+                                            <li><a href="#libraryVectorArea" data-toggle="tab">Vectors</a></li>
+                                        </ul>
+                                        <div id="indermediateTabContent" class="tab-content">
+                                            <div class="tab-pane active" id="libraryPartArea">
+                                                <div class="row-fluid">
+                                                    <div class="span4">
+                                                        <h5>Available Library Parts</h5>
+                                                        <div id="availableLibraryPartListArea">
+                                                            <select id="availableLibraryPartList" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class ="span2">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="libraryPartSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="libraryPartSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="libraryPartDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="libraryPartDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4">
+                                                        <h5>Selected Library Parts</h5>
+                                                        <div id="libraryPartListArea">
+                                                            <select id="libraryPartList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="libraryVectorArea">
+                                                <div class="row-fluid">
+                                                    <div class="span4">
+                                                        <h5>Available Library Vectors</h5>
+                                                        <div id="availableLibraryVectorListArea">
+                                                            <select id="availableLibraryVectorList" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class ="span2">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="libraryVectorSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="libraryVectorSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="libraryVectorDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="libraryVectorDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4">
+                                                        <h5>Selected Library Vectors</h5>
+                                                        <div id="libraryVectorListArea">
+                                                            <select id="libraryVectorList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="well" id="intermediate">
+                                    <h3>Intermediates</h3>
+                                    <hr/>
+                                    <h4>Modify the intermediates that appear in your assembly</h4>
+                                    <div class="tabbable">
+                                        <ul id="intermediateTabHeader" class="nav nav-tabs">
+                                            <li class="active"><a href="#intermediateList" data-toggle="tab">Intermediates</a></li>
+                                            <li><a href="#recommendedList" data-toggle="tab">Recommended</a></li>
+                                            <li><a href="#requiredList" data-toggle="tab">Required</a></li>
+                                            <li><a href="#forbiddenList" data-toggle="tab">Forbidden</a></li>
+                                        </ul>
+                                        <div id="indermediateTabContent" class="tab-content">
+                                            <div class="tab-pane active" id="intermediateList"> 
+                                                <div class="row-fluid">
+                                                    <div class="span10">
+                                                        <div id="intermediateTableArea"></div>
+                                                        <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="recommendedList"> 
+                                                <div class="row-fluid">
+                                                    <div class="span4">
+                                                        <h5>Available Intermediates</h5>
+                                                        <div id="availableRecommendedListArea">
+                                                            <select id="availableRecommendedListt" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class ="span2">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="recommendedSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="recommendedSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="recommendedDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="recommendedDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4">
+                                                        <h5>Recommended Intermediates</h5>
+                                                        <div id="recommendedListArea">
+                                                            <select id="recommendedList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="requiredList"> 
+                                                <div class="row-fluid">
+                                                    <div class="span4">
+                                                        <h5>Available Intermediates</h5>
+                                                        <div id="availableRequiredListArea">
+                                                            <select id="availableRequiredList" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class ="span2">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="requiredSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="requiredSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="requiredDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="requiredDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4">
+                                                        <h5>Required Intermediates</h5>
+                                                        <div id="requiredListArea">
+                                                            <select id="requiredList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>                                            
+                                            </div>
+                                            <div class="tab-pane" id="forbiddenList"> 
+                                                <div class="row-fluid">
+                                                    <div class="span4">
+                                                        <h5>Available Library Parts</h5>
+                                                        <div id="availableForbiddenListArea">
+                                                            <select id="availableForbiddenList" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class ="span2">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="forbiddenSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="forbiddenSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="forbiddenDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="forbiddenDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4">
+                                                        <h5>Selected Library Parts</h5>
+                                                        <div id="forbiddenListArea">
+                                                            <select id="forbiddenList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>                                           
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="well" id="run"> 
+                                    <h3>Run</h3>
+                                    <hr/>
+                                    <h4>Summary of your design plan</h4>
+                                    <div class ="well" id="designSummaryArea">A summary of your assembly plan will appear here</div>
+                                    <button id="runButton" type="button" class="btn btn-success">Design Assembly</button>
+                                </div>
+                                <hr/>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.js"></script> 
+        <script type="text/javascript" src ="controller/RavencadController.js"></script> 
+        <script src="jsLibraries/bootstrap.js"></script> 
+        <script src="jsLibraries/jquery.dataTables.min.js"></script>
+        <script src="jsLibraries/jquery-ui.js"></script>
+        <script src="jsLibraries/jquery.zoom-min.js"></script>
+    </body>
+</html>

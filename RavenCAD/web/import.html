@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RavenCAD</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="shortcut icon" href="images/shortcutIcon.ico">
+<link href="css/bootstrap.css" rel="stylesheet" media="screen">
+<link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+<link href="css/override.css" rel="stylesheet" media="screen">
+</head>
+<body>
+<div class="navbar navbar-fixed-top">
+  <div class="navbar-inner"> <a class="brand" href="index.html">RavenCAD</a>
+    <ul class="nav">
+      <li><a href="ravencad.html">Design</a></li>
+      <li  class="active"><a href="#">Your Data</a></li>
+      <li><a href="documentation.html">How to</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </div>
+</div>
+<!--  header area-->
+<div class="page-header" style="margin-top:50px">
+  <h1>RavenCAD <small>Add, browse, and edit your parts and vectors</small></h1>
+</div>
+<div class="container">
+  <div class="row-fluid">
+    <div class="span12">
+      <div class="row-fluid">
+        <div class="span6"> 
+          <!--button area-->
+          <div class="btn-toolbar" style="width:375px">
+            <button type="button" class="btn btn-large" data-toggle="collapse" data-target="#uploadArea"> Add More Parts </button>
+            <button id="designButton" data-toggle="tooltip" type="button" class="btn btn-large"> Design an Assembly </button>
+          </div>
+          <div id="uploadArea" class="collapse in" data-toggle="tooltip" title="You can drag and drop files here!">
+            <div class="well" style="width:375px" id="drop_zone_1">
+              <form id="file_upload" action="UploadServlet" method="POST" enctype="multipart/form-data">
+                <input id="file_1" type="file" name="file_1" multiple/>
+                <br>
+                <button id="uploadButton" data-toggle="collapse" data-target="#uploadArea">Upload</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="dataArea" class="row-fluid">
+        <div class="span8">
+          <div id="tableArea">
+          </div>
+        </div>
+        <div class="span4">
+          <div id="editorArea" class="well hidden"> </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--scripts placed at the end to enhance page loading speed--> 
+<script type="text/javascript" src="jsLibraries/jquery-1.9.1.js"></script> 
+<script src="jsLibraries/bootstrap.js"></script> 
+<script type="text/javascript" src ="controller/ImportController.js"></script> 
+<script src="jsLibraries/jquery.fileupload.js"></script> 
+<script src="jsLibraries/jquery.fileupload-ui.js"></script> 
+<script src="jsLibraries/jquery.dataTables.min.js"></script>
+</body>
+</html>

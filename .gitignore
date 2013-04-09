@@ -4,3 +4,9 @@
 *.jar
 *.war
 *.ear
+
+# Private Config Directories #
+/nbproject/private/	
+
+# Build folders #
+/RavenCAD/build/
