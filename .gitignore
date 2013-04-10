@@ -6,7 +6,7 @@
 *.ear
 
 # Private Config Directories #
-/nbproject/private/	
+/RavenCAD/nbproject/private/	
 
 # Build folders #
 /RavenCAD/build/
