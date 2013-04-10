@@ -4,17 +4,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var data = null;
     var method = "BioBrick";
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
-//    method = "moclo";
 //EVENT HANDLERS
-//        designCount = designCount + 1;
-//        $('#designTabHeader').append('<li><a href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount + '</a></li>');
-//        $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">' + designCount + '</div>');
-//        $('#designTabs a:last-child').tab('show');
-//
-
-
-
-
     $('#sidebar').click(function() {
         $('#designTabs a:first-child').tab('show');
     });
@@ -116,9 +106,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         if (targets.length > 1) {
             designCount = designCount + 1;
-            $('#designTabHeader').append('<li><a href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount + '</a></li>');
+            $('#designTabHeader').append('<li><a href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount +
+                    '</a></li>');
             $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">');
             $('#designTabs a:last-child').tab('show');
+
             //generate main skeleton
             $('#designTab' + designCount).append('<div class="row-fluid"><div class="span10"><div class="tabbable" id="resultTabs' + designCount +
                     '"></div></div></div>' +
@@ -132,7 +124,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#resultTabs' + designCount).append('<div class="tab-content" id="resultTabsContent' + designCount + '"><div class="tab-pane active" id="imageTab'
                     + designCount + '"><div class="well" id="resultImage' + designCount +
                     '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div><div class="tab-pane" id="instructionTab' + designCount +
-                    '"><div class="well" style="height:360px;width:640px" id="instructionArea' + designCount +
+                    '"><div class="well" id="instructionArea' + designCount +
                     '">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div></div>');
             //add download buttons and bind events to them
             $('#download' + designCount).append('<h4>Download Options</h4><div class="btn-group btn-group-vertical">' +
@@ -158,7 +150,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             var rec = ""; //recommended intermediates
             var req = ""; //required intermediates
             var forbid = ""; //forbidden intermediates
-            var eug = "" //eugene file for rec/required forbidden
+            var eug = ""; //eugene file for rec/required forbidden
             var config = ""; //csv configuration file?
             $('#libraryPartList option').each(function() {
                 partLibrary = partLibrary + $(this).attr("id") + ",";
@@ -183,10 +175,28 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
             var requestInput = {"command": "run", "targets": "" + targets, "method": "" + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": "" + rec, "required": "" + req, "forbidden": "" + forbid};
             $.get("RavenServlet", requestInput, function(data) {
-                $("#resultImage" + designCount).html("<img src='" + data["image"] + "'/>");
-                $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-                $('#instructionArea' + designCount).html(data["instructions"]);
-                $('#stat' + designCount).html("<h4>Assembly Statistics</h4>"+data["statistics"]);
+                  if (data["status"] === "good") {
+                    $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
+                    $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+                    $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
+                    $('#stat' + designCount).html('<h4>Assembly Statistics</h4><table class="table">' +
+                            '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
+                            '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
+                            '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
+                            '<tr><td><strong>Number of Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
+                            '<tr><td><strong>Number of Recommended Parts</strong></td><td>' + data["statistics"]["recommended"] + '</td></tr>' +
+                            '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
+                            '<tr><td><strong>Modularity of Assembled Parts</strong></td><td>' + data["statistics"]["modularity"] + '</td></tr>' +
+                            '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
+                } else {
+                    $("#designTab" + designCount).html('<div class="alert alert-danger">' +
+                            '<strong>Oops, an error occured while generating your assembly plan</strong>' +
+                            '<p>Please send the following to <a href="mailto:jenhantao@gmail.com">jenhantao@gmail.com</a></p>'+
+                            '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>'+
+                            '<li>A brief summary of what you were trying to do</li></ul>'+
+                            '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
+                            + data["result"] + '</div>');
+                }
             });
         } else {
             alert("Please select some target parts");
@@ -304,7 +314,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
             summary = summary + "</ul>";
         } else {
-            summary = summary + '<p><strong>Nothing</strong>. Try selecting some target parts</p>';
+            summary = summary + '<div class="alert alert-danger"><strong>Nothing</strong>. Try selecting some target parts</div>';
         }
         summary = summary + '<p>You will be using the <strong>' + method + '</strong> assembly method</p>';
         if ($('.recommended:checked').length > 0) {

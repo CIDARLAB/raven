@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,9 +148,14 @@ public class RavenServlet extends HttpServlet {
                         + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
                 String instructions = "Instructions for building your assembly will be a new feature coming to RavenCAD soon. Please Stay tuned";
 
-                out.println("{\"image\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\"}");
+                out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\"}");
+
             } catch (Exception e) {
-                e.printStackTrace();
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+                out.println("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
             } finally {
                 out.close();
             }
