@@ -57,7 +57,7 @@ public class UploadServlet extends HttpServlet {
         response.sendRedirect("import.html");
         try {
             List<FileItem> items = uploadHandler.parseRequest(request);
-            String uploadFilePath = "C:\\Users\\Admin\\Desktop\\ravencache"; //TODO change this to a location in the web directory
+            String uploadFilePath = "/data/"; //TODO change this to a location in the web directory
             new File(uploadFilePath).mkdir();
             for (FileItem item : items) {
 

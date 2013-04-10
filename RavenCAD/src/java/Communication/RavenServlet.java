@@ -231,7 +231,7 @@ public class RavenServlet extends HttpServlet {
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
     private void loadData() {
         Collector.purge();//TODO remove this, for testing purposes only
-        String uploadFilePath = "C:\\Users\\Admin\\Desktop\\ravencache"; //TODO change this to a folder in the web directory matching UploadServlet
+        String uploadFilePath = "/data/"; //TODO change this to a folder in the web directory matching UploadServlet
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
