@@ -137,19 +137,17 @@ public class RavenServlet extends HttpServlet {
                     }
                 }
                 String image = run(method, goalParts, required, recommended, forbidden, vectorLibrary, partLibrary);
-                String statString = "assembly stats fromt the server!";
-                String instructions = "instructions from the server!";
-//                lblStats.setText("Statistics:");
-//                lblStages.setText(_statistics.getStages());
-//                lblSteps.setText(_statistics.getSteps());
-//                lblSharing.setText(_statistics.getSharing());
-//                lblEfficiency.setText(_statistics.getEfficiency());
-//                lblGoalParts.setText(_statistics.getGoalParts());
-//                lblRecommended.setText(_statistics.getRecommended());
-//                lblModularity.setText(_statistics.getModularity());
-//                lblExecutionTime.setText(_statistics.getExecutionTime());
-//                lblReactions.setText(_statistics.getReactions());
-                out.println("{\"image\":\""+image+"\",\"statistics\":\""+statString+"\",\"instructions\":\""+instructions+"\"}");
+                String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
+                        + "\",\"steps\":\"" + _statistics.getSteps()
+                        + "\",\"stages\":\"" + _statistics.getStages()
+                        + "\",\"reactions\":\"" + _statistics.getReactions()
+                        + "\",\"recommended\":\"" + _statistics.getRecommended()
+                        + "\",\"efficiency\":\"" + _statistics.getEfficiency()
+                        + "\",\"modularity\":\"" + _statistics.getModularity()
+                        + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
+                String instructions = "Instructions for building your assembly will be a new feature coming to RavenCAD soon. Please Stay tuned";
+
+                out.println("{\"image\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\"}");
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -275,10 +273,10 @@ public class RavenServlet extends HttpServlet {
                 } else if (tokenCount == 7) {
                     //create vector
                     try {
-                        String name = tokens[0];
-                        String sequence = tokens[1];
-                        String leftOverhang = tokens[2];
-                        String rightOverhang = tokens[3];
+                        String name = tokens[0].trim();
+                        String sequence = tokens[1].trim();
+                        String leftOverhang = tokens[2].trim();
+                        String rightOverhang = tokens[3].trim();
                         String resistance = tokens[5].toLowerCase().trim();
                         int level = -1;
                         try {
@@ -303,11 +301,11 @@ public class RavenServlet extends HttpServlet {
                 } else if (tokenCount == 5) {
                     try {
                         //create basic part
-                        String name = tokens[0];
-                        String sequence = tokens[1];
-                        String leftOverhang = tokens[2];
-                        String rightOverhang = tokens[3];
-                        String type = tokens[4];
+                        String name = tokens[0].trim();
+                        String sequence = tokens[1].trim();
+                        String leftOverhang = tokens[2].trim();
+                        String rightOverhang = tokens[3].trim();
+                        String type = tokens[4].trim();
                         Part newBasicPart = Part.generateBasic(name, sequence);
                         newBasicPart.addSearchTag("LO: " + leftOverhang);
                         newBasicPart.addSearchTag("RO: " + rightOverhang);
@@ -347,9 +345,9 @@ public class RavenServlet extends HttpServlet {
                         }
                         composition.add(Collector.getPartByName(partName));
                     }
-                    String name = tokens[0];
-                    String leftOverhang = tokens[2];
-                    String rightOverhang = tokens[3];
+                    String name = tokens[0].trim();
+                    String leftOverhang = tokens[2].trim();
+                    String rightOverhang = tokens[3].trim();
 
                     Part newComposite = Part.generateComposite(composition, name);
                     newComposite.addSearchTag("LO: " + leftOverhang);
