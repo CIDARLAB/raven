@@ -175,7 +175,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
             var requestInput = {"command": "run", "targets": "" + targets, "method": "" + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": "" + rec, "required": "" + req, "forbidden": "" + forbid};
             $.get("RavenServlet", requestInput, function(data) {
-                  if (data["status"] === "good") {
+                if (data["status"] === "good") {
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
                     $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
                     $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
@@ -191,9 +191,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +
-                            '<p>Please send the following to <a href="mailto:jenhantao@gmail.com">jenhantao@gmail.com</a></p>'+
-                            '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>'+
-                            '<li>A brief summary of what you were trying to do</li></ul>'+
+                            '<p>Please send the following to <a href="mailto:jenhantao@gmail.com">jenhantao@gmail.com</a></p>' +
+                            '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
+                            '<li>A brief summary of what you were trying to do</li></ul>' +
                             '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
                             + data["result"] + '</div>');
                 }
@@ -351,9 +351,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
 
 
+    $("#intermediateTable").dataTable({
+        "sScrollY": "300px",
+        "bPaginate": false,
+        "bScrollCollapse": true
+    });
 
-
-    $('#resultImage img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
 
 });
 

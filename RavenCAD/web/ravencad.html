@@ -174,7 +174,11 @@
                                                 <div class="row-fluid">
                                                     <div class="span10">
                                                         <div id="intermediateTableArea"></div>
-                                                        <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>                                                    </div>
+                                                        <table id='intermediateTable' class='table table-bordered table-hover'><thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th></tr></thead><tbody>";
+                                                            </tbody>
+                                                        </table>
+                                                        <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>                                                    
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="tab-pane" id="recommendedList"> 
@@ -263,7 +267,7 @@
                                     <h3>Run</h3>
                                     <hr/>
                                     <h4>Summary of your design plan</h4>
-                                    <div class ="well" id="designSummaryArea">A summary of your assembly plan will appear here</div>
+                                    <div class ="well" id="designSummaryArea"><div style="height:300px">A summary of your assembly plan will appear here</div></div>
                                     <button id="runButton" type="button" class="btn btn-success">Design Assembly</button>
                                 </div>
                                 <hr/>
@@ -278,6 +282,7 @@
 
         <script type="text/javascript" src="jsLibraries/jquery-1.9.1.js"></script> 
         <script type="text/javascript" src ="controller/RavencadController.js"></script> 
+        <script type="text/javascript" src ="controller/EndSessionController.js"></script> 
         <script src="jsLibraries/bootstrap.js"></script> 
         <script src="jsLibraries/jquery.dataTables.min.js"></script>
         <script src="jsLibraries/jquery-ui.js"></script>
