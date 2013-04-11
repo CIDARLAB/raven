@@ -148,8 +148,9 @@ public class RavenServlet extends HttpServlet {
                         }
                     }
                 }
+                String designCount = request.getParameter("designCount");
                 String image = run(method, goalParts, required, recommended, forbidden, vectorLibrary, partLibrary);
-                generatePartsList(request.getParameter("designCount"));
+                generatePartsList(designCount);
                 String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
                         + "\",\"steps\":\"" + _statistics.getSteps()
                         + "\",\"stages\":\"" + _statistics.getStages()
@@ -158,7 +159,7 @@ public class RavenServlet extends HttpServlet {
                         + "\",\"efficiency\":\"" + _statistics.getEfficiency()
                         + "\",\"modularity\":\"" + _statistics.getModularity()
                         + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
-                String instructions = generateInstructions(request.getParameter("designCount"));
+                String instructions = generateInstructions(designCount);
 
                 out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\"}");
 
@@ -699,7 +700,7 @@ public class RavenServlet extends HttpServlet {
     }
 
     private boolean generatePartsList(String designNumber) {
-        File file = new File(this.getServletContext().getRealPath("/")+"data/result" + designNumber + ".csv");
+        File file = new File(this.getServletContext().getRealPath("/")+"data/partsList" + designNumber + ".csv");
         try {
             //traverse graphs to get uuids
             ArrayList<Part> usedPartsHash = new ArrayList<Part>();

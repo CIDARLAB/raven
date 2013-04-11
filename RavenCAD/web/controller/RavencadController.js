@@ -127,21 +127,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '"><div class="well" id="instructionArea' + designCount +
                     '">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div></div>');
             //add download buttons and bind events to them
-            $('#download' + designCount).append('<h4>Download Options</h4><div class="btn-group btn-group-vertical">' +
-                    '<button type="button" class="btn" style="width:100%" id="downloadImage' + designCount + '">Download Graph Image</button>' +
-                    '<button type="button" class="btn" style="width:100%" id="downloadInstructions' + designCount + '">Download Instructions</button>' +
-                    '<button type="button" class="btn" style="width:100%" id="downloadParts' + designCount + '">Download Parts/Vectors List</button>' +
-                    '<button type="button" class="btn" style="width:100%" id="downloadAll' + designCount + '">Download All</button>' +
-                    '</div>');
-            $('#downloadImage' + designCount).click(function() {
-                window.open(data["result"]);
-            })
-            $('#downloadInstructions' + designCount).click(function() {
-                window.open(data["instructionsFile"]);
-            })
-            $('#downloadParts' + designCount).click(function() {
-                window.open(data["partsListFile"]);
-            })
+            $('#download' + designCount).append('<h4>Download Options</h4><div>' +
+                    '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
+                    '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
+                    '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
+                    '<p><small>Please use right-click, then save as to download the files</small></div>');
             var partLibrary = ""; //parts to use in library
             var vectorLibrary = ""; //vectors to use in library
             var rec = ""; //recommended intermediates
@@ -185,6 +175,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
                             '<tr><td><strong>Modularity of Assembled Parts</strong></td><td>' + data["statistics"]["modularity"] + '</td></tr>' +
                             '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
+                    $('#downloadImage' + designCount).attr("href", data["result"]);
+                    $('#downloadInstructions' + designCount).attr("href","data/instructions" + designCount + ".txt");
+                    $('#downloadParts' + designCount).attr("href","data/partsList" + designCount + ".csv");
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +
