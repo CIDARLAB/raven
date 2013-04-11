@@ -46,7 +46,7 @@
 //    wireUpEvents();  
 //});
 $(document).ready(function() {
-    $(window).on("beforeunload", function() {
-        alert("bye");
-    });
+//    $(window).on("beforeunload", function() {
+//        alert("bye");
+//    });
 });
