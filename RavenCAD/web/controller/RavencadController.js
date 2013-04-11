@@ -134,16 +134,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '<button type="button" class="btn" style="width:100%" id="downloadAll' + designCount + '">Download All</button>' +
                     '</div>');
             $('#downloadImage' + designCount).click(function() {
-                alert("downloading image");
+                window.open(data["result"]);
             })
             $('#downloadInstructions' + designCount).click(function() {
-                alert("downloading instructions");
+                window.open(data["instructionsFile"]);
             })
             $('#downloadParts' + designCount).click(function() {
-                alert("downloading parts list");
-            })
-            $('#downloadAll' + designCount).click(function() {
-                alert("downloading all");
+                window.open(data["partsListFile"]);
             })
             var partLibrary = ""; //parts to use in library
             var vectorLibrary = ""; //vectors to use in library
@@ -173,7 +170,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             targets = targets.substring(0, targets.length - 1);
             partLibrary = partLibrary.substring(0, partLibrary.length - 1);
 
-            var requestInput = {"command": "run", "targets": "" + targets, "method": "" + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": "" + rec, "required": "" + req, "forbidden": "" + forbid};
+            var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": "" + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": "" + rec, "required": "" + req, "forbidden": "" + forbid};
             $.get("RavenServlet", requestInput, function(data) {
                 if (data["status"] === "good") {
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");

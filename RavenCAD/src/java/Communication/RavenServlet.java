@@ -17,8 +17,10 @@ import Controller.datastructures.SRSGraph;
 import Controller.datastructures.SRSNode;
 import Controller.datastructures.Vector;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -75,6 +77,15 @@ public class RavenServlet extends HttpServlet {
                 response.setContentType("application/json");
                 String responseString = "";
                 responseString = fetchData();
+                out.write(responseString);
+            } finally {
+                out.close();
+            }
+        } else if (command.equals("purge")) {
+            try {
+                response.setContentType("test/plain");
+                String responseString = "purged";
+                clearData();
                 out.write(responseString);
             } finally {
                 out.close();
@@ -138,6 +149,7 @@ public class RavenServlet extends HttpServlet {
                     }
                 }
                 String image = run(method, goalParts, required, recommended, forbidden, vectorLibrary, partLibrary);
+                generatePartsList(request.getParameter("designCount"));
                 String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
                         + "\",\"steps\":\"" + _statistics.getSteps()
                         + "\",\"stages\":\"" + _statistics.getStages()
@@ -146,7 +158,7 @@ public class RavenServlet extends HttpServlet {
                         + "\",\"efficiency\":\"" + _statistics.getEfficiency()
                         + "\",\"modularity\":\"" + _statistics.getModularity()
                         + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
-                String instructions = "Instructions for building your assembly will be a new feature coming to RavenCAD soon. Please Stay tuned";
+                String instructions = generateInstructions(request.getParameter("designCount"));
 
                 out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\"}");
 
@@ -235,13 +247,26 @@ public class RavenServlet extends HttpServlet {
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
     private void loadData() {
         Collector.purge();//TODO remove this, for testing purposes only
-        String uploadFilePath = "/data/"; //TODO change this to a folder in the web directory matching UploadServlet
+        String uploadFilePath = this.getServletContext().getRealPath("/")+"data/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
             String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
             if ("csv".equals(fileExtension)) {
                 parseInputFile(currentFile);
+            }
+        }
+    }
+
+    private void clearData() {
+        Collector.purge();
+        String uploadFilePath = this.getServletContext().getRealPath("/")+"data/";
+        File[] filesInDirectory = new File(uploadFilePath).listFiles();
+        for (File currentFile : filesInDirectory) {
+            String filePath = currentFile.getAbsolutePath();
+            String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
+            if ("csv".equals(fileExtension)) {
+                currentFile.delete();
             }
         }
     }
@@ -671,6 +696,95 @@ public class RavenServlet extends HttpServlet {
         WeyekinPoster.postMyVision();
         //Clean up data
         gps = null;
+    }
+
+    private boolean generatePartsList(String designNumber) {
+        File file = new File(this.getServletContext().getRealPath("/")+"data/result" + designNumber + ".csv");
+        try {
+            //traverse graphs to get uuids
+            ArrayList<Part> usedPartsHash = new ArrayList<Part>();
+            ArrayList<Vector> usedVectorsHash = new ArrayList<Vector>();
+            for (SRSGraph result : _assemblyGraphs) {
+                for (Part p : result.getPartsInGraph()) {
+                    if (!usedPartsHash.contains(p)) {
+                        usedPartsHash.add(p);
+                    }
+                }
+                for (Vector v : result.getVectorsInGraph()) {
+                    if (!usedVectorsHash.contains(v)) {
+                        usedVectorsHash.add(v);
+                    }
+                }
+            }
+            //extract information from parts and write file
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter out = new BufferedWriter(fw);
+            out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
+
+            for (Part p : usedPartsHash) {
+                ArrayList<String> tags = p.getSearchTags();
+                String RO = "";
+                String LO = "";
+                String type = "";
+                for (int k = 0; k < tags.size(); k++) {
+                    if (tags.get(k).startsWith("LO:")) {
+                        LO = tags.get(k).substring(4);
+                    } else if (tags.get(k).startsWith("RO:")) {
+                        RO = tags.get(k).substring(4);
+                    } else if (tags.get(k).startsWith("Type:")) {
+                        type = tags.get(k).substring(6);
+                    }
+                }
+
+                if (p.isBasic()) {
+                    out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type);
+                } else {
+                    String composition = "";
+                    for (Part subpart : p.getComposition()) {
+                        composition = composition + "," + subpart.getName();
+                    }
+                    out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
+                }
+            }
+
+            for (Vector v : usedVectorsHash) {
+                ArrayList<String> tags = v.getSearchTags();
+                String RO = "";
+                String LO = "";
+                String level = "";
+                String resistance = "";
+                for (int k = 0; k < tags.size(); k++) {
+                    if (tags.get(k).startsWith("LO:")) {
+                        LO = tags.get(k).substring(4);
+                    } else if (tags.get(k).startsWith("RO:")) {
+                        RO = tags.get(k).substring(4);
+                    } else if (tags.get(k).startsWith("Level:")) {
+                        level = tags.get(k).substring(7);
+                    } else if (tags.get(k).startsWith("Resistance:")) {
+                        resistance = tags.get(k).substring(12);
+                    }
+                }
+                out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",," + resistance + "," + level);
+            }
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    private String generateInstructions(String designNumber) {
+        File file = new File(this.getServletContext().getRealPath("/")+"data/"+"instructions" + designNumber + ".txt");
+        String toReturn = "Instructions for building your assembly will be a new feature coming to RavenCAD soon. Please Stay tuned";
+        try {
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter out = new BufferedWriter(fw);
+            out.write(toReturn);
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return toReturn;
     }
 
     /**
