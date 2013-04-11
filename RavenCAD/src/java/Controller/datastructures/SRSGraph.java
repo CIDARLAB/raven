@@ -245,28 +245,28 @@ public class SRSGraph {
      * Generate a Weyekin image file for a list of edges *
      */
     public String generateWeyekinFile(ArrayList<String> edges, boolean pigeon) {
-  //Initiate weyekin file
+        //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
         weyekinText.append("digraph {\n");
 
         //If edges are empty (happens when no assembly is necessary)
         if (edges.isEmpty()) {
-            nodeMap.put(this.getRootNode().getUUID(), this.getRootNode().getComposition().toString()+this.getRootNode().getLOverhang()+this.getRootNode().getROverhang());
+            nodeMap.put(this.getRootNode().getUUID(), this.getRootNode().getComposition().toString() + this.getRootNode().getLOverhang() + this.getRootNode().getROverhang());
         }
-        
-               //Store list of edges
+
+        //Store list of edges
         String edgeLines = "";
         for (String s : edges) {
             String[] tokens = s.split("->");
             Part vertex1 = Collector.getPart(tokens[0].trim());
             Part vertex2 = Collector.getPart(tokens[1].trim());
-            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition()+vertex1.getLeftoverhang()+vertex1.getRightOverhang());
-            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition()+vertex2.getLeftoverhang()+vertex2.getRightOverhang());
+            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + vertex1.getLeftoverhang() + vertex1.getRightOverhang());
+            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + vertex2.getLeftoverhang() + vertex2.getRightOverhang());
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
 
         }
-        
+
         if (pigeon) {
             for (String key : nodeMap.keySet()) {
                 Part currentPart = Collector.getPart(key);
@@ -277,7 +277,7 @@ public class SRSGraph {
                 //Assign left overhang if it exists
                 pigeonLine.append("o ").append(currentPart.getLeftoverhang()).append(" 1" + "\n");
 
-                for (Part p: currentPart.getComposition()) {
+                for (Part p : currentPart.getComposition()) {
                     if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
                         pigeonLine.append("P ").append(p.getName()).append(" 4" + "\n");
                     } else if (p.getType().equalsIgnoreCase("RBS") || p.getType().equalsIgnoreCase("r")) {
@@ -289,15 +289,15 @@ public class SRSGraph {
                     } else if (p.getType().equalsIgnoreCase("terminator") || p.getType().equalsIgnoreCase("t")) {
                         pigeonLine.append("T ").append(p.getName()).append(" 6" + "\n");
                     } else if (p.getType().equalsIgnoreCase("invertase site") || p.getType().equalsIgnoreCase("is")) {
-                        pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");                       
+                        pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");
                     } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
                         pigeonLine.append("f1");
-                        String[] fusionParts = p.getName().split("-");                        
+                        String[] fusionParts = p.getName().split("-");
                         for (int i = 1; i < fusionParts.length; i++) {
                             int color = i % 13 + 1;
                             pigeonLine.append("-").append(color);
                         }
-                        pigeonLine.append(" ").append(p.getName()).append("\n");   
+                        pigeonLine.append(" ").append(p.getName()).append("\n");
                     } else {
                         pigeonLine.append(key);
                     }
@@ -318,9 +318,9 @@ public class SRSGraph {
             }
         }
 
-        
-        
-      //Write edge lines
+
+
+        //Write edge lines
         weyekinText.append(edgeLines);
         weyekinText.append("}");
         return weyekinText.toString();
@@ -586,7 +586,7 @@ public class SRSGraph {
     public int getReaction() {
         return _reactions;
     }
-    
+
     /**
      * Set the number of stages for an SDSGraph *
      */
@@ -642,13 +642,61 @@ public class SRSGraph {
     public void setEfficiency(ArrayList<Double> efficiency) {
         _efficiency = efficiency;
     }
+
     /**
      * Set the reaction score of a graph *
      */
     public void setReactions(int numReactions) {
         _reactions = numReactions;
     }
-    
+
+    private boolean validateGraphs() {
+        boolean toReturn = true;
+        SRSNode root = this.getRootNode();
+        HashSet<SRSNode> seenNodes = new HashSet();
+        ArrayList<SRSNode> queue = new ArrayList();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            SRSNode parent = queue.get(0);
+            queue.remove(0);
+            seenNodes.add(parent);
+            if (parent.getNeighbors().size() > 1) {
+                SRSNode previous = null;
+                for (int i = 0; i < parent.getNeighbors().size(); i++) {
+                    SRSNode child = parent.getNeighbors().get(i);
+                    if (!seenNodes.contains(child)) {
+                        if (i == 0) {
+                            if (!child.getLOverhang().equals(parent.getLOverhang())) {
+                                System.out.println(child.getComposition() + " left caused failure " + child.getLOverhang());
+                                System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
+                                return false;
+                            }
+                        }
+                        if (i == parent.getNeighbors().size() - 1) {
+                            if (!child.getROverhang().equals(parent.getROverhang())) {
+                                System.out.println(child.getComposition() + " right caused failure " + child.getROverhang());
+                                System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
+                                return false;
+                            }
+                        }
+                        if (previous != null) {
+                            if (!child.getLOverhang().equals(previous.getROverhang())) {
+                                System.out.println(child.getComposition() + " previous caused failure " + child.getLOverhang());
+                                System.out.println("previous: " + previous.getComposition() + " " + previous.getLOverhang() + "|" + previous.getROverhang());
+
+                                return false;
+                            }
+                        }
+                        previous = child;
+                        queue.add(child);
+                    }
+                }
+
+            }
+        }
+
+        return toReturn;
+    }
     //FIELDS
     private ArrayList<SRSGraph> _subGraphs;
     private SRSNode _node;

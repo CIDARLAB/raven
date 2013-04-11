@@ -17,7 +17,7 @@ import java.util.Set;
 public class SRSGoldenGate extends SRSGeneral{
     
     /** Clotho part wrapper for Golden Gate assembly **/
-    public ArrayList<SRSGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, HashSet<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
+    public ArrayList<SRSGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
         try {
             
             //Designate how many parts can be efficiently ligated in one step
@@ -32,7 +32,7 @@ public class SRSGoldenGate extends SRSGeneral{
 
             //Create hashMem parameter for createAsmGraph_sgp() call
             HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended);
-            HashSet<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
+            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
             
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
@@ -57,7 +57,7 @@ public class SRSGoldenGate extends SRSGeneral{
     }
     
     /** Optimize overhang assignments based on available parts and vectors with overhangs **/
-    private ArrayList<SRSGraph> assignOverhangs (ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, HashSet<SRSVector> vectorSet) {
+    private ArrayList<SRSGraph> assignOverhangs (ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
         return optimalGraphs;
     }  
 }

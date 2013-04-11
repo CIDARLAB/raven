@@ -18,14 +18,14 @@ import java.util.Set;
  */
 public class SRSMoClo extends SRSGeneral {
 
-    private ArrayList<Part> library = new ArrayList();
+    private ArrayList<Part> partLibrary = new ArrayList();
 
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<SRSGraph> mocloClothoWrapper(ArrayList<Part> goalParts, HashSet<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
+    public ArrayList<SRSGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
         try {
-            library = partLibrary;
+            partLibrary = partLibrary;
             //Designate how many parts can be efficiently ligated in one step
             int max = 0;
             Set<Integer> keySet = efficiencies.keySet();
@@ -38,7 +38,7 @@ public class SRSMoClo extends SRSGeneral {
 
             //Create hashMem parameter for createAsmGraph_sgp() call
             HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
-            HashSet<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
+            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
@@ -58,11 +58,8 @@ public class SRSMoClo extends SRSGeneral {
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, efficiencies);
             assignSharingOverhangs(optimalGraphs);
-            System.out.println("##############################\nfirst pass: " + validateGraphs(optimalGraphs));
             minimizeOverhangs(optimalGraphs);
-            System.out.println("##############################\nsecond pass: " + validateGraphs(optimalGraphs));
             optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
-            System.out.println("##############################\nfinal pass: " + validateGraphs(optimalGraphs));
             //            crudeOptimize(optimalGraphs);
             //Remove transcriptional units from the required set
 //            for (int j = 0; j < reqTUs.size(); j++) {
@@ -444,7 +441,7 @@ public class SRSMoClo extends SRSGeneral {
 //concurrent optimizes vector assignment based on vector assignment
 //prioritize existing parts with correct overhangs
 //next priority is overhangs that vectors already have
-    private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, HashSet<SRSVector> vectorSet) {
+    private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
         HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
         HashMap<String, String> abstractFinalPairHash = new HashMap(); //key: abstract pair, value: concrete pair
         finalOverhangHash = preAssignOverhangs(optimalGraphs);
@@ -485,7 +482,7 @@ public class SRSMoClo extends SRSGeneral {
 
         //gather all overhangs for existing parts
 //        ArrayList<Part> allParts = Collector.getAllParts();
-        ArrayList<Part> allParts = library;
+        ArrayList<Part> allParts = partLibrary;
         HashMap<String, ArrayList<String>> compositionConcreteOverhangHash = new HashMap(); //key: part composition, value: arrayList of concrete overhangs that appear for that compositiong
         HashMap<String, ArrayList<String>> libraryCompositionConcreteOverhangHash = new HashMap();
 
@@ -657,14 +654,14 @@ public class SRSMoClo extends SRSGeneral {
 
             }
 
-            //one of the overhangs is already assigned, assign the other one randomly
+            //one of the overhangs is already assigned, assign the other one
             if (finalOverhangHash.get(leftAbstract) == null && left.equals("")) {
                 left = freeOverhangs.get(0);
-                usedFreeOverhangs.add(left);
+                usedFreeOverhangs.add(left+"*"); //asterisk marks new overhang
                 freeOverhangs.remove(0);
             }
             if (finalOverhangHash.get(rightAbstract) == null && right.equals("")) {
-                right = freeOverhangs.get(0);
+                right = freeOverhangs.get(0); 
                 usedFreeOverhangs.add(right);
                 freeOverhangs.remove(0);
             }
@@ -904,53 +901,17 @@ public class SRSMoClo extends SRSGeneral {
             forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
         }
     }
-
-    private boolean validateGraphs(ArrayList<SRSGraph> graphs) {
-        boolean toReturn = true;
-        for (SRSGraph graph : graphs) {
-            SRSNode root = graph.getRootNode();
-            HashSet<SRSNode> seenNodes = new HashSet();
-            ArrayList<SRSNode> queue = new ArrayList();
-            queue.add(root);
-            while (!queue.isEmpty()) {
-                SRSNode parent = queue.get(0);
-                queue.remove(0);
-                seenNodes.add(parent);
-                if (parent.getNeighbors().size() > 1) {
-                    SRSNode previous = null;
-                    for (int i = 0; i < parent.getNeighbors().size(); i++) {
-                        SRSNode child = parent.getNeighbors().get(i);
-                        if (!seenNodes.contains(child)) {
-                            if (i == 0) {
-                                if (!child.getLOverhang().equals(parent.getLOverhang())) {
-                                    System.out.println(child.getComposition() + " left caused failure " + child.getLOverhang());
-                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
-                                    return false;
-                                }
-                            }
-                            if (i == parent.getNeighbors().size() - 1) {
-                                if (!child.getROverhang().equals(parent.getROverhang())) {
-                                    System.out.println(child.getComposition() + " right caused failure " + child.getROverhang());
-                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
-                                    return false;
-                                }
-                            }
-                            if (previous != null) {
-                                if (!child.getLOverhang().equals(previous.getROverhang())) {
-                                    System.out.println(child.getComposition() + " previous caused failure " + child.getLOverhang());
-                                    System.out.println("previous: " + previous.getComposition() + " " + previous.getLOverhang() + "|" + previous.getROverhang());
-
-                                    return false;
-                                }
-                            }
-                            previous = child;
-                            queue.add(child);
-                        }
-                    }
-
-                }
-            }
+    public String generateInstructions(ArrayList<SRSGraph> graphs) {
+        String toReturn = "";
+        String header = "You are trying to assemble the following goal parts:\n";
+        for(SRSGraph graph: graphs) {
+            header = header+"*"+graph.getRootNode().getName()+"\n";
+            
         }
-        return toReturn;
+        for(Part p:partLibrary) {
+            
+        }
+        return null;
     }
+   
 }

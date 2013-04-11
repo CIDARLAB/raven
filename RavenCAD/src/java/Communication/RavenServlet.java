@@ -105,7 +105,7 @@ public class RavenServlet extends HttpServlet {
                 HashSet<String> required = new HashSet();
                 HashSet<String> recommended = new HashSet();
                 HashSet<String> forbidden = new HashSet();
-                HashSet<Vector> vectorLibrary = new HashSet();
+                ArrayList<Vector> vectorLibrary = new ArrayList();
                 ArrayList<Part> partLibrary = new ArrayList();
                 if (partLibraryIDs.length > 0) {
                     for (int i = 0; i < partLibraryIDs.length; i++) {
@@ -150,7 +150,8 @@ public class RavenServlet extends HttpServlet {
                 }
                 String designCount = request.getParameter("designCount");
                 String image = run(method, goalParts, required, recommended, forbidden, vectorLibrary, partLibrary);
-                generatePartsList(designCount);
+                generatePartsListFile(designCount);
+                generateInstructionsFile(designCount);
                 String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
                         + "\",\"steps\":\"" + _statistics.getSteps()
                         + "\",\"stages\":\"" + _statistics.getStages()
@@ -159,7 +160,10 @@ public class RavenServlet extends HttpServlet {
                         + "\",\"efficiency\":\"" + _statistics.getEfficiency()
                         + "\",\"modularity\":\"" + _statistics.getModularity()
                         + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
-                String instructions = generateInstructions(designCount);
+                String instructions = _instructions.replaceAll("[\r\n\t]+", "<br/>");
+                if(_instructions.length() < 1) {
+                    instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
+                }
 
                 out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\"}");
 
@@ -425,7 +429,7 @@ public class RavenServlet extends HttpServlet {
     }
 //private String run() {
 
-    private String run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
+    private String run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
         _goalParts = goalParts;
         _required = required;
         _recommended = recommended;
@@ -642,6 +646,7 @@ public class RavenServlet extends HttpServlet {
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
+        _instructions = moclo.generateInstructions(optimalGraphs);
         for (SRSGraph result : optimalGraphs) {
             try {
                 reader.nodesToClothoPartsVectors(result);
@@ -699,7 +704,7 @@ public class RavenServlet extends HttpServlet {
         gps = null;
     }
 
-    private boolean generatePartsList(String designNumber) {
+    private boolean generatePartsListFile(String designNumber) {
         File file = new File(this.getServletContext().getRealPath("/")+"data/partsList" + designNumber + ".csv");
         try {
             //traverse graphs to get uuids
@@ -774,18 +779,18 @@ public class RavenServlet extends HttpServlet {
         return true;
     }
 
-    private String generateInstructions(String designNumber) {
+    private boolean generateInstructionsFile(String designNumber) {
         File file = new File(this.getServletContext().getRealPath("/")+"data/"+"instructions" + designNumber + ".txt");
-        String toReturn = "Instructions for building your assembly will be a new feature coming to RavenCAD soon. Please Stay tuned";
         try {
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);
-            out.write(toReturn);
+            out.write(_instructions);
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return toReturn;
+        return true;
     }
 
     /**
@@ -885,5 +890,6 @@ public class RavenServlet extends HttpServlet {
     private ArrayList<SRSGraph> _assemblyGraphs = new ArrayList<SRSGraph>();
     private HashMap<String, ArrayList<String>> forcedOverhangHash;
     private ArrayList<Part> _partLibrary;
-    private HashSet<Vector> _vectorLibrary;
+    private ArrayList<Vector> _vectorLibrary;
+    private String _instructions = "";
 }

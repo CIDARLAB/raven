@@ -18,7 +18,7 @@ public class SRSBioBricks extends SRSGeneral {
 
     /** This is the only entry point for this class. A list of goal parts is passed and a list of optimal graphs is output. 
      * PASS THE FOLLOWING ARGUMENTS: ArrayList(Goal_Parts), HashMap(A_Goal_Part, HashSet(Required_Part_Compositions)), HashMap(A_Goal_Part, HashSet(Recommended_Part_Compositions)), HashMap(Part_Compositions, Optimal_Assembly_Graphs) **/
-    public ArrayList<SRSGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, HashSet<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular) {
+    public ArrayList<SRSGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular) {
 
         //Try-Catch block around wrapper method
         try {
@@ -27,7 +27,7 @@ public class SRSBioBricks extends SRSGeneral {
             
             //Initialize part hash and vector set
             HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended);
-            HashSet<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
+            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
@@ -54,7 +54,7 @@ public class SRSBioBricks extends SRSGeneral {
     }
     
     /** Optimize overhang assignments based on available parts and vectors with overhangs **/
-    private ArrayList<SRSGraph> assignVectors (ArrayList<SRSGraph> optimalGraphs, HashSet<SRSVector> vectorSet) {
+    private ArrayList<SRSGraph> assignVectors (ArrayList<SRSGraph> optimalGraphs, ArrayList<SRSVector> vectorSet) {
         
         //If the vector set is of size one, use that vector everywhere applicable 
         SRSVector theVector = new SRSVector();

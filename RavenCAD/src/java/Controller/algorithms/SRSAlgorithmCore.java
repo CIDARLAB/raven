@@ -123,10 +123,10 @@ public class SRSAlgorithmCore {
     /**
      * Given a vector library, create vectorHash *
      */
-    protected HashSet<SRSVector> vectorImportClotho(HashSet<Vector> vectorLibrary) {
+    protected ArrayList<SRSVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
 
         //Initialize vector library
-        HashSet<SRSVector> library = new HashSet<SRSVector>();
+        ArrayList<SRSVector> library = new ArrayList<SRSVector>();
 
         //Provided there is an input vector library
         if (vectorLibrary != null) {
