@@ -911,7 +911,8 @@ public class SRSMoClo extends SRSGeneral {
         for(Part p:partLibrary) {
             
         }
-        return null;
+        toReturn = header+"\n"+toReturn;
+        return toReturn;
     }
    
 }

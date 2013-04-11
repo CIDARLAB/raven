@@ -6,9 +6,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
 //EVENT HANDLERS
     $('#sidebar').click(function() {
-        $('#designTabs a:first-child').tab('show');
+        $('#designTabs a:first').tab('show');
     });
-
+    $('#designTabs a:first-child').click(function(){
+        refreshData();
+    });
+    
     $('#methodSelection').change(function() {
         method = $("#methodSelection :selected").text();
         updateSummary();
@@ -109,7 +112,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#designTabHeader').append('<li><a href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount +
                     '</a></li>');
             $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">');
-            $('#designTabs a:last-child').tab('show');
+            $('#designTabHeader a:last').tab('show'); //TODO figure out how to show new tab
 
             //generate main skeleton
             $('#designTab' + designCount).append('<div class="row-fluid"><div class="span10"><div class="tabbable" id="resultTabs' + designCount +
@@ -205,7 +208,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
     };
 //draw target part options list
-    var drawTargets = function() {
+    var drawPartVectorLists = function() {
         var targetListBody = "<select id=\"availableTargetPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
         var libraryPartListBody = "<select id=\"libraryPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
         var libraryVectorListBody = "<select id=\"libraryVectorList\" multiple=\"multiple\" class=\"fixedHeight\">";
@@ -226,11 +229,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#availableTargetPartListArea").html(targetListBody);
         $("#libraryPartListArea").html(libraryPartListBody);
         $("#libraryVectorListArea").html(libraryVectorListBody);
+        
+        //clear lists
+        $('#targetPartList').html("");
+        $('#availableLibraryPartList').html("");
+        $('#availableLibraryVectorList').html("");
     };
     var getData = function() {
         $.getJSON("RavenServlet", {"command": "fetch"}, function(json) {
             data = json;
-            drawTargets();
+            drawPartVectorLists();
             //generate uuidCompositionHash
             $.each(data, function() {
                 if (this["Type"].toLowerCase() != "vector") {

@@ -161,7 +161,7 @@ public class RavenServlet extends HttpServlet {
                         + "\",\"modularity\":\"" + _statistics.getModularity()
                         + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
                 String instructions = _instructions.replaceAll("[\r\n\t]+", "<br/>");
-                if(_instructions.length() < 1) {
+                if (_instructions.length() < 1) {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
 
@@ -252,7 +252,7 @@ public class RavenServlet extends HttpServlet {
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
     private void loadData() {
         Collector.purge();//TODO remove this, for testing purposes only
-        String uploadFilePath = this.getServletContext().getRealPath("/")+"data/";
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "data/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
@@ -265,7 +265,7 @@ public class RavenServlet extends HttpServlet {
 
     private void clearData() {
         Collector.purge();
-        String uploadFilePath = this.getServletContext().getRealPath("/")+"data/";
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "data/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
@@ -401,6 +401,7 @@ public class RavenServlet extends HttpServlet {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+            return;
         }
         if (badLines.size() > 0) {
             //print warning about bad line
@@ -489,6 +490,7 @@ public class RavenServlet extends HttpServlet {
                 reader.nodesToClothoPartsVectors(result);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -532,6 +534,7 @@ public class RavenServlet extends HttpServlet {
                 reader.nodesToClothoPartsVectors(result);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -570,6 +573,7 @@ public class RavenServlet extends HttpServlet {
                 reader.nodesToClothoPartsVectors(result);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -607,6 +611,7 @@ public class RavenServlet extends HttpServlet {
                 reader.nodesToClothoPartsVectors(result);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -646,17 +651,18 @@ public class RavenServlet extends HttpServlet {
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
-        _instructions = moclo.generateInstructions(optimalGraphs);
         for (SRSGraph result : optimalGraphs) {
             try {
                 reader.nodesToClothoPartsVectors(result);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
         }
+        _instructions = moclo.generateInstructions(optimalGraphs);
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
         WeyekinPoster.postMyVision();
@@ -692,6 +698,7 @@ public class RavenServlet extends HttpServlet {
                 reader.nodesToClothoPartsVectors(result);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -705,7 +712,7 @@ public class RavenServlet extends HttpServlet {
     }
 
     private boolean generatePartsListFile(String designNumber) {
-        File file = new File(this.getServletContext().getRealPath("/")+"data/partsList" + designNumber + ".csv");
+        File file = new File(this.getServletContext().getRealPath("/") + "data/partsList" + designNumber + ".csv");
         try {
             //traverse graphs to get uuids
             ArrayList<Part> usedPartsHash = new ArrayList<Part>();
@@ -780,7 +787,7 @@ public class RavenServlet extends HttpServlet {
     }
 
     private boolean generateInstructionsFile(String designNumber) {
-        File file = new File(this.getServletContext().getRealPath("/")+"data/"+"instructions" + designNumber + ".txt");
+        File file = new File(this.getServletContext().getRealPath("/") + "data/" + "instructions" + designNumber + ".txt");
         try {
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);

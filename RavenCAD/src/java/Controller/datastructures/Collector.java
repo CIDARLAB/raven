@@ -91,7 +91,9 @@ public class Collector {
         Part sameNamePart = Collector.getPartByName(aPart.getName());
         if (sameNamePart != null) {
             if (sameNamePart.getLeftoverhang().equals(aPart.getLeftoverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
-                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
+//                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
+                int selValue = JOptionPane.OK_OPTION;
+                //TODO figure out error handling here
                 if (selValue == JOptionPane.OK_OPTION) {
 //                    basicPartNameHash.put(aPart.getName(), aPart.getUUID());
                     partUUIDHash.remove(partNameHash.get(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang()));
@@ -102,6 +104,7 @@ public class Collector {
                         toAdd.add(aPart.getName());
                         partNameRootHash.put(aPart.getName(), toAdd);
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
+                        System.out.println("before: " + partUUIDHash.keySet());
                     } else {
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
                     }
@@ -138,7 +141,9 @@ public class Collector {
         Vector sameNameVector = Collector.getVectorByName(aVector.getName());
         if (sameNameVector != null) {
             if (sameNameVector.getLeftoverhang().equals(aVector.getLeftoverhang()) && sameNameVector.getRightOverhang().equals(aVector.getRightOverhang())) {
-                int selValue = JOptionPane.showConfirmDialog(null, "Vector: " + aVector.getName() + " is already imported!\n Do you want to overrwrite it?");
+//                int selValue = JOptionPane.showConfirmDialog(null, "Vector: " + aVector.getName() + " is already imported!\n Do you want to overrwrite it?");
+                int selValue = JOptionPane.OK_OPTION;
+                //TODO figure out error handling here
                 if (selValue == JOptionPane.OK_OPTION) {
 //                    basicVectorNameHash.put(aVector.getName(), aVector.getUUID());
                     vectorUUIDHash.remove(vectorNameHash.get(aVector.getName() + "|" + aVector.getLeftoverhang() + "|" + aVector.getRightOverhang()));
