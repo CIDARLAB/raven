@@ -252,7 +252,7 @@ public class RavenServlet extends HttpServlet {
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
     private void loadData() {
         Collector.purge();//TODO remove this, for testing purposes only
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "data/";
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
@@ -265,14 +265,10 @@ public class RavenServlet extends HttpServlet {
 
     private void clearData() {
         Collector.purge();
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "data/";
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
-            String filePath = currentFile.getAbsolutePath();
-            String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
-            if ("csv".equals(fileExtension)) {
-                currentFile.delete();
-            }
+            currentFile.delete();
         }
     }
 
@@ -707,12 +703,12 @@ public class RavenServlet extends HttpServlet {
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
         WeyekinPoster.postMyVision();
-        //Clean up data
+        //Clean up /data
         gps = null;
     }
 
     private boolean generatePartsListFile(String designNumber) {
-        File file = new File(this.getServletContext().getRealPath("/") + "data/partsList" + designNumber + ".csv");
+        File file = new File(this.getServletContext().getRealPath("/") + "/data/partsList" + designNumber + ".csv");
         try {
             //traverse graphs to get uuids
             ArrayList<Part> usedPartsHash = new ArrayList<Part>();
@@ -753,6 +749,7 @@ public class RavenServlet extends HttpServlet {
                     out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type);
                 } else {
                     String composition = "";
+                    type ="composite";
                     for (Part subpart : p.getComposition()) {
                         composition = composition + "," + subpart.getName();
                     }
@@ -777,7 +774,7 @@ public class RavenServlet extends HttpServlet {
                         resistance = tags.get(k).substring(12);
                     }
                 }
-                out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",," + resistance + "," + level);
+                out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
             }
             out.close();
         } catch (Exception e) {
@@ -787,7 +784,7 @@ public class RavenServlet extends HttpServlet {
     }
 
     private boolean generateInstructionsFile(String designNumber) {
-        File file = new File(this.getServletContext().getRealPath("/") + "data/" + "instructions" + designNumber + ".txt");
+        File file = new File(this.getServletContext().getRealPath("/") + "/data/" + "instructions" + designNumber + ".txt");
         try {
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);

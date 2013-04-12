@@ -57,7 +57,7 @@ public class UploadServlet extends HttpServlet {
         response.sendRedirect("import.html");
         try {
             List<FileItem> items = uploadHandler.parseRequest(request);
-            String uploadFilePath = this.getServletContext().getRealPath("/")+"data/";
+            String uploadFilePath = this.getServletContext().getRealPath("/")+"/data/";
             new File(uploadFilePath).mkdir();
             for (FileItem item : items) {
 
