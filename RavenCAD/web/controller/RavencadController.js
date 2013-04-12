@@ -6,9 +6,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
 //EVENT HANDLERS
     $('#sidebar').click(function() {
-        $('#designTabs a:first').tab('show');
+        $('#designTabHeader a:first').tab('show');
     });
-    $('#designTabs a:first-child').click(function(){
+    $('#designTabHeader a:first').click(function(){
         refreshData();
     });
     

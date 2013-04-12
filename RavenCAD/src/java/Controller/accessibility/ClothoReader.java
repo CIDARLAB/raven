@@ -46,6 +46,7 @@ public class ClothoReader {
             if (currentNode.getUUID() == null) {
                 //Get new intermediate name
                 String partName = nameRoot + "_intermediate" + Math.random() * 999999999;
+                partName = partName.replaceAll("\\.","");
                 if (partName.length() > 255) {
                     partName = partName.substring(0, 255);
                 }
@@ -97,7 +98,8 @@ public class ClothoReader {
             SRSVector vector = currentNode.getVector();
             if (vector != null) {
                 //Get new intermediate name
-                String vecName = nameRoot + "_vector" + Math.random() * 999999999;
+                String vecName = (nameRoot + "_vector" + Math.random() * 999999999);
+                vecName = vecName.replaceAll("\\.", "");
                 if (vecName.length() > 255) {
                     vecName = vecName.substring(0, 255);
                 }
