@@ -184,7 +184,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +
-                            '<p>Please send the following to <a href="mailto:jenhantao@gmail.com">jenhantao@gmail.com</a></p>' +
+                            '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
                             '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
                             '<li>A brief summary of what you were trying to do</li></ul>' +
                             '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'

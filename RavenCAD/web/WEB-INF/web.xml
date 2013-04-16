@@ -12,6 +12,10 @@
         <servlet-name>UploadServlet</servlet-name>
         <servlet-class>Communication.UploadServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AuthenticationServlet</servlet-name>
+        <servlet-class>Communication.AuthenticationServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>DataServlet</servlet-name>
         <url-pattern>/DataServlet</url-pattern>
@@ -23,6 +27,10 @@
     <servlet-mapping>
         <servlet-name>UploadServlet</servlet-name>
         <url-pattern>/UploadServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthenticationServlet</servlet-name>
+        <url-pattern>/AuthenticationServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

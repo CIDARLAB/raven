@@ -1,9 +1,6 @@
 package Communication;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,18 +11,19 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Admin
  */
-public class DataServlet extends HttpServlet {
+public class AuthenticationServlet extends HttpServlet {
 
     /**
-     * Processes requests for HTTP
+     * Processes requests for both HTTP
      * <code>GET</code> and
+     * <code>POST</code> methods.
      *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
@@ -34,33 +32,13 @@ public class DataServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet DataServlet</title>");
+            out.println("<title>Servlet AuthenticationServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet DataServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet AuthenticationServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
-        } finally {
-            out.close();
-        }
-    }
-
-    /**
-     * Processes requests for HTTP
-     * <code>POST</code> methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        try {
-            out.write(request.getParameter("data"));
-        } finally {
+        } finally {            
             out.close();
         }
     }
@@ -78,7 +56,7 @@ public class DataServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processGetRequest(request, response);
+        processRequest(request, response);
     }
 
     /**
@@ -93,8 +71,7 @@ public class DataServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processPostRequest(request, response);
-
+        processRequest(request, response);
     }
 
     /**
