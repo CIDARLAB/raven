@@ -16,11 +16,12 @@
                     <li><a href="documentation.html">How to</a></li>
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
-                <form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
-                    <input name="user" type="text" class="span2" placeholder="Login">
-                    <input name="password" type="password" class="span2" placeholder="Password">
-                    <input type="submit" value="Login" class="btn"/>
-                </form>
+                <div id="loginArea"><form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
+                        <input name="user" type="text" class="span2" placeholder="Login">
+                        <input name="password" type="password" class="span2" placeholder="Password">
+                        <input type="submit" value="Login" class="btn"/>
+                    </form></div>
+
             </div>
         </div>
         <div class="page-header" style="margin-top:50px">
@@ -34,39 +35,77 @@
                 <br>
                 <p> <a class="btn btn-primary btn-large" href="login.html"> Get Started</a> </p>
             </div>
+            <hr/>
+            <h2 class="text-center">Why RavenCAD?</h2>
+            <h4 class="text-center muted">Here's a few ways RavenCAD will help you work faster</h4>
             <div class="row-fluid">
                 <div class="span4">
                     <h3>Save Time and Money</h3>
-                    <p>something something</p>
+                    <p>
+                        RavenCAD uses a sophisticated dynamic programming algorithm to design assemblies that are quicker and cheaper.
+                        RavenCAD produces <a href="http://www.sbolstandard.org/">SBOL</a> compliant images that visualize your assembly plan
+                        as well as human readable instructions.
+                    </p>
                 </div>
                 <div class="span4">
                     <h3>Assembly Methods</h3>
-                    <p>something something</p>
+                    <p>Design assemblies using popular and modern DNA assembly techniques such as MoClo and Gibson.
+                        RavenCAD's algorithms are broadly applicable and they will work with nearly all assembly techniques.
+                    </p>
                 </div>
                 <div class="span4">
                     <h3>Built using Eugene and Clotho</h3>
-                    <p>something something</p>
+                    <p>RavenCAD leverages the <a href="http://eugenecad.org/">Eugene design language</a> to generate anywhere from dozens to thousands of genetic device designs.
+                        There's no better place for storing these designs than a <a href="http://clothocad.org/">Clotho data base</a>. 
+                    </p>
                 </div>
-                <div id="exampleCar" class="carousel slide">
-                    <ol class="carousel-indicators">
-                        <li data-target="#exampleCar" data-slide-to="0" class="active"></li>
-                        <li data-target="#exampleCar" data-slide-to="1"></li>
-                        <li data-target="#exampleCar" data-slide-to="2"></li>
-                    </ol>
-                    <!-- Carousel items -->
-                    <div class="carousel-inner">
-                        <div class="active item"> <img src="http://chess.eecs.berkeley.edu/clotho/images/clothoshirt.jpg" alt=""> </div>
-                        <div class="item"> <img src="http://eugene.sourceforge.net/images/eugene-logo.png" alt=""> </div>
-                        <div class="item"> <img src="http://wiki.bu.edu/wiki/ece-cidar/images/thumb/c/ce/CidarLogo_rev2.png/324px-CidarLogo_rev2.png" alt=""> </div>
-                    </div>
-                    <!-- Carousel nav --> 
-                    <a class="carousel-control left" href="#exampleCar" data-slide="prev">&lsaquo;</a> <a class="carousel-control right" href="#exampleCar" data-slide="next">&rsaquo;</a> </div>
+
             </div>
+            <hr/>
+            <h2 class="text-center">What can you build with RavenCAD?</h2>
+            <div id="exampleCarousel" class="slide carousel">
+                <ol class="carousel-indicators">
+                    <li data-target="#exampleCarousel" data-slide-to="0" class="active"></li>
+                    <li data-target="#exampleCarousel" data-slide-to="1"></li>
+                    <li data-target="#exampleCarousel" data-slide-to="2"></li>
+                    <li data-target="#exampleCarousel" data-slide-to="3"></li>
+                </ol>
+                <!-- Carousel items -->
+                <div class="carousel-inner">
+                    <div class="active item"> 
+                        <img src="images/bb_nor_gate.png" alt=""> 
+                        <div class="carousel-caption">
+                            <h4>NOR Gate built using BioBricks</h4>
+                        </div>
+                    </div>
+                    <div class="item"> 
+                        <img src="images/moclo_nor_gate.png" alt=""> 
+                        <div class="carousel-caption">
+                            <h4>The NOR Gate built using MoClo</h4>
+                        </div>
+                    </div>
+                    <div class="item"> 
+                        <img src="images/test.png" alt=""> 
+                        <div class="carousel-caption">
+                            <h4>Multi goal part assembly</h4>
+                        </div>
+                    </div>
+                    <div class="item"> 
+                        <img src="images/bb_repressilator.png" alt="">
+                        <div class="carousel-caption">
+                            <h4>The repressilator built using BioBricks</h4>
+                        </div>
+                    </div>
+                </div>
+                <!-- Carousel nav --> 
+                <a class="carousel-control left" href="#exampleCarousel" data-slide="prev">&lsaquo;</a> <a class="carousel-control right" href="#exampleCarousel" data-slide="next">&rsaquo;</a> 
+            </div>
+
         </div>
         <!--scripts placed at the end to enhance page loading speed--> 
         <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
-        <script src="jsLibraries/bootstrap.min.js"></script> 
         <script type="text/javascript" src ="controller/EndSessionController.js"></script> 
+        <script src="jsLibraries/bootstrap.min.js"></script> 
         <script src="controller/IndexController.js"></script>
     </body>
 </html>

@@ -3,7 +3,9 @@ package Communication;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
+import java.util.HashMap;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,12 +28,26 @@ public class AuthenticationServlet extends HttpServlet {
     protected void processPostRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        response.sendRedirect("index.html");
         PrintWriter out = response.getWriter();
+        initPasswordHash();
         try {
-            Enumeration<String> parameterNames = request.getParameterNames();
-            while (parameterNames.hasMoreElements()) {
-                System.out.println(parameterNames.nextElement());
+            String user = request.getParameter("user");
+            String password = request.getParameter("password");
+            if (passwordHash.containsKey(user) && password.equals(passwordHash.get(user))) {
+                System.out.println("authenticated");
+                Cookie authenticateCookie = new Cookie("authenticate", "authenticated");
+                Cookie userCookie = new Cookie("user", user);
+                authenticateCookie.setMaxAge(60 * 24); //cookie lasts for an hour
+                response.addCookie(authenticateCookie);
+                response.addCookie(userCookie);
+                response.sendRedirect("index.html");
+                out.println("authenticated");
+            } else {
+                response.sendRedirect("login.html");
+                Cookie authenticateCookie = new Cookie("authenticate", "failed");
+                authenticateCookie.setMaxAge(60 * 24); //cookie lasts for an hour
+                response.addCookie(authenticateCookie);
+                out.println("failed");
             }
         } finally {
             out.close();
@@ -102,4 +118,10 @@ public class AuthenticationServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    private void initPasswordHash() {
+        passwordHash = new HashMap();
+        passwordHash.put("admin", "admin");
+    }
+    HashMap<String, String> passwordHash;
 }
