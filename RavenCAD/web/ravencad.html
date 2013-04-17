@@ -4,8 +4,8 @@
         <title>RavenCAD</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="shortcut icon" href="images/shortcutIcon.ico">
-        <link href="css/bootstrap.css" rel="stylesheet" media="screen">
-        <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
         <link href="css/override.css" rel="stylesheet" media="screen">
         <style>
             select.fixedHeight {list-style-type: none;    
@@ -14,7 +14,7 @@
                                 line-height: 2em;
                                 border: 1px solid #ccc;
                                 padding: 0;
-                                margni: 0;
+                                margin: 0;
                                 overflow: scroll;
                                 overflow-x: hidden;
             }
@@ -100,7 +100,7 @@
                                             <li class="active"><a href="#libraryPartArea" data-toggle="tab">Parts</a></li>
                                             <li><a href="#libraryVectorArea" data-toggle="tab">Vectors</a></li>
                                         </ul>
-                                        <div id="indermediateTabContent" class="tab-content">
+                                        <div id="libraryTabContent" class="tab-content">
                                             <div class="tab-pane active" id="libraryPartArea">
                                                 <div class="row-fluid">
                                                     <div class="span4">
@@ -164,24 +164,25 @@
                                     <h4>Modify the intermediates that appear in your assembly</h4>
                                     <div class="tabbable">
                                         <ul id="intermediateTabHeader" class="nav nav-tabs">
-                                            <li class="active"><a href="#intermediateList" data-toggle="tab">Intermediates</a></li>
-                                            <li><a href="#recommendedList" data-toggle="tab">Recommended</a></li>
-                                            <li><a href="#requiredList" data-toggle="tab">Required</a></li>
-                                            <li><a href="#forbiddenList" data-toggle="tab">Forbidden</a></li>
+                                            <li class="active"><a href="#intermediate" data-toggle="tab">Intermediates</a></li>
+                                            <li><a href="#recommended" data-toggle="tab">Recommended</a></li>
+                                            <li><a href="#required" data-toggle="tab">Required</a></li>
+                                            <li><a href="#forbidden" data-toggle="tab">Forbidden</a></li>
                                         </ul>
                                         <div id="indermediateTabContent" class="tab-content">
-                                            <div class="tab-pane active" id="intermediateList"> 
+                                            <div class="tab-pane active" id="intermediate"> 
                                                 <div class="row-fluid">
                                                     <div class="span10">
                                                         <div id="intermediateTableArea"></div>
-                                                        <table id='intermediateTable' class='table table-bordered table-hover'><thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th></tr></thead><tbody>";
+                                                        <table id='intermediateTable' class='table table-bordered table-hover'><thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th></tr></thead>
+                                                            <tbody>
                                                             </tbody>
                                                         </table>
                                                         <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>                                                    
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="tab-pane" id="recommendedList"> 
+                                            <div class="tab-pane" id="recommended"> 
                                                 <div class="row-fluid">
                                                     <div class="span4">
                                                         <h5>Available Intermediates</h5>
@@ -207,7 +208,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="tab-pane" id="requiredList"> 
+                                            <div class="tab-pane" id="required"> 
                                                 <div class="row-fluid">
                                                     <div class="span4">
                                                         <h5>Available Intermediates</h5>
@@ -233,7 +234,7 @@
                                                     </div>
                                                 </div>                                            
                                             </div>
-                                            <div class="tab-pane" id="forbiddenList"> 
+                                            <div class="tab-pane" id="forbidden"> 
                                                 <div class="row-fluid">
                                                     <div class="span4">
                                                         <h5>Available Library Parts</h5>
@@ -278,12 +279,12 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.js"></script> 
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
         <script type="text/javascript" src ="controller/RavencadController.js"></script> 
         <script type="text/javascript" src ="controller/EndSessionController.js"></script> 
-        <script src="jsLibraries/bootstrap.js"></script> 
+        <script src="jsLibraries/bootstrap.min.js"></script> 
         <script src="jsLibraries/jquery.dataTables.min.js"></script>
-        <script src="jsLibraries/jquery-ui.js"></script>
+        <script src="jsLibraries/jquery-ui.min.js"></script>
         <script src="jsLibraries/jquery.zoom-min.js"></script>
     </body>
 </html>

@@ -31,6 +31,7 @@ public class UploadServlet extends HttpServlet {
      * response)
      *
      */
+    @Override
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         PrintWriter writer = response.getWriter();
@@ -43,6 +44,7 @@ public class UploadServlet extends HttpServlet {
      *
      */
     @SuppressWarnings("unchecked")
+    @Override
     protected void doPost(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         if (!ServletFileUpload.isMultipartContent(request)) {

@@ -198,7 +198,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     //FUNCTIONS
     var refreshData = function() {
         $.get("RavenServlet", {"command": "dataStatus"}, function(data) {
-            if (data == "loaded") {
+            if (data === "loaded") {
                 loaded = true;
                 getData();
             } else {
@@ -213,10 +213,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var libraryPartListBody = "<select id=\"libraryPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
         var libraryVectorListBody = "<select id=\"libraryVectorList\" multiple=\"multiple\" class=\"fixedHeight\">";
         $.each(data, function() {
-            if (this["Type"] == "composite") {
+            if (this["Type"] === "composite") {
                 targetListBody = targetListBody + "<option class=\"composite ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
             }
-            if (this["Type"] == "vector") {
+            if (this["Type"] === "vector") {
                 libraryVectorListBody = libraryVectorListBody + "<option class=\"vector ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
             } else {
                 libraryPartListBody = libraryPartListBody + "<option class=\"basic ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
@@ -241,7 +241,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             drawPartVectorLists();
             //generate uuidCompositionHash
             $.each(data, function() {
-                if (this["Type"].toLowerCase() != "vector") {
+                if (this["Type"].toLowerCase() !== "vector") {
                     uuidCompositionHash[this["uuid"]] = this["Composition"];
                 }
             });
@@ -283,7 +283,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             targets = targets + "\n" + uuidCompositionHash[$(this).attr("id")];
             var intermediates = generateIntermediates(uuidCompositionHash[$(this).attr("id")]);
             $.each(intermediates, function() {
-                if (seen[this] != "seen") {
+                if (seen[this] !== "seen") {
                     tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this + '"></td><td><input class="required" type="checkbox" value="' + this + '"></td><td><input class="forbidden" type="checkbox" value="' + this + '"></td></tr>';
                     seen[this] = "seen";
                 }
@@ -329,7 +329,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             summary = summary + '<p>The following intermediates are required:</p>';
             summary = summary + '<ul>';
             $('.required:checked').each(function() {
-                summary = summary + '<li>' + $(this).val() + '</li>'
+                summary = summary + '<li>' + $(this).val() + '</li>';
             });
             summary = summary + '</ul>';
         } else {
@@ -339,7 +339,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             summary = summary + '<p>The following intermediates are forbidden:</p>';
             summary = summary + '<ul>';
             $('.forbidden:checked').each(function() {
-                summary = summary + '<li>' + $(this).val() + '</li>'
+                summary = summary + '<li>' + $(this).val() + '</li>';
             });
             summary = summary + '</ul>';
         } else {

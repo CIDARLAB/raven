@@ -2,6 +2,7 @@ package Communication;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,8 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthenticationServlet extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP
-     * <code>GET</code> and
+     * Processes requests for HTTP
      * <code>POST</code> methods.
      *
      * @param request servlet request
@@ -23,22 +23,41 @@ public class AuthenticationServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+        response.sendRedirect("index.html");
         PrintWriter out = response.getWriter();
         try {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet AuthenticationServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet AuthenticationServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        } finally {            
+            Enumeration<String> parameterNames = request.getParameterNames();
+            while (parameterNames.hasMoreElements()) {
+                System.out.println(parameterNames.nextElement());
+            }
+        } finally {
+            out.close();
+        }
+    }
+
+    /**
+     * Processes requests for HTTP
+     * <code>POST</code> methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.sendRedirect("index.html");
+        PrintWriter out = response.getWriter();
+        try {
+            Enumeration<String> parameterNames = request.getParameterNames();
+            while (parameterNames.hasMoreElements()) {
+                System.out.println(parameterNames.nextElement());
+            }
+        } finally {
             out.close();
         }
     }
@@ -56,7 +75,7 @@ public class AuthenticationServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processGetRequest(request, response);
     }
 
     /**
@@ -71,7 +90,7 @@ public class AuthenticationServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processPostRequest(request, response);
     }
 
     /**
