@@ -168,9 +168,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
             targets = targets.substring(0, targets.length - 1);
             partLibrary = partLibrary.substring(0, partLibrary.length - 1);
 
-            var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": "" 
-                        + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": "" 
-                        + rec, "required": "" + req, "forbidden": "" + forbid,"discouraged":""+discourage};
+            var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": ""
+                        + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": ""
+                        + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage};
             $.get("RavenServlet", requestInput, function(data) {
                 if (data["status"] === "good") {
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
@@ -222,8 +222,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $.each(data, function() {
             if (this["Type"] === "composite") {
                 targetListBody = targetListBody + "<option class=\"composite ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
-            }
-            if (this["Type"] === "vector") {
+            } else if (this["Type"] === "vector") {
                 libraryVectorListBody = libraryVectorListBody + "<option class=\"vector ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
             } else {
                 libraryPartListBody = libraryPartListBody + "<option class=\"basic ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
@@ -285,7 +284,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var drawIntermediates = function() {
         var targets = "";
         var tableBody = "<table id='intermediateTable' class='table table-bordered table-hover'><thead>"
-                +"<tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th><th>Discouraged</th></tr></thead><tbody>";
+                + "<tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th><th>Discouraged</th></tr></thead><tbody>";
         var seen = {};
         $("#targetPartList option").each(function() {
             targets = targets + "\n" + uuidCompositionHash[$(this).attr("id")];
@@ -367,6 +366,18 @@ $(document).ready(function() { //don't run javascript until page is loaded
         } else {
             summary = summary + '<p>No intermediates are discouraged</p>';
         }
+        if ($('#libraryPartList option').length > 0) {
+            summary = summary + '<p>Your library includes the following parts:</p>';
+            summary = summary + '<ul>';
+            $('#libraryPartList option').each(function() {
+                summary = summary + '<li>' + $(this).val() + "</li>";
+            });
+            summary = summary + "</ul>";
+        } else {
+            summary = summary + '<p>You library includes no parts</p>';
+        }
+
+
         $('#designSummaryArea').html(summary);
     };
 

@@ -166,14 +166,14 @@
                                     <h4>Modify the intermediates that appear in your assembly</h4>
                                     <div class="tabbable">
                                         <ul id="intermediateTabHeader" class="nav nav-tabs">
-                                            <li class="active"><a href="#intermediate" data-toggle="tab">Intermediates</a></li>
+                                            <li class="active"><a href="#intermediateSelect" data-toggle="tab">Intermediates</a></li>
                                             <li><a href="#recommended" data-toggle="tab">Recommended</a></li>
                                             <li><a href="#required" data-toggle="tab">Required</a></li>
                                             <li><a href="#forbidden" data-toggle="tab">Forbidden</a></li>
                                             <li><a href="#discouraged" data-toggle="tab">Discouraged</a></li>
                                         </ul>
                                         <div id="indermediateTabContent" class="tab-content">
-                                            <div class="tab-pane active" id="intermediate"> 
+                                            <div class="tab-pane active" id="intermediateSelect">
                                                 <div class="row-fluid">
                                                     <div class="span10">
                                                         <div id="intermediateTableArea">
@@ -243,7 +243,7 @@
                                             <div class="tab-pane" id="forbidden"> 
                                                 <div class="row-fluid">
                                                     <div class="span4">
-                                                        <h5>Available Library Parts</h5>
+                                                        <h5>Available Intermediates</h5>
                                                         <div id="availableForbiddenListArea">
                                                             <select id="availableForbiddenList" class="fixedHeight" multiple="multiple">
                                                             </select>
@@ -258,7 +258,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="span4">
-                                                        <h5>Selected Library Parts</h5>
+                                                        <h5>Forbidden Intermediates</h5>
                                                         <div id="forbiddenListArea">
                                                             <select id="forbiddenList" multiple="multiple" class="fixedHeight">
                                                             </select>
@@ -266,14 +266,12 @@
                                                     </div>
                                                 </div>                                           
                                             </div>
-
-
                                             <div class="tab-pane" id="discouraged">
                                                 <div class="row-fluid">
                                                     <div class="span4">
-                                                        <h5>Available Library Parts</h5>
-                                                        <div id="availableForbiddenListArea">
-                                                            <select id="availableForbiddenList" class="fixedHeight" multiple="multiple">
+                                                        <h5>Available Discouraged Intermediates</h5>
+                                                        <div id="availableDiscouragedListArea">
+                                                            <select id="availableDiscouragedList" class="fixedHeight" multiple="multiple">
                                                             </select>
                                                         </div>
                                                     </div>
@@ -286,7 +284,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="span4">
-                                                        <h5>Selected Library Parts</h5>
+                                                        <h5>Discouraged Intermediates</h5>
                                                         <div id="discouragedListArea">
                                                             <select id="discouragedList" multiple="multiple" class="fixedHeight">
                                                             </select>
