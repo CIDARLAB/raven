@@ -174,7 +174,7 @@ public class SRSAlgorithmCore {
     /**
      * Convert goal parts into SRS nodes for the algorithm *
      */
-    protected ArrayList<SRSNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
+  protected ArrayList<SRSNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
         ArrayList<SRSNode> gpsNodes = new ArrayList<SRSNode>();
         for (int i = 0; i < goalParts.size(); i++) {
 
@@ -196,12 +196,13 @@ public class SRSAlgorithmCore {
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            SRSNode gp = new SRSNode(false, null, composition, type, null, null, null, null, 0);
+            SRSNode gp = new SRSNode(false, false, null, composition, type, null, null, null, null, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
         return gpsNodes;
     }
+
 
     /**
      * Parse type search tags from a string into an ArrayList *

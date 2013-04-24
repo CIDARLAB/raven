@@ -18,7 +18,7 @@ public class SRSBioBricks extends SRSGeneral {
 
     /** This is the only entry point for this class. A list of goal parts is passed and a list of optimal graphs is output. 
      * PASS THE FOLLOWING ARGUMENTS: ArrayList(Goal_Parts), HashMap(A_Goal_Part, HashSet(Required_Part_Compositions)), HashMap(A_Goal_Part, HashSet(Recommended_Part_Compositions)), HashMap(Part_Compositions, Optimal_Assembly_Graphs) **/
-    public ArrayList<SRSGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular) {
+    public ArrayList<SRSGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular) {
 
         //Try-Catch block around wrapper method
         try {
@@ -40,7 +40,7 @@ public class SRSBioBricks extends SRSGeneral {
             }   
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, null);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, null);
             optimalGraphs = assignVectors(optimalGraphs, vectorSet);
             
             return optimalGraphs;

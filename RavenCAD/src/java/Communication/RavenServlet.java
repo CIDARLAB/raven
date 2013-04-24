@@ -100,11 +100,13 @@ public class RavenServlet extends HttpServlet {
                 String[] recArray = request.getParameter("recommended").split(";");
                 String[] reqArray = request.getParameter("required").split(";");
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
+                String[] discouragedArray = request.getParameter("discouraged").split(";");
                 String method = request.getParameter("method");
                 HashMap<Part, ArrayList<Part>> goalParts = new HashMap();
                 HashSet<String> required = new HashSet();
                 HashSet<String> recommended = new HashSet();
                 HashSet<String> forbidden = new HashSet();
+                HashSet<String> discouraged = new HashSet();
                 ArrayList<Vector> vectorLibrary = new ArrayList();
                 ArrayList<Part> partLibrary = new ArrayList();
                 if (partLibraryIDs.length > 0) {
@@ -148,8 +150,15 @@ public class RavenServlet extends HttpServlet {
                         }
                     }
                 }
+                if (discouragedArray.length > 0) {
+                    for (int i = 0; i < discouragedArray.length; i++) {
+                        if (discouragedArray[i].length() > 0) {
+                            discouraged.add(discouragedArray[i]);
+                        }
+                    }
+                }
                 String designCount = request.getParameter("designCount");
-                String image = run(method, goalParts, required, recommended, forbidden, vectorLibrary, partLibrary);
+                String image = run(method, goalParts, required, recommended, forbidden, discouraged, vectorLibrary, partLibrary);
                 generatePartsListFile(designCount);
                 generateInstructionsFile(designCount);
                 String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
@@ -426,11 +435,12 @@ public class RavenServlet extends HttpServlet {
     }
 //private String run() {
 
-    private String run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
+    private String run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
         _goalParts = goalParts;
         _required = required;
         _recommended = recommended;
         _forbidden = forbidden;
+        _discouraged = discouraged;
         _statistics = new Statistics();
         _vectorLibrary = vectorLibrary;
         _partLibrary = partLibrary;
@@ -476,7 +486,7 @@ public class RavenServlet extends HttpServlet {
         gps.addAll(_goalParts.keySet());
         SRSBioBricks biobricks = new SRSBioBricks();
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _partLibrary, false);
+        ArrayList<SRSGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false);
         Statistics.stop();
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
@@ -520,7 +530,7 @@ public class RavenServlet extends HttpServlet {
         efficiencies.put(10, 1.0);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
         Statistics.stop();
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
@@ -559,7 +569,7 @@ public class RavenServlet extends HttpServlet {
         efficiencies.put(4, 1.0);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
         Statistics.stop();
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
@@ -597,7 +607,7 @@ public class RavenServlet extends HttpServlet {
         efficiencies.put(4, 1.0);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
         Statistics.stop();
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
@@ -642,7 +652,7 @@ public class RavenServlet extends HttpServlet {
 
         Statistics.start();
         moclo.setForcedOverhangs(forcedOverhangHash);
-        ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
         Statistics.stop();
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
@@ -658,7 +668,7 @@ public class RavenServlet extends HttpServlet {
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
         }
-        _instructions = moclo.generateInstructions(optimalGraphs);
+        _instructions = "";
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
         WeyekinPoster.postMyVision();
@@ -684,7 +694,7 @@ public class RavenServlet extends HttpServlet {
         efficiencies.put(6, 1.0);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _partLibrary, true, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, true, efficiencies);
         Statistics.stop();
         solutionStats(optimalGraphs);
         ClothoReader reader = new ClothoReader();
@@ -749,7 +759,7 @@ public class RavenServlet extends HttpServlet {
                     out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type);
                 } else {
                     String composition = "";
-                    type ="composite";
+                    type = "composite";
                     for (Part subpart : p.getComposition()) {
                         composition = composition + "," + subpart.getName();
                     }
@@ -889,6 +899,7 @@ public class RavenServlet extends HttpServlet {
     private HashMap<Part, ArrayList<Part>> _goalParts;//key: target part, value: composition
     private HashSet<String> _required;
     private HashSet<String> _recommended;
+    private HashSet<String> _discouraged;
     private HashSet<String> _forbidden;
     private Statistics _statistics = new Statistics();
     private ArrayList<SRSGraph> _assemblyGraphs = new ArrayList<SRSGraph>();

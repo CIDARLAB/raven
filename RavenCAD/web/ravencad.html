@@ -170,16 +170,20 @@
                                             <li><a href="#recommended" data-toggle="tab">Recommended</a></li>
                                             <li><a href="#required" data-toggle="tab">Required</a></li>
                                             <li><a href="#forbidden" data-toggle="tab">Forbidden</a></li>
+                                            <li><a href="#discouraged" data-toggle="tab">Discouraged</a></li>
                                         </ul>
                                         <div id="indermediateTabContent" class="tab-content">
                                             <div class="tab-pane active" id="intermediate"> 
                                                 <div class="row-fluid">
                                                     <div class="span10">
-                                                        <div id="intermediateTableArea"></div>
-                                                        <table id='intermediateTable' class='table table-bordered table-hover'><thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th></tr></thead>
-                                                            <tbody>
-                                                            </tbody>
-                                                        </table>
+                                                        <div id="intermediateTableArea">
+                                                            <table id='intermediateTable' class='table table-bordered table-hover'>
+                                                                <thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th><th>Discouraged</th></tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                         <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>                                                    
                                                     </div>
                                                 </div>
@@ -257,6 +261,34 @@
                                                         <h5>Selected Library Parts</h5>
                                                         <div id="forbiddenListArea">
                                                             <select id="forbiddenList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>                                           
+                                            </div>
+
+
+                                            <div class="tab-pane" id="discouraged">
+                                                <div class="row-fluid">
+                                                    <div class="span4">
+                                                        <h5>Available Library Parts</h5>
+                                                        <div id="availableForbiddenListArea">
+                                                            <select id="availableForbiddenList" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class ="span2">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="discouragedSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="discouragedSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="discouragedDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="discouragedDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4">
+                                                        <h5>Selected Library Parts</h5>
+                                                        <div id="discouragedListArea">
+                                                            <select id="discouragedList" multiple="multiple" class="fixedHeight">
                                                             </select>
                                                         </div>
                                                     </div>

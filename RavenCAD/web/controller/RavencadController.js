@@ -8,10 +8,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
     $('#sidebar').click(function() {
         $('#designTabHeader a:first').tab('show');
     });
-    $('#designTabHeader a:first').click(function(){
+    $('#designTabHeader a:first').click(function() {
         refreshData();
     });
-    
+
     $('#methodSelection').change(function() {
         method = $("#methodSelection :selected").text();
         updateSummary();
@@ -140,6 +140,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             var rec = ""; //recommended intermediates
             var req = ""; //required intermediates
             var forbid = ""; //forbidden intermediates
+            var discourage = ""; //discouraged intermediates
             var eug = ""; //eugene file for rec/required forbidden
             var config = ""; //csv configuration file?
             $('#libraryPartList option').each(function() {
@@ -157,13 +158,19 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('.forbidden:checked').each(function() {
                 forbid = forbid + $(this).val() + ";";
             });
+            $('.discouraged:checked').each(function() {
+                discourage = discourage + $(this).val() + ";";
+            });
+            discourage = discourage.substring(0, discourage.length - 1);
             forbid = forbid.substring(0, forbid.length - 1);
             req = req.substring(0, req.length - 1);
             rec = rec.substring(0, rec.length - 1);
             targets = targets.substring(0, targets.length - 1);
             partLibrary = partLibrary.substring(0, partLibrary.length - 1);
 
-            var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": "" + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": "" + rec, "required": "" + req, "forbidden": "" + forbid};
+            var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": "" 
+                        + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": "" 
+                        + rec, "required": "" + req, "forbidden": "" + forbid,"discouraged":""+discourage};
             $.get("RavenServlet", requestInput, function(data) {
                 if (data["status"] === "good") {
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
@@ -179,8 +186,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             '<tr><td><strong>Modularity of Assembled Parts</strong></td><td>' + data["statistics"]["modularity"] + '</td></tr>' +
                             '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
                     $('#downloadImage' + designCount).attr("href", data["result"]);
-                    $('#downloadInstructions' + designCount).attr("href","data/instructions" + designCount + ".txt");
-                    $('#downloadParts' + designCount).attr("href","data/partsList" + designCount + ".csv");
+                    $('#downloadInstructions' + designCount).attr("href", "data/instructions" + designCount + ".txt");
+                    $('#downloadParts' + designCount).attr("href", "data/partsList" + designCount + ".csv");
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +
@@ -229,7 +236,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#availableTargetPartListArea").html(targetListBody);
         $("#libraryPartListArea").html(libraryPartListBody);
         $("#libraryVectorListArea").html(libraryVectorListBody);
-        
+
         //clear lists
         $('#targetPartList').html("");
         $('#availableLibraryPartList').html("");
@@ -277,14 +284,19 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
     var drawIntermediates = function() {
         var targets = "";
-        var tableBody = "<table id='intermediateTable' class='table table-bordered table-hover'><thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th></tr></thead><tbody>";
+        var tableBody = "<table id='intermediateTable' class='table table-bordered table-hover'><thead>"
+                +"<tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th><th>Discouraged</th></tr></thead><tbody>";
         var seen = {};
         $("#targetPartList option").each(function() {
             targets = targets + "\n" + uuidCompositionHash[$(this).attr("id")];
             var intermediates = generateIntermediates(uuidCompositionHash[$(this).attr("id")]);
             $.each(intermediates, function() {
                 if (seen[this] !== "seen") {
-                    tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this + '"></td><td><input class="required" type="checkbox" value="' + this + '"></td><td><input class="forbidden" type="checkbox" value="' + this + '"></td></tr>';
+                    tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this
+                            + '"></td><td><input class="required" type="checkbox" value="' + this
+                            + '"></td><td><input class="forbidden" type="checkbox" value="' + this
+                            + '"></td><td><input class="discouraged" type="checkbox" value="' + this
+                            + '"></td></tr>';
                     seen[this] = "seen";
                 }
             });
@@ -344,6 +356,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
             summary = summary + '</ul>';
         } else {
             summary = summary + '<p>No intermediates are forbidden</p>';
+        }
+        if ($('.discouraged:checked').length > 0) {
+            summary = summary + '<p>The following intermediates are discouraged:</p>';
+            summary = summary + '<ul>';
+            $('.discouraged:checked').each(function() {
+                summary = summary + '<li>' + $(this).val() + '</li>';
+            });
+            summary = summary + '</ul>';
+        } else {
+            summary = summary + '<p>No intermediates are discouraged</p>';
         }
         $('#designSummaryArea').html(summary);
     };

@@ -11,7 +11,7 @@ import javax.swing.JOptionPane;
 
 /**
  *
- * @author Admin
+ * @author jenhantao
  */
 public class Collector {
 

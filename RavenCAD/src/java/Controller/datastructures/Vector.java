@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Admin
+ * @author jenhantao
  */
 public class Vector {
 

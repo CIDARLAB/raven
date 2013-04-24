@@ -18,7 +18,7 @@ import java.util.Set;
 public class SRSSLIC extends SRSGeneral{
     
     /** Clotho part wrapper for SLIC assembly **/
-    public ArrayList<SRSGraph> slicClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
+    public ArrayList<SRSGraph> slicClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged,  ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
         try {
             
             //Designate how many parts can be efficiently ligated in one step
@@ -46,7 +46,7 @@ public class SRSSLIC extends SRSGeneral{
             }
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, efficiencies);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies);
             optimalGraphs = assignVectors(optimalGraphs, vectorSet);
             
             return optimalGraphs;
