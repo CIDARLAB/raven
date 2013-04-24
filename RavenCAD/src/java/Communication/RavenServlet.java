@@ -292,6 +292,9 @@ public class RavenServlet extends HttpServlet {
             String line = reader.readLine();
             line = reader.readLine(); //skip first line
             while (line != null) {
+                while (line.matches("^[\\s,]+")) {
+                    line = reader.readLine();
+                }
                 String[] tokens = line.split(",");
                 int tokenCount = tokens.length; //keeps track of how many columns are filled by counting backwards
                 for (int i = tokens.length - 1; i > -1; i--) {
