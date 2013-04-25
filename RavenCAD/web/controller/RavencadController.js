@@ -167,7 +167,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
             rec = rec.substring(0, rec.length - 1);
             targets = targets.substring(0, targets.length - 1);
             partLibrary = partLibrary.substring(0, partLibrary.length - 1);
-
             var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": ""
                         + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": ""
                         + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage};
@@ -388,7 +387,38 @@ $(document).ready(function() { //don't run javascript until page is loaded
         "bScrollCollapse": true
     });
 
+    function setCookie(c_name, value, exdays) {
+        var exdate = new Date();
+        exdate.setDate(exdate.getDate() + exdays);
+        var c_value = escape(value) + ((exdays === null) ? "" : "; expires=" + exdate.toUTCString());
+        document.cookie = c_name + "=" + c_value;
+    }
 
+    function getCookie(c_name) {
+        var c_value = document.cookie;
+        var c_start = c_value.indexOf(" " + c_name + "=");
+        if (c_start === -1) {
+            c_start = c_value.indexOf(c_name + "=");
+        }
+        if (c_start === -1) {
+            c_value = null;
+        }
+        else {
+            c_start = c_value.indexOf("=", c_start) + 1;
+            var c_end = c_value.indexOf(";", c_start);
+            if (c_end === -1) {
+                c_end = c_value.length;
+            }
+            c_value = unescape(c_value.substring(c_start, c_end));
+        }
+        return c_value;
+    }
+    function deleteCookie(key) {
+        // Delete a cookie by setting the date of expiry to yesterday
+        date = new Date();
+        date.setDate(date.getDate() - 1);
+        document.cookie = escape(key) + '=;expires=' + date;
+    }
 });
 
 

@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -67,7 +68,7 @@ public class RavenServlet extends HttpServlet {
             try {
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "loaded data";
-                loadData();
+                loadData(request);
                 out.write(responseString);
             } finally {
                 out.close();
@@ -85,7 +86,7 @@ public class RavenServlet extends HttpServlet {
             try {
                 response.setContentType("test/plain");
                 String responseString = "purged";
-                clearData();
+                clearData(request);
                 out.write(responseString);
             } finally {
                 out.close();
@@ -109,6 +110,8 @@ public class RavenServlet extends HttpServlet {
                 HashSet<String> discouraged = new HashSet();
                 ArrayList<Vector> vectorLibrary = new ArrayList();
                 ArrayList<Part> partLibrary = new ArrayList();
+                String user = "default";
+                user = getUser(request);
                 if (partLibraryIDs.length > 0) {
                     for (int i = 0; i < partLibraryIDs.length; i++) {
                         Part current = Collector.getPart(partLibraryIDs[i]);
@@ -158,7 +161,7 @@ public class RavenServlet extends HttpServlet {
                     }
                 }
                 String designCount = request.getParameter("designCount");
-                String image = run(method, goalParts, required, recommended, forbidden, discouraged, vectorLibrary, partLibrary);
+                String image = run(user, method, goalParts, required, recommended, forbidden, discouraged, vectorLibrary, partLibrary);
                 generatePartsListFile(designCount);
                 generateInstructionsFile(designCount);
                 String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
@@ -259,9 +262,10 @@ public class RavenServlet extends HttpServlet {
     }
 
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
-    private void loadData() {
+    private void loadData(HttpServletRequest request) {
         Collector.purge();//TODO remove this, for testing purposes only
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/";
+        String user = getUser(request);
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user;
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
@@ -272,9 +276,10 @@ public class RavenServlet extends HttpServlet {
         }
     }
 
-    private void clearData() {
+    private void clearData(HttpServletRequest request) {
         Collector.purge();
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/";
+        String user = getUser(request);
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user;
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             currentFile.delete();
@@ -438,7 +443,7 @@ public class RavenServlet extends HttpServlet {
     }
 //private String run() {
 
-    private String run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
+    private String run(String user, String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
         _goalParts = goalParts;
         _required = required;
         _recommended = recommended;
@@ -897,6 +902,17 @@ public class RavenServlet extends HttpServlet {
         _statistics.setGoalParts(optimalGraphs.size());
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(reactions);
+    }
+
+    private String getUser(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        String user = "default";
+        for (int i = 0; i < cookies.length; i++) {
+            if (cookies[i].getName().equals("user")) {
+                user = cookies[i].getValue();
+            }
+        }
+        return user;
     }
     //FIELDS
     private HashMap<Part, ArrayList<Part>> _goalParts;//key: target part, value: composition

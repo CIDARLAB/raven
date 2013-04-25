@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,9 +58,17 @@ public class UploadServlet extends HttpServlet {
         PrintWriter writer = response.getWriter();
         response.setContentType("text/plain");
         response.sendRedirect("import.html");
+        Cookie[] cookies = request.getCookies();
+        String user = "default";
+                for(int i =0;i<cookies.length;i++) {
+                    if(cookies[i].getName().equals("user")) {
+                        user = cookies[i].getValue();
+                    }
+                }
         try {
+            
             List<FileItem> items = uploadHandler.parseRequest(request);
-            String uploadFilePath = this.getServletContext().getRealPath("/")+"/data/";
+            String uploadFilePath = this.getServletContext().getRealPath("/")+"/data/"+user;
             new File(uploadFilePath).mkdir();
             for (FileItem item : items) {
 
