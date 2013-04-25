@@ -1,9 +1,15 @@
 package Communication;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -116,9 +122,37 @@ public class AuthenticationServlet extends HttpServlet {
     }// </editor-fold>
 
     private void initPasswordHash() {
-        passwordHash = new HashMap();
-        passwordHash.put("admin", "admin");
-        passwordHash.put("jenhan", "tao");
+        if (passwordHash == null) {
+            passwordHash = new HashMap();
+            String filePath = this.getServletContext().getRealPath("/") + "/restricted/";
+            File[] filesInDirectory = new File(filePath).listFiles();
+            for (File currentFile : filesInDirectory) {
+                String path = currentFile.getAbsolutePath();
+                String fileExtension = path.substring(path.lastIndexOf(".") + 1, path.length()).toLowerCase();
+                if ("txt".equals(fileExtension)) {
+                    BufferedReader reader = null;
+                    try {
+                        reader = new BufferedReader(new FileReader(currentFile.getAbsolutePath()));
+                        String line = reader.readLine();
+                        while (line != null) {
+                            String[] tokens = line.split(",");
+                            passwordHash.put(tokens[0], tokens[1]);
+                            line = reader.readLine();
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        try {
+                            reader.close();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+
+                }
+            }
+        }
+        System.out.println(passwordHash);
     }
     HashMap<String, String> passwordHash;
 }

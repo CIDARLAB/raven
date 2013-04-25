@@ -45,9 +45,9 @@
                         <hr/>
                         <div class="row-fluid">
                             <div class="span6">
-                                <form style="width:50%">
-                                    <input type="text" class="input-block-level" placeholder="User Name">
-                                    <input type="password" class="input-block-level" placeholder="Password">
+                                <form style="width:50%" id="loginFormMain" action="AuthenticationServlet" method="POST">
+                                    <input type="text" name="user" class="input-block-level" placeholder="User Name">
+                                    <input type="password" name="password" class="input-block-level" placeholder="Password">
                                     <label class="checkbox">
                                         <input type="checkbox" value="remember-me">Remember this username</label>
                                     <button class="btn btn-large btn-primary" type="submit">Sign in</button>
@@ -96,5 +96,29 @@
         <!--scripts placed at the end to enhance page loading speed--> 
         <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
         <script src="jsLibraries/bootstrap.min.js"></script>
+        <script>
+            $('#loginForm').submit(function(e) {
+                var self = this;
+                e.preventDefault();
+                if ($('#loginForm input[name="user"]').val() === "") {
+                    alert("Please enter your user name.");
+                } else if ($('#loginForm input[name="password"]') === "") {
+                    alert("Please enter your password");
+                } else {
+                    self.submit();
+                }
+            });
+            $('#loginFormMain').submit(function(e) {
+                var self = this;
+                e.preventDefault();
+                if ($('#loginFormMain input[name="user"]').val() === "") {
+                    alert("Please enter your user name.");
+                } else if ($('#loginFormMain input[name="password"]') === "") {
+                    alert("Please enter your password");
+                } else {
+                    self.submit();
+                }
+            });
+        </script>
     </body>
 </html>
