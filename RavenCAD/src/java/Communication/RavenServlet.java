@@ -162,8 +162,8 @@ public class RavenServlet extends HttpServlet {
                 }
                 String designCount = request.getParameter("designCount");
                 String image = run(user, method, goalParts, required, recommended, forbidden, discouraged, vectorLibrary, partLibrary);
-                generatePartsListFile(designCount);
-                generateInstructionsFile(designCount);
+                generatePartsListFile(request, designCount);
+                generateInstructionsFile(request, designCount);
                 String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
                         + "\",\"steps\":\"" + _statistics.getSteps()
                         + "\",\"stages\":\"" + _statistics.getStages()
@@ -265,7 +265,7 @@ public class RavenServlet extends HttpServlet {
     private void loadData(HttpServletRequest request) {
         Collector.purge();//TODO remove this, for testing purposes only
         String user = getUser(request);
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user;
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user+"/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
@@ -279,7 +279,7 @@ public class RavenServlet extends HttpServlet {
     private void clearData(HttpServletRequest request) {
         Collector.purge();
         String user = getUser(request);
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user;
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user+"/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             currentFile.delete();
@@ -725,8 +725,9 @@ public class RavenServlet extends HttpServlet {
         gps = null;
     }
 
-    private boolean generatePartsListFile(String designNumber) {
-        File file = new File(this.getServletContext().getRealPath("/") + "/data/partsList" + designNumber + ".csv");
+    private boolean generatePartsListFile(HttpServletRequest request, String designNumber) {
+        String user = getUser(request);
+        File file = new File(this.getServletContext().getRealPath("/") + "/data/"+user+"/partsList" + designNumber + ".csv");
         try {
             //traverse graphs to get uuids
             ArrayList<Part> usedPartsHash = new ArrayList<Part>();
@@ -801,8 +802,9 @@ public class RavenServlet extends HttpServlet {
         return true;
     }
 
-    private boolean generateInstructionsFile(String designNumber) {
-        File file = new File(this.getServletContext().getRealPath("/") + "/data/" + "instructions" + designNumber + ".txt");
+    private boolean generateInstructionsFile(HttpServletRequest request, String designNumber) {
+        String user = getUser(request);
+        File file = new File(this.getServletContext().getRealPath("/") + "/data/"+user + "/instructions" + designNumber + ".txt");
         try {
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);

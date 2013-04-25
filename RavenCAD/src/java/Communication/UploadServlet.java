@@ -68,7 +68,7 @@ public class UploadServlet extends HttpServlet {
         try {
             
             List<FileItem> items = uploadHandler.parseRequest(request);
-            String uploadFilePath = this.getServletContext().getRealPath("/")+"/data/"+user;
+            String uploadFilePath = this.getServletContext().getRealPath("/")+"/data/"+user+"/";
             new File(uploadFilePath).mkdir();
             for (FileItem item : items) {
 
