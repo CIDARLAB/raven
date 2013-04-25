@@ -45,7 +45,7 @@ public class AuthenticationServlet extends HttpServlet {
             } else {
                 response.sendRedirect("login.html");
                 Cookie authenticateCookie = new Cookie("authenticate", "failed");
-                authenticateCookie.setMaxAge(60 * 24); //cookie lasts for an hour
+                authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
                 response.addCookie(authenticateCookie);
                 out.println("failed");
             }
@@ -69,10 +69,6 @@ public class AuthenticationServlet extends HttpServlet {
         response.sendRedirect("index.html");
         PrintWriter out = response.getWriter();
         try {
-            Enumeration<String> parameterNames = request.getParameterNames();
-            while (parameterNames.hasMoreElements()) {
-                System.out.println(parameterNames.nextElement());
-            }
         } finally {
             out.close();
         }

@@ -914,6 +914,7 @@ public class RavenServlet extends HttpServlet {
                 user = cookies[i].getValue();
             }
         }
+        
         return user;
     }
     //FIELDS

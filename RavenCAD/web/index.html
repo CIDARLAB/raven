@@ -7,58 +7,23 @@
         <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
         <script>
-            function setCookie(c_name, value, exdays) {
-                var exdate = new Date();
-                exdate.setDate(exdate.getDate() + exdays);
-                var c_value = escape(value) + ((exdays === null) ? "" : "; expires=" + exdate.toUTCString());
-                document.cookie = c_name + "=" + c_value;
-            }
-
-            function getCookie(c_name) {
-                var c_value = document.cookie;
-                var c_start = c_value.indexOf(" " + c_name + "=");
-                if (c_start === -1) {
-                    c_start = c_value.indexOf(c_name + "=");
-                }
-                if (c_start === -1) {
-                    c_value = null;
-                }
-                else {
-                    c_start = c_value.indexOf("=", c_start) + 1;
-                    var c_end = c_value.indexOf(";", c_start);
-                    if (c_end === -1) {
-                        c_end = c_value.length;
-                    }
-                    c_value = unescape(c_value.substring(c_start, c_end));
-                }
-                return c_value;
-            }
-            function deleteCookie(key) {
-                // Delete a cookie by setting the date of expiry to yesterday
-                date = new Date();
-                date.setDate(date.getDate() - 1);
-                document.cookie = escape(key) + '=;expires=' + date;
-            }
-//            deleteCookie("user");
-//            setCookie("authenticate","authenticated");
-//            setCookie("user","Jenhan");
         </script>
     </head>
     <body>
         <div class="navbar navbar-fixed-top">
-            <div class="navbar-inner"> <a class="brand" href="index.html">RavenCAD</a>
+            <div class="navbar-inner"><a class="brand" href="index.html">RavenCAD</a>
                 <ul class="nav">
                     <li><a href="ravencad.html">Design</a></li>
                     <li><a href="import.html">Your Data</a></li>
                     <li><a href="documentation.html">How to</a></li>
                     <li><a href="contact.html">Contact</a></li>
-                </ul>
+                </ul>     
                 <div id="loginArea"><form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
                         <input name="user" type="text" class="span2" placeholder="Login">
                         <input name="password" type="password" class="span2" placeholder="Password">
                         <input type="submit" value="Login" class="btn"/>
-                    </form></div>
-
+                    </form>
+                </div>
             </div>
         </div>
         <div class="page-header" style="margin-top:50px">
@@ -70,7 +35,7 @@
                 <h1><strong>RavenCAD</strong></h1>
                 <h2>Plan a better cloning experiment today.</h2>
                 <br>
-                <p> <a class="btn btn-primary btn-large" href="login.html"> Get Started</a> </p>
+                <p> <a id="startLink" class="btn btn-primary btn-large" href="login.html"> Get Started</a> </p>
             </div>
             <hr/>
             <h2 class="text-center">Why RavenCAD?</h2>

@@ -92,7 +92,28 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#editorArea').html("");
     });
 
+    function deleteCookie(key) {
+        // Delete a cookie by setting the date of expiry to yesterday
+        date = new Date();
+        date.setDate(date.getDate() - 1);
+        document.cookie = escape(key) + '=;expires=' + date;
+    }
 
+    if (getCookie("authenticate") !== "authenticated") {
+        deleteCookie("authenticate");
+        deleteCookie("user");
+    }
+
+    if (getCookie("authenticate") === "authenticated") {
+        $('#loginArea').html('<p class="pull-right">You are logged in as <strong>' + getCookie("user") + '</strong> <a id="logout">Log Out</a></p>');
+        $('#logout').click(function() {
+            deleteCookie("authenticate");
+            deleteCookie("user");
+            window.location.replace("index.html");
+        });
+    } else if (getCookie("authenticate") === "failed") {
+        window.location.replace("login.html");
+    }
 
 
 
