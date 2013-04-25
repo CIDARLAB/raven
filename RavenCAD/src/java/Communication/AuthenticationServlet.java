@@ -122,6 +122,7 @@ public class AuthenticationServlet extends HttpServlet {
     private void initPasswordHash() {
         passwordHash = new HashMap();
         passwordHash.put("admin", "admin");
+        passwordHash.put("jenhan", "tao");
     }
     HashMap<String, String> passwordHash;
 }
