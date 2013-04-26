@@ -31,9 +31,6 @@ public class Collector {
         return new ArrayList(partUUIDHash.values());
     }
 
-    public static Collection getAllObjects() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 
     public static Vector getVectorByName(String name) {
         Vector toReturn = vectorUUIDHash.get(vectorNameHash.get(name));
