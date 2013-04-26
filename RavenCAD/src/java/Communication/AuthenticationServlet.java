@@ -124,7 +124,7 @@ public class AuthenticationServlet extends HttpServlet {
     private void initPasswordHash() {
         if (passwordHash == null) {
             passwordHash = new HashMap();
-            String filePath = this.getServletContext().getRealPath("/") + "/restricted/";
+            String filePath = this.getServletContext().getRealPath("/") + "/WEB-INF/restricted/";
             File[] filesInDirectory = new File(filePath).listFiles();
             for (File currentFile : filesInDirectory) {
                 String path = currentFile.getAbsolutePath();
