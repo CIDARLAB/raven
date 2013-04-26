@@ -26,8 +26,8 @@ public class ClothoReader {
     /**
      * Generate Clotho parts with uuids from intermediates without uuids *
      */
-    public void nodesToClothoPartsVectors(SRSGraph graph) throws Exception {
-        String nameRoot = Collector.getPart(graph.getRootNode().getUUID()).getName();
+    public void nodesToClothoPartsVectors(Collector coll, SRSGraph graph) throws Exception {
+        String nameRoot = coll.getPart(graph.getRootNode().getUUID()).getName();
         ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
         HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
         queue.add(graph.getRootNode());
@@ -54,7 +54,7 @@ public class ClothoReader {
                 //Get new intermediate composition
                 ArrayList<String> UUIDcomposition = new ArrayList();
                 for (String s : currentNode.getComposition()) {
-                    UUIDcomposition.add(Part.retrieveByExactName(s).getUUID());
+                    UUIDcomposition.add(Part.retrieveByExactName(coll, s).getUUID());
                 }
 
                 //Get new intermediate overhangs
@@ -62,19 +62,19 @@ public class ClothoReader {
                 String RO = currentNode.getROverhang();
 
                 //If there's overhangs, add search tags
-                Part newPart = generateNewClothoPart(partName, "", UUIDcomposition, LO, RO);
+                Part newPart = generateNewClothoPart(coll, partName, "", UUIDcomposition, LO, RO);
                 currentNode.setName(partName);
-                newPart.saveDefault();
+                newPart.saveDefault(coll);
                 currentNode.setUUID(newPart.getUUID());
 
             }
 
 
             //create new part and change node uuid if overhangs not match
-            Part currentPart = Collector.getPart(currentNode.getUUID());
+            Part currentPart = coll.getPart(currentNode.getUUID());
             if (!currentNode.getLOverhang().equals(currentPart.getLeftoverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
                 //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
-                Part betterPart = Collector.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang()); //search for a better match
+                Part betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang()); //search for a better match
                 if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftoverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
                     //if no better part exists, create a new one
                     if (currentPart.isBasic()) {
@@ -86,7 +86,7 @@ public class ClothoReader {
                     betterPart.addSearchTag("LO: " + currentNode.getLOverhang());
                     betterPart.addSearchTag("RO: " + currentNode.getROverhang());
                     betterPart.addSearchTag("Type: " + currentPart.getType());
-                    betterPart.saveDefault();
+                    betterPart.saveDefault(coll);
                 }
                 currentNode.setUUID(betterPart.getUUID());
 
@@ -108,8 +108,8 @@ public class ClothoReader {
                 String RO = vector.getROverhang();
                 String resistance = vector.getResistance();
                 int level = vector.getLevel();
-                Vector newVector = generateNewClothoVector(vecName, "", LO, RO, resistance, level);
-                newVector.saveDefault();
+                Vector newVector = generateNewClothoVector(coll, vecName, "", LO, RO, resistance, level);
+                newVector.saveDefault(coll);
                 vector.setName(newVector.getName());
                 vector.setUUID(newVector.getUUID());
                 currentNode.setVector(vector);
@@ -123,15 +123,15 @@ public class ClothoReader {
      * Make intermediate parts of a graph into Clotho parts (typically only done
      * for solution graphs) *
      */
-    private Part generateNewClothoPart(String name, String description, ArrayList<String> UUIDcomposition, String LO, String RO) {
+    private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> UUIDcomposition, String LO, String RO) {
         if (_allCompositeParts == null || _allBasicParts == null) {
-            refreshPartVectorList();
+            refreshPartVectorList(coll);
         }
         ArrayList<String> inputPartUUIDComp = new ArrayList<String>();
 
         //For each composite part, get the basic part uuids
         for (String uuid : UUIDcomposition) {
-            Part inputPart = Collector.getPart(uuid);
+            Part inputPart = coll.getPart(uuid);
             if (inputPart.isComposite()) {
                 try {
                     ArrayList<Part> inputPartComposition = getComposition(inputPart);
@@ -185,7 +185,7 @@ public class ClothoReader {
         if (inputPartUUIDComp.size() > 1) {
             ArrayList<Part> newComposition = new ArrayList<Part>();
             for (String uuid : inputPartUUIDComp) {
-                newComposition.add(Collector.getPart(uuid));
+                newComposition.add(coll.getPart(uuid));
             }
             Part newPart = Part.generateComposite(newComposition, name);
             if (!LO.isEmpty()) {
@@ -199,7 +199,7 @@ public class ClothoReader {
 
             //Make a new basic part
         } else {
-            Part newPart = Part.generateBasic(name, Collector.getPart(inputPartUUIDComp.get(0)).getSeq());
+            Part newPart = Part.generateBasic(name, coll.getPart(inputPartUUIDComp.get(0)).getSeq());
             if (!LO.isEmpty()) {
                 newPart.addSearchTag("LO: " + LO);
             }
@@ -215,8 +215,8 @@ public class ClothoReader {
      * Make intermediate parts of a graph into Clotho parts (typically only done
      * for solution graphs) *
      */
-    private Vector generateNewClothoVector(String name, String sequence, String LO, String RO, String resistance, int level) {
-        _allVectors = Collector.getAllVectors();
+    private Vector generateNewClothoVector(Collector coll, String name, String sequence, String LO, String RO, String resistance, int level) {
+        _allVectors = coll.getAllVectors();
         //Search all existing vectors to for vectors with same overhangs and level before saving
         for (Vector vector : _allVectors) {
             //Get an existing part's overhangs
@@ -252,13 +252,13 @@ public class ClothoReader {
     /**
      * Refresh a part list (used by the viewer) *
      */
-    private static void refreshPartVectorList() {
+    private static void refreshPartVectorList(Collector coll) {
         _allCompositeParts = new ArrayList<Part>();
         _allBasicParts = new ArrayList<Part>();
         _allVectors = new ArrayList<Vector>();
-        ArrayList<Vector> allVectors = Collector.getAllVectors();
+        ArrayList<Vector> allVectors = coll.getAllVectors();
         _allVectors.addAll(allVectors);
-        ArrayList<Part> allParts = Collector.getAllParts();
+        ArrayList<Part> allParts = coll.getAllParts();
         for (Part somePart : allParts) {
             if (somePart.isComposite()) {
                 _allCompositeParts.add(somePart);

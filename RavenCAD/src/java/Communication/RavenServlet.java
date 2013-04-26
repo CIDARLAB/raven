@@ -55,11 +55,18 @@ public class RavenServlet extends HttpServlet {
             throws ServletException, IOException {
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
+        String user = getUser(request);
+        Collector coll = _collectorHash.get(user);
+        System.out.println(_collectorHash);
+        if (coll == null) {
+            _collectorHash.put(user, new Collector());
+            coll = _collectorHash.get(user);
+        }
         if (command.equals("dataStatus")) {
             try {
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "";
-                responseString = getDataStatus();
+                responseString = getDataStatus(request);
                 out.write(responseString);
             } finally {
                 out.close();
@@ -73,11 +80,21 @@ public class RavenServlet extends HttpServlet {
             } finally {
                 out.close();
             }
+        } else if (command.equals("logout")) {
+            try {
+                response.setContentType("text/html;charset=UTF-8");
+                String responseString = "logged out";
+                _collectorHash.remove(user);
+                out.write(responseString);
+            } finally {
+                out.close();
+            }
         } else if (command.equals("fetch")) {
             try {
+
                 response.setContentType("application/json");
                 String responseString = "";
-                responseString = fetchData();
+                responseString = fetchData(coll);
                 out.write(responseString);
             } finally {
                 out.close();
@@ -110,11 +127,9 @@ public class RavenServlet extends HttpServlet {
                 HashSet<String> discouraged = new HashSet();
                 ArrayList<Vector> vectorLibrary = new ArrayList();
                 ArrayList<Part> partLibrary = new ArrayList();
-                String user = "default";
-                user = getUser(request);
                 if (partLibraryIDs.length > 0) {
                     for (int i = 0; i < partLibraryIDs.length; i++) {
-                        Part current = Collector.getPart(partLibraryIDs[i]);
+                        Part current = coll.getPart(partLibraryIDs[i]);
                         if (current != null) {
                             partLibrary.add(current);
                         }
@@ -122,14 +137,14 @@ public class RavenServlet extends HttpServlet {
                 }
                 if (vectorLibraryIDs.length > 0) {
                     for (int i = 0; i < vectorLibraryIDs.length; i++) {
-                        Vector current = Collector.getVector(vectorLibraryIDs[i]);
+                        Vector current = coll.getVector(vectorLibraryIDs[i]);
                         if (current != null) {
                             vectorLibrary.add(current);
                         }
                     }
                 }
                 for (int i = 0; i < targetIDs.length; i++) {
-                    Part current = Collector.getPart(targetIDs[i]);
+                    Part current = coll.getPart(targetIDs[i]);
                     goalParts.put(current, ClothoReader.getComposition(current));
                 }
                 if (recArray.length > 0) {
@@ -161,9 +176,9 @@ public class RavenServlet extends HttpServlet {
                     }
                 }
                 String designCount = request.getParameter("designCount");
-                String image = run(user, method, goalParts, required, recommended, forbidden, discouraged, vectorLibrary, partLibrary);
-                generatePartsListFile(request, designCount);
-                generateInstructionsFile(request, designCount);
+                String image = run(coll, user, method, goalParts, required, recommended, forbidden, discouraged, vectorLibrary, partLibrary);
+                generatePartsListFile(user, designCount);
+                generateInstructionsFile(user, designCount);
                 String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
                         + "\",\"steps\":\"" + _statistics.getSteps()
                         + "\",\"stages\":\"" + _statistics.getStages()
@@ -253,9 +268,11 @@ public class RavenServlet extends HttpServlet {
     }// </editor-fold>
 
     //returns "loaded" or "not loaded" depending on whether there are objects in the collector
-    private String getDataStatus() {
+    private String getDataStatus(HttpServletRequest request) {
+        String user = getUser(request);
+        Collector coll = _collectorHash.get(user);
         String toReturn = "not loaded";
-        if (Collector.getAllParts().size() > 0 || Collector.getAllVectors().size() > 0) {
+        if (coll.getAllParts().size() > 0 || coll.getAllVectors().size() > 0) {
             toReturn = "loaded";
         }
         return toReturn;
@@ -263,30 +280,36 @@ public class RavenServlet extends HttpServlet {
 
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
     private void loadData(HttpServletRequest request) {
-        Collector.purge();//TODO remove this, for testing purposes only
         String user = getUser(request);
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user+"/";
+        Collector coll = _collectorHash.get(user);
+        coll.purge();//TODO remove this, for testing purposes only
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             String filePath = currentFile.getAbsolutePath();
             String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
             if ("csv".equals(fileExtension)) {
-                parseInputFile(currentFile);
+                parseInputFile(coll, currentFile);
             }
         }
     }
 
     private void clearData(HttpServletRequest request) {
-        Collector.purge();
         String user = getUser(request);
-        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/"+user+"/";
+        Collector coll = _collectorHash.get(user);
+        if (coll == null) {
+            _collectorHash.put(user, new Collector());
+            coll = _collectorHash.get(user);
+        }
+        coll.purge();
+        String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
             currentFile.delete();
         }
     }
 
-    private void parseInputFile(File input) {
+    private void parseInputFile(Collector coll, File input) {
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
         if (forcedOverhangHash == null) {
@@ -339,7 +362,7 @@ public class RavenServlet extends HttpServlet {
                         newVector.addSearchTag("RO: " + rightOverhang);
                         newVector.addSearchTag("Level: " + level);
                         newVector.addSearchTag("Resistance: " + resistance);
-                        Boolean toBreak = !newVector.saveDefault();
+                        Boolean toBreak = !newVector.saveDefault(coll);
                         if (toBreak) {
                             break;
                         }
@@ -359,7 +382,7 @@ public class RavenServlet extends HttpServlet {
                         newBasicPart.addSearchTag("LO: " + leftOverhang);
                         newBasicPart.addSearchTag("RO: " + rightOverhang);
                         newBasicPart.addSearchTag("Type: " + type);
-                        Boolean toBreak = !newBasicPart.saveDefault();
+                        Boolean toBreak = !newBasicPart.saveDefault(coll);
                         if (toBreak) {
                             break;
                         }
@@ -392,7 +415,7 @@ public class RavenServlet extends HttpServlet {
                             }
                             partName = partNameTokens[0];
                         }
-                        composition.add(Collector.getPartByName(partName));
+                        composition.add(coll.getPartByName(partName));
                     }
                     String name = tokens[0].trim();
                     String leftOverhang = tokens[2].trim();
@@ -402,7 +425,7 @@ public class RavenServlet extends HttpServlet {
                     newComposite.addSearchTag("LO: " + leftOverhang);
                     newComposite.addSearchTag("RO: " + rightOverhang);
                     newComposite.addSearchTag("Type: composite");
-                    newComposite.saveDefault();
+                    newComposite.saveDefault(coll);
                 } catch (NullPointerException e) {
                     String badLine = "";
                     for (int j = 0; j < tokens.length; j++) {
@@ -427,14 +450,14 @@ public class RavenServlet extends HttpServlet {
         }
     }
 
-    private String fetchData() {
+    private String fetchData(Collector coll) {
         String toReturn = "[";
-        ArrayList<Part> allParts = Collector.getAllParts();
+        ArrayList<Part> allParts = coll.getAllParts();
         for (Part p : allParts) {
             toReturn = toReturn + "{\"uuid\":\"" + p.getUUID() + "\",\"Name\":\"" + p.getName() + "\",\"Sequence\":\"" + p.getSeq() + "\",\"LO\":\"" + p.getLeftoverhang() + "\",\"RO\":\"" + p.getRightOverhang() + "\",\"Type\":\"" + p.getType() + "\",\"Composition\":\"" + p.getStringComposition() + "\",\"Resistance\":\"\",\"Level\":\"\"},";
         }
 
-        ArrayList<Vector> allVectors = Collector.getAllVectors();
+        ArrayList<Vector> allVectors = coll.getAllVectors();
         for (Vector v : allVectors) {
             toReturn = toReturn + "{\"uuid\":\"" + v.getUUID() + "\",\"Name\":\"" + v.getName() + "\",\"Sequence\":\"" + v.getSeq() + "\",\"LO\":\"" + v.getLeftoverhang() + "\",\"RO\":\"" + v.getRightOverhang() + "\",\"Type\":\"vector\",\"Composition\":\"\"" + ",\"Resistance\":\"" + v.getResistance() + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
@@ -443,7 +466,7 @@ public class RavenServlet extends HttpServlet {
     }
 //private String run() {
 
-    private String run(String user, String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
+    private String run(Collector coll, String user, String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Vector> vectorLibrary, ArrayList<Part> partLibrary) {
         _goalParts = goalParts;
         _required = required;
         _recommended = recommended;
@@ -455,17 +478,17 @@ public class RavenServlet extends HttpServlet {
         _assemblyGraphs = new ArrayList<SRSGraph>();
         method = method.toLowerCase().trim();
         if (method.equals("biobrick")) {
-            runBioBricks();
+            runBioBricks(coll);
         } else if (method.equals("cpec")) {
-            runCPEC();
+            runCPEC(coll);
         } else if (method.equals("gibson")) {
-            runGibson();
+            runGibson(coll);
         } else if (method.equals("golden gate")) {
-            runGoldenGate();
+            runGoldenGate(coll);
         } else if (method.equals("moclo")) {
-            runMoClo();
+            runMoClo(coll);
         } else if (method.equals("slic")) {
-            runSLIC();
+            runSLIC(coll);
         }
         String toReturn = "";
         try {
@@ -486,7 +509,7 @@ public class RavenServlet extends HttpServlet {
     /**
      * Run Binary SRS algorithm *
      */
-    private void runBioBricks() {
+    private void runBioBricks(Collector coll) {
 
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
@@ -501,14 +524,14 @@ public class RavenServlet extends HttpServlet {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             try {
-                reader.nodesToClothoPartsVectors(result);
+                reader.nodesToClothoPartsVectors(coll, result);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
+            graphTextFiles.add(result.generateWeyekinFile(coll, postOrderEdges, canPigeon));
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
@@ -518,7 +541,7 @@ public class RavenServlet extends HttpServlet {
     /**
      * Run SRS algorithm for Gibson *
      */
-    private void runGibson() {
+    private void runGibson(Collector coll) {
 
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
@@ -545,14 +568,14 @@ public class RavenServlet extends HttpServlet {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             try {
-                reader.nodesToClothoPartsVectors(result);
+                reader.nodesToClothoPartsVectors(coll, result);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
+            graphTextFiles.add(result.generateWeyekinFile(coll, postOrderEdges, canPigeon));
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
@@ -563,7 +586,7 @@ public class RavenServlet extends HttpServlet {
     /**
      * Run SRS algorithm for CPEC *
      */
-    private void runCPEC() {
+    private void runCPEC(Collector coll) {
 
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
@@ -584,14 +607,14 @@ public class RavenServlet extends HttpServlet {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             try {
-                reader.nodesToClothoPartsVectors(result);
+                reader.nodesToClothoPartsVectors(coll, result);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
+            graphTextFiles.add(result.generateWeyekinFile(coll, postOrderEdges, canPigeon));
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
@@ -601,7 +624,7 @@ public class RavenServlet extends HttpServlet {
     /**
      * Run SRS algorithm for SLIC *
      */
-    private void runSLIC() {
+    private void runSLIC(Collector coll) {
 
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
@@ -622,14 +645,14 @@ public class RavenServlet extends HttpServlet {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             try {
-                reader.nodesToClothoPartsVectors(result);
+                reader.nodesToClothoPartsVectors(coll, result);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
+            graphTextFiles.add(result.generateWeyekinFile(coll, postOrderEdges, canPigeon));
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
@@ -641,7 +664,7 @@ public class RavenServlet extends HttpServlet {
     /**
      * Run SRS algorithm for MoClo *
      */
-    private void runMoClo() {
+    private void runMoClo(Collector coll) {
         if (_goalParts == null) {
             return;
         }
@@ -659,7 +682,7 @@ public class RavenServlet extends HttpServlet {
         efficiencies.put(6, 1.0);
 
         Statistics.start();
-        moclo.setForcedOverhangs(forcedOverhangHash);
+        moclo.setForcedOverhangs(coll, forcedOverhangHash);
         ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
         Statistics.stop();
         solutionStats(optimalGraphs);
@@ -667,14 +690,14 @@ public class RavenServlet extends HttpServlet {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             try {
-                reader.nodesToClothoPartsVectors(result);
+                reader.nodesToClothoPartsVectors(coll, result);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
+            graphTextFiles.add(result.generateWeyekinFile(coll, postOrderEdges, canPigeon));
         }
         _instructions = "";
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
@@ -686,7 +709,7 @@ public class RavenServlet extends HttpServlet {
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    private void runGoldenGate() {
+    private void runGoldenGate(Collector coll) {
 
         //  Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
@@ -709,14 +732,14 @@ public class RavenServlet extends HttpServlet {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             try {
-                reader.nodesToClothoPartsVectors(result);
+                reader.nodesToClothoPartsVectors(coll, result);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
+            graphTextFiles.add(result.generateWeyekinFile(coll, postOrderEdges, canPigeon));
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         WeyekinPoster.setDotText(mergedGraphText);
@@ -725,20 +748,20 @@ public class RavenServlet extends HttpServlet {
         gps = null;
     }
 
-    private boolean generatePartsListFile(HttpServletRequest request, String designNumber) {
-        String user = getUser(request);
-        File file = new File(this.getServletContext().getRealPath("/") + "/data/"+user+"/partsList" + designNumber + ".csv");
+    private boolean generatePartsListFile(String user, String designNumber) {
+        Collector coll = _collectorHash.get(user);
+        File file = new File(this.getServletContext().getRealPath("/") + "/data/" + user + "/partsList" + designNumber + ".csv");
         try {
             //traverse graphs to get uuids
             ArrayList<Part> usedPartsHash = new ArrayList<Part>();
             ArrayList<Vector> usedVectorsHash = new ArrayList<Vector>();
             for (SRSGraph result : _assemblyGraphs) {
-                for (Part p : result.getPartsInGraph()) {
+                for (Part p : result.getPartsInGraph(coll)) {
                     if (!usedPartsHash.contains(p)) {
                         usedPartsHash.add(p);
                     }
                 }
-                for (Vector v : result.getVectorsInGraph()) {
+                for (Vector v : result.getVectorsInGraph(coll)) {
                     if (!usedVectorsHash.contains(v)) {
                         usedVectorsHash.add(v);
                     }
@@ -802,9 +825,8 @@ public class RavenServlet extends HttpServlet {
         return true;
     }
 
-    private boolean generateInstructionsFile(HttpServletRequest request, String designNumber) {
-        String user = getUser(request);
-        File file = new File(this.getServletContext().getRealPath("/") + "/data/"+user + "/instructions" + designNumber + ".txt");
+    private boolean generateInstructionsFile(String user, String designNumber) {
+        File file = new File(this.getServletContext().getRealPath("/") + "/data/" + user + "/instructions" + designNumber + ".txt");
         try {
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);
@@ -914,7 +936,7 @@ public class RavenServlet extends HttpServlet {
                 user = cookies[i].getValue();
             }
         }
-        
+
         return user;
     }
     //FIELDS
@@ -929,4 +951,5 @@ public class RavenServlet extends HttpServlet {
     private ArrayList<Part> _partLibrary;
     private ArrayList<Vector> _vectorLibrary;
     private String _instructions = "";
+    private HashMap<String, Collector> _collectorHash = new HashMap(); //key:user, value: collector assocaited with that user
 }

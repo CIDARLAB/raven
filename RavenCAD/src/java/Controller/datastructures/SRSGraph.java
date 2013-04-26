@@ -77,7 +77,7 @@ public class SRSGraph {
         this._steps = 0;
     }
 
-    public ArrayList<Part> getPartsInGraph() {
+    public ArrayList<Part> getPartsInGraph(Collector coll) {
         ArrayList<Part> toReturn = new ArrayList<Part>();
         HashSet<SRSNode> seenNodes = new HashSet();
         ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
@@ -86,7 +86,7 @@ public class SRSGraph {
             SRSNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
-            Part toAdd = Collector.getPart(current.getUUID());
+            Part toAdd = coll.getPart(current.getUUID());
             if (toAdd != null) {
                 toReturn.add(toAdd);
             }
@@ -99,7 +99,7 @@ public class SRSGraph {
         return toReturn;
     }
 
-    public ArrayList<Vector> getVectorsInGraph() {
+    public ArrayList<Vector> getVectorsInGraph(Collector coll) {
         ArrayList<Vector> toReturn = new ArrayList<Vector>();
         HashSet<SRSNode> seenNodes = new HashSet();
         ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
@@ -109,7 +109,7 @@ public class SRSGraph {
             seenNodes.add(current);
             queue.remove(0);
             if (current.getVector() != null) {
-                Vector toAdd = Collector.getVector(current.getVector().getUUID());
+                Vector toAdd = coll.getVector(current.getVector().getUUID());
                 if (toAdd != null) {
                     toReturn.add(toAdd);
                 }
@@ -196,7 +196,7 @@ public class SRSGraph {
     /**
      * Print edges arc file *
      */
-    public String printArcsFile(ArrayList<String> edges) {
+    public String printArcsFile(Collector coll, ArrayList<String> edges) {
 
         //Build String for export
         //Header
@@ -204,15 +204,15 @@ public class SRSGraph {
         DateFormat dateFormat = new SimpleDateFormat("MMddyyyy@HHmm");
         Date date = new Date();
         arcsText.append("# AssemblyMethod: BioBrick\n# ").append(" ").append(dateFormat.format(date)).append("\n");
-        arcsText.append("# ").append(Collector.getPart(this._node.getUUID())).append("\n");
+        arcsText.append("# ").append(coll.getPart(this._node.getUUID())).append("\n");
         arcsText.append("# ").append(this._node.getUUID()).append("\n\n");
 
         //Build arc file 
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
         for (String s : edges) {
             String[] tokens = s.split("->");
-            Part vertex1 = Collector.getPart(tokens[0].trim());
-            Part vertex2 = Collector.getPart(tokens[1].trim());
+            Part vertex1 = coll.getPart(tokens[0].trim());
+            Part vertex2 = coll.getPart(tokens[1].trim());
             nodeMap.put(vertex1.getUUID(), vertex1.getName());
             nodeMap.put(vertex2.getUUID(), vertex2.getName());
             arcsText.append("# ").append(vertex1.getName()).append(" -> ").append(vertex2.getName()).append("\n");
@@ -247,7 +247,7 @@ public class SRSGraph {
     /**
      * Generate a Weyekin image file for a list of edges *
      */
-    public String generateWeyekinFile(ArrayList<String> edges, boolean pigeon) {
+    public String generateWeyekinFile(Collector coll, ArrayList<String> edges, boolean pigeon) {
   //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
@@ -262,8 +262,8 @@ public class SRSGraph {
         String edgeLines = "";
         for (String s : edges) {
             String[] tokens = s.split("->");
-            Part vertex1 = Collector.getPart(tokens[0].trim());
-            Part vertex2 = Collector.getPart(tokens[1].trim());
+            Part vertex1 = coll.getPart(tokens[0].trim());
+            Part vertex2 = coll.getPart(tokens[1].trim());
             nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition()+vertex1.getLeftoverhang()+vertex1.getRightOverhang());
             nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition()+vertex2.getLeftoverhang()+vertex2.getRightOverhang());
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
@@ -272,7 +272,7 @@ public class SRSGraph {
         
         if (pigeon) {
             for (String key : nodeMap.keySet()) {
-                Part currentPart = Collector.getPart(key);
+                Part currentPart = coll.getPart(key);
                 StringBuilder pigeonLine = new StringBuilder();
                 pigeonLine.append("PIGEON_START\n");
                 pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
@@ -335,7 +335,7 @@ public class SRSGraph {
 
             //Write node properties - purple boxes if cannot pigeon
             for (String key : nodeMap.keySet()) {
-                weyekinText.append("\"").append(Collector.getPart(key).getStringComposition()).append("\"" + " [shape=box, color=\"#B293C9\", style=\"filled,rounded\"]" + "\n");
+                weyekinText.append("\"").append(coll.getPart(key).getStringComposition()).append("\"" + " [shape=box, color=\"#B293C9\", style=\"filled,rounded\"]" + "\n");
             }
         }
 

@@ -53,11 +53,12 @@ $(document).ready(function() {
 
     if (getCookie("authenticate") === "authenticated") {
         $('#loginArea').html('<p class="pull-right">You are logged in as <strong>' + getCookie("user") + '</strong> <a id="logout">Log Out</a></p>');
-        $('#startLink').attr("href", "documentation.html");
         $('#logout').click(function() {
-            deleteCookie("authenticate");
-            deleteCookie("user");
-            window.location.replace("index.html");
+            $.get("RavenServlet", {"command":"logout"}, function() {
+                deleteCookie("authenticate");
+                deleteCookie("user");
+                window.location.replace("index.html");
+            });
         });
     } else if (getCookie("authenticate") === "failed") {
         window.location.replace("login.html");

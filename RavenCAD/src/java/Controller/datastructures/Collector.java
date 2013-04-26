@@ -15,24 +15,23 @@ import javax.swing.JOptionPane;
  */
 public class Collector {
 
-    public static Part getPart(String uuid) {
+    public Part getPart(String uuid) {
         return partUUIDHash.get(uuid);
     }
 
-    public static Vector getVector(String uuid) {
+    public Vector getVector(String uuid) {
         return vectorUUIDHash.get(uuid);
     }
 
-    public static ArrayList<Vector> getAllVectors() {
+    public ArrayList<Vector> getAllVectors() {
         return new ArrayList(vectorUUIDHash.values());
     }
 
-    public static ArrayList<Part> getAllParts() {
+    public ArrayList<Part> getAllParts() {
         return new ArrayList(partUUIDHash.values());
     }
 
-
-    public static Vector getVectorByName(String name) {
+    public Vector getVectorByName(String name) {
         Vector toReturn = vectorUUIDHash.get(vectorNameHash.get(name));
 
         if (toReturn == null) {
@@ -53,17 +52,17 @@ public class Collector {
         return toReturn;
     }
 
-    public static Vector getVectorByExactName(String name) {
+    public Vector getVectorByExactName(String name) {
         return vectorUUIDHash.get(vectorNameHash.get(name));
 
     }
 
-    public static Part getPartByExactName(String name) {
+    public Part getPartByExactName(String name) {
         return partUUIDHash.get(partNameHash.get(name));
 
     }
 
-    public static Part getPartByName(String name) {
+    public Part getPartByName(String name) {
         Part toReturn = partUUIDHash.get(partNameHash.get(name));
 
         if (toReturn == null) {
@@ -84,8 +83,8 @@ public class Collector {
         return toReturn;
     }
 
-    public static Boolean addPart(Part aPart) {
-        Part sameNamePart = Collector.getPartByName(aPart.getName());
+    public Boolean addPart(Part aPart) {
+        Part sameNamePart = this.getPartByName(aPart.getName());
         if (sameNamePart != null) {
             if (sameNamePart.getLeftoverhang().equals(aPart.getLeftoverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
 //                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
@@ -134,8 +133,8 @@ public class Collector {
 
     }
 
-    public static Boolean addVector(Vector aVector) {
-        Vector sameNameVector = Collector.getVectorByName(aVector.getName());
+    public Boolean addVector(Vector aVector) {
+        Vector sameNameVector = this.getVectorByName(aVector.getName());
         if (sameNameVector != null) {
             if (sameNameVector.getLeftoverhang().equals(aVector.getLeftoverhang()) && sameNameVector.getRightOverhang().equals(aVector.getRightOverhang())) {
 //                int selValue = JOptionPane.showConfirmDialog(null, "Vector: " + aVector.getName() + " is already imported!\n Do you want to overrwrite it?");
@@ -181,24 +180,21 @@ public class Collector {
         }
         return true;
     }
-    private static HashMap<String, Vector> vectorUUIDHash = new HashMap();
-    private static HashMap<String, String> vectorNameHash = new HashMap(); //key name, value uuid
-    private static HashMap<String, String> partNameHash = new HashMap(); //key name, value uuid
-    private static HashMap<String, Part> partUUIDHash = new HashMap();
-    private static HashMap<String, HashSet<String>> partNameRootHash = new HashMap(); //key: part name root, value: arrayList of part names that contains the name root
+    private HashMap<String, Vector> vectorUUIDHash = new HashMap();
+    private HashMap<String, String> vectorNameHash = new HashMap(); //key name, value uuid
+    private HashMap<String, String> partNameHash = new HashMap(); //key name, value uuid
+    private HashMap<String, Part> partUUIDHash = new HashMap();
+    private HashMap<String, HashSet<String>> partNameRootHash = new HashMap(); //key: part name root, value: arrayList of part names that contains the name root
     //name root is essentially a part name without extra overhang information
-    private static HashMap<String, HashSet<String>> vectorNameRootHash = new HashMap(); //key: vector name root, value: arrayList of vector names that contains the name root
+    private HashMap<String, HashSet<String>> vectorNameRootHash = new HashMap(); //key: vector name root, value: arrayList of vector names that contains the name root
     //name root is essentially a vector name without extra overhang information
 
-    public static void purge() {
+    public void purge() {
         vectorUUIDHash = new HashMap();
         vectorNameHash = new HashMap();
         partNameHash = new HashMap();
         partUUIDHash = new HashMap();
         partNameRootHash = new HashMap();
         vectorNameRootHash = new HashMap();
-        Part.UUID = 0;
-        Vector.UUID = 0;
-
     }
 }

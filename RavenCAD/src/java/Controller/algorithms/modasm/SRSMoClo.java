@@ -24,7 +24,8 @@ public class SRSMoClo extends SRSGeneral {
      */
     public ArrayList<SRSGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
         try {
-            partsLibrary = partLibrary;
+            _vectorLibrary = vectorLibrary;
+            _partsLibrary = partLibrary;
             //Designate how many parts can be efficiently ligated in one step
             int max = 0;
             Set<Integer> keySet = efficiencies.keySet();
@@ -327,7 +328,7 @@ public class SRSMoClo extends SRSGeneral {
 
         //gather all overhangs for existing vectors
         HashMap<Integer, ArrayList<String>> vectorOverhangHash = new HashMap(); //key: level, value: overhangs for that level
-        ArrayList<Vector> allVectors = Collector.getAllVectors();
+        ArrayList<Vector> allVectors = _vectorLibrary;
         for (Vector v : allVectors) {
 //            freeOverhangs.remove(v.getLeftoverhang());
 //            freeOverhangs.remove(v.getRightOverhang());
@@ -351,7 +352,7 @@ public class SRSMoClo extends SRSGeneral {
         }
 
         //gather all overhangs for existing parts
-        ArrayList<Part> allParts = partsLibrary;
+        ArrayList<Part> allParts = _partsLibrary;
         HashMap<String, ArrayList<String>> compositionConcreteOverhangHash = new HashMap(); //key: part composition, value: arrayList of concrete overhangs that appear for that compositiong
         for (Part p : allParts) {
             if (p.getLeftoverhang().length() > 0 && p.getRightOverhang().length() > 0) {
@@ -526,7 +527,7 @@ public class SRSMoClo extends SRSGeneral {
 
         //decide what antibiotic resistance goes with each level
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("ampicillin, kanamycin, neomycin, puromycin, chloramphenicol, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
-        allVectors = Collector.getAllVectors();
+        allVectors = _vectorLibrary;
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
         for (Vector v : allVectors) {
@@ -657,10 +658,11 @@ public class SRSMoClo extends SRSGeneral {
         return toReturn;
     }
 
-    public void setForcedOverhangs(HashMap<String, ArrayList<String>> requiredOverhangs) {
+    public void setForcedOverhangs(Collector coll, HashMap<String, ArrayList<String>> requiredOverhangs) {
         forcedOverhangHash = new HashMap();
         for (String key : requiredOverhangs.keySet()) {
-            Part part = Collector.getPartByName(key);
+            Part part = coll.getPartByName(key);
+            
             forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
         }
     }
@@ -726,5 +728,7 @@ public class SRSMoClo extends SRSGeneral {
     private HashMap<String, Integer> compositionLevelHash; //key: string composition with overhangs, value; arrayList of nodes with the given composition
     private HashMap<String, ArrayList<String>> forcedOverhangHash; //key: composite part composition
     private HashMap<SRSNode, ArrayList<SRSNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
-    private ArrayList<Part> partsLibrary = new ArrayList();
+    private ArrayList<Part> _partsLibrary = new ArrayList();
+    private ArrayList<Vector> _vectorLibrary = new ArrayList();
+
 }

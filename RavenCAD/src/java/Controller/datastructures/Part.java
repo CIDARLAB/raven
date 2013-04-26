@@ -31,8 +31,8 @@ public class Part {
         this.uuid = String.valueOf(UUID);
     }
 
-    public static Part retrieveByExactName(String name) {
-        return Collector.getPartByName(name);
+    public static Part retrieveByExactName(Collector coll,String name) {
+        return coll.getPartByName(name);
     }
 
     public static Part generateBasic(String name, String sequence) {
@@ -86,8 +86,8 @@ public class Part {
         return toReturn;
     }
 
-    public Boolean saveDefault() {
-        return Collector.addPart(this);
+    public Boolean saveDefault(Collector col) {
+        return col.addPart(this);
     }
 
     public String getLeftoverhang() {

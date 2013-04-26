@@ -33,8 +33,8 @@ public class Vector {
         return newVector;
     }
 
-    public static Vector retrieveByName(String name) {
-        return Collector.getVectorByName(name);
+    public static Vector retrieveByName(Collector coll, String name) {
+        return coll.getVectorByName(name);
     }
 
     public String getUUID() {
@@ -50,8 +50,8 @@ public class Vector {
     }
 
     //adds vector to collector hash
-    public Boolean saveDefault() {
-        return Collector.addVector(this);
+    public Boolean saveDefault(Collector coll) {
+        return coll.addVector(this);
     }
 
     public String getName() {
