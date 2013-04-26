@@ -55,7 +55,7 @@ public class SRSMoClo extends SRSGeneral {
 //            }
 
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, efficiencies);
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateGraphs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);

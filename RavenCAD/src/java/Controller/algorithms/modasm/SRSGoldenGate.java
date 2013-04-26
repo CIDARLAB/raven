@@ -45,7 +45,7 @@ public class SRSGoldenGate extends SRSGeneral{
             }
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden,discouraged, partHash, positionScores, efficiencies);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, efficiencies);
             optimalGraphs = assignOverhangs(optimalGraphs, partHash, vectorSet);
             
             return optimalGraphs;

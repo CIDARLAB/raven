@@ -15,7 +15,6 @@ public class SRSNode {
     /** SDSNode constructor, no neighbors, parent or children or meta-data specified **/
     public SRSNode() {
         _recommended = false;
-        _discouraged = false;
         _neighbors = new ArrayList<SRSNode>();
         _composition = new ArrayList<String>();
         _uuid = null;
@@ -30,10 +29,9 @@ public class SRSNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public SRSNode(boolean recommended, boolean discouraged, ArrayList<SRSNode> neighbors, ArrayList<String> composition, ArrayList<String> type, String lOverhang, String rOverhang, SRSVector vector, String name, int stage) {
+    public SRSNode(boolean recommended, ArrayList<SRSNode> neighbors, ArrayList<String> composition, ArrayList<String> type, String lOverhang, String rOverhang, SRSVector vector, String name, int stage) {
         _uuid = null;
         _recommended = recommended;
-        _discouraged = false;
         _neighbors = neighbors;
         if (_neighbors == null) {
             _neighbors = new ArrayList<SRSNode>();
@@ -54,7 +52,6 @@ public class SRSNode {
         
         SRSNode clone = new SRSNode();
         clone._recommended = this._recommended;
-        clone._discouraged = this._discouraged;
         clone._uuid = this._uuid;
         clone._type = this._type;
         clone._lOverhang = this._lOverhang;
@@ -77,7 +74,6 @@ public class SRSNode {
             
             SRSNode neighborClone = new SRSNode();
             neighborClone._recommended = neighbor._recommended;
-            neighborClone._discouraged = neighbor._discouraged;
             neighborClone._uuid = neighbor._uuid;
             neighborClone._type = neighbor._type;
             neighborClone._lOverhang = neighbor._lOverhang;
@@ -118,11 +114,6 @@ public class SRSNode {
         return _recommended;
     }
 
-    /** Determine if part at node is recommended **/
-    public boolean getDiscouraged() {
-        return _discouraged;
-    }
-    
     /** Get Clotho UUID **/
     public String getUUID() {
         return _uuid;
@@ -168,14 +159,9 @@ public class SRSNode {
         return _stage;
     }
     
-    /** Set part as recommended or not required **/
+    /** Set part as required or not required **/
     public void setRecommended(boolean recommended) {
         _recommended = recommended;
-    }
-    
-    /** Set part as discouraged or not required **/
-    public void setDiscouraged(boolean discouraged) {
-        _discouraged = discouraged;
     }
     
     /** Set Clotho UUID **/
@@ -225,7 +211,6 @@ public class SRSNode {
     
     //FIELDS
     private boolean _recommended;
-    private boolean _discouraged;
     private ArrayList<SRSNode> _neighbors;
     private String _uuid;
     private ArrayList<String> _composition;
