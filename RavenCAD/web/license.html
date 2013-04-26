@@ -3,6 +3,7 @@
     <head>
         <title>RavenCAD</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="controller/redirect.js"></script>
         <link rel="shortcut icon" href="images/shortcutIcon.ico">
         <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
@@ -16,14 +17,7 @@
                     <li><a href="documentation.html">How to</a></li>
                     <li class="active"><a href="contact.html">Contact</a></li>
                 </ul>
-                <div id="loginArea">
-                    <div id="loginArea"><form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
-                            <input name="user" type="text" class="span2" placeholder="Login">
-                            <input name="password" type="password" class="span2" placeholder="Password">
-                            <input type="submit" value="Login" class="btn"/>
-                        </form>
-                    </div>
-                </div>
+                <div id="loginArea"></div>
             </div>
         </div>
         <div class="page-header" style="margin-top:50px">
@@ -37,7 +31,6 @@
         <!--scripts placed at the end to enhance page loading speed--> 
         <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
         <script src="jsLibraries/bootstrap.min.js"></script> 
-        <script type="text/javascript" src ="controller/ContactController.js"></script> 
         <footer>
             <div class="container" align="center">
                 <p>Designed and built by <a href="contact.html">Jenhan Tao</a> and <a href="contact.html">Evan Appleton</a></p>
