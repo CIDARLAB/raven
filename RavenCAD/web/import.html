@@ -29,14 +29,16 @@
             <div class="row-fluid">
                 <div class="span12">
                     <div class="row-fluid">
+
                         <div class="span6"> 
                             <!--button area-->
-                            <div class="btn-toolbar" style="width:375px">
-                                <button type="button" class="btn btn-large" data-toggle="collapse" data-target="#uploadArea"> Add More Parts </button>
-                                <button id="designButton" data-toggle="tooltip" type="button" class="btn btn-large"> Design an Assembly </button>
+                            <div class="btn-toolbar">
+                                <button type="button" class="btn btn-large" data-toggle="collapse" data-target="#uploadArea"> Add More Data </button>
+                                <button id="designButton" data-toggle="tooltip" type="button" class="btn btn-large"> Design Assembly </button>
+                                <button id="resetButton" type="button" class="btn btn-danger btn-large">Reset Data</button>
                             </div>
                             <div id="uploadArea" class="collapse in" data-toggle="tooltip" title="You can drag and drop files here!">
-                                <div class="well" style="width:375px" id="drop_zone_1">
+                                <div class="well" id="drop_zone_1">
                                     <form id="file_upload" action="UploadServlet" method="POST" enctype="multipart/form-data">
                                         <input id="file_1" type="file" name="file_1" multiple/>
                                         <br>
@@ -44,11 +46,52 @@
                                     </form>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                     <div id="dataArea" class="row-fluid">
                         <div class="span8">
-                            <div id="tableArea">
+                            <div class="tabbable">
+                                <ul id="dataTableHeader" class="nav nav-tabs">
+                                    <li class="active"><a class="tablink" href="#parts" data-toggle="tab">Parts</a></li>
+                                    <li><a class="tablink"  href="#vectors" data-toggle="tab">Vectors</a></li>
+                                    <li><a class="tablink"  href="#partsVectors" data-toggle="tab">Parts and Vectors</a></li>
+                                </ul>
+                                <div id="dataTableContent" class="tab-content">
+                                    <div class="tab-pane active" id="parts">
+                                        <div id="partTableArea">
+                                            <table id='partTable' class='table table-bordered table-hover' cellspacing="0px" width="100%">
+                                                <thead>
+                                                    <tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="vectors"> 
+                                        <div id="vectorTableArea">
+                                            <table id='vectorTable' class='table table-bordered table-hover' cellspacing="0px" width="100%">
+                                                <thead>
+                                                    <tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="partsVectors">
+                                        <div id="allTableArea">                                        
+                                            <table id='allTable' class='table table-bordered table-hover' cellspacing="0px" width="100%">
+                                                <thead>
+                                                    <tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="span4">

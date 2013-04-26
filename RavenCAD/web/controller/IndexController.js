@@ -1,7 +1,4 @@
 $(document).ready(function() {
-    if (getCookie("authenticate") === "authenticated") {
-        $.get("RavenServlet", {"command": "purge"});
-    }
     $('#loginForm').submit(function(e) {
         var self = this;
         e.preventDefault();

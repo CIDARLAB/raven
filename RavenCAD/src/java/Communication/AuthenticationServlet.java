@@ -40,7 +40,6 @@ public class AuthenticationServlet extends HttpServlet {
             String user = request.getParameter("user");
             String password = request.getParameter("password");
             if (passwordHash.containsKey(user) && password.equals(passwordHash.get(user))) {
-                System.out.println("authenticated");
                 Cookie authenticateCookie = new Cookie("authenticate", "authenticated");
                 Cookie userCookie = new Cookie("user", user);
                 authenticateCookie.setMaxAge(60 * 24); //cookie lasts for an hour
@@ -152,7 +151,6 @@ public class AuthenticationServlet extends HttpServlet {
                 }
             }
         }
-        System.out.println(passwordHash);
     }
     HashMap<String, String> passwordHash;
 }

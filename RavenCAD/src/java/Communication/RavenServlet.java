@@ -57,7 +57,6 @@ public class RavenServlet extends HttpServlet {
         String command = request.getParameter("command");
         String user = getUser(request);
         Collector coll = _collectorHash.get(user);
-        System.out.println(_collectorHash);
         if (coll == null) {
             _collectorHash.put(user, new Collector());
             coll = _collectorHash.get(user);
@@ -85,6 +84,7 @@ public class RavenServlet extends HttpServlet {
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "logged out";
                 _collectorHash.remove(user);
+                clearData(request);
                 out.write(responseString);
             } finally {
                 out.close();
@@ -282,7 +282,6 @@ public class RavenServlet extends HttpServlet {
     private void loadData(HttpServletRequest request) {
         String user = getUser(request);
         Collector coll = _collectorHash.get(user);
-        coll.purge();//TODO remove this, for testing purposes only
         String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
@@ -372,7 +371,7 @@ public class RavenServlet extends HttpServlet {
                     }
                 } else if (tokenCount == 5) {
                     try {
-                        //create basic part
+                        //create basic part 
                         String name = tokens[0].trim();
                         String sequence = tokens[1].trim();
                         String leftOverhang = tokens[2].trim();
