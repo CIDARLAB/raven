@@ -80,70 +80,86 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr></thead><tbody>";
         var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
         $.each(data, function() {
-//            allTableBody = allTableBody + "<tr><td>"
-//                    + this["uuid"] + "</td><td>"
-//                    + this["Name"] + "</td><td>"
-//                    + this["Sequence"] + "</td><td>"
-//                    + this["LO"] + "</td><td>"
-//                    + this["RO"] + "</td><td>"
-//                    + this["Type"] + "</td><td>"
-//                    + this["Composition"] + "</td><td>"
-//                    + this["Resistance"] + "</td><td>"
-//                    + this["Level"] + "</td></tr>";
-            allAddRow({"uuid": this["uuid"],
-                "Name": this["Name"],
-                "Sequence": this["Sequence"],
-                "LO": this["LO"],
-                "RO": this["RO"],
-                "Type": this["Type"],
-                "Composition": this["Composition"],
-                "Resistance": this["Resistance"],
-                "Level": this["Level"]
-            });
+            allTableBody = allTableBody + "<tr><td>"
+                    + this["uuid"] + "</td><td>"
+                    + this["Name"] + "</td><td>"
+                    + this["Sequence"] + "</td><td>"
+                    + this["LO"] + "</td><td>"
+                    + this["RO"] + "</td><td>"
+                    + this["Type"] + "</td><td>"
+                    + this["Composition"] + "</td><td>"
+                    + this["Resistance"] + "</td><td>"
+                    + this["Level"] + "</td></tr>";
+//            allAddRow({"uuid": this["uuid"],
+//                "Name": this["Name"],
+//                "Sequence": this["Sequence"],
+//                "LO": this["LO"],
+//                "RO": this["RO"],
+//                "Type": this["Type"],
+//                "Composition": this["Composition"],
+//                "Resistance": this["Resistance"],
+//                "Level": this["Level"]
+//            });
             if (this["Type"] === "vector") {
-//                vectorTableBody = vectorTableBody + "<tr><td>"
-//                        + this["uuid"] + "</td><td>"
-//                        + this["Name"] + "</td><td>"
-//                        + this["Sequence"] + "</td><td>"
-//                        + this["LO"] + "</td><td>"
-//                        + this["RO"] + "</td><td>"
-//                        + this["Type"] + "</td><td>"
-//                        + this["Resistance"] + "</td><td>"
-//                        + this["Level"] + "</td></tr>";
-                vectorAddRow({"uuid": this["uuid"],
-                    "Name": this["Name"],
-                    "Sequence": this["Sequence"],
-                    "LO": this["LO"],
-                    "RO": this["RO"],
-                    "Type": this["Type"],
-                    "Resistance": this["Resistance"],
-                    "Level": this["Level"]
-                });
+                vectorTableBody = vectorTableBody + "<tr><td>"
+                        + this["uuid"] + "</td><td>"
+                        + this["Name"] + "</td><td>"
+                        + this["Sequence"] + "</td><td>"
+                        + this["LO"] + "</td><td>"
+                        + this["RO"] + "</td><td>"
+                        + this["Type"] + "</td><td>"
+                        + this["Resistance"] + "</td><td>"
+                        + this["Level"] + "</td></tr>";
+//                vectorAddRow({"uuid": this["uuid"],
+//                    "Name": this["Name"],
+//                    "Sequence": this["Sequence"],
+//                    "LO": this["LO"],
+//                    "RO": this["RO"],
+//                    "Type": this["Type"],
+//                    "Resistance": this["Resistance"],
+//                    "Level": this["Level"]
+//                });
             } else {
-//                partTableBody = partTableBody + "<tr><td>"
-//                        + this["uuid"] + "</td><td>"
-//                        + this["Name"] + "</td><td>"
-//                        + this["Sequence"] + "</td><td>"
-//                        + this["LO"] + "</td><td>"
-//                        + this["RO"] + "</td><td>"
-//                        + this["Type"] + "</td><td>"
-//                        + this["Composition"] + "</td></tr>"
-                partAddRow({"uuid": this["uuid"],
-                    "Name": this["Name"],
-                    "Sequence": this["Sequence"],
-                    "LO": this["LO"],
-                    "RO": this["RO"],
-                    "Type": this["Type"],
-                    "Composition": this["Composition"]
-                });
+                partTableBody = partTableBody + "<tr><td>"
+                        + this["uuid"] + "</td><td>"
+                        + this["Name"] + "</td><td>"
+                        + this["Sequence"] + "</td><td>"
+                        + this["LO"] + "</td><td>"
+                        + this["RO"] + "</td><td>"
+                        + this["Type"] + "</td><td>"
+                        + this["Composition"] + "</td></tr>"
+//                partAddRow({"uuid": this["uuid"],
+//                    "Name": this["Name"],
+//                    "Sequence": this["Sequence"],
+//                    "LO": this["LO"],
+//                    "RO": this["RO"],
+//                    "Type": this["Type"],
+//                    "Composition": this["Composition"]
+//                });
             }
         });
-//        allTableBody = allTableBody + "</tbody></table>";
-//        vectorTableBody = vectorTableBody + "</tbody></table>";
-//        partTableBody = partTableBody + "</tbody></table>";
-//        $("#allTableArea").html(allTableBody);
-//        $("#partTableArea").html(partTableBody);
-//        $("#vectorTableArea").html(vectorTableBody);
+        allTableBody = allTableBody + "</tbody></table>";
+        vectorTableBody = vectorTableBody + "</tbody></table>";
+        partTableBody = partTableBody + "</tbody></table>";
+        $("#allTableArea").html(allTableBody);
+        $("#partTableArea").html(partTableBody);
+        $("#vectorTableArea").html(vectorTableBody);
+
+        $("#allTable").dataTable({
+            "sScrollY": "300px",
+            "bPaginate": false,
+            "bScrollCollapse": true,
+        });
+        $("#partTable").dataTable({
+            "sScrollY": "300px",
+            "bPaginate": false,
+            "bScrollCollapse": true,
+        });
+        $("#vectorTable").dataTable({
+            "sScrollY": "300px",
+            "bPaginate": false,
+            "bScrollCollapse": true,
+        });
         $("tr").on("click", function() {
 //        //TODO finish form generation
             var type = "Part";
@@ -169,7 +185,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         tabResized = false;
     });
     $('#resetButton').click(function() {
-        $.get("RavenServlet",{"command":"purge"},function() {
+        $.get("RavenServlet", {"command": "purge"}, function() {
             window.location.replace("import.html");
         });
     });

@@ -7,7 +7,7 @@
         <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
     </head>
-    <body>
+    <body data-spy="scroll" data-target="#sidebar">
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <a class="brand" href="index.html">RavenCAD</a>
@@ -31,9 +31,67 @@
             <h1>RavenCAD <small>Learn how our algorithms and tools can help you today</small></h1>
         </div>
         <div class="container">
-            <div class="hero-unit">
-
+            <div class="row-fluid">
+                <div class="span2">
+                    <div id="sidebar">
+                        <ul  class=" well nav nav-list affix">
+                            <li class="active"><a href="#overview">Overview</a></li>
+                            <li><a href="#video">Demo</a></li>
+                            <li><a href="#methods">Assembly Methods</a></li>
+                            <li><a href="#algorithm">Algorithm</a></li>
+                            <li><a href="#toolChain">Tool Chain</a></li>
+                            <li><a href="#guide">Guides</a></li>
+                            <li><a href="#references">References</a></li>
+                            <li><a href="#help">Help</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="span10">
+                    <div class="well" id="overview">
+                        <h3>RavenCAD Overview</h3>
+                        <hr/>
+                        <p>two paragraph description of what RavenCAD is</p>
+                    </div>
+                    <div id="video" class="well">
+                        <h3>Demonstration Video</h3>
+                        <hr/>
+                        <div align="center">    
+                            <iframe width="640" height="480" src="http://www.youtube.com/embed/TeIG-r5-jLU" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                    <div class="well" id="methods">
+                        <h3>Assembly Methods</h3>
+                        <hr/>
+                        <p>paragraph describing the assembly methods RavenCAD supports</p>
+                    </div>
+                    <div class="well" id="algorithm">
+                        <h3>Algorithms</h3>
+                        <hr/>
+                        <p>Two paragraph description of the algorithm</p>
+                    </div>
+                    <div class="well" id="toolChain">
+                        <h3>Integrated Tool Chain</h3>
+                        <hr/>
+                        <p>Two paragraphs describing integration of RavenCAD with Eugene and clotho</p>
+                    </div>
+                    <div class="well" id="guide">
+                        <h3>Guides</h3>
+                        <hr/>
+                        <p>Specific how to examples</p>
+                    </div>
+                    <div class="well" id="references">
+                        <h3>References</h3>
+                        <hr/>
+                        <p>Citations to NAR and NB paper will go here</p>
+                    </div>
+                    <div class="well" id="help">
+                        <h3>Help</h3>
+                        <hr/>
+                        <p>FAQ and contact information</p>
+                    </div>
+                </div>
             </div>
+
         </div>
         <!--scripts placed at the end to enhance page loading speed--> 
         <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
