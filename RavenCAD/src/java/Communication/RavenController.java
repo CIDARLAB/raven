@@ -34,8 +34,6 @@ public class RavenController {
     public RavenController(String path, String user) {
         _path = path;
         _user = user;
-        System.out.println("user: " + _user);
-        System.out.println("path: " + _path);
     }
 
     public void runBioBricks() throws Exception {
