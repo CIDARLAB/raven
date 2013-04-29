@@ -31,10 +31,14 @@ import java.util.HashSet;
  */
 public class RavenController {
 
-    public RavenController() {
+    public RavenController(String path, String user) {
+        _path = path;
+        _user = user;
+        System.out.println("user: " + _user);
+        System.out.println("path: " + _path);
     }
 
-    public void runBioBricks() {
+    public void runBioBricks() throws Exception {
 
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
@@ -51,8 +55,7 @@ public class RavenController {
             try {
                 reader.nodesToClothoPartsVectors(_collector, result);
             } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
+                throw ex;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -66,7 +69,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for Gibson *
      */
-    public void runGibson() {
+    public void runGibson() throws Exception {
 
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
@@ -95,8 +98,7 @@ public class RavenController {
             try {
                 reader.nodesToClothoPartsVectors(_collector, result);
             } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
+                throw ex;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -111,7 +113,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for CPEC *
      */
-    public void runCPEC() {
+    public void runCPEC() throws Exception {
 
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
@@ -134,8 +136,7 @@ public class RavenController {
             try {
                 reader.nodesToClothoPartsVectors(_collector, result);
             } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
+                throw ex;
             }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
@@ -149,7 +150,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for SLIC *
      */
-    public void runSLIC() {
+    public void runSLIC() throws Exception {
 
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
@@ -169,12 +170,7 @@ public class RavenController {
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
-            try {
-                reader.nodesToClothoPartsVectors(_collector, result);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
+            reader.nodesToClothoPartsVectors(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
@@ -189,7 +185,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for MoClo *
      */
-    public void runMoClo() {
+    public void runMoClo() throws Exception {
         if (_goalParts == null) {
             return;
         }
@@ -214,12 +210,7 @@ public class RavenController {
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
-            try {
-                reader.nodesToClothoPartsVectors(_collector, result);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
+            reader.nodesToClothoPartsVectors(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
@@ -234,7 +225,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    public void runGoldenGate() {
+    public void runGoldenGate() throws Exception {
 
         //  Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
@@ -256,12 +247,7 @@ public class RavenController {
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
-            try {
-                reader.nodesToClothoPartsVectors(_collector, result);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
+            reader.nodesToClothoPartsVectors(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
@@ -273,97 +259,88 @@ public class RavenController {
         gps = null;
     }
 
-    public boolean generatePartsListFile(String designNumber) {
+    public boolean generatePartsListFile(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
-        try {
-            //traverse graphs to get uuids
-            ArrayList<Part> usedPartsHash = new ArrayList<Part>();
-            ArrayList<Vector> usedVectorsHash = new ArrayList<Vector>();
-            for (SRSGraph result : _assemblyGraphs) {
-                for (Part p : result.getPartsInGraph(_collector)) {
-                    if (!usedPartsHash.contains(p)) {
-                        usedPartsHash.add(p);
-                    }
-                }
-                for (Vector v : result.getVectorsInGraph(_collector)) {
-                    if (!usedVectorsHash.contains(v)) {
-                        usedVectorsHash.add(v);
-                    }
+        //traverse graphs to get uuids
+        ArrayList<Part> usedPartsHash = new ArrayList<Part>();
+        ArrayList<Vector> usedVectorsHash = new ArrayList<Vector>();
+        for (SRSGraph result : _assemblyGraphs) {
+            for (Part p : result.getPartsInGraph(_collector)) {
+                if (!usedPartsHash.contains(p)) {
+                    usedPartsHash.add(p);
                 }
             }
-            //extract information from parts and write file
-            FileWriter fw = new FileWriter(file);
-            BufferedWriter out = new BufferedWriter(fw);
-            out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
-
-            for (Part p : usedPartsHash) {
-                ArrayList<String> tags = p.getSearchTags();
-                String RO = "";
-                String LO = "";
-                String type = "";
-                for (int k = 0; k < tags.size(); k++) {
-                    if (tags.get(k).startsWith("LO:")) {
-                        LO = tags.get(k).substring(4);
-                    } else if (tags.get(k).startsWith("RO:")) {
-                        RO = tags.get(k).substring(4);
-                    } else if (tags.get(k).startsWith("Type:")) {
-                        type = tags.get(k).substring(6);
-                    }
-                }
-
-                if (p.isBasic()) {
-                    out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type);
-                } else {
-                    String composition = "";
-                    type = "composite";
-                    for (Part subpart : p.getComposition()) {
-                        composition = composition + "," + subpart.getName();
-                    }
-                    out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
+            for (Vector v : result.getVectorsInGraph(_collector)) {
+                if (!usedVectorsHash.contains(v)) {
+                    usedVectorsHash.add(v);
                 }
             }
-
-            for (Vector v : usedVectorsHash) {
-                ArrayList<String> tags = v.getSearchTags();
-                String RO = "";
-                String LO = "";
-                String level = "";
-                String resistance = "";
-                for (int k = 0; k < tags.size(); k++) {
-                    if (tags.get(k).startsWith("LO:")) {
-                        LO = tags.get(k).substring(4);
-                    } else if (tags.get(k).startsWith("RO:")) {
-                        RO = tags.get(k).substring(4);
-                    } else if (tags.get(k).startsWith("Level:")) {
-                        level = tags.get(k).substring(7);
-                    } else if (tags.get(k).startsWith("Resistance:")) {
-                        resistance = tags.get(k).substring(12);
-                    }
-                }
-                out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
-            }
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        //extract information from parts and write file
+        FileWriter fw = new FileWriter(file);
+        BufferedWriter out = new BufferedWriter(fw);
+        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
+
+        for (Part p : usedPartsHash) {
+            ArrayList<String> tags = p.getSearchTags();
+            String RO = "";
+            String LO = "";
+            String type = "";
+            for (int k = 0; k < tags.size(); k++) {
+                if (tags.get(k).startsWith("LO:")) {
+                    LO = tags.get(k).substring(4);
+                } else if (tags.get(k).startsWith("RO:")) {
+                    RO = tags.get(k).substring(4);
+                } else if (tags.get(k).startsWith("Type:")) {
+                    type = tags.get(k).substring(6);
+                }
+            }
+
+            if (p.isBasic()) {
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type);
+            } else {
+                String composition = "";
+                type = "composite";
+                for (Part subpart : p.getComposition()) {
+                    composition = composition + "," + subpart.getName();
+                }
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
+            }
+        }
+
+        for (Vector v : usedVectorsHash) {
+            ArrayList<String> tags = v.getSearchTags();
+            String RO = "";
+            String LO = "";
+            String level = "";
+            String resistance = "";
+            for (int k = 0; k < tags.size(); k++) {
+                if (tags.get(k).startsWith("LO:")) {
+                    LO = tags.get(k).substring(4);
+                } else if (tags.get(k).startsWith("RO:")) {
+                    RO = tags.get(k).substring(4);
+                } else if (tags.get(k).startsWith("Level:")) {
+                    level = tags.get(k).substring(7);
+                } else if (tags.get(k).startsWith("Resistance:")) {
+                    resistance = tags.get(k).substring(12);
+                }
+            }
+            out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+        }
+        out.close();
         return true;
     }
 
-    public String generateInstructionsFile(String designNumber) {
+    public String generateInstructionsFile(String designNumber) throws Exception {
         File file = new File(_path + _user + "/instructions" + designNumber + ".txt");
-        try {
-            FileWriter fw = new FileWriter(file);
-            BufferedWriter out = new BufferedWriter(fw);
-            out.write(_instructions);
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "";
-        }
-        return "";
+        FileWriter fw = new FileWriter(file);
+        BufferedWriter out = new BufferedWriter(fw);
+        out.write(_instructions);
+        out.close();
+        return _instructions;
     }
 
-    public void clearData() {
+    public void clearData() throws Exception {
         _collector.purge();
         String uploadFilePath = _path + _user + "/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
@@ -372,7 +349,7 @@ public class RavenController {
         }
     }
 
-    public String fetchData() {
+    public String fetchData() throws Exception {
         String toReturn = "[";
         ArrayList<Part> allParts = _collector.getAllParts();
         for (Part p : allParts) {
@@ -388,7 +365,7 @@ public class RavenController {
     }
 
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
-    public void loadData() {
+    public void loadData() throws Exception {
         String uploadFilePath = _path + _user + "/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
@@ -400,7 +377,7 @@ public class RavenController {
         }
     }
 
-    private void parseInputFile(File input) {
+    private void parseInputFile(File input) throws Exception {
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
         if (forcedOverhangHash == null) {
@@ -542,7 +519,7 @@ public class RavenController {
     }
 
     //returns "loaded" or "not loaded" depending on whether there are objects in the collector
-    public String getDataStatus() {
+    public String getDataStatus() throws Exception {
         String toReturn = "not loaded";
         if (_collector.getAllParts().size() > 0 || _collector.getAllVectors().size() > 0) {
             toReturn = "loaded";
@@ -553,7 +530,7 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    public void solutionStats(ArrayList<SRSGraph> optimalGraphs) {
+    public void solutionStats(ArrayList<SRSGraph> optimalGraphs) throws Exception {
 
         //Initialize statistics
         HashSet<String> recd = new HashSet<String>();
@@ -691,6 +668,18 @@ public class RavenController {
         }
         return toReturn;
     }
+
+    public String generateStats() throws Exception {
+        String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
+                + "\",\"steps\":\"" + _statistics.getSteps()
+                + "\",\"stages\":\"" + _statistics.getStages()
+                + "\",\"reactions\":\"" + _statistics.getReactions()
+                + "\",\"recommended\":\"" + _statistics.getRecommended()
+                + "\",\"efficiency\":\"" + _statistics.getEfficiency()
+                + "\",\"modularity\":\"" + _statistics.getModularity()
+                + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
+        return statString;
+    }
     public HashMap<Part, ArrayList<Part>> _goalParts = new HashMap();//key: target part, value: composition
     public HashSet<String> _required = new HashSet();
     public HashSet<String> _recommended = new HashSet();
@@ -705,16 +694,4 @@ public class RavenController {
     public Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
     public String _path;
     public String _user;
-
-    public String generateStats() {
-        //                String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
-//                        + "\",\"steps\":\"" + _statistics.getSteps()
-//                        + "\",\"stages\":\"" + _statistics.getStages()
-//                        + "\",\"reactions\":\"" + _statistics.getReactions()
-//                        + "\",\"recommended\":\"" + _statistics.getRecommended()
-//                        + "\",\"efficiency\":\"" + _statistics.getEfficiency()
-//                        + "\",\"modularity\":\"" + _statistics.getModularity()
-//                        + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

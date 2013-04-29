@@ -4,31 +4,11 @@
  */
 package Communication;
 
-import Controller.accessibility.ClothoReader;
-import Controller.algorithms.modasm.SRSGoldenGate;
-import Controller.algorithms.modasm.SRSMoClo;
-import Controller.algorithms.nonmodasm.SRSBioBricks;
-import Controller.algorithms.nonmodasm.SRSCPEC;
-import Controller.algorithms.nonmodasm.SRSGibson;
-import Controller.algorithms.nonmodasm.SRSSLIC;
-import Controller.datastructures.Collector;
-import Controller.datastructures.Part;
-import Controller.datastructures.SRSGraph;
-import Controller.datastructures.SRSNode;
-import Controller.datastructures.Vector;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -58,7 +38,8 @@ public class RavenServlet extends HttpServlet {
         String user = getUser(request);
         RavenController controller = _collectorHash.get(user);
         if (controller == null) {
-            _collectorHash.put(user, new RavenController());
+            String path = this.getServletContext().getRealPath("/") + "/data/";
+            _collectorHash.put(user, new RavenController(path, user));
             controller = _collectorHash.get(user);
         }
         if (command.equals("dataStatus")) {
@@ -67,6 +48,12 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "";
                 responseString = controller.getDataStatus();
                 out.write(responseString);
+            } catch (Exception e) {
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+                out.write(exceptionAsString);
             } finally {
                 out.close();
             }
@@ -76,6 +63,13 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "loaded data";
                 controller.loadData();
                 out.write(responseString);
+            } catch (Exception e) {
+                e.printStackTrace();
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+                out.write(exceptionAsString);
             } finally {
                 out.close();
             }
@@ -86,6 +80,12 @@ public class RavenServlet extends HttpServlet {
                 _collectorHash.remove(user);
                 controller.clearData();
                 out.write(responseString);
+            } catch (Exception e) {
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+                out.write(exceptionAsString);
             } finally {
                 out.close();
             }
@@ -96,6 +96,12 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "";
                 responseString = controller.fetchData();
                 out.write(responseString);
+            } catch (Exception e) {
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+                out.write(exceptionAsString);
             } finally {
                 out.close();
             }
@@ -105,6 +111,12 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "purged";
                 controller.clearData();
                 out.write(responseString);
+            } catch (Exception e) {
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(stringWriter);
+                e.printStackTrace(printWriter);
+                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+                out.write(exceptionAsString);
             } finally {
                 out.close();
             }
