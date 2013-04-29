@@ -231,7 +231,8 @@ public class SRSMoClo extends SRSGeneral {
                 if (!numberToLetterOverhangHash.containsKey(currentNode.getLOverhang())) {
                     String newOverhang = freeOverhangs.get(0);
                     int counter = 1;
-                    while (newOverhang.equals(numberToLetterOverhangHash.get(currentNode.getLOverhang()))) {
+                    while (newOverhang.equals(numberToLetterOverhangHash.get(currentNode.getROverhang()))
+                            || newOverhang.equals(numberToLetterOverhangHash.get(parentHash.get(currentNode).getROverhang()))) {
                         newOverhang = freeOverhangs.get(counter);
                         counter = counter + 1;
                     }
@@ -245,7 +246,8 @@ public class SRSMoClo extends SRSGeneral {
                 if (!numberToLetterOverhangHash.containsKey(currentNode.getROverhang())) {
                     String newOverhang = freeOverhangs.get(0);
                     int counter = 1;
-                    while (newOverhang.equals(numberToLetterOverhangHash.get(currentNode.getLOverhang()))) {
+                    while (newOverhang.equals(numberToLetterOverhangHash.get(currentNode.getLOverhang()))
+                            || newOverhang.equals(numberToLetterOverhangHash.get(parentHash.get(currentNode).getLOverhang()))) {
                         newOverhang = freeOverhangs.get(counter);
                         counter = counter + 1;
                     }
