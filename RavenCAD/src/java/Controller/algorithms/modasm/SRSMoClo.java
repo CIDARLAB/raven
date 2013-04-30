@@ -15,7 +15,7 @@ import java.util.Set;
 
 /**
  *
- * @author evanappleton
+ * @author jenhantao
  */
 public class SRSMoClo extends SRSGeneral {
 
@@ -210,55 +210,93 @@ public class SRSMoClo extends SRSGeneral {
         }
     }
 
-    private void minimizeOverhangs(ArrayList<SRSGraph> optimalGraphs) {
+ private void minimizeOverhangs(ArrayList<SRSGraph> optimalGraphs) {
         abstractOverhangCompositionHash = new HashMap();
         partOverhangFrequencyHash = new HashMap();
 //        HashSet<String> hasConcreteOptionsSet = new HashSet(); //hashset of all compositions with concrete overhangs in library
-        HashMap<String, ArrayList<String>> reservedAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+        HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+        HashMap<String, ArrayList<String>> reservedRightAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+
         HashMap<String, String> numberToLetterOverhangHash = new HashMap(); //replaces the abstract numerical with abstract letter overhangs; key: abstract numerical overhang, value: abstract letter overhang
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A_,B_,C_,D_,E_,G_,H_,I_,J_,K_,L_,M_,N_,O_,P_,Q_,R_,S_,T_,U_,V_,W_,X_,Y_,Z_,a_,b_,c_,d_,e_,f_,g_,h_,i_,j_,k_,l_,m_,n_,o_,p_,q_,r_,s_,t_,u_,v_,w_,x_,y_,z_".split(","))); //overhangs that don't exist in part or vector library
         for (SRSGraph graph : optimalGraphs) {
-            for (SRSNode currentNode : rootBasicNodeHash.get(graph.getRootNode())) {
-                ArrayList<String> freeOverhangs = (ArrayList<String>) allOverhangs.clone();
-                ArrayList<String> reservedOverhangs = reservedAbstractHash.get(currentNode.getComposition().toString());
-                if (reservedOverhangs != null) {
-                    freeOverhangs.addAll(reservedOverhangs);
-                    Collections.sort(freeOverhangs);
+            ArrayList<SRSNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
+            for (SRSNode currentNode : compositionNodes) {
+                ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
+                ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
+                ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get(currentNode.getType().toString());
+                ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get(currentNode.getType().toString());
+                SRSNode parent = parentHash.get(currentNode);
+                System.out.println("for " + currentNode.getComposition() + " free " + freeLeftOverhangs);
+                System.out.println("type " + currentNode.getType() + " reserved left " + reservedLeftOverhangs + " reserved right " + reservedRightOverhangs);
+                if (reservedLeftOverhangs != null) {
+                    freeLeftOverhangs.addAll(reservedLeftOverhangs);
+                    Collections.sort(freeLeftOverhangs);
                 } else {
-                    reservedOverhangs = new ArrayList();
-                    reservedAbstractHash.put(currentNode.getComposition().toString(), reservedOverhangs);
+                    reservedLeftOverhangs = new ArrayList();
+                    reservedLeftAbstractHash.put(currentNode.getType().toString(), reservedLeftOverhangs);
                 }
+                if (reservedRightOverhangs != null) {
+                    freeRightOverhangs.addAll(reservedRightOverhangs);
+                    Collections.sort(freeRightOverhangs);
+                } else {
+                    reservedRightOverhangs = new ArrayList();
+                    reservedRightAbstractHash.put(currentNode.getType().toString(), reservedRightOverhangs);
+                }
+                int partIndex = -1;
+                ArrayList<String> parentNeighbors = parent.getComposition();
+                for (int i = 0; i < parentNeighbors.size(); i++) {
+                    String compositionString = currentNode.getName();
+                    if (compositionString.equals(parentNeighbors.get(i))) {
+                        partIndex = i;
+                    }
+                }
+                if (partIndex == 0 || partIndex == parentNeighbors.size() - 1) {
+                    SRSNode grandParent = parentHash.get(parent);
+                    if (grandParent != null) {
+                        for (SRSNode uncle : grandParent.getNeighbors()) {
+                            freeLeftOverhangs.remove(numberToLetterOverhangHash.get(uncle.getLOverhang()));
+                            freeLeftOverhangs.remove(numberToLetterOverhangHash.get(uncle.getROverhang()));
+                            freeRightOverhangs.remove(numberToLetterOverhangHash.get(uncle.getLOverhang()));
+                            freeRightOverhangs.remove(numberToLetterOverhangHash.get(uncle.getROverhang()));
+                        }
+                    }
+                }
+                //assign left overhang
                 if (!numberToLetterOverhangHash.containsKey(currentNode.getLOverhang())) {
-                    String newOverhang = freeOverhangs.get(0);
+                    String newOverhang = freeLeftOverhangs.get(0);
                     int counter = 1;
                     while (newOverhang.equals(numberToLetterOverhangHash.get(currentNode.getROverhang()))
-                            || newOverhang.equals(numberToLetterOverhangHash.get(parentHash.get(currentNode).getROverhang()))) {
-                        newOverhang = freeOverhangs.get(counter);
+                            || newOverhang.equals(numberToLetterOverhangHash.get(parent.getROverhang()))) {
+                        newOverhang = freeLeftOverhangs.get(counter);
                         counter = counter + 1;
                     }
                     numberToLetterOverhangHash.put(currentNode.getLOverhang(), newOverhang);
                     allOverhangs.remove(newOverhang);
-                    if (!reservedOverhangs.contains(newOverhang)) {
-                        reservedOverhangs.add(newOverhang);
+                    if (!reservedLeftOverhangs.contains(newOverhang) && !reservedRightOverhangs.contains(newOverhang)) {
+                        reservedLeftOverhangs.add(newOverhang);
                     }
-                    freeOverhangs.remove(newOverhang);
+                    freeLeftOverhangs.remove(newOverhang);
+                    freeRightOverhangs.remove(newOverhang);
                 }
+                //assign right overhang
                 if (!numberToLetterOverhangHash.containsKey(currentNode.getROverhang())) {
-                    String newOverhang = freeOverhangs.get(0);
+                    String newOverhang = freeRightOverhangs.get(0);
                     int counter = 1;
                     while (newOverhang.equals(numberToLetterOverhangHash.get(currentNode.getLOverhang()))
-                            || newOverhang.equals(numberToLetterOverhangHash.get(parentHash.get(currentNode).getLOverhang()))) {
-                        newOverhang = freeOverhangs.get(counter);
+                            || newOverhang.equals(numberToLetterOverhangHash.get(parent.getLOverhang()))) {
+                        newOverhang = freeRightOverhangs.get(counter);
                         counter = counter + 1;
                     }
                     numberToLetterOverhangHash.put(currentNode.getROverhang(), newOverhang);
                     allOverhangs.remove(newOverhang);
-                    if (!reservedOverhangs.contains(newOverhang)) {
-                        reservedOverhangs.add(newOverhang);
+                    if (!reservedLeftOverhangs.contains(newOverhang) && !reservedRightOverhangs.contains(newOverhang)) {
+                        reservedRightOverhangs.add(newOverhang);
                     }
-                    freeOverhangs.remove(newOverhang);
+                    freeRightOverhangs.remove(newOverhang);
+                    freeLeftOverhangs.remove(newOverhang);
                 }
-
+                System.out.println("picked " + numberToLetterOverhangHash.get(currentNode.getLOverhang()) + "|" + numberToLetterOverhangHash.get(currentNode.getROverhang()));
             }
         }
         //traverse graph and assign abstract letter overhangs
