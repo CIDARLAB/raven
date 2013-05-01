@@ -56,7 +56,7 @@ public class SRSMoClo extends SRSGeneral {
 //            }
 
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, efficiencies);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateGraphs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
@@ -210,7 +210,7 @@ public class SRSMoClo extends SRSGeneral {
         }
     }
 
- private void minimizeOverhangs(ArrayList<SRSGraph> optimalGraphs) {
+    private void minimizeOverhangs(ArrayList<SRSGraph> optimalGraphs) {
         abstractOverhangCompositionHash = new HashMap();
         partOverhangFrequencyHash = new HashMap();
 //        HashSet<String> hasConcreteOptionsSet = new HashSet(); //hashset of all compositions with concrete overhangs in library
@@ -559,7 +559,7 @@ public class SRSMoClo extends SRSGeneral {
             if (!abstractFinalPairHash.containsKey(leftAbstract + "|" + rightAbstract)) {
                 abstractFinalPairHash.put(partComposition + "|" + leftAbstract + "|" + rightAbstract, left + "|" + right);
             }
-            if(!libraryOHOptions.contains(finalOverhangHash.get(leftAbstract) + "|" + finalOverhangHash.get(rightAbstract))) {
+            if (!libraryOHOptions.contains(finalOverhangHash.get(leftAbstract) + "|" + finalOverhangHash.get(rightAbstract))) {
                 libraryOHOptions.add(finalOverhangHash.get(leftAbstract) + "|" + finalOverhangHash.get(rightAbstract));
             }
             System.out.println(partComposition + " abstract " + leftAbstract + "|" + rightAbstract + " final " + finalOverhangHash.get(leftAbstract) + "|" + finalOverhangHash.get(rightAbstract) + " options " + libraryOHOptions);
@@ -702,7 +702,7 @@ public class SRSMoClo extends SRSGeneral {
         forcedOverhangHash = new HashMap();
         for (String key : requiredOverhangs.keySet()) {
             Part part = coll.getPartByName(key);
-            
+
             forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
         }
     }
@@ -770,5 +770,4 @@ public class SRSMoClo extends SRSGeneral {
     private HashMap<SRSNode, ArrayList<SRSNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
     private ArrayList<Part> _partsLibrary = new ArrayList();
     private ArrayList<Vector> _vectorLibrary = new ArrayList();
-
 }

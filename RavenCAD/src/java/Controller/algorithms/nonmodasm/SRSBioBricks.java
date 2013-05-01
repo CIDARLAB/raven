@@ -40,7 +40,7 @@ public class SRSBioBricks extends SRSGeneral {
             }   
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, null);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, null, true);
             optimalGraphs = assignVectors(optimalGraphs, vectorSet);
             
             return optimalGraphs;

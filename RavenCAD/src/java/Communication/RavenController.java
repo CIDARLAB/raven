@@ -197,8 +197,8 @@ public class RavenController {
         efficiencies.put(2, 1.0);
         efficiencies.put(3, 1.0);
         efficiencies.put(4, 1.0);
-        efficiencies.put(5, 2.0);
-        efficiencies.put(6, 2.0);
+        efficiencies.put(5, 1.0);
+        efficiencies.put(6, 1.0);
 
         Statistics.start();
         moclo.setForcedOverhangs(_collector, forcedOverhangHash);

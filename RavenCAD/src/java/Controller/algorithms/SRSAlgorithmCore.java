@@ -197,7 +197,7 @@ public class SRSAlgorithmCore {
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            SRSNode gp = new SRSNode(false, null, composition, type, null, null, null, null, 0);
+            SRSNode gp = new SRSNode(false, false, null, composition, type);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
@@ -348,7 +348,7 @@ public class SRSAlgorithmCore {
     /**
      * Get all subsets of a set for a specific sized subset *
      */
-    protected ArrayList<int[]> getSubsets(int[] set, int k) {
+    protected ArrayList<int[]> getSubsets(int[] set, int k, ArrayList<int[]> forbiddenPartitions) {
 //        int[] subset = new int[k];
 //        ArrayList<int[]> bestIndexes = new ArrayList<int[]>();
 //        _subsetScore = -1;
@@ -382,7 +382,7 @@ public class SRSAlgorithmCore {
         ArrayList<int[]> allSets = new ArrayList<int[]>();
         int[] solution = new int[subsets.length];
         _subsetScore = -1;
-        getSets(set, subsets, solution, 0, allSets);
+        getSets(set, subsets, solution, 0, allSets, forbiddenPartitions);
 
         return allSets;
     }
@@ -390,7 +390,7 @@ public class SRSAlgorithmCore {
     /**
      * Search permutations for the best score *
      */
-    private void getSets(int[] set, int[][] subsets, int[] subset, int subsetSize, ArrayList<int[]> optimal) {
+    private void getSets(int[] set, int[][] subsets, int[] subset, int subsetSize, ArrayList<int[]> optimal, ArrayList<int[]> forbiddenSets) {
 
         if (subsetSize == subset.length) {
 
@@ -401,11 +401,20 @@ public class SRSAlgorithmCore {
                 }
             }
 
-            if (noZeros) {
+            //If this set is forbidden
+            boolean forbidden = false;
+            for (int j = 0; j < forbiddenSets.size(); j++) {
+                if (Arrays.equals(subset, forbiddenSets.get(j))) {
+                    forbidden = true;
+                }
+            }                
+            
+            //If this set has no zeros and is not forbidden
+            if (noZeros && !forbidden) {
                 int score = 0;
 
                 //Determine score of subset
-                int[] setCopy = set.clone();
+                int[] setCopy = set.clone();                                          
                 for (int k = 0; k < subset.length; k++) {
                     for (int l = 0; l < setCopy.length; l++) {
                         if (setCopy[l] == subset[k]) {
@@ -447,7 +456,7 @@ public class SRSAlgorithmCore {
             for (int k = 0; k < col; k++) {
                 int[] sub = subset.clone();
                 sub[subsetSize] = subsets[subsetSize][k];
-                getSets(set, subsets, sub, subsetSize + 1, optimal);
+                getSets(set, subsets, sub, subsetSize + 1, optimal, forbiddenSets);
             }
         }
     }

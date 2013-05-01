@@ -46,7 +46,7 @@ public class SRSCPEC extends SRSGeneral {
             }
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, partHash, positionScores, efficiencies);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, false);
             optimalGraphs = assignVectors(optimalGraphs, vectorSet);
             
             return optimalGraphs;
