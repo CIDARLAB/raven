@@ -352,9 +352,8 @@ public class SRSMoClo extends SRSGeneral {
 //prioritize existing parts with correct overhangs
 //next priority is overhangs that vectors already have
 
-    private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
+  private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
         HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
-        HashMap<String, String> abstractFinalPairHash = new HashMap(); //key: abstract pair, value: concrete pair
         finalOverhangHash = preAssignOverhangs(optimalGraphs);
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
@@ -389,8 +388,8 @@ public class SRSMoClo extends SRSGeneral {
         //gather all overhangs for existing parts
         ArrayList<Part> allParts = _partLibrary;
         HashMap<String, ArrayList<String>> compositionConcreteOverhangHash = new HashMap(); //key: part composition, value: arrayList of concrete overhangs that appear for that compositiong
-        HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
-        HashMap<String, ArrayList<String>> reservedRightAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+        HashMap<String, ArrayList<String>> reservedLeftFinalHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+        HashMap<String, ArrayList<String>> reservedRightFinalHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
 
         for (Part p : allParts) {
             if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
@@ -398,15 +397,15 @@ public class SRSMoClo extends SRSGeneral {
                 if (encounteredCompositions.contains(composition)) {
                     allOverhangs.remove(p.getLeftOverhang());
                     allOverhangs.remove(p.getRightOverhang());
-                    ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get("[" + p.getType().toLowerCase() + "]");
-                    ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get("[" + p.getType().toLowerCase() + "]");
+                    ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get("[" + p.getType().toLowerCase() + "]");
+                    ArrayList<String> reservedRightOverhangs = reservedRightFinalHash.get("[" + p.getType().toLowerCase() + "]");
                     if (reservedLeftOverhangs != null) {
                         if (!reservedLeftOverhangs.contains(p.getLeftOverhang())) {
                             reservedLeftOverhangs.add(p.getLeftOverhang());
                         }
                     } else {
                         reservedLeftOverhangs = new ArrayList();
-                        reservedLeftAbstractHash.put("[" + p.getType().toLowerCase() + "]", reservedLeftOverhangs);
+                        reservedLeftFinalHash.put("[" + p.getType().toLowerCase() + "]", reservedLeftOverhangs);
                         if (!reservedLeftOverhangs.contains(p.getLeftOverhang())) {
                             reservedLeftOverhangs.add(p.getLeftOverhang());
                         }
@@ -417,7 +416,7 @@ public class SRSMoClo extends SRSGeneral {
                         }
                     } else {
                         reservedRightOverhangs = new ArrayList();
-                        reservedRightAbstractHash.put("[" + p.getType().toLowerCase() + "]", reservedRightOverhangs);
+                        reservedRightFinalHash.put("[" + p.getType().toLowerCase() + "]", reservedRightOverhangs);
                         if (!reservedRightOverhangs.contains(p.getRightOverhang())) {
                             reservedRightOverhangs.add(p.getRightOverhang());
                         }
@@ -432,8 +431,8 @@ public class SRSMoClo extends SRSGeneral {
             for (SRSNode currentNode : compositionNodes) {
                 ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
-                ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get(currentNode.getType().toString().toLowerCase());
-                ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get(currentNode.getType().toString().toLowerCase());
+                ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get(currentNode.getType().toString().toLowerCase());
+                ArrayList<String> reservedRightOverhangs = reservedRightFinalHash.get(currentNode.getType().toString().toLowerCase());
                 SRSNode parent = parentHash.get(currentNode);
                 System.out.println("for " + currentNode.getComposition() + " free " + freeLeftOverhangs);
                 System.out.println("type " + currentNode.getType() + " reserved left " + reservedLeftOverhangs + " reserved right " + reservedRightOverhangs);
@@ -442,14 +441,14 @@ public class SRSMoClo extends SRSGeneral {
                     Collections.sort(freeLeftOverhangs);
                 } else {
                     reservedLeftOverhangs = new ArrayList();
-                    reservedLeftAbstractHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
+                    reservedLeftFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
                 }
                 if (reservedRightOverhangs != null) {
                     freeRightOverhangs.addAll(reservedRightOverhangs);
                     Collections.sort(freeRightOverhangs);
                 } else {
                     reservedRightOverhangs = new ArrayList();
-                    reservedRightAbstractHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
+                    reservedRightFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
                 }
                 int partIndex = -1;
                 ArrayList<String> parentNeighbors = parent.getComposition();
@@ -486,6 +485,10 @@ public class SRSMoClo extends SRSGeneral {
                     }
                     freeLeftOverhangs.remove(newOverhang);
                     freeRightOverhangs.remove(newOverhang);
+                    for (String type : reservedLeftFinalHash.keySet()) {
+                        reservedLeftFinalHash.get(type).remove(newOverhang);
+                        reservedRightFinalHash.get(type).remove(newOverhang);
+                    }
                 }
                 //assign right overhang
                 if (!finalOverhangHash.containsKey(currentNode.getROverhang())) {
@@ -501,10 +504,14 @@ public class SRSMoClo extends SRSGeneral {
                     if (!reservedLeftOverhangs.contains(newOverhang) && !reservedRightOverhangs.contains(newOverhang)) {
                         reservedRightOverhangs.add(newOverhang);
                     }
-                    freeRightOverhangs.remove(newOverhang);
                     freeLeftOverhangs.remove(newOverhang);
+                    freeRightOverhangs.remove(newOverhang);
+                    for (String type : reservedLeftFinalHash.keySet()) {
+                        reservedLeftFinalHash.get(type).remove(newOverhang);
+                        reservedRightFinalHash.get(type).remove(newOverhang);
+                    }
                 }
-                System.out.println("picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
+                System.out.println("abstract " + currentNode.getLOverhang() + "|" + currentNode.getROverhang() + " picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
             }
         }
 
