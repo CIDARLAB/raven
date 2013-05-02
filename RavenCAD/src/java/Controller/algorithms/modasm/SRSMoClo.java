@@ -511,6 +511,7 @@ public class SRSMoClo extends SRSGeneral {
                         reservedRightFinalHash.get(type).remove(newOverhang);
                     }
                 }
+                
                 System.out.println("abstract " + currentNode.getLOverhang() + "|" + currentNode.getROverhang() + " picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
             }
         }
