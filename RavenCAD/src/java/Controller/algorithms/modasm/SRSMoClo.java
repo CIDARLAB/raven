@@ -58,13 +58,13 @@ public class SRSMoClo extends SRSGeneral {
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
             basicOverhangAssignment(optimalGraphs);
-            boolean valid = validateGraphOverhangs(optimalGraphs);
+            boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
             minimizeOverhangs(optimalGraphs);
-            valid = validateGraphOverhangs(optimalGraphs);
+            valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nsecond pass: " + valid);
             optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
-            valid = validateGraphOverhangs(optimalGraphs);
+            valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfinal pass: " + valid);
 
             return optimalGraphs;
@@ -652,7 +652,7 @@ public class SRSMoClo extends SRSGeneral {
         }
     }
 
-    public boolean validateGraphOverhangs(ArrayList<SRSGraph> graphs) {
+    public boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         boolean toReturn = true;
         for (SRSGraph graph : graphs) {
             SRSNode root = graph.getRootNode();
