@@ -31,7 +31,7 @@ public class Part {
         this.uuid = String.valueOf(UUID);
     }
 
-    public static Part retrieveByExactName(Collector coll,String name) {
+    public static Part retrieveByExactName(Collector coll, String name) {
         return coll.getPartByName(name);
     }
 
@@ -40,7 +40,7 @@ public class Part {
         newBasic.name = name;
         newBasic.sequence = sequence;
         newBasic.isComposite = false;
-        newBasic.composition= new ArrayList<Part>();
+        newBasic.composition = new ArrayList<Part>();
         newBasic.composition.add(newBasic);
         return newBasic;
     }
@@ -90,7 +90,7 @@ public class Part {
         return col.addPart(this);
     }
 
-    public String getLeftoverhang() {
+    public String getLeftOverhang() {
         String toReturn = "";
         for (String tag : this.searchTags) {
             if (tag.startsWith("LO:")) {
@@ -119,6 +119,18 @@ public class Part {
         }
         return toReturn;
     }
+
+    public Boolean isTransient() {
+        return _transient;
+    }
+
+    public void setTransientStatus(Boolean b) {
+        _transient = b;
+    }
+
+    public void setComposition(ArrayList<Part> comp) {
+        this.composition = comp;
+    }
     //Fields
     private ArrayList<Part> composition;
     private String name;
@@ -126,5 +138,6 @@ public class Part {
     private Boolean isComposite = false;
     private String uuid;
     private ArrayList<String> searchTags = new ArrayList();
+    private boolean _transient = true;
     protected static int UUID = 0;
 }

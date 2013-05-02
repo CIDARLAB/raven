@@ -46,7 +46,7 @@ public class ClothoReader {
             if (currentNode.getUUID() == null) {
                 //Get new intermediate name
                 String partName = nameRoot + "_intermediate" + Math.random() * 999999999;
-                partName = partName.replaceAll("\\.","");
+                partName = partName.replaceAll("\\.", "");
                 if (partName.length() > 255) {
                     partName = partName.substring(0, 255);
                 }
@@ -72,10 +72,10 @@ public class ClothoReader {
 
             //create new part and change node uuid if overhangs not match
             Part currentPart = coll.getPart(currentNode.getUUID());
-            if (!currentNode.getLOverhang().equals(currentPart.getLeftoverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
+            if (!currentNode.getLOverhang().equals(currentPart.getLeftOverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
                 //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
                 Part betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang()); //search for a better match
-                if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftoverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
+                if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
                     //if no better part exists, create a new one
                     if (currentPart.isBasic()) {
                         betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
@@ -305,6 +305,49 @@ public class ClothoReader {
             }
         }
         return toReturn;
+    }
+
+    public void fixCompositeUUIDs(Collector coll, SRSGraph graph) throws Exception {
+        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+        HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+        SRSNode root = graph.getRootNode();
+        queue.add(root);
+        ArrayList<SRSNode> sortedQueue = new ArrayList();
+        sortedQueue.add(root);
+        while (!queue.isEmpty()) {
+            SRSNode current = queue.get(0);
+            queue.remove(0);
+            seenNodes.add(current);
+            ArrayList<SRSNode> neighbors = current.getNeighbors();
+            for (SRSNode neighbor : neighbors) {
+                if (!seenNodes.contains(neighbor)) {
+                    queue.add(neighbor);
+                    sortedQueue.add(0, neighbor);
+                }
+            }
+        }
+        seenNodes.clear();
+        while (!sortedQueue.isEmpty()) {
+            SRSNode current = sortedQueue.get(0);
+            sortedQueue.remove(0);
+            seenNodes.add(current);
+            Part currentPart = coll.getPart(current.getUUID());
+            ArrayList<SRSNode> neighbors = current.getNeighbors();
+            ArrayList<Part> composition = new ArrayList();
+            if (currentPart.getComposition().size() > 1) {
+                for (SRSNode neighbor : neighbors) {
+                    if (current.getComposition().toString().length() > neighbor.getComposition().toString().length()) {
+                        composition.add(coll.getPart(neighbor.getUUID()));
+                    }
+                }
+                currentPart.setComposition(composition);
+                currentPart.setComposition(getComposition(currentPart));
+            }
+        }
+
+
+
+
     }
     //Fields
     static ArrayList<Part> _allCompositeParts;

@@ -24,8 +24,8 @@ public class SRSMoClo extends SRSGeneral {
      */
     public ArrayList<SRSGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
         try {
+            _partLibrary = partLibrary;
             _vectorLibrary = vectorLibrary;
-            _partsLibrary = partLibrary;
             //Designate how many parts can be efficiently ligated in one step
             int max = 0;
             Set<Integer> keySet = efficiencies.keySet();
@@ -58,13 +58,13 @@ public class SRSMoClo extends SRSGeneral {
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
             basicOverhangAssignment(optimalGraphs);
-            boolean valid = validateGraphs(optimalGraphs);
+            boolean valid = validateGraphOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
             minimizeOverhangs(optimalGraphs);
-            valid = validateGraphs(optimalGraphs);
+            valid = validateGraphOverhangs(optimalGraphs);
             System.out.println("##############################\nsecond pass: " + valid);
             optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
-            valid = validateGraphs(optimalGraphs);
+            valid = validateGraphOverhangs(optimalGraphs);
             System.out.println("##############################\nfinal pass: " + valid);
 
             return optimalGraphs;
@@ -194,6 +194,7 @@ public class SRSMoClo extends SRSGeneral {
                                     previousNode.setROverhang(currentNode.getLOverhang());
                                 }
                             }
+
                             //the overhangs of neighbors cannot overlap at all
                             if (currentNode.getLOverhang().length() > 0) {
                                 neighborConflictSet.add(currentNode.getLOverhang());
@@ -213,7 +214,6 @@ public class SRSMoClo extends SRSGeneral {
     private void minimizeOverhangs(ArrayList<SRSGraph> optimalGraphs) {
         abstractOverhangCompositionHash = new HashMap();
         partOverhangFrequencyHash = new HashMap();
-//        HashSet<String> hasConcreteOptionsSet = new HashSet(); //hashset of all compositions with concrete overhangs in library
         HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
         HashMap<String, ArrayList<String>> reservedRightAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
 
@@ -224,8 +224,8 @@ public class SRSMoClo extends SRSGeneral {
             for (SRSNode currentNode : compositionNodes) {
                 ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
-                ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get(currentNode.getType().toString());
-                ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get(currentNode.getType().toString());
+                ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get(currentNode.getType().toString().toLowerCase());
+                ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get(currentNode.getType().toString().toLowerCase());
                 SRSNode parent = parentHash.get(currentNode);
                 System.out.println("for " + currentNode.getComposition() + " free " + freeLeftOverhangs);
                 System.out.println("type " + currentNode.getType() + " reserved left " + reservedLeftOverhangs + " reserved right " + reservedRightOverhangs);
@@ -234,14 +234,14 @@ public class SRSMoClo extends SRSGeneral {
                     Collections.sort(freeLeftOverhangs);
                 } else {
                     reservedLeftOverhangs = new ArrayList();
-                    reservedLeftAbstractHash.put(currentNode.getType().toString(), reservedLeftOverhangs);
+                    reservedLeftAbstractHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
                 }
                 if (reservedRightOverhangs != null) {
                     freeRightOverhangs.addAll(reservedRightOverhangs);
                     Collections.sort(freeRightOverhangs);
                 } else {
                     reservedRightOverhangs = new ArrayList();
-                    reservedRightAbstractHash.put(currentNode.getType().toString(), reservedRightOverhangs);
+                    reservedRightAbstractHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
                 }
                 int partIndex = -1;
                 ArrayList<String> parentNeighbors = parent.getComposition();
@@ -347,31 +347,26 @@ public class SRSMoClo extends SRSGeneral {
 
         }
     }
-
 //optimizes overhang assignment based on frequency of a parts appearance and the availability of existing overhangs
 //concurrent optimizes vector assignment based on vector assignment
 //prioritize existing parts with correct overhangs
 //next priority is overhangs that vectors already have
+
     private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
         HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
         HashMap<String, String> abstractFinalPairHash = new HashMap(); //key: abstract pair, value: concrete pair
         finalOverhangHash = preAssignOverhangs(optimalGraphs);
-        HashSet<String> usedFreeOverhangs = new HashSet();//contains all new overhangs that don't appear in library
-        ArrayList<String> freeOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
+        ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
         HashMap<String, Integer> concreteOverhangFrequencyHash = new HashMap(); //key: concrete overhang pair, value: how often does that overhang pair appear
-        HashMap<String, ArrayList<String>> abstractConcreteOptionsHash = new HashMap(); //key: abstract overhang pair, value: ArrayList<String> of concrete overhang pairs
-        HashSet<String> assignedOverhangs = new HashSet<String>(); //all the overhangs that will appear in the actual output
-        assignedOverhangs.addAll(finalOverhangHash.values());
-        freeOverhangs.removeAll(finalOverhangHash.values());
+        allOverhangs.removeAll(finalOverhangHash.values());
+
         HashSet<String> vectorOverhangPairs = new HashSet();
 
         //gather all overhangs for existing vectors
         HashMap<Integer, ArrayList<String>> vectorOverhangHash = new HashMap(); //key: level, value: overhangs for that level
         ArrayList<Vector> allVectors = _vectorLibrary;
         for (Vector v : allVectors) {
-//            freeOverhangs.remove(v.getLeftoverhang());
-//            freeOverhangs.remove(v.getRightOverhang());
             String overhangString = v.getLeftoverhang() + "|" + v.getRightOverhang();
             vectorOverhangPairs.add(overhangString);
             ArrayList<String> levelOverhangs = vectorOverhangHash.get(v.getLevel());
@@ -392,178 +387,127 @@ public class SRSMoClo extends SRSGeneral {
         }
 
         //gather all overhangs for existing parts
-        ArrayList<Part> allParts = _partsLibrary;
+        ArrayList<Part> allParts = _partLibrary;
         HashMap<String, ArrayList<String>> compositionConcreteOverhangHash = new HashMap(); //key: part composition, value: arrayList of concrete overhangs that appear for that compositiong
+        HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+        HashMap<String, ArrayList<String>> reservedRightAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+
         for (Part p : allParts) {
-            if (p.getLeftoverhang().length() > 0 && p.getRightOverhang().length() > 0) {
+            if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
                 String composition = p.getStringComposition().toString();
                 if (encounteredCompositions.contains(composition)) {
-                    freeOverhangs.remove(p.getLeftoverhang());
-                    freeOverhangs.remove(p.getRightOverhang());
-                    if (compositionConcreteOverhangHash.get(composition) == null) {
-                        ArrayList<String> toAdd = new ArrayList();
-                        compositionConcreteOverhangHash.put(composition, toAdd);
-                    }
-                    ArrayList<String> concrete = compositionConcreteOverhangHash.get(composition);
-                    String concretePair = p.getLeftoverhang() + "|" + p.getRightOverhang();
-                    if (!concrete.contains(concretePair)) {
-                        concrete.add(concretePair);
-                    }
-                    //count the number of times each concrete overhang pair appears
-                    if (concreteOverhangFrequencyHash.containsKey(concretePair)) {
-                        concreteOverhangFrequencyHash.put(concretePair, concreteOverhangFrequencyHash.get(concretePair) + 1);
+                    allOverhangs.remove(p.getLeftOverhang());
+                    allOverhangs.remove(p.getRightOverhang());
+                    ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get("[" + p.getType().toLowerCase() + "]");
+                    ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get("[" + p.getType().toLowerCase() + "]");
+                    if (reservedLeftOverhangs != null) {
+                        if (!reservedLeftOverhangs.contains(p.getLeftOverhang())) {
+                            reservedLeftOverhangs.add(p.getLeftOverhang());
+                        }
                     } else {
-                        concreteOverhangFrequencyHash.put(concretePair, 1);
+                        reservedLeftOverhangs = new ArrayList();
+                        reservedLeftAbstractHash.put("[" + p.getType().toLowerCase() + "]", reservedLeftOverhangs);
+                        if (!reservedLeftOverhangs.contains(p.getLeftOverhang())) {
+                            reservedLeftOverhangs.add(p.getLeftOverhang());
+                        }
                     }
-                }
-            }
-        }
-
-        //complete concreteCompositionOverhanghash; parts with the same abstract overhangs should have access to their combined set of concrete overhangs
-        for (String abstractOverhangPair : abstractOverhangCompositionHash.keySet()) {
-            ArrayList<String> shouldShareCompositions = abstractOverhangCompositionHash.get(abstractOverhangPair);
-            ArrayList<String> sharedConcrete = new ArrayList();
-            for (String composition : shouldShareCompositions) {
-                ArrayList<String> concreteOverhangs = compositionConcreteOverhangHash.get(composition);
-                if (concreteOverhangs != null) {
-                    for (String concreteOverhangPair : concreteOverhangs) {
-                        if (!sharedConcrete.contains(concreteOverhangPair) && concreteOverhangPair.length() > 2) {
-                            if (sharedConcrete.size() > 0) {
-                                int size = sharedConcrete.size();
-                                for (int i = 0; i < size; i++) {
-                                    String comparedOverhangPair = sharedConcrete.get(i);
-                                    if (concreteOverhangFrequencyHash.get(concreteOverhangPair) >= concreteOverhangFrequencyHash.get(comparedOverhangPair)) {
-                                        sharedConcrete.add(i, concreteOverhangPair);
-                                        break;
-                                    }
-                                }
-                            } else {
-                                sharedConcrete.add(concreteOverhangPair);
-                            }
+                    if (reservedRightOverhangs != null) {
+                        if (!reservedRightOverhangs.contains(p.getRightOverhang())) {
+                            reservedRightOverhangs.add(p.getRightOverhang());
+                        }
+                    } else {
+                        reservedRightOverhangs = new ArrayList();
+                        reservedRightAbstractHash.put("[" + p.getType().toLowerCase() + "]", reservedRightOverhangs);
+                        if (!reservedRightOverhangs.contains(p.getRightOverhang())) {
+                            reservedRightOverhangs.add(p.getRightOverhang());
                         }
                     }
                 }
-                abstractConcreteOptionsHash.put(abstractOverhangPair, sharedConcrete);
             }
         }
 
-        //sort part overhangs combinations according to frequency with a bias towards existing  parts
-        ArrayList<String> keyArray = new ArrayList();
-        keyArray.addAll(partOverhangFrequencyHash.keySet());
-        ArrayList<String> sortedKeys = new ArrayList();
-        for (String key : partOverhangFrequencyHash.keySet()) {
-            String composition = key.substring(0, key.indexOf("]") + 1);
-            int numParts = composition.split(",").length;
-            if (compositionConcreteOverhangHash.get(composition) != null) {
-                if (compositionConcreteOverhangHash.get(composition).size() > 0) {
-                    partOverhangFrequencyHash.put(key, partOverhangFrequencyHash.get(key) + 1000);
+        //pick overhangs
+        for (SRSGraph graph : optimalGraphs) {
+            ArrayList<SRSNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
+            for (SRSNode currentNode : compositionNodes) {
+                ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
+                ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
+                ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get(currentNode.getType().toString().toLowerCase());
+                ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get(currentNode.getType().toString().toLowerCase());
+                SRSNode parent = parentHash.get(currentNode);
+                System.out.println("for " + currentNode.getComposition() + " free " + freeLeftOverhangs);
+                System.out.println("type " + currentNode.getType() + " reserved left " + reservedLeftOverhangs + " reserved right " + reservedRightOverhangs);
+                if (reservedLeftOverhangs != null) {
+                    freeLeftOverhangs.addAll(reservedLeftOverhangs);
+                    Collections.sort(freeLeftOverhangs);
+                } else {
+                    reservedLeftOverhangs = new ArrayList();
+                    reservedLeftAbstractHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
                 }
-            } else {
-                partOverhangFrequencyHash.put(key, partOverhangFrequencyHash.get(key));
-            }
-        }
-
-
-        while (sortedKeys.size() != partOverhangFrequencyHash.keySet().size()) {
-            String maxKey = "";
-            int maxFreq = -1000000000;
-            for (String key : keyArray) {
-                if (partOverhangFrequencyHash.get(key) >= maxFreq) {
-                    maxFreq = partOverhangFrequencyHash.get(key);
-                    maxKey = key;
+                if (reservedRightOverhangs != null) {
+                    freeRightOverhangs.addAll(reservedRightOverhangs);
+                    Collections.sort(freeRightOverhangs);
+                } else {
+                    reservedRightOverhangs = new ArrayList();
+                    reservedRightAbstractHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
                 }
-            }
-            sortedKeys.add(maxKey);
-            keyArray.remove(maxKey);
-        }
-        //match abstract overhangs to final overhangs
-        for (String partCompositionOverhang : sortedKeys) {
-            String[] partTokens = partCompositionOverhang.split("\\|");
-            String partComposition = partTokens[0];
-            String leftAbstract = partTokens[1];
-            String rightAbstract = partTokens[2];
-            String abstractOverhangPair = partTokens[1] + "|" + partTokens[2];
-            ArrayList<String> libraryOHOptions = abstractConcreteOptionsHash.get(abstractOverhangPair); //pairs of overhangs that exist in library for given part
-            String left = ""; //overhang from library that will be assigned with right as a pair if it exists and is available
-            String right = ""; //overhang from library that will be assigned with left as a pair if it exists and is available
-            //pick a new pair of overhangs
-            if (libraryOHOptions != null) {
-                //library contains part, check which overhang option is suitable
-                String firstLeft = "";
-                String firstRight = "";
-                boolean partMatch = false;
-                for (String option : libraryOHOptions) {
-                    String[] tokens = option.split("\\|");
-                    assignedOverhangs.remove(finalOverhangHash.get(leftAbstract));
-                    assignedOverhangs.remove(finalOverhangHash.get(rightAbstract));
-                    if (!assignedOverhangs.contains(tokens[0]) && !assignedOverhangs.contains(tokens[1])) {
-                        left = tokens[0];
-                        right = tokens[1];
-                        if (firstLeft.equals("") && firstRight.equals("") && !firstLeft.equals(firstRight)) {
-                            firstLeft = left;
-                            firstRight = right;
-                        }
-                        if (compositionConcreteOverhangHash.get(partComposition) != null) {
-                            if (compositionConcreteOverhangHash.get(partComposition).contains(left + "|" + right) && !left.equals(right)) {
-                                if (!right.equals(finalOverhangHash.get(leftAbstract)) && !left.equals(finalOverhangHash.get(rightAbstract)) && !left.equals(right)) { //if the right and left won't be the same
-                                    if (finalOverhangHash.get(leftAbstract) == null && finalOverhangHash.get(rightAbstract) == null) { //if either overhang is assigned, pick a pair that matches the assignment
-                                        partMatch = true;
-                                        break;
-                                    } else if (finalOverhangHash.get(leftAbstract) != null) {
-                                        if (finalOverhangHash.get(leftAbstract).equals(left)) {
-                                            partMatch = true;
-                                            break;
-
-                                        }
-                                    } else if (finalOverhangHash.get(rightAbstract) != null) {
-                                        if (finalOverhangHash.get(rightAbstract).equals(right)) {
-                                            partMatch = true;
-                                            break;
-
-                                        }
-
-                                    }
-                                }
-                            }
+                int partIndex = -1;
+                ArrayList<String> parentNeighbors = parent.getComposition();
+                for (int i = 0; i < parentNeighbors.size(); i++) {
+                    String compositionString = currentNode.getName();
+                    if (compositionString.equals(parentNeighbors.get(i))) {
+                        partIndex = i;
+                    }
+                }
+                if (partIndex == 0 || partIndex == parentNeighbors.size() - 1) {
+                    SRSNode grandParent = parentHash.get(parent);
+                    if (grandParent != null) {
+                        for (SRSNode uncle : grandParent.getNeighbors()) {
+                            freeLeftOverhangs.remove(finalOverhangHash.get(uncle.getLOverhang()));
+                            freeLeftOverhangs.remove(finalOverhangHash.get(uncle.getROverhang()));
+                            freeRightOverhangs.remove(finalOverhangHash.get(uncle.getLOverhang()));
+                            freeRightOverhangs.remove(finalOverhangHash.get(uncle.getROverhang()));
                         }
                     }
                 }
-                if (!partMatch) {
-                    left = firstLeft;
-                    right = firstRight;
+                //assign left overhang
+                if (!finalOverhangHash.containsKey(currentNode.getLOverhang())) {
+                    String newOverhang = freeLeftOverhangs.get(0);
+                    int counter = 1;
+                    while (newOverhang.equals(finalOverhangHash.get(currentNode.getROverhang()))
+                            || newOverhang.equals(finalOverhangHash.get(parent.getROverhang()))) {
+                        newOverhang = freeLeftOverhangs.get(counter);
+                        counter = counter + 1;
+                    }
+                    finalOverhangHash.put(currentNode.getLOverhang(), newOverhang);
+                    allOverhangs.remove(newOverhang);
+                    if (!reservedLeftOverhangs.contains(newOverhang) && !reservedRightOverhangs.contains(newOverhang)) {
+                        reservedLeftOverhangs.add(newOverhang);
+                    }
+                    freeLeftOverhangs.remove(newOverhang);
+                    freeRightOverhangs.remove(newOverhang);
                 }
-
+                //assign right overhang
+                if (!finalOverhangHash.containsKey(currentNode.getROverhang())) {
+                    String newOverhang = freeRightOverhangs.get(0);
+                    int counter = 1;
+                    while (newOverhang.equals(finalOverhangHash.get(currentNode.getLOverhang()))
+                            || newOverhang.equals(finalOverhangHash.get(parent.getLOverhang()))) {
+                        newOverhang = freeRightOverhangs.get(counter);
+                        counter = counter + 1;
+                    }
+                    finalOverhangHash.put(currentNode.getROverhang(), newOverhang);
+                    allOverhangs.remove(newOverhang);
+                    if (!reservedLeftOverhangs.contains(newOverhang) && !reservedRightOverhangs.contains(newOverhang)) {
+                        reservedRightOverhangs.add(newOverhang);
+                    }
+                    freeRightOverhangs.remove(newOverhang);
+                    freeLeftOverhangs.remove(newOverhang);
+                }
+                System.out.println("picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
             }
-
-            //one of the overhangs is already assigned, assign the other one randomly
-            if (finalOverhangHash.get(leftAbstract) == null && left.equals("")) {
-                left = freeOverhangs.get(0);
-                usedFreeOverhangs.add(left);
-                freeOverhangs.remove(0);
-            }
-            if (finalOverhangHash.get(rightAbstract) == null && right.equals("")) {
-                right = freeOverhangs.get(0);
-                usedFreeOverhangs.add(right);
-                freeOverhangs.remove(0);
-            }
-
-            if (!left.equals("") && (finalOverhangHash.get(leftAbstract) == null || left.equals(finalOverhangHash.get(leftAbstract)))) {
-                finalOverhangHash.put(leftAbstract, left);
-                assignedOverhangs.add(left);
-            }
-            if (!right.equals("") && (finalOverhangHash.get(rightAbstract) == null || right.equals(finalOverhangHash.get(rightAbstract)))) {
-                finalOverhangHash.put(rightAbstract, right);
-                assignedOverhangs.add(right);
-            }
-
-            if (!abstractFinalPairHash.containsKey(leftAbstract + "|" + rightAbstract)) {
-                abstractFinalPairHash.put(partComposition + "|" + leftAbstract + "|" + rightAbstract, left + "|" + right);
-            }
-            if (!libraryOHOptions.contains(finalOverhangHash.get(leftAbstract) + "|" + finalOverhangHash.get(rightAbstract))) {
-                libraryOHOptions.add(finalOverhangHash.get(leftAbstract) + "|" + finalOverhangHash.get(rightAbstract));
-            }
-            System.out.println(partComposition + " abstract " + leftAbstract + "|" + rightAbstract + " final " + finalOverhangHash.get(leftAbstract) + "|" + finalOverhangHash.get(rightAbstract) + " options " + libraryOHOptions);
         }
+
 
         //decide what antibiotic resistance goes with each level
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("ampicillin, kanamycin, neomycin, puromycin, chloramphenicol, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
@@ -601,6 +545,7 @@ public class SRSMoClo extends SRSGeneral {
             }
             levelResistanceHash.put(i, resistance);
         }
+
         //traverse graphs and assign appropriate overhangs and vectors
         for (SRSGraph graph : optimalGraphs) {
             int reactions = 0;
@@ -624,6 +569,7 @@ public class SRSMoClo extends SRSGeneral {
                         queue.add(neighbor);
                     }
                 }
+
                 //count the number of reactions
                 ArrayList<String> overhangOptions = compositionConcreteOverhangHash.get(current.getComposition().toString());
                 String overhangString = current.getLOverhang() + "|" + current.getROverhang();
@@ -702,12 +648,11 @@ public class SRSMoClo extends SRSGeneral {
         forcedOverhangHash = new HashMap();
         for (String key : requiredOverhangs.keySet()) {
             Part part = coll.getPartByName(key);
-
             forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
         }
     }
 
-    private boolean validateGraphs(ArrayList<SRSGraph> graphs) {
+    public boolean validateGraphOverhangs(ArrayList<SRSGraph> graphs) {
         boolean toReturn = true;
         for (SRSGraph graph : graphs) {
             SRSNode root = graph.getRootNode();
@@ -721,25 +666,38 @@ public class SRSMoClo extends SRSGeneral {
 //                System.out.println(parent.getComposition() + parent.getLOverhang() + "|" + parent.getROverhang());
                 if (parent.getLOverhang().equals(parent.getROverhang())) {
                     System.out.println("parent failed: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
-                    return false;
+                    toReturn = false;
                 }
                 if (parent.getNeighbors().size() > 1) {
                     SRSNode previous = null;
+                    HashMap<String, Integer> leftFrequencyHash = new HashMap();
+                    HashMap<String, Integer> rightFrequencyHash = new HashMap();
                     for (int i = 0; i < parent.getNeighbors().size(); i++) {
                         SRSNode child = parent.getNeighbors().get(i);
                         if (!seenNodes.contains(child)) {
+
+                            if (leftFrequencyHash.get(child.getLOverhang()) != null) {
+                                leftFrequencyHash.put(child.getLOverhang(), leftFrequencyHash.get(child.getLOverhang()) + 1);
+                            } else {
+                                leftFrequencyHash.put(child.getLOverhang(), 1);
+                            }
+                            if (rightFrequencyHash.get(child.getROverhang()) != null) {
+                                rightFrequencyHash.put(child.getROverhang(), rightFrequencyHash.get(child.getROverhang()) + 1);
+                            } else {
+                                rightFrequencyHash.put(child.getROverhang(), 1);
+                            }
                             if (i == 0) {
                                 if (!child.getLOverhang().equals(parent.getLOverhang())) {
                                     System.out.println(child.getComposition() + " left caused failure " + child.getLOverhang());
                                     System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
-                                    return false;
+                                    toReturn = false;
                                 }
                             }
                             if (i == parent.getNeighbors().size() - 1) {
                                 if (!child.getROverhang().equals(parent.getROverhang())) {
                                     System.out.println(child.getComposition() + " right caused failure " + child.getROverhang());
                                     System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
-                                    return false;
+                                    toReturn = false;
                                 }
                             }
                             if (previous != null) {
@@ -747,7 +705,7 @@ public class SRSMoClo extends SRSGeneral {
                                     System.out.println(child.getComposition() + " previous caused failure " + child.getLOverhang());
                                     System.out.println("previous: " + previous.getComposition() + " " + previous.getLOverhang() + "|" + previous.getROverhang());
 
-                                    return false;
+                                    toReturn = false;
                                 }
                             }
 
@@ -755,7 +713,10 @@ public class SRSMoClo extends SRSGeneral {
                             queue.add(child);
                         }
                     }
-
+                    if (leftFrequencyHash.containsValue(2) || rightFrequencyHash.containsValue(2)) {
+                        System.out.println("repeat overhang use occurred in " + parent.getComposition());
+                        toReturn = false;
+                    }
                 }
             }
         }
@@ -768,6 +729,6 @@ public class SRSMoClo extends SRSGeneral {
     private HashMap<String, Integer> compositionLevelHash; //key: string composition with overhangs, value; arrayList of nodes with the given composition
     private HashMap<String, ArrayList<String>> forcedOverhangHash; //key: composite part composition
     private HashMap<SRSNode, ArrayList<SRSNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
-    private ArrayList<Part> _partsLibrary = new ArrayList();
+    private ArrayList<Part> _partLibrary = new ArrayList();
     private ArrayList<Vector> _vectorLibrary = new ArrayList();
 }

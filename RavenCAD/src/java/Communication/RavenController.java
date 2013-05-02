@@ -52,6 +52,7 @@ public class RavenController {
         for (SRSGraph result : optimalGraphs) {
             try {
                 reader.nodesToClothoPartsVectors(_collector, result);
+                reader.fixCompositeUUIDs(_collector, result);
             } catch (Exception ex) {
                 throw ex;
             }
@@ -95,6 +96,7 @@ public class RavenController {
         for (SRSGraph result : optimalGraphs) {
             try {
                 reader.nodesToClothoPartsVectors(_collector, result);
+                reader.fixCompositeUUIDs(_collector, result);
             } catch (Exception ex) {
                 throw ex;
             }
@@ -133,6 +135,7 @@ public class RavenController {
         for (SRSGraph result : optimalGraphs) {
             try {
                 reader.nodesToClothoPartsVectors(_collector, result);
+                reader.fixCompositeUUIDs(_collector, result);
             } catch (Exception ex) {
                 throw ex;
             }
@@ -169,6 +172,7 @@ public class RavenController {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             reader.nodesToClothoPartsVectors(_collector, result);
+            reader.fixCompositeUUIDs(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
@@ -209,6 +213,7 @@ public class RavenController {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             reader.nodesToClothoPartsVectors(_collector, result);
+            reader.fixCompositeUUIDs(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
@@ -246,6 +251,7 @@ public class RavenController {
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
             reader.nodesToClothoPartsVectors(_collector, result);
+            reader.fixCompositeUUIDs(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
@@ -351,7 +357,7 @@ public class RavenController {
         String toReturn = "[";
         ArrayList<Part> allParts = _collector.getAllParts();
         for (Part p : allParts) {
-            toReturn = toReturn + "{\"uuid\":\"" + p.getUUID() + "\",\"Name\":\"" + p.getName() + "\",\"Sequence\":\"" + p.getSeq() + "\",\"LO\":\"" + p.getLeftoverhang() + "\",\"RO\":\"" + p.getRightOverhang() + "\",\"Type\":\"" + p.getType() + "\",\"Composition\":\"" + p.getStringComposition() + "\",\"Resistance\":\"\",\"Level\":\"\"},";
+            toReturn = toReturn + "{\"uuid\":\"" + p.getUUID() + "\",\"Name\":\"" + p.getName() + "\",\"Sequence\":\"" + p.getSeq() + "\",\"LO\":\"" + p.getLeftOverhang() + "\",\"RO\":\"" + p.getRightOverhang() + "\",\"Type\":\"" + p.getType() + "\",\"Composition\":\"" + p.getStringComposition() + "\",\"Resistance\":\"\",\"Level\":\"\"},";
         }
 
         ArrayList<Vector> allVectors = _collector.getAllVectors();
@@ -449,6 +455,7 @@ public class RavenController {
                         newBasicPart.addSearchTag("RO: " + rightOverhang);
                         newBasicPart.addSearchTag("Type: " + type);
                         Boolean toBreak = !newBasicPart.saveDefault(_collector);
+                        newBasicPart.setTransientStatus(false);
                         if (toBreak) {
                             break;
                         }
@@ -492,6 +499,7 @@ public class RavenController {
                     newComposite.addSearchTag("RO: " + rightOverhang);
                     newComposite.addSearchTag("Type: composite");
                     newComposite.saveDefault(_collector);
+                    newComposite.setTransientStatus(false);
                 } catch (NullPointerException e) {
                     String badLine = "";
                     for (int j = 0; j < tokens.length; j++) {
@@ -665,6 +673,43 @@ public class RavenController {
             e.printStackTrace();
         }
         return toReturn;
+    }
+
+    private boolean validateGraphComposition(ArrayList<SRSGraph> graphs) throws Exception {
+        boolean toReturn = true;
+        HashSet<String> seenRequired = new HashSet();
+        for (SRSGraph graph : graphs) {
+            ArrayList<SRSNode> queue = new ArrayList();
+            HashSet<SRSNode> seenNodes = new HashSet();
+            queue.add(graph.getRootNode());
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                queue.remove(0);
+                seenNodes.add(current);
+                if (_forbidden.contains(current.getComposition().toString())) {
+                    toReturn = false;
+                    break;
+                }
+                if (_required.contains(current.getComposition().toString())) {
+                    seenRequired.add(current.getComposition().toString());
+                }
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+            if (toReturn == false) {
+                break;
+            }
+        }
+
+        if (toReturn && _required.size() == seenRequired.size()) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     public String generateStats() throws Exception {

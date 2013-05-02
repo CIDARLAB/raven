@@ -264,8 +264,8 @@ public class SRSGraph {
             String[] tokens = s.split("->");
             Part vertex1 = coll.getPart(tokens[0].trim());
             Part vertex2 = coll.getPart(tokens[1].trim());
-            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition()+vertex1.getLeftoverhang()+vertex1.getRightOverhang());
-            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition()+vertex2.getLeftoverhang()+vertex2.getRightOverhang());
+            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition()+vertex1.getLeftOverhang()+vertex1.getRightOverhang());
+            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition()+vertex2.getLeftOverhang()+vertex2.getRightOverhang());
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
 
         }
@@ -278,7 +278,7 @@ public class SRSGraph {
                 pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
 
                 //Assign left overhang if it exists
-                pigeonLine.append("o ").append(currentPart.getLeftoverhang()).append(" 1" + "\n");
+                pigeonLine.append("o ").append(currentPart.getLeftOverhang()).append(" 1" + "\n");
 
                 for (Part p: currentPart.getComposition()) {
                     if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {

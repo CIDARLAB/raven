@@ -65,7 +65,7 @@ public class Vector {
                 toReturn = Integer.parseInt(tag.substring(7).trim());
             }
         }
-        return toReturn; 
+        return toReturn;
     }
 
     public String getSequence() {
@@ -111,14 +111,23 @@ public class Vector {
         }
         return toReturn;
     }
+
+    public String getSeq() {
+        return this.sequence;
+    }
+
+    public Boolean isTransient() {
+        return _transient;
+    }
+
+    public void setTransientStatus(Boolean b) {
+        _transient = b;
+    }
     //Fields
     protected static int UUID = 0;
     private String name;
     private ArrayList<String> searchTags = new ArrayList<String>();
     private String sequence;
     private String uuid;
-
-    public String getSeq() {
-        return this.sequence;
-    }
+    private Boolean _transient = true;
 }

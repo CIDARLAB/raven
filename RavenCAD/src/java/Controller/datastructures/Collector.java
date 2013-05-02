@@ -86,47 +86,47 @@ public class Collector {
     public Boolean addPart(Part aPart) {
         Part sameNamePart = this.getPartByName(aPart.getName());
         if (sameNamePart != null) {
-            if (sameNamePart.getLeftoverhang().equals(aPart.getLeftoverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
+            if (sameNamePart.getLeftOverhang().equals(aPart.getLeftOverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
 //                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
                 int selValue = JOptionPane.OK_OPTION;
                 //TODO figure out error handling here
                 if (selValue == JOptionPane.OK_OPTION) {
 //                    basicPartNameHash.put(aPart.getName(), aPart.getUUID());
-                    partUUIDHash.remove(partNameHash.get(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang()));
-                    partNameHash.put(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
+                    partUUIDHash.remove(partNameHash.get(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang()));
+                    partNameHash.put(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
                     partUUIDHash.put(aPart.getUUID(), aPart);
                     if (partNameRootHash.get(aPart.getName()) == null) {
                         HashSet<String> toAdd = new HashSet<String>();
                         toAdd.add(aPart.getName());
                         partNameRootHash.put(aPart.getName(), toAdd);
-                        partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
+                        partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
                         System.out.println("before: " + partUUIDHash.keySet());
                     } else {
-                        partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
+                        partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
                     }
                 } else if (selValue == JOptionPane.CANCEL_OPTION) {
                     return false;
                 }
             } else {
-                partNameHash.put(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
+                partNameHash.put(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
                 partUUIDHash.put(aPart.getUUID(), aPart);
                 if (partNameRootHash.get(aPart.getName()) == null) {
                     HashSet<String> toAdd = new HashSet<String>();
                     partNameRootHash.put(aPart.getName(), toAdd);
-                    partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
+                    partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
                 } else {
-                    partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
+                    partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
                 }
             }
         } else {
-            partNameHash.put(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
+            partNameHash.put(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
             partUUIDHash.put(aPart.getUUID(), aPart);
             if (partNameRootHash.get(aPart.getName()) == null) {
                 HashSet<String> toAdd = new HashSet<String>();
                 partNameRootHash.put(aPart.getName(), toAdd);
-                partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
+                partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
             } else {
-                partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftoverhang() + "|" + aPart.getRightOverhang());
+                partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
             }
         }
         return true;
@@ -180,15 +180,24 @@ public class Collector {
         }
         return true;
     }
-    private HashMap<String, Vector> vectorUUIDHash = new HashMap();
+
+    public boolean removePart(String uuid) throws Exception {
+        partUUIDHash.remove(uuid);
+        return true;
+    }
+
+    public boolean removeVector(String uuid) throws Exception {
+        vectorUUIDHash.remove(uuid);
+        return true;
+    }
+    private HashMap<String, Vector> vectorUUIDHash = new HashMap(); //key: uuid, value: vector
     private HashMap<String, String> vectorNameHash = new HashMap(); //key name, value uuid
     private HashMap<String, String> partNameHash = new HashMap(); //key name, value uuid
-    private HashMap<String, Part> partUUIDHash = new HashMap();
+    private HashMap<String, Part> partUUIDHash = new HashMap(); //key:uuid, value: part
     private HashMap<String, HashSet<String>> partNameRootHash = new HashMap(); //key: part name root, value: arrayList of part names that contains the name root
     //name root is essentially a part name without extra overhang information
     private HashMap<String, HashSet<String>> vectorNameRootHash = new HashMap(); //key: vector name root, value: arrayList of vector names that contains the name root
     //name root is essentially a vector name without extra overhang information
-
     public void purge() {
         vectorUUIDHash = new HashMap();
         vectorNameHash = new HashMap();
@@ -196,5 +205,7 @@ public class Collector {
         partUUIDHash = new HashMap();
         partNameRootHash = new HashMap();
         vectorNameRootHash = new HashMap();
+        
+
     }
 }
