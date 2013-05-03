@@ -44,7 +44,7 @@ $(document).ready(function() {
             deleteCookie("user");
             window.location.replace("index.html");
         });
-    } else if (getCookie("authenticate") === "failed") {
+    } else {
         window.location.replace("login.html");
     }
 

@@ -50,12 +50,8 @@ public class RavenController {
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
-            try {
                 reader.nodesToClothoPartsVectors(_collector, result);
                 reader.fixCompositeUUIDs(_collector, result);
-            } catch (Exception ex) {
-                throw ex;
-            }
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
@@ -601,11 +597,7 @@ public class RavenController {
 
 
         String toReturn = "";
-        try {
             toReturn = WeyekinPoster.getmGraphVizURI().toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         return toReturn;
     }
 
