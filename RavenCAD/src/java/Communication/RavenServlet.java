@@ -254,9 +254,11 @@ public class RavenServlet extends HttpServlet {
     private String getUser(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String user = "default";
-        for (int i = 0; i < cookies.length; i++) {
-            if (cookies[i].getName().equals("user")) {
-                user = cookies[i].getValue();
+        if (cookies != null) {
+            for (int i = 0; i < cookies.length; i++) {
+                if (cookies[i].getName().equals("user")) {
+                    user = cookies[i].getValue();
+                }
             }
         }
         return user;

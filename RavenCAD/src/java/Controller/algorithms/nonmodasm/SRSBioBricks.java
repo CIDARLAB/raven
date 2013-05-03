@@ -94,27 +94,10 @@ public class SRSBioBricks extends SRSGeneral {
         
         return optimalGraphs;
     }  
-        
-    /** Get all subsets of a set for a specific sized subset **/
-//    @Override
-//    protected ArrayList<int[]> getSubsets(int[] set, int k) {
-//        int[] subset = new int[k];
-//        ArrayList<int[]> breaks = new ArrayList<int[]>();
-//        getSubsetsHelper(set, subset, 0, 0, breaks);
-//        return breaks;
-//    }
-//    
-//    /** getSubsets helper function **/
-//    private void getSubsetsHelper(int[] set, int[] subset, int subsetSize, int nextIndex, ArrayList<int[]> breaks) { 
-//        if (subsetSize == subset.length) {
-//            breaks.add(subset);
-//        } else {
-//            for (int j = nextIndex; j < set.length; j++) {
-//                int[] sub = subset.clone();
-//                sub[subsetSize] = set[j];
-//                getSubsetsHelper(set, sub, subsetSize + 1, j + 1, breaks);
-//            }
-//        }
-//    }
+       
+    
+    public boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+        return true;
+    }
     
 }

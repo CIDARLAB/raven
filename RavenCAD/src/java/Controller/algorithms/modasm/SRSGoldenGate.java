@@ -66,4 +66,8 @@ public class SRSGoldenGate extends SRSGeneral {
     private ArrayList<SRSGraph> assignOverhangs(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
         return optimalGraphs;
     }
+
+    public boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+        return true;
+    }
 }

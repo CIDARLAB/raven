@@ -68,7 +68,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for Gibson *
      */
-    public void runGibson() throws Exception {
+    public ArrayList<SRSGraph> runGibson() throws Exception {
 
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
@@ -86,34 +86,14 @@ public class RavenController {
         efficiencies.put(8, 1.0);
         efficiencies.put(9, 1.0);
         efficiencies.put(10, 1.0);
-
-        Statistics.start();
         ArrayList<SRSGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
-        Statistics.stop();
-        solutionStats(optimalGraphs);
-        ClothoReader reader = new ClothoReader();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        for (SRSGraph result : optimalGraphs) {
-            try {
-                reader.nodesToClothoPartsVectors(_collector, result);
-                reader.fixCompositeUUIDs(_collector, result);
-            } catch (Exception ex) {
-                throw ex;
-            }
-            boolean canPigeon = result.canPigeon();
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
-        }
-        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
-        gps = null;
+        return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for CPEC *
      */
-    public void runCPEC() throws Exception {
+    public ArrayList<SRSGraph> runCPEC() throws Exception {
 
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
@@ -126,32 +106,14 @@ public class RavenController {
         efficiencies.put(3, 1.0);
         efficiencies.put(4, 1.0);
 
-        Statistics.start();
         ArrayList<SRSGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
-        Statistics.stop();
-        solutionStats(optimalGraphs);
-        ClothoReader reader = new ClothoReader();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        for (SRSGraph result : optimalGraphs) {
-            try {
-                reader.nodesToClothoPartsVectors(_collector, result);
-                reader.fixCompositeUUIDs(_collector, result);
-            } catch (Exception ex) {
-                throw ex;
-            }
-            boolean canPigeon = result.canPigeon();
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
-        }
-        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
+        return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for SLIC *
      */
-    public void runSLIC() throws Exception {
+    public ArrayList<SRSGraph> runSLIC() throws Exception {
 
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
@@ -164,32 +126,16 @@ public class RavenController {
         efficiencies.put(3, 1.0);
         efficiencies.put(4, 1.0);
 
-        Statistics.start();
         ArrayList<SRSGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
-        Statistics.stop();
-        solutionStats(optimalGraphs);
-        ClothoReader reader = new ClothoReader();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        for (SRSGraph result : optimalGraphs) {
-            reader.nodesToClothoPartsVectors(_collector, result);
-            reader.fixCompositeUUIDs(_collector, result);
-            boolean canPigeon = result.canPigeon();
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
-        }
-        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
-        //Clean up data
-        gps = null;
+        return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for MoClo *
      */
-    public void runMoClo() throws Exception {
+    public ArrayList<SRSGraph> runMoClo() throws Exception {
         if (_goalParts == null) {
-            return;
+            return null;
         }
         //Run algorithm for MoClo assembly
         _assemblyGraphs.clear();
@@ -204,31 +150,17 @@ public class RavenController {
         efficiencies.put(5, 1.0);
         efficiencies.put(6, 1.0);
 
-        Statistics.start();
         moclo.setForcedOverhangs(_collector, forcedOverhangHash);
         ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
-        Statistics.stop();
-        solutionStats(optimalGraphs);
-        ClothoReader reader = new ClothoReader();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        for (SRSGraph result : optimalGraphs) {
-            reader.nodesToClothoPartsVectors(_collector, result);
-            reader.fixCompositeUUIDs(_collector, result);
-            boolean canPigeon = result.canPigeon();
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
-        }
-        _instructions = "";
-        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
+        return optimalGraphs;
+
 
     }
 
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    public void runGoldenGate() throws Exception {
+    public ArrayList<SRSGraph> runGoldenGate() throws Exception {
 
         //  Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
@@ -242,25 +174,9 @@ public class RavenController {
         efficiencies.put(4, 1.0);
         efficiencies.put(5, 1.0);
         efficiencies.put(6, 1.0);
-
-        Statistics.start();
         ArrayList<SRSGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, true, efficiencies);
-        Statistics.stop();
-        solutionStats(optimalGraphs);
-        ClothoReader reader = new ClothoReader();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        for (SRSGraph result : optimalGraphs) {
-            reader.nodesToClothoPartsVectors(_collector, result);
-            reader.fixCompositeUUIDs(_collector, result);
-            boolean canPigeon = result.canPigeon();
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
-        }
-        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
-        //Clean up /data
-        gps = null;
+        return optimalGraphs;
+
     }
 
     public boolean generatePartsListFile(String designNumber) throws Exception {
@@ -537,7 +453,7 @@ public class RavenController {
      * Traverse a solution graph for statistics *
      */
     public void solutionStats(ArrayList<SRSGraph> optimalGraphs) throws Exception {
-
+        boolean valid = validateGraphComposition(optimalGraphs);
         //Initialize statistics
         HashSet<String> recd = new HashSet<String>();
 //        HashSet<String> reqd = new HashSet<String>();
@@ -653,19 +569,37 @@ public class RavenController {
             Part current = _collector.getPart(targetIDs[i]);
             _goalParts.put(current, ClothoReader.getComposition(current));
         }
+        ArrayList<SRSGraph> optimalGraphs = new ArrayList();
+        Statistics.start();
         if (method.equals("biobrick")) {
             runBioBricks();
         } else if (method.equals("cpec")) {
-            runCPEC();
+            optimalGraphs = runCPEC();
         } else if (method.equals("gibson")) {
-            runGibson();
+            optimalGraphs = runGibson();
         } else if (method.equals("golden gate")) {
-            runGoldenGate();
+            optimalGraphs = runGoldenGate();
         } else if (method.equals("moclo")) {
-            runMoClo();
+            optimalGraphs = runMoClo();
         } else if (method.equals("slic")) {
-            runSLIC();
+            optimalGraphs = runSLIC();
         }
+        Statistics.stop();
+        solutionStats(optimalGraphs);
+        ClothoReader reader = new ClothoReader();
+        ArrayList<String> graphTextFiles = new ArrayList();
+        for (SRSGraph result : optimalGraphs) {
+            reader.nodesToClothoPartsVectors(_collector, result);
+            reader.fixCompositeUUIDs(_collector, result);
+            boolean canPigeon = result.canPigeon();
+            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
+        }
+        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
+        WeyekinPoster.setDotText(mergedGraphText);
+        WeyekinPoster.postMyVision();
+
+
         String toReturn = "";
         try {
             toReturn = WeyekinPoster.getmGraphVizURI().toString();

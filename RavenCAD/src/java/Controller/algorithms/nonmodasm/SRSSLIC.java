@@ -103,4 +103,8 @@ public class SRSSLIC extends SRSGeneral {
 
         return optimalGraphs;
     }
+    
+    public boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+        return true;
+    }
 }
