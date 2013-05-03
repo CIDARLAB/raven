@@ -130,11 +130,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '"><div class="well" id="instructionArea' + designCount +
                     '">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div></div>');
             //add download buttons and bind events to them
-            $('#download' + designCount).append('<h4>Download Options</h4><div>' +
+            $('#download' + designCount).append('<h4>Download Options</h4>' +
+                    '<p><small>Please use right-click, then save as to download the files</small></p>'+
                     '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
                     '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
-                    '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                    '<p><small>Please use right-click, then save as to download the files</small></div>');
+                    '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>'
+                    );
             var partLibrary = ""; //parts to use in library
             var vectorLibrary = ""; //vectors to use in library
             var rec = ""; //recommended intermediates
@@ -175,6 +176,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
                     $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
                     $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
+                    var status = '<p><span class="label label-warning">Graph Structure Invalid!</span></p><p><button id="reportButton'+designCount+'" class ="btn btn-danger">Report Error</button></p>';
+                    if (data["statistics"]["valid"] === "true") {
+                        status=  '<p><span class="label label-success">Graph structure verified!</span></p><p><button id="reportButton'+designCount+'" class ="btn btn-primary">Submit as Example</button></p>';
+                    }
+                    $('#reportButton'+designCount).click(function(){
+                        alert(designCount);
+                    })
+                    $('#download' + designCount).append(status);
                     $('#stat' + designCount).html('<h4>Assembly Statistics</h4><table class="table">' +
                             '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
                             '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +

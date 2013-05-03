@@ -36,29 +36,15 @@ public class RavenController {
         _user = user;
     }
 
-    public void runBioBricks() throws Exception {
+    public ArrayList<SRSGraph> runBioBricks() throws Exception {
 
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
         SRSBioBricks biobricks = new SRSBioBricks();
-        Statistics.start();
         ArrayList<SRSGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false);
-        Statistics.stop();
-        solutionStats(optimalGraphs);
-        ClothoReader reader = new ClothoReader();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        for (SRSGraph result : optimalGraphs) {
-                reader.nodesToClothoPartsVectors(_collector, result);
-                reader.fixCompositeUUIDs(_collector, result);
-            boolean canPigeon = result.canPigeon();
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
-        }
-        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
+        return optimalGraphs;
     }
 
     /**
@@ -148,6 +134,7 @@ public class RavenController {
 
         moclo.setForcedOverhangs(_collector, forcedOverhangHash);
         ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
+
         return optimalGraphs;
 
 
@@ -269,9 +256,10 @@ public class RavenController {
         String toReturn = "[";
         ArrayList<Part> allParts = _collector.getAllParts();
         for (Part p : allParts) {
-            toReturn = toReturn + "{\"uuid\":\"" + p.getUUID() + "\",\"Name\":\"" + p.getName() + "\",\"Sequence\":\"" + p.getSeq() + "\",\"LO\":\"" + p.getLeftOverhang() + "\",\"RO\":\"" + p.getRightOverhang() + "\",\"Type\":\"" + p.getType() + "\",\"Composition\":\"" + p.getStringComposition() + "\",\"Resistance\":\"\",\"Level\":\"\"},";
+            if (!p.isTransient()) {
+                toReturn = toReturn + "{\"uuid\":\"" + p.getUUID() + "\",\"Name\":\"" + p.getName() + "\",\"Sequence\":\"" + p.getSeq() + "\",\"LO\":\"" + p.getLeftOverhang() + "\",\"RO\":\"" + p.getRightOverhang() + "\",\"Type\":\"" + p.getType() + "\",\"Composition\":\"" + p.getStringComposition() + "\",\"Resistance\":\"\",\"Level\":\"\"},";
+            }
         }
-
         ArrayList<Vector> allVectors = _collector.getAllVectors();
         for (Vector v : allVectors) {
             toReturn = toReturn + "{\"uuid\":\"" + v.getUUID() + "\",\"Name\":\"" + v.getName() + "\",\"Sequence\":\"" + v.getSeq() + "\",\"LO\":\"" + v.getLeftoverhang() + "\",\"RO\":\"" + v.getRightOverhang() + "\",\"Type\":\"vector\",\"Composition\":\"\"" + ",\"Resistance\":\"" + v.getResistance() + "\",\"Level\":\"" + v.getLevel() + "\"},";
@@ -448,11 +436,25 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    public void solutionStats(ArrayList<SRSGraph> optimalGraphs) throws Exception {
-        boolean valid = validateGraphComposition(optimalGraphs);
+    public void solutionStats(ArrayList<SRSGraph> optimalGraphs, String method) throws Exception {
         //Initialize statistics
+        boolean overhangValid = false;
+        if (method.equals("biobrick")) {
+            overhangValid = SRSBioBricks.validateOverhangs(optimalGraphs);
+        } else if (method.equals("cpec")) {
+            overhangValid = SRSCPEC.validateOverhangs(optimalGraphs);
+        } else if (method.equals("gibson")) {
+            overhangValid = SRSGibson.validateOverhangs(optimalGraphs);
+        } else if (method.equals("golden gate")) {
+            overhangValid = SRSGoldenGate.validateOverhangs(optimalGraphs);
+        } else if (method.equals("moclo")) {
+            overhangValid = SRSMoClo.validateOverhangs(optimalGraphs);
+        } else if (method.equals("slic")) {
+            overhangValid = SRSSLIC.validateOverhangs(optimalGraphs);
+        }
+        boolean valid = validateGraphComposition(optimalGraphs);
+        valid = valid && overhangValid;
         HashSet<String> recd = new HashSet<String>();
-//        HashSet<String> reqd = new HashSet<String>();
         HashSet<String> steps = new HashSet<String>();
         HashSet<String> sharing = new HashSet<String>();
         int stages = 0;
@@ -532,6 +534,7 @@ public class RavenController {
         _statistics.setGoalParts(optimalGraphs.size());
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(reactions);
+        _statistics.setValid(valid);
     }
 
     public String run(String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] vectorLibraryIDs, String[] partLibraryIDs) throws Exception {
@@ -568,7 +571,7 @@ public class RavenController {
         ArrayList<SRSGraph> optimalGraphs = new ArrayList();
         Statistics.start();
         if (method.equals("biobrick")) {
-            runBioBricks();
+            optimalGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
             optimalGraphs = runCPEC();
         } else if (method.equals("gibson")) {
@@ -581,7 +584,7 @@ public class RavenController {
             optimalGraphs = runSLIC();
         }
         Statistics.stop();
-        solutionStats(optimalGraphs);
+        solutionStats(optimalGraphs, method);
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
         for (SRSGraph result : optimalGraphs) {
@@ -597,7 +600,7 @@ public class RavenController {
 
 
         String toReturn = "";
-            toReturn = WeyekinPoster.getmGraphVizURI().toString();
+        toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }
 
@@ -646,7 +649,8 @@ public class RavenController {
                 + "\",\"recommended\":\"" + _statistics.getRecommended()
                 + "\",\"efficiency\":\"" + _statistics.getEfficiency()
                 + "\",\"modularity\":\"" + _statistics.getModularity()
-                + "\",\"time\":\"" + _statistics.getExecutionTime() + "\"}";
+                + "\",\"time\":\"" + _statistics.getExecutionTime()
+                + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
         return statString;
     }
     public HashMap<Part, ArrayList<Part>> _goalParts = new HashMap();//key: target part, value: composition

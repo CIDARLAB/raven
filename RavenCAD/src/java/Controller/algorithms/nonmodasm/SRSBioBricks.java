@@ -96,7 +96,7 @@ public class SRSBioBricks extends SRSGeneral {
     }  
        
     
-    public boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         return true;
     }
     

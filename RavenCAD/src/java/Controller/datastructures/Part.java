@@ -23,6 +23,7 @@ public class Part {
         newComposite.name = name;
         newComposite.uuid = String.valueOf(UUID);
         newComposite.isComposite = true;
+        newComposite._transient = true;
         return newComposite;
     }
 
@@ -42,6 +43,7 @@ public class Part {
         newBasic.isComposite = false;
         newBasic.composition = new ArrayList<Part>();
         newBasic.composition.add(newBasic);
+        newBasic._transient=true;
         return newBasic;
     }
 

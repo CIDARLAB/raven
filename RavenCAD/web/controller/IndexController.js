@@ -1,5 +1,4 @@
 $(document).ready(function() {
-    $.get("RavenServlet", {"command": "purge"});
     $('#loginForm').submit(function(e) {
         var self = this;
         e.preventDefault();

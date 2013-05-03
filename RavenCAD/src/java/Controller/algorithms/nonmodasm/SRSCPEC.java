@@ -99,7 +99,7 @@ public class SRSCPEC extends SRSGeneral {
         return optimalGraphs;
     }
     
-    public boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         return true;
     }
 }

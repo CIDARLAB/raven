@@ -664,7 +664,7 @@ public class SRSMoClo extends SRSGeneral {
         }
     }
 
-    public boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         boolean toReturn = true;
         for (SRSGraph graph : graphs) {
             SRSNode root = graph.getRootNode();
