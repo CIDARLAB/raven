@@ -197,9 +197,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             '<tr><td><strong>Modularity of Assembled Parts</strong></td><td>' + data["statistics"]["modularity"] + '</td></tr>' +
                             '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
                     $('#downloadImage' + designCount).attr("href", data["result"]);
-                    $('#downloadInstructions' + designCount).attr("href", "data/"+user+"/instructions" + designCount + ".txt");
-                    $('#downloadParts' + designCount).attr("href", "data/"+user+"/partsList" + designCount + ".csv");
-                    $('#downloadPigeon' + designCount).attr("href", "data/"+user+"/pigeon" + designCount + ".txt");
+                    $('#downloadInstructions' + designCount).attr("href", "data/" + user + "/instructions" + designCount + ".txt");
+                    $('#downloadParts' + designCount).attr("href", "data/" + user + "/partsList" + designCount + ".csv");
+                    $('#downloadPigeon' + designCount).attr("href", "data/" + user + "/pigeon" + designCount + ".txt");
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +
@@ -315,6 +315,30 @@ $(document).ready(function() { //don't run javascript until page is loaded
         seen = null;
         tableBody = tableBody + '</tbody>';
         $('#intermediateTableArea').html(tableBody);
+        $('input.forbidden').click(function() {
+            if ($(this).is(":checked")) {
+                $('#intermediateTableArea input.required[value="' + $(this).val() + '"]').attr("checked", false);
+                $('#intermediateTableArea input.recommended[value="' + $(this).val() + '"]').attr("checked", false);
+            }
+        });
+        $('input.discouraged').click(function() {
+            if ($(this).is(":checked")) {
+                $('#intermediateTableArea input.required[value="' + $(this).val() + '"]').attr("checked", false);
+                $('#intermediateTableArea input.recommended[value="' + $(this).val() + '"]').attr("checked", false);
+            }
+        });
+        $('input.required').click(function() {
+            if ($(this).is(":checked")) {
+                $('#intermediateTableArea input.forbidden[value="' + $(this).val() + '"]').attr("checked", false);
+                $('#intermediateTableArea input.discouraged[value="' + $(this).val() + '"]').attr("checked", false);
+            }
+        });
+        $('input.recommended').click(function() {
+            if ($(this).is(":checked")) {
+                $('#intermediateTableArea input.forbidden[value="' + $(this).val() + '"]').attr("checked", false);
+                $('#intermediateTableArea input.discouraged[value="' + $(this).val() + '"]').attr("checked", false);
+            }
+        });
         $("#intermediateTable").dataTable({
             "sScrollY": "300px",
             "bPaginate": false,
