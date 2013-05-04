@@ -103,6 +103,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         updateSummary();
     });
     $('#runButton').click(function() {
+        var user = getCookie("user");
         var targets = ""; //goal parts
         $('#targetPartList option').each(function() {
             targets = targets + $(this).attr("id") + ",";
@@ -131,10 +132,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div></div>');
             //add download buttons and bind events to them
             $('#download' + designCount).append('<h4>Download Options</h4>' +
-                    '<p><small>Please use right-click, then save as to download the files</small></p>'+
+                    '<p><small>Please use right-click, then save as to download the files</small></p>' +
                     '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
                     '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
-                    '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>'
+                    '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
+                    '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>'
                     );
             var partLibrary = ""; //parts to use in library
             var vectorLibrary = ""; //vectors to use in library
@@ -176,14 +178,15 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
                     $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
                     $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
-                    var status = '<p><span class="label label-warning">Graph Structure Invalid!</span></p><p><button id="reportButton'+designCount+'" class ="btn btn-danger">Report Error</button></p>';
+                    var status = '<p><span class="label label-warning">Graph Structure Invalid!</span></p><p><button id="reportButton' + designCount + '" class ="btn btn-danger">Report Error</button></p>';
                     if (data["statistics"]["valid"] === "true") {
-                        status=  '<p><span class="label label-success">Graph structure verified!</span></p><p><button id="reportButton'+designCount+'" class ="btn btn-primary">Submit as Example</button></p>';
+                        status = '<p><span class="label label-success">Graph structure verified!</span></p><p><button id="reportButton' + designCount + '" class ="btn btn-primary">Submit as Example</button></p>';
                     }
-                    $('#reportButton'+designCount).click(function(){
-                        alert(designCount);
-                    })
                     $('#download' + designCount).append(status);
+
+                    $('#reportButton' + designCount).click(function() {
+                        alert("this feature will be coming soon");
+                    })
                     $('#stat' + designCount).html('<h4>Assembly Statistics</h4><table class="table">' +
                             '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
                             '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
@@ -194,8 +197,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             '<tr><td><strong>Modularity of Assembled Parts</strong></td><td>' + data["statistics"]["modularity"] + '</td></tr>' +
                             '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
                     $('#downloadImage' + designCount).attr("href", data["result"]);
-                    $('#downloadInstructions' + designCount).attr("href", "data/instructions" + designCount + ".txt");
-                    $('#downloadParts' + designCount).attr("href", "data/partsList" + designCount + ".csv");
+                    $('#downloadInstructions' + designCount).attr("href", "data/"+user+"/instructions" + designCount + ".txt");
+                    $('#downloadParts' + designCount).attr("href", "data/"+user+"/partsList" + designCount + ".csv");
+                    $('#downloadPigeon' + designCount).attr("href", "data/"+user+"/pigeon" + designCount + ".txt");
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +

@@ -166,7 +166,7 @@ public class RavenServlet extends HttpServlet {
                     }
                 }
                 String designCount = request.getParameter("designCount");
-                String image = controller.run(method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs);
+                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs);
                 controller.generatePartsListFile(designCount);
                 String instructions = controller.generateInstructionsFile(designCount);
                 String statString = controller.generateStats();

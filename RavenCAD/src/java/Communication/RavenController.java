@@ -272,11 +272,13 @@ public class RavenController {
     public void loadData() throws Exception {
         String uploadFilePath = _path + _user + "/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
-        for (File currentFile : filesInDirectory) {
-            String filePath = currentFile.getAbsolutePath();
-            String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
-            if ("csv".equals(fileExtension)) {
-                parseInputFile(currentFile);
+        if (filesInDirectory != null) {
+            for (File currentFile : filesInDirectory) {
+                String filePath = currentFile.getAbsolutePath();
+                String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
+                if ("csv".equals(fileExtension)) {
+                    parseInputFile(currentFile);
+                }
             }
         }
     }
@@ -436,23 +438,23 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    public void solutionStats(ArrayList<SRSGraph> optimalGraphs, String method) throws Exception {
+    public void solutionStats(String method) throws Exception {
         //Initialize statistics
         boolean overhangValid = false;
         if (method.equals("biobrick")) {
-            overhangValid = SRSBioBricks.validateOverhangs(optimalGraphs);
+            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("cpec")) {
-            overhangValid = SRSCPEC.validateOverhangs(optimalGraphs);
+            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("gibson")) {
-            overhangValid = SRSGibson.validateOverhangs(optimalGraphs);
+            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("golden gate")) {
-            overhangValid = SRSGoldenGate.validateOverhangs(optimalGraphs);
+            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("moclo")) {
-            overhangValid = SRSMoClo.validateOverhangs(optimalGraphs);
+            overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("slic")) {
-            overhangValid = SRSSLIC.validateOverhangs(optimalGraphs);
+            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
         }
-        boolean valid = validateGraphComposition(optimalGraphs);
+        boolean valid = validateGraphComposition();
         valid = valid && overhangValid;
         HashSet<String> recd = new HashSet<String>();
         HashSet<String> steps = new HashSet<String>();
@@ -463,8 +465,7 @@ public class RavenController {
         double efficiency = 0;
         ArrayList<Double> effArray = new ArrayList<Double>();
 
-        for (SRSGraph graph : optimalGraphs) {
-            _assemblyGraphs.add(graph);
+        for (SRSGraph graph : _assemblyGraphs) {
             reactions = reactions + graph.getReaction();
             //Get stages of this graph, if largest, set as assembly stages
             int currentStages = graph.getStages();
@@ -523,7 +524,7 @@ public class RavenController {
         if (reactions == 0) {
             reactions = steps.size() * 2;
         }
-        modularity = modularity / optimalGraphs.size();
+        modularity = modularity / _assemblyGraphs.size();
         //Statistics determined
         _statistics.setModularity(modularity);
         _statistics.setEfficiency(efficiency);
@@ -531,13 +532,13 @@ public class RavenController {
         _statistics.setStages(stages);
         _statistics.setSteps(steps.size());
         _statistics.setSharing(sharing.size());
-        _statistics.setGoalParts(optimalGraphs.size());
+        _statistics.setGoalParts(_assemblyGraphs.size());
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(reactions);
         _statistics.setValid(valid);
     }
 
-    public String run(String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] vectorLibraryIDs, String[] partLibraryIDs) throws Exception {
+    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] vectorLibraryIDs, String[] partLibraryIDs) throws Exception {
         _goalParts = new HashMap();
         _required = required;
         _recommended = recommended;
@@ -568,26 +569,25 @@ public class RavenController {
             Part current = _collector.getPart(targetIDs[i]);
             _goalParts.put(current, ClothoReader.getComposition(current));
         }
-        ArrayList<SRSGraph> optimalGraphs = new ArrayList();
         Statistics.start();
         if (method.equals("biobrick")) {
-            optimalGraphs = runBioBricks();
+            _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
-            optimalGraphs = runCPEC();
+            _assemblyGraphs = runCPEC();
         } else if (method.equals("gibson")) {
-            optimalGraphs = runGibson();
+            _assemblyGraphs = runGibson();
         } else if (method.equals("golden gate")) {
-            optimalGraphs = runGoldenGate();
+            _assemblyGraphs = runGoldenGate();
         } else if (method.equals("moclo")) {
-            optimalGraphs = runMoClo();
+            _assemblyGraphs = runMoClo();
         } else if (method.equals("slic")) {
-            optimalGraphs = runSLIC();
+            _assemblyGraphs = runSLIC();
         }
         Statistics.stop();
-        solutionStats(optimalGraphs, method);
+        solutionStats(method);
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
-        for (SRSGraph result : optimalGraphs) {
+        for (SRSGraph result : _assemblyGraphs) {
             reader.nodesToClothoPartsVectors(_collector, result);
             reader.fixCompositeUUIDs(_collector, result);
             boolean canPigeon = result.canPigeon();
@@ -595,6 +595,12 @@ public class RavenController {
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
+        //save graph text file
+        File file = new File(_path + _user + "/pigeon" + designCount + ".txt");
+        FileWriter fw = new FileWriter(file);
+        BufferedWriter out = new BufferedWriter(fw);
+        out.write(mergedGraphText);
+        out.close();
         WeyekinPoster.setDotText(mergedGraphText);
         WeyekinPoster.postMyVision();
 
@@ -604,10 +610,10 @@ public class RavenController {
         return toReturn;
     }
 
-    private boolean validateGraphComposition(ArrayList<SRSGraph> graphs) throws Exception {
+    private boolean validateGraphComposition() throws Exception {
         boolean toReturn = true;
         HashSet<String> seenRequired = new HashSet();
-        for (SRSGraph graph : graphs) {
+        for (SRSGraph graph : _assemblyGraphs) {
             ArrayList<SRSNode> queue = new ArrayList();
             HashSet<SRSNode> seenNodes = new HashSet();
             queue.add(graph.getRootNode());
