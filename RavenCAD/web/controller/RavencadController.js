@@ -11,7 +11,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
     $('#designTabHeader a:first').click(function() {
         refreshData();
     });
-
     $('#methodSelection').change(function() {
         method = $("#methodSelection :selected").text();
         updateSummary();
@@ -21,7 +20,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#availableTargetPartList option").each(function() {
             $("#availableLibraryPartList #" + $(this).attr("id")).remove();
             $("#libraryPartList #" + $(this).attr("id")).remove();
-
         });
         $('#targetPartList').append($('#availableTargetPartList option'));
         drawIntermediates();
@@ -81,7 +79,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#availableLibraryPartList').append($('#libraryPartList :selected'));
         drawIntermediates();
     });
-
     $('#libraryVectorSelectAllButton').click(function() {
         $('#libraryVectorList').append($('#availableLibraryVectorList option'));
     });
@@ -97,8 +94,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
     $('#resetIntermediatesButton').click(function() {
         $(':checked').attr("checked", false);
     });
-
-
     $('.btn').click(function() {
         updateSummary();
     });
@@ -116,10 +111,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#designTabHeader a:last').tab('show'); //TODO figure out how to show new tab
 
             //generate main skeleton
-            $('#designTab' + designCount).append('<div class="row-fluid"><div class="span10"><div class="tabbable" id="resultTabs' + designCount +
+            $('#designTab' + designCount).append('<div class="row-fluid"><div class="span12"><div class="tabbable" id="resultTabs' + designCount +
                     '"></div></div></div>' +
-                    '<div class="row-fluid"><div class="span7"><div class="well" id="stat' + designCount +
-                    '"><h4>Assembly Statistics</h4></div></div><div class="span3"><div class="well" id="download' + designCount + '"></div></div></div>');
+                    '<div class="row-fluid"><div class="span8"><div class="well" id="stat' + designCount +
+                    '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + designCount + '"></div></div></div>');
             //add menu
             $('#resultTabs' + designCount).append('<ul id="resultTabsHeader' + designCount + '" class="nav nav-tabs">' +
                     '<li class="active"><a href="#imageTab' + designCount + '" data-toggle="tab" >Image</a></li>' +
@@ -132,7 +127,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
                     '<div class="tab-pane active" id="imageTab' + designCount + '"><div class="well" id="resultImage' + designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
                     '<div class="tab-pane" id="instructionTab' + designCount + '"><div class="well" id="instructionArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                    '<div class="tab-pane" id="partsListTab' + designCount + '"><div class="well" id="partsListArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                    '<div class="tab-pane" id="partsListTab' + designCount + '"><div id="partsListArea' + designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
                     '<div class="tab-pane" id="summaryTab' + designCount + '"><div class="well" id="summaryArea' + designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
                     '</div>');
             //add download buttons and bind events to them
@@ -180,18 +175,25 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage};
             $.get("RavenServlet", requestInput, function(data) {
                 if (data["status"] === "good") {
+//render image
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
                     $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
                     $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
                     var status = '<p><span class="label label-warning">Graph Structure Invalid!</span></p><p><button id="reportButton' + designCount + '" class ="btn btn-danger">Report Error</button></p>';
                     if (data["statistics"]["valid"] === "true") {
-                        status = '<p><span class="label label-success">Graph structure verified!</span></p><p><button id="reportButton' + designCount + '" class ="btn btn-primary">Submit as Example</button></p>';
+                        status = '<p><span class="label label-success">Graph structure verified!</span></p><p><button id="reportButton' + designCount +
+                                '" class ="btn btn-primary">Submit as Example</button></p>' +
+                                '<p><button class="btn btn-success" id="saveButton' + designCount + '">Save to working library</button></p>';
                     }
-                    $('#download' + designCount).append(status);
-
+//prepend status
+                    $('#download' + designCount).prepend(status);
                     $('#reportButton' + designCount).click(function() {
                         alert("this feature will be coming soon");
-                    })
+                    });
+                    $('#saveButton' + designCount).click(function() {
+                        alert("this feature will be coming soon");
+                    });
+                    //render stats
                     $('#stat' + designCount).html('<h4>Assembly Statistics</h4><table class="table">' +
                             '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
                             '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
@@ -206,6 +208,26 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $('#downloadParts' + designCount).attr("href", "data/" + user + "/partsList" + designCount + ".csv");
                     $('#downloadPigeon' + designCount).attr("href", "data/" + user + "/pigeon" + designCount + ".txt");
                     $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
+                    //render parts list
+                    var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + designCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
+                    $.each(data["partsList"], function() {
+                        partsListTableBody = partsListTableBody + "<tr><td>"
+                                + this["uuid"] + "</td><td>"
+                                + this["Name"] + "</td><td>"
+                                + this["LO"] + "</td><td>"
+                                + this["RO"] + "</td><td>"
+                                + this["Type"] + "</td><td>"
+                                + this["Composition"] + "</td><td>"
+                                + this["Resistance"] + "</td><td>"
+                                + this["Level"] + "</td></tr>";
+                    });
+                    partsListTableBody = partsListTableBody + '</tbody></table>';
+                    $('#partsListArea' + designCount).html(partsListTableBody);
+                    $("#partsListTable" + designCount).dataTable({
+                        "sScrollY": "300px",
+                        "bPaginate": false,
+                        "bScrollCollapse": true
+                    });
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +
@@ -253,7 +275,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#availableTargetPartListArea").html(targetListBody);
         $("#libraryPartListArea").html(libraryPartListBody);
         $("#libraryVectorListArea").html(libraryVectorListBody);
-
         //clear lists
         $('#targetPartList').html("");
         $('#availableLibraryPartList').html("");
@@ -353,9 +374,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $(':checkbox').change(function() {
             updateSummary();
         });
-
     };
-
     var updateSummary = function() {
         var summary = "<p>You're trying to assemble</p>";
         if ($('#targetPartList option').length > 0) {
@@ -422,15 +441,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
         $('#designSummaryArea').html(summary);
     };
-
-
     $("#intermediateTable").dataTable({
         "sScrollY": "300px",
         "bPaginate": false,
         "bScrollCollapse": true
     });
-
-
     function setCookie(c_name, value, exdays) {
         var exdate = new Date();
         exdate.setDate(exdate.getDate() + exdays);
@@ -458,7 +473,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         return c_value;
     }
     function deleteCookie(key) {
-        // Delete a cookie by setting the date of expiry to yesterday
+// Delete a cookie by setting the date of expiry to yesterday
         date = new Date();
         date.setDate(date.getDate() - 1);
         document.cookie = escape(key) + '=;expires=' + date;

@@ -123,14 +123,14 @@ public class RavenServlet extends HttpServlet {
                     }
                     String designCount = request.getParameter("designCount");
                     String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs);
-                    controller.generatePartsListFile(designCount);
+                    String partsList = controller.generatePartsList(designCount);
                     String instructions = controller.generateInstructionsFile(designCount);
                     String statString = controller.generateStats();
                     instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
                     if (instructions.length() < 1) {
                         instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                     }
-                    out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\"}");
+                    out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":"+partsList+"}");
             }
         } catch (Exception e) {
             StringWriter stringWriter = new StringWriter();

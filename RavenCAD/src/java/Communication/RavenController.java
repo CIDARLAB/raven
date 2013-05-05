@@ -162,7 +162,8 @@ public class RavenController {
 
     }
 
-    public boolean generatePartsListFile(String designNumber) throws Exception {
+    //returns json array containing all objects in parts list; generates parts list file
+    public String generatePartsList(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
         //traverse graphs to get uuids
         ArrayList<Part> usedPartsHash = new ArrayList<Part>();
@@ -180,6 +181,7 @@ public class RavenController {
             }
         }
         //extract information from parts and write file
+        String toReturn = "[";
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
         out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
@@ -209,6 +211,15 @@ public class RavenController {
                 }
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             }
+            toReturn = toReturn
+                    + "{\"uuid\":\"" + p.getUUID()
+                    + "\",\"Name\":\"" + p.getName()
+                    + "\",\"Sequence\":\"" + p.getSeq()
+                    + "\",\"LO\":\"" + p.getLeftOverhang()
+                    + "\",\"RO\":\"" + p.getRightOverhang()
+                    + "\",\"Type\":\"" + p.getType()
+                    + "\",\"Composition\":\"" + p.getStringComposition()
+                    + "\",\"Resistance\":\"\",\"Level\":\"\"},";
         }
 
         for (Vector v : usedVectorsHash) {
@@ -229,9 +240,20 @@ public class RavenController {
                 }
             }
             out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+            toReturn = toReturn + "{\"uuid\":\"" + v.getUUID()
+                    + "\",\"Name\":\"" + v.getName()
+                    + "\",\"Sequence\":\"" + v.getSeq()
+                    + "\",\"LO\":\"" + v.getLeftoverhang()
+                    + "\",\"RO\":\"" + v.getRightOverhang()
+                    + "\",\"Type\":\"vector\",\"Composition\":\"\""
+                    + ",\"Resistance\":\"" + v.getResistance()
+                    + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
         out.close();
-        return true;
+        toReturn = toReturn.substring(0,toReturn.length()-1);
+        toReturn = toReturn + "]";
+        System.out.println(toReturn);
+        return toReturn;
     }
 
     public String generateInstructionsFile(String designNumber) throws Exception {
@@ -257,12 +279,27 @@ public class RavenController {
         ArrayList<Part> allParts = _collector.getAllParts();
         for (Part p : allParts) {
             if (!p.isTransient()) {
-                toReturn = toReturn + "{\"uuid\":\"" + p.getUUID() + "\",\"Name\":\"" + p.getName() + "\",\"Sequence\":\"" + p.getSeq() + "\",\"LO\":\"" + p.getLeftOverhang() + "\",\"RO\":\"" + p.getRightOverhang() + "\",\"Type\":\"" + p.getType() + "\",\"Composition\":\"" + p.getStringComposition() + "\",\"Resistance\":\"\",\"Level\":\"\"},";
+                toReturn = toReturn
+                        + "{\"uuid\":\"" + p.getUUID()
+                        + "\",\"Name\":\"" + p.getName()
+                        + "\",\"Sequence\":\"" + p.getSeq()
+                        + "\",\"LO\":\"" + p.getLeftOverhang()
+                        + "\",\"RO\":\"" + p.getRightOverhang()
+                        + "\",\"Type\":\"" + p.getType()
+                        + "\",\"Composition\":\"" + p.getStringComposition()
+                        + "\",\"Resistance\":\"\",\"Level\":\"\"},";
             }
         }
         ArrayList<Vector> allVectors = _collector.getAllVectors();
         for (Vector v : allVectors) {
-            toReturn = toReturn + "{\"uuid\":\"" + v.getUUID() + "\",\"Name\":\"" + v.getName() + "\",\"Sequence\":\"" + v.getSeq() + "\",\"LO\":\"" + v.getLeftoverhang() + "\",\"RO\":\"" + v.getRightOverhang() + "\",\"Type\":\"vector\",\"Composition\":\"\"" + ",\"Resistance\":\"" + v.getResistance() + "\",\"Level\":\"" + v.getLevel() + "\"},";
+            toReturn = toReturn + "{\"uuid\":\"" + v.getUUID()
+                    + "\",\"Name\":\"" + v.getName()
+                    + "\",\"Sequence\":\"" + v.getSeq()
+                    + "\",\"LO\":\"" + v.getLeftoverhang()
+                    + "\",\"RO\":\"" + v.getRightOverhang()
+                    + "\",\"Type\":\"vector\",\"Composition\":\"\""
+                    + ",\"Resistance\":\"" + v.getResistance()
+                    + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
         toReturn = toReturn.subSequence(0, toReturn.length() - 1) + "]";
         return toReturn;
