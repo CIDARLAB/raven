@@ -123,13 +123,18 @@ $(document).ready(function() { //don't run javascript until page is loaded
             //add menu
             $('#resultTabs' + designCount).append('<ul id="resultTabsHeader' + designCount + '" class="nav nav-tabs">' +
                     '<li class="active"><a href="#imageTab' + designCount + '" data-toggle="tab" >Image</a></li>' +
-                    '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li></ul>');
+                    '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
+                    '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
+                    '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
+                    '</ul>');
             //add tab content
-            $('#resultTabs' + designCount).append('<div class="tab-content" id="resultTabsContent' + designCount + '"><div class="tab-pane active" id="imageTab'
-                    + designCount + '"><div class="well" id="resultImage' + designCount +
-                    '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div><div class="tab-pane" id="instructionTab' + designCount +
-                    '"><div class="well" id="instructionArea' + designCount +
-                    '">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div></div>');
+            $('#resultTabs' + designCount).append(
+                    '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
+                    '<div class="tab-pane active" id="imageTab' + designCount + '"><div class="well" id="resultImage' + designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                    '<div class="tab-pane" id="instructionTab' + designCount + '"><div class="well" id="instructionArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                    '<div class="tab-pane" id="partsListTab' + designCount + '"><div class="well" id="partsListArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                    '<div class="tab-pane" id="summaryTab' + designCount + '"><div class="well" id="summaryArea' + designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
+                    '</div>');
             //add download buttons and bind events to them
             $('#download' + designCount).append('<h4>Download Options</h4>' +
                     '<p><small>Please use right-click, then save as to download the files</small></p>' +
@@ -200,6 +205,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $('#downloadInstructions' + designCount).attr("href", "data/" + user + "/instructions" + designCount + ".txt");
                     $('#downloadParts' + designCount).attr("href", "data/" + user + "/partsList" + designCount + ".csv");
                     $('#downloadPigeon' + designCount).attr("href", "data/" + user + "/pigeon" + designCount + ".txt");
+                    $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
                 } else {
                     $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                             '<strong>Oops, an error occured while generating your assembly plan</strong>' +
@@ -265,9 +271,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
         });
     };
-    $.get("RavenServlet", {"command": "load"}, function() {
-        refreshData();
-    });
+//    $.get("RavenServlet", {"command": "load"}, function() {
+    refreshData();
+//    });
     var generateIntermediates = function(composition) {
         toSplit = composition.substring(1, composition.length - 1);
         var toReturn = [];
@@ -353,7 +359,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var updateSummary = function() {
         var summary = "<p>You're trying to assemble</p>";
         if ($('#targetPartList option').length > 0) {
-            summary = summary + "<ul>";
+            summary = summary + '<ul style="max-height:150px;overflow:auto">';
             $('#targetPartList option').each(function() {
                 summary = summary + '<li>' + $(this).text() + '</li>';
             });
@@ -364,7 +370,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         summary = summary + '<p>You will be using the <strong>' + method + '</strong> assembly method</p>';
         if ($('.recommended:checked').length > 0) {
             summary = summary + '<p>The following intermediates are recommended:</p>';
-            summary = summary + '<ul>';
+            summary = summary + '<ul style="max-height:150px;overflow:auto">';
             $('.recommended:checked').each(function() {
                 summary = summary + '<li>' + $(this).val() + '</li>';
             });
@@ -374,7 +380,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         }
         if ($('.required:checked').length > 0) {
             summary = summary + '<p>The following intermediates are required:</p>';
-            summary = summary + '<ul>';
+            summary = summary + '<ul style="max-height:150px;overflow:auto">';
             $('.required:checked').each(function() {
                 summary = summary + '<li>' + $(this).val() + '</li>';
             });
@@ -384,7 +390,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         }
         if ($('.forbidden:checked').length > 0) {
             summary = summary + '<p>The following intermediates are forbidden:</p>';
-            summary = summary + '<ul>';
+            summary = summary + '<ul style="max-height:150px;overflow:auto">';
             $('.forbidden:checked').each(function() {
                 summary = summary + '<li>' + $(this).val() + '</li>';
             });
@@ -404,7 +410,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         }
         if ($('#libraryPartList option').length > 0) {
             summary = summary + '<p>Your library includes the following parts:</p>';
-            summary = summary + '<ul>';
+            summary = summary + '<ul style="max-height:150px;overflow:auto">';
             $('#libraryPartList option').each(function() {
                 summary = summary + '<li>' + $(this).val() + "</li>";
             });

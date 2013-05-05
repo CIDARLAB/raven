@@ -90,16 +90,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     + this["Composition"] + "</td><td>"
                     + this["Resistance"] + "</td><td>"
                     + this["Level"] + "</td></tr>";
-//            allAddRow({"uuid": this["uuid"],
-//                "Name": this["Name"],
-//                "Sequence": this["Sequence"],
-//                "LO": this["LO"],
-//                "RO": this["RO"],
-//                "Type": this["Type"],
-//                "Composition": this["Composition"],
-//                "Resistance": this["Resistance"],
-//                "Level": this["Level"]
-//            });
             if (this["Type"] === "vector") {
                 vectorTableBody = vectorTableBody + "<tr><td>"
                         + this["uuid"] + "</td><td>"
@@ -110,15 +100,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         + this["Type"] + "</td><td>"
                         + this["Resistance"] + "</td><td>"
                         + this["Level"] + "</td></tr>";
-//                vectorAddRow({"uuid": this["uuid"],
-//                    "Name": this["Name"],
-//                    "Sequence": this["Sequence"],
-//                    "LO": this["LO"],
-//                    "RO": this["RO"],
-//                    "Type": this["Type"],
-//                    "Resistance": this["Resistance"],
-//                    "Level": this["Level"]
-//                });
             } else {
                 partTableBody = partTableBody + "<tr><td>"
                         + this["uuid"] + "</td><td>"
@@ -128,14 +109,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         + this["RO"] + "</td><td>"
                         + this["Type"] + "</td><td>"
                         + this["Composition"] + "</td></tr>"
-//                partAddRow({"uuid": this["uuid"],
-//                    "Name": this["Name"],
-//                    "Sequence": this["Sequence"],
-//                    "LO": this["LO"],
-//                    "RO": this["RO"],
-//                    "Type": this["Type"],
-//                    "Composition": this["Composition"]
-//                });
             }
         });
         allTableBody = allTableBody + "</tbody></table>";
