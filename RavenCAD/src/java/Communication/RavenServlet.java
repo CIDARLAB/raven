@@ -4,16 +4,23 @@
  */
 package Communication;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 /**
  *
@@ -57,23 +64,24 @@ public class RavenServlet extends HttpServlet {
             } finally {
                 out.close();
             }
-        } else if (command.equals("load")) {
-            try {
-                response.setContentType("text/html;charset=UTF-8");
-                String responseString = "loaded data";
-                controller.loadData();
-                out.write(responseString);
-            } catch (Exception e) {
-                e.printStackTrace();
-                StringWriter stringWriter = new StringWriter();
-                PrintWriter printWriter = new PrintWriter(stringWriter);
-                e.printStackTrace(printWriter);
-                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
-                out.write(exceptionAsString);
-            } finally {
-                out.close();
-            }
-        } else if (command.equals("logout")) {
+        } //        else if (command.equals("load")) {
+        //            try {
+        //                response.setContentType("text/html;charset=UTF-8");
+        //                String responseString = "loaded data";
+        //                controller.loadData();
+        //                out.write(responseString);
+        //            } catch (Exception e) {
+        //                e.printStackTrace();
+        //                StringWriter stringWriter = new StringWriter();
+        //                PrintWriter printWriter = new PrintWriter(stringWriter);
+        //                e.printStackTrace(printWriter);
+        //                String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+        //                out.write(exceptionAsString);
+        //            } finally {
+        //                out.close();
+        //            }
+        //        } 
+        else if (command.equals("logout")) {
             try {
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "logged out";
@@ -198,14 +206,51 @@ public class RavenServlet extends HttpServlet {
      * throws IOException if an I /O error occurs
      *
      */
-    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
+    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (!ServletFileUpload.isMultipartContent(request)) {
+            throw new IllegalArgumentException("Request is not multipart, please 'multipart/form-data' enctype for your form.");
+        }
+        ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
+        PrintWriter writer = response.getWriter();
+        response.setContentType("text/plain");
+        response.sendRedirect("import.html");
+        String user = getUser(request);
+        RavenController controller = _collectorHash.get(user);
+        if (controller == null) {
+            String path = this.getServletContext().getRealPath("/") + "/data/";
+            _collectorHash.put(user, new RavenController(path, user));
+            controller = _collectorHash.get(user);
+        }
         try {
-            /* TODO output your page here. You may use following sample code. */
+            List<FileItem> items = uploadHandler.parseRequest(request);
+            String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
+            new File(uploadFilePath).mkdir();
+            ArrayList<File> toLoad = new ArrayList();
+            for (FileItem item : items) {
+                File file;
+                if (!item.isFormField()) {
+                    String fileName = item.getName();
+                    if (fileName.equals("")) {
+                        System.out.println("You forgot to choose a file.");
+                    }
+                    if (fileName.lastIndexOf("\\") >= 0) {
+                        file = new File(uploadFilePath + "\\" + fileName.substring(fileName.lastIndexOf("\\")));
+                    } else {
+                        file = new File(uploadFilePath + "\\" + fileName.substring(fileName.lastIndexOf("\\") + 1));
+                    }
+                    item.write(file);
+                    toLoad.add(file);
+                }
+                writer.write("{\"name\":\"" + item.getName() + "\",\"type\":\"" + item.getContentType() + "\",\"size\":\"" + item.getSize() + "\"}");
+            }
+            controller.loadData(toLoad);
+        } catch (FileUploadException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            //File not found, no need to panick, or do anything....
         } finally {
-            out.close();
+            writer.close();
+
         }
     }
 

@@ -269,11 +269,11 @@ public class RavenController {
     }
 
     //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
-    public void loadData() throws Exception {
-        String uploadFilePath = _path + _user + "/";
-        File[] filesInDirectory = new File(uploadFilePath).listFiles();
-        if (filesInDirectory != null) {
-            for (File currentFile : filesInDirectory) {
+    public void loadData(ArrayList<File> filesToRead) throws Exception {
+//        String uploadFilePath = _path + _user + "/";
+//        File[] filesInDirectory = new File(uploadFilePath).listFiles();
+        if (filesToRead != null) {
+            for (File currentFile : filesToRead) {
                 String filePath = currentFile.getAbsolutePath();
                 String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
                 if ("csv".equals(fileExtension)) {
