@@ -1,4 +1,20 @@
 $(document).ready(function() {
+
+    $('#loginForm').submit(function(e) {
+        var self = this;
+        e.preventDefault();
+        if ($('#loginForm input[name="user"]').val() === "") {
+            alert("Please enter your user name.");
+        } else if ($('#loginForm input[name="password"]') === "") {
+            alert("Please enter your password");
+        } else {
+            self.submit(function() {
+                if (getCookie("authenticate") === "authenticated") {
+                    $.get("RavenServlet", {"command": "purge"});
+                }
+            });
+        }
+    });
     function setCookie(c_name, value, exdays) {
         var exdate = new Date();
         exdate.setDate(exdate.getDate() + exdays);
@@ -40,9 +56,11 @@ $(document).ready(function() {
     if (getCookie("authenticate") === "authenticated") {
         $('#loginArea').html('<p class="pull-right">You are logged in as <strong>' + getCookie("user") + '</strong> <a id="logout">Log Out</a></p>');
         $('#logout').click(function() {
-            deleteCookie("authenticate");
-            deleteCookie("user");
-            window.location.replace("index.html");
+            $.get("RavenServlet", {"command": "logout"}, function() {
+                deleteCookie("authenticate");
+                deleteCookie("user");
+                window.location.replace("index.html");
+            });
         });
     } else if (getCookie("authenticate") === "failed") {
         window.location.replace("login.html");
