@@ -250,9 +250,8 @@ public class RavenController {
                     + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
         out.close();
-        toReturn = toReturn.substring(0,toReturn.length()-1);
+        toReturn = toReturn.substring(0, toReturn.length() - 1);
         toReturn = toReturn + "]";
-        System.out.println(toReturn);
         return toReturn;
     }
 
@@ -305,8 +304,7 @@ public class RavenController {
         return toReturn;
     }
 
-    //parses all csv files stored in ravencache directory, and then adds parts and vectors to Collecor
-    public void loadData(ArrayList<File> filesToRead) throws Exception {
+    public void loadUploadedFiles(ArrayList<File> filesToRead) throws Exception {
 //        String uploadFilePath = _path + _user + "/";
 //        File[] filesInDirectory = new File(uploadFilePath).listFiles();
         if (filesToRead != null) {
@@ -318,6 +316,12 @@ public class RavenController {
                 }
             }
         }
+    }
+
+    public void loadDesign(String designCount) throws Exception {
+        String filePath = _path + _user + "/partsList" + designCount + ".csv";
+        File toLoad = new File(filePath);
+        parseInputFile(toLoad);
     }
 
     private void parseInputFile(File input) throws Exception {

@@ -179,22 +179,46 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
                     $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
                     $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
-                    var status = '<p><span class="label label-warning">Graph Structure Invalid!</span></p><p><button id="reportButton' + designCount + '" class ="btn btn-danger">Report Error</button></p>';
+                    var status = '';
+                    var saveButtons = '';
                     if (data["statistics"]["valid"] === "true") {
-                        status = '<p><span class="label label-success">Graph structure verified!</span></p><p><button id="reportButton' + designCount +
-                                '" class ="btn btn-primary">Submit as Example</button></p>' +
-                                '<p><button class="btn btn-success" id="saveButton' + designCount + '">Save to working library</button></p>';
+                        status = '<span class="label label-success">Graph structure verified!</span>';
+                        saveButtons = '<p><button id="reportButton' + designCount +
+                                '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
+                                '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '">Save to working library</button></p>';
+                        $('#download' + designCount).prepend(saveButtons);
+                        $('#reportButton' + designCount).click(function() {
+                            alert("this feature will be coming soon");
+                        });
+                    } else {
+                        status = '<span class="label label-warning">Graph Structure Invalid!</span>';
+                        saveButtons = '<p><button id="reportButton' + designCount + '" class ="btn btn-danger">Report Error</button></p>';
+                        $('#download' + designCount).prepend(saveButtons);
+                        $('#reportButton' + designCount).click(function() {
+                            alert("this feature will be coming soon");
+                        });
                     }
 //prepend status
-                    $('#download' + designCount).prepend(status);
-                    $('#reportButton' + designCount).click(function() {
-                        alert("this feature will be coming soon");
-                    });
+
+
                     $('#saveButton' + designCount).click(function() {
-                        alert("this feature will be coming soon");
+                        $.get('RavenServlet', {"command": "load", "designCount": designCount}, function(result) {
+                            if (result === "loaded data") {
+                                $('#saveButton' + designCount).prop('disabled', true);
+                                $('#saveButton' + designCount).text("Successful Save");
+                            } else {
+                                alert("Failed to save parts");
+                                $('#saveButton' + designCount).text("Report Error");
+                                $('#saveButton' + designCount).removeClass('btn-success');
+                                $('#saveButton' + designCount).addClass('btn-danger');
+                                $('#saveButton' + designCount).click(function() {
+                                    alert('this feature will be coming soon');
+                                })
+                            }
+                        });
                     });
                     //render stats
-                    $('#stat' + designCount).html('<h4>Assembly Statistics</h4><table class="table">' +
+                    $('#stat' + designCount).html('<h4>Assembly Statistics '+status+'</h4><table class="table">' +
                             '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
                             '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
                             '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +

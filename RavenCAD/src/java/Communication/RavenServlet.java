@@ -59,7 +59,7 @@ public class RavenServlet extends HttpServlet {
             } else if (command.equals("load")) {
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "loaded data";
-                controller.loadData(null);
+                controller.loadDesign(request.getParameter("designCount"));
                 out.write(responseString);
             } else if (command.equals("logout")) {
                 response.setContentType("text/html;charset=UTF-8");
@@ -189,7 +189,7 @@ public class RavenServlet extends HttpServlet {
                 }
                 writer.write("{\"name\":\"" + item.getName() + "\",\"type\":\"" + item.getContentType() + "\",\"size\":\"" + item.getSize() + "\"}");
             }
-            controller.loadData(toLoad);
+            controller.loadUploadedFiles(toLoad);
         } catch (FileUploadException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {

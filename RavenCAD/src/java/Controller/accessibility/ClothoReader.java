@@ -71,26 +71,32 @@ public class ClothoReader {
 
 
             //create new part and change node uuid if overhangs not match
+            boolean createNewPart = false;
             Part currentPart = coll.getPart(currentNode.getUUID());
-            if (!currentNode.getLOverhang().equals(currentPart.getLeftOverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
-                //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
-                Part betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang()); //search for a better match
-                if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
-                    //if no better part exists, create a new one
-                    if (currentPart.isBasic()) {
-                        betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
+            if (currentPart != null) {
+                if (!currentNode.getLOverhang().equals(currentPart.getLeftOverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
+                    //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
+                    Part betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang()); //search for a better match
+                    if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
+                        //if no better part exists, create a new one
+                        if (currentPart.isBasic()) {
+                            betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
 
-                    } else if (currentPart.isComposite()) {
-                        betterPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
+                        } else if (currentPart.isComposite()) {
+                            betterPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
+                        }
+                        betterPart.addSearchTag("LO: " + currentNode.getLOverhang());
+                        betterPart.addSearchTag("RO: " + currentNode.getROverhang());
+                        betterPart.addSearchTag("Type: " + currentPart.getType());
+                        betterPart.saveDefault(coll);
                     }
-                    betterPart.addSearchTag("LO: " + currentNode.getLOverhang());
-                    betterPart.addSearchTag("RO: " + currentNode.getROverhang());
-                    betterPart.addSearchTag("Type: " + currentPart.getType());
-                    betterPart.saveDefault(coll);
-                }
-                currentNode.setUUID(betterPart.getUUID());
+                    currentNode.setUUID(betterPart.getUUID());
 
+                }
+            } else {
+                
             }
+
 
 
 
@@ -272,6 +278,7 @@ public class ClothoReader {
      * Return the composition of a Clotho part *
      */
     public static ArrayList<Part> getComposition(Part part) throws Exception {
+        System.out.println("tyring to get composition for "+part.getName());
         ArrayList<Part> toReturn = new ArrayList<Part>();
         if (part.isBasic()) {
             toReturn.add(part);
