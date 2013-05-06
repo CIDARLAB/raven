@@ -26,6 +26,12 @@ public class SRSMoClo extends SRSGeneral {
         try {
             _partLibrary = partLibrary;
             _vectorLibrary = vectorLibrary;
+            if(_partLibrary == null) {
+                _partLibrary = new ArrayList();
+            }
+            if(_vectorLibrary ==null) {
+                _vectorLibrary = new ArrayList();
+            }
             //Designate how many parts can be efficiently ligated in one step
             int max = 0;
             Set<Integer> keySet = efficiencies.keySet();
