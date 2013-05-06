@@ -4,6 +4,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var data = null;
     var method = "BioBrick";
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
+    var canRun = true;
 //EVENT HANDLERS
     $('#sidebar').click(function() {
         $('#designTabHeader a:first').tab('show');
@@ -98,172 +99,193 @@ $(document).ready(function() { //don't run javascript until page is loaded
         updateSummary();
     });
     $('#runButton').click(function() {
-        var user = getCookie("user");
-        var targets = ""; //goal parts
-        $('#targetPartList option').each(function() {
-            targets = targets + $(this).attr("id") + ",";
-        });
-        if (targets.length > 1) {
-            designCount = designCount + 1;
-            $('#designTabHeader').append('<li><a href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount +
-                    '</a></li>');
-            $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">');
-            $('#designTabHeader a:last').tab('show'); //TODO figure out how to show new tab
+        if (canRun) {
+            canRun = false; //can only run one design at once
+            var user = getCookie("user");
+            var targets = ""; //goal parts
+            $('#targetPartList option').each(function() {
+                targets = targets + $(this).attr("id") + ",";
+            });
+            if (targets.length > 1) {
+                designCount = designCount + 1;
+                $('#designTabHeader').append('<li><a id="designTabHeader' + designCount + '" href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount +
+                        '</a></li>');
+                $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">');
+                $('#designTabHeader a:last').tab('show'); //TODO figure out how to show new tab
 
-            //generate main skeleton
-            $('#designTab' + designCount).append('<div class="row-fluid"><div class="span12"><div class="tabbable" id="resultTabs' + designCount +
-                    '"></div></div></div>' +
-                    '<div class="row-fluid"><div class="span8"><div class="well" id="stat' + designCount +
-                    '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + designCount + '"></div></div></div>');
-            //add menu
-            $('#resultTabs' + designCount).append('<ul id="resultTabsHeader' + designCount + '" class="nav nav-tabs">' +
-                    '<li class="active"><a href="#imageTab' + designCount + '" data-toggle="tab" >Image</a></li>' +
-                    '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
-                    '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
-                    '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
-                    '</ul>');
-            //add tab content
-            $('#resultTabs' + designCount).append(
-                    '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
-                    '<div class="tab-pane active" id="imageTab' + designCount + '"><div class="well" id="resultImage' + designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                    '<div class="tab-pane" id="instructionTab' + designCount + '"><div class="well" id="instructionArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                    '<div class="tab-pane" id="partsListTab' + designCount + '"><div id="partsListArea' + designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                    '<div class="tab-pane" id="summaryTab' + designCount + '"><div class="well" id="summaryArea' + designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
-                    '</div>');
-            //add download buttons and bind events to them
-            $('#download' + designCount).append('<h4>Download Options</h4>' +
-                    '<p><small>Please use right-click, then save as to download the files</small></p>' +
-                    '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
-                    '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
-                    '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                    '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>'
-                    );
-            var partLibrary = ""; //parts to use in library
-            var vectorLibrary = ""; //vectors to use in library
-            var rec = ""; //recommended intermediates
-            var req = ""; //required intermediates
-            var forbid = ""; //forbidden intermediates
-            var discourage = ""; //discouraged intermediates
-            var eug = ""; //eugene file for rec/required forbidden
-            var config = ""; //csv configuration file?
-            $('#libraryPartList option').each(function() {
-                partLibrary = partLibrary + $(this).attr("id") + ",";
-            });
-            $('#libraryVectorList option').each(function() {
-                vectorLibrary = vectorLibrary + $(this).attr("id") + ",";
-            });
-            $('.required:checked').each(function() {
-                req = req + $(this).val() + ";";
-            });
-            $('.recommended:checked').each(function() {
-                rec = rec + $(this).val() + ";";
-            });
-            $('.forbidden:checked').each(function() {
-                forbid = forbid + $(this).val() + ";";
-            });
-            $('.discouraged:checked').each(function() {
-                discourage = discourage + $(this).val() + ";";
-            });
-            discourage = discourage.substring(0, discourage.length - 1);
-            forbid = forbid.substring(0, forbid.length - 1);
-            req = req.substring(0, req.length - 1);
-            rec = rec.substring(0, rec.length - 1);
-            targets = targets.substring(0, targets.length - 1);
-            partLibrary = partLibrary.substring(0, partLibrary.length - 1);
-            var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": ""
-                        + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": ""
-                        + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage};
-            $.get("RavenServlet", requestInput, function(data) {
-                if (data["status"] === "good") {
+                //generate main skeleton
+                $('#designTab' + designCount).append('<div class="row-fluid"><div class="span12"><div class="tabbable" id="resultTabs' + designCount +
+                        '"></div></div></div>' +
+                        '<div class="row-fluid"><div class="span8"><div class="well" id="stat' + designCount +
+                        '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + designCount + '"></div></div></div>');
+                //add menu
+                $('#resultTabs' + designCount).append('<ul id="resultTabsHeader' + designCount + '" class="nav nav-tabs">' +
+                        '<li class="active"><a href="#imageTab' + designCount + '" data-toggle="tab" >Image</a></li>' +
+                        '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
+                        '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
+                        '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
+                        '<li><button class="btn" id="discardButton' + designCount + '">Discard Design</button></li>' +
+                        '</ul>');
+                //add tab content
+                $('#resultTabs' + designCount).append(
+                        '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
+                        '<div class="tab-pane active" id="imageTab' + designCount + '"><div class="well" id="resultImage' + designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                        '<div class="tab-pane" id="instructionTab' + designCount + '"><div class="well" id="instructionArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                        '<div class="tab-pane" id="partsListTab' + designCount + '"><div id="partsListArea' + designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                        '<div class="tab-pane" id="summaryTab' + designCount + '"><div class="well" id="summaryArea' + designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
+                        '</div>');
+                //add download buttons and bind events to them
+                $('#download' + designCount).append('<h4>Download Options</h4>' +
+                        '<p><small>Please use right-click, then save as to download the files</small></p>' +
+                        '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
+                        '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
+                        '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
+                        '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>'
+                        );
+                var partLibrary = ""; //parts to use in library
+                var vectorLibrary = ""; //vectors to use in library
+                var rec = ""; //recommended intermediates
+                var req = ""; //required intermediates
+                var forbid = ""; //forbidden intermediates
+                var discourage = ""; //discouraged intermediates
+                var eug = ""; //eugene file for rec/required forbidden
+                var config = ""; //csv configuration file?
+                $('#libraryPartList option').each(function() {
+                    partLibrary = partLibrary + $(this).attr("id") + ",";
+                });
+                $('#libraryVectorList option').each(function() {
+                    vectorLibrary = vectorLibrary + $(this).attr("id") + ",";
+                });
+                $('.required:checked').each(function() {
+                    req = req + $(this).val() + ";";
+                });
+                $('.recommended:checked').each(function() {
+                    rec = rec + $(this).val() + ";";
+                });
+                $('.forbidden:checked').each(function() {
+                    forbid = forbid + $(this).val() + ";";
+                });
+                $('.discouraged:checked').each(function() {
+                    discourage = discourage + $(this).val() + ";";
+                });
+                discourage = discourage.substring(0, discourage.length - 1);
+                forbid = forbid.substring(0, forbid.length - 1);
+                req = req.substring(0, req.length - 1);
+                rec = rec.substring(0, rec.length - 1);
+                targets = targets.substring(0, targets.length - 1);
+                partLibrary = partLibrary.substring(0, partLibrary.length - 1);
+                var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": ""
+                            + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": ""
+                            + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage};
+                $.get("RavenServlet", requestInput, function(data) {
+                    if (data["status"] === "good") {
 //render image
-                    $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
-                    $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-                    $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
-                    var status = '';
-                    var saveButtons = '';
-                    if (data["statistics"]["valid"] === "true") {
-                        status = '<span class="label label-success">Graph structure verified!</span>';
-                        saveButtons = '<p><button id="reportButton' + designCount +
-                                '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
-                                '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '">Save to working library</button></p>';
-                        $('#download' + designCount).prepend(saveButtons);
-                        $('#reportButton' + designCount).click(function() {
-                            alert("this feature will be coming soon");
-                        });
-                    } else {
-                        status = '<span class="label label-warning">Graph Structure Invalid!</span>';
-                        saveButtons = '<p><button id="reportButton' + designCount + '" class ="btn btn-danger">Report Error</button></p>';
-                        $('#download' + designCount).prepend(saveButtons);
-                        $('#reportButton' + designCount).click(function() {
-                            alert("this feature will be coming soon");
-                        });
-                    }
+                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
+                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+                        $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
+                        var status = '';
+                        var saveButtons = '';
+                        if (data["statistics"]["valid"] === "true") {
+                            status = '<span class="label label-success">Graph structure verified!</span>';
+                            saveButtons = '<p><button id="reportButton' + designCount +
+                                    '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
+                                    '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '">Save to working library</button></p>';
+                            $('#download' + designCount).prepend(saveButtons);
+                            $('#reportButton' + designCount).click(function() {
+                                alert("this feature will be coming soon");
+                            });
+                        } else {
+                            status = '<span class="label label-warning">Graph Structure Invalid!</span>';
+                            saveButtons = '<p><button id="reportButton' + designCount + '" class ="btn btn-danger">Report Error</button></p>';
+                            $('#download' + designCount).prepend(saveButtons);
+                            $('#reportButton' + designCount).click(function() {
+                                alert("this feature will be coming soon");
+                            });
+                        }
 //prepend status
 
 
-                    $('#saveButton' + designCount).click(function() {
-                        $.get('RavenServlet', {"command": "load", "designCount": designCount}, function(result) {
-                            if (result === "loaded data") {
-                                $('#saveButton' + designCount).prop('disabled', true);
-                                $('#saveButton' + designCount).text("Successful Save");
+                        $('#saveButton' + designCount).click(function() {
+                            $.get('RavenServlet', {"command": "load", "designCount": designCount}, function(result) {
+                                if (result === "loaded data") {
+                                    $('#saveButton' + designCount).prop('disabled', true);
+                                    $('#saveButton' + designCount).text("Successful Save");
+                                } else {
+                                    alert("Failed to save parts");
+                                    $('#saveButton' + designCount).text("Report Error");
+                                    $('#saveButton' + designCount).removeClass('btn-success');
+                                    $('#saveButton' + designCount).addClass('btn-danger');
+                                    $('#saveButton' + designCount).click(function() {
+                                        alert('this feature will be coming soon');
+                                    })
+                                }
+                            });
+                        });
+                        //render stats
+                        $('#stat' + designCount).html('<h4>Assembly Statistics ' + status + '</h4><table class="table">' +
+                                '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
+                                '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
+                                '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
+                                '<tr><td><strong>Number of Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
+                                '<tr><td><strong>Number of Recommended Parts</strong></td><td>' + data["statistics"]["recommended"] + '</td></tr>' +
+                                '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
+                                '<tr><td><strong>Modularity of Assembled Parts</strong></td><td>' + data["statistics"]["modularity"] + '</td></tr>' +
+                                '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
+                        $('#downloadImage' + designCount).attr("href", data["result"]);
+                        $('#downloadInstructions' + designCount).attr("href", "data/" + user + "/instructions" + designCount + ".txt");
+                        $('#downloadParts' + designCount).attr("href", "data/" + user + "/partsList" + designCount + ".csv");
+                        $('#downloadPigeon' + designCount).attr("href", "data/" + user + "/pigeon" + designCount + ".txt");
+                        $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
+                        //render parts list
+                        var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + designCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
+                        var toDeletePart = [];
+                        var toDeleteVector = [];
+                        $.each(data["partsList"], function() {
+                            partsListTableBody = partsListTableBody + "<tr><td>"
+                                    + this["uuid"] + "</td><td>"
+                                    + this["Name"] + "</td><td>"
+                                    + this["LO"] + "</td><td>"
+                                    + this["RO"] + "</td><td>"
+                                    + this["Type"] + "</td><td>"
+                                    + this["Composition"] + "</td><td>"
+                                    + this["Resistance"] + "</td><td>"
+                                    + this["Level"] + "</td></tr>";
+                            if (this["Type"].toLowerCase() === "vector") {
+                                toDeleteVector.push(this["uuid"]);
                             } else {
-                                alert("Failed to save parts");
-                                $('#saveButton' + designCount).text("Report Error");
-                                $('#saveButton' + designCount).removeClass('btn-success');
-                                $('#saveButton' + designCount).addClass('btn-danger');
-                                $('#saveButton' + designCount).click(function() {
-                                    alert('this feature will be coming soon');
-                                })
+                                toDeletePart.push(this["uuid"]);
                             }
                         });
-                    });
-                    //render stats
-                    $('#stat' + designCount).html('<h4>Assembly Statistics '+status+'</h4><table class="table">' +
-                            '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
-                            '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
-                            '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
-                            '<tr><td><strong>Number of Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
-                            '<tr><td><strong>Number of Recommended Parts</strong></td><td>' + data["statistics"]["recommended"] + '</td></tr>' +
-                            '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
-                            '<tr><td><strong>Modularity of Assembled Parts</strong></td><td>' + data["statistics"]["modularity"] + '</td></tr>' +
-                            '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
-                    $('#downloadImage' + designCount).attr("href", data["result"]);
-                    $('#downloadInstructions' + designCount).attr("href", "data/" + user + "/instructions" + designCount + ".txt");
-                    $('#downloadParts' + designCount).attr("href", "data/" + user + "/partsList" + designCount + ".csv");
-                    $('#downloadPigeon' + designCount).attr("href", "data/" + user + "/pigeon" + designCount + ".txt");
-                    $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
-                    //render parts list
-                    var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + designCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
-                    $.each(data["partsList"], function() {
-                        partsListTableBody = partsListTableBody + "<tr><td>"
-                                + this["uuid"] + "</td><td>"
-                                + this["Name"] + "</td><td>"
-                                + this["LO"] + "</td><td>"
-                                + this["RO"] + "</td><td>"
-                                + this["Type"] + "</td><td>"
-                                + this["Composition"] + "</td><td>"
-                                + this["Resistance"] + "</td><td>"
-                                + this["Level"] + "</td></tr>";
-                    });
-                    partsListTableBody = partsListTableBody + '</tbody></table>';
-                    $('#partsListArea' + designCount).html(partsListTableBody);
-                    $("#partsListTable" + designCount).dataTable({
-                        "sScrollY": "300px",
-                        "bPaginate": false,
-                        "bScrollCollapse": true
-                    });
-                } else {
-                    $("#designTab" + designCount).html('<div class="alert alert-danger">' +
-                            '<strong>Oops, an error occured while generating your assembly plan</strong>' +
-                            '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
-                            '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
-                            '<li>A brief summary of what you were trying to do</li></ul>' +
-                            '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
-                            + data["result"] + '</div>');
-                }
-            });
+                        $('#discardButton' + designCount).click(function() {
+                            alert('discarding design' + designCount);
+                            $('#designTabHeader' + designCount).remove();
+                            $('#designTab' + designCount).remove();
+                            $('#designTabHeader a:first').tab('show');
+                            refreshData();
+                        });
+                        partsListTableBody = partsListTableBody + '</tbody></table>';
+                        $('#partsListArea' + designCount).html(partsListTableBody);
+                        $("#partsListTable" + designCount).dataTable({
+                            "sScrollY": "300px",
+                            "bPaginate": false,
+                            "bScrollCollapse": true
+                        });
+                    } else {
+                        $("#designTab" + designCount).html('<div class="alert alert-danger">' +
+                                '<strong>Oops, an error occured while generating your assembly plan</strong>' +
+                                '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
+                                '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
+                                '<li>A brief summary of what you were trying to do</li></ul>' +
+                                '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
+                                + data["result"] + '</div>');
+                    }
+                });
+            } else {
+                alert("Please select some target parts");
+            }
+            canRun = true;
         } else {
-            alert("Please select some target parts");
+            alert('Please Wait until current design is finished!');
         }
     });
     //FUNCTIONS
