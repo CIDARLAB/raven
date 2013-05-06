@@ -50,7 +50,17 @@
                     <div class="well" id="overview">
                         <h3>RavenCAD Overview</h3>
                         <hr/>
-                        <p>two paragraph description of what RavenCAD is</p>
+                        <p>
+                            RavenCAD is a DNA assembly design and planning tool. 
+                            The tool accepts as its inputs a list of target parts and a parts library. 
+                            For any set of target parts, RavenCAD determines an optimized plan for assembling all selected target parts with a particular DNA assembly method while optimizing for time, efficiency and cost. 
+                        </p>
+                        <p>
+                            A unique feature of RavenCAD is its ability to incorporate experimental data to drive the assembly solution. 
+                            RavenCAD allows the user to input efficiency information for a variety of parameters and bias or force certain assembly intermediates or overhangs from appearing in the assembly solution. 
+                            The tool comes with a set of default parameters that have been experimentally verified, but these values can be modified to the user’s specifications. 
+                            This user-interactivity based on experimental data allows users to tailor the assembly solutions to lab- and experiment-specific conditions and recalculate increasingly effective solutions.
+                        </p>
                     </div>
                     <div id="video" class="well">
                         <h3>Demonstration Video</h3>
@@ -62,32 +72,132 @@
                     <div class="well" id="methods">
                         <h3>Assembly Methods</h3>
                         <hr/>
-                        <p>paragraph describing the assembly methods RavenCAD supports</p>
+                        <p>
+                            RavenCAD broadly classifies cloning-based assembly methods into three categories: binary assembly, modular one-pot assembly and scarless one-pot assembly. 
+                            BioBricks(TM) assembly [4] and its derivatives are supported binary assembly methods. 
+                            CPEC [6], SLIC [5], Gibson [2] and GoldenGate [7] assembly are all supported scarless one-pot assembly methods. 
+                            MoClo [3] is a supported modular one-pot assembly method. 
+                            Each of the listed supported assembly methods has additional technology-specific constraints.
+                        </p>
+                        <p>
+                            Additional cloning-based assembly method and chemical synthesis assembly are not currently supported. 
+                            However, RavenCAD’s core algorithm is highly generalizable and new methods can be added with relative ease. 
+                            Please contact the developers if you are interested in an assembly method that is not currently supported.
+                        </p>
                     </div>
                     <div class="well" id="algorithm">
                         <h3>Algorithms</h3>
                         <hr/>
-                        <p>Two paragraph description of the algorithm</p>
+                        <p>
+                            Raven breaks the DNA assembly problem into two major parts: selecting and generating optimized overhangs and performing all cloning reactions necessary to achieve the final construct. 
+                            The tool first determines an optimized set of assembly steps, and then it optimizes overhang selection; 
+                            it is assumed that performing a successful assembly step is more costly and time consuming than performing a PCR reaction. 
+                            This strategy is applied to binary, one-pot scarless and one-pot modular assembly methods to produce fast, modular and efficient assembly plans.
+                        </p>
+                        <p>
+                            Sometimes an experimentalist observes higher or lower assembly efficiencies than realized in the literature due to a number of experimental conditions such as cell competency, specific reaction conditions and other factors. With RavenCAD, a user is able to adjust the default efficiency numbers guiding the efficiency optimizations. 
+                            A user may also wish to bias certain intermediates from appearing or not appearing, with or without mandatory inclusion or exclusion. For example, a user might wish to bias an assembly towards intermediates that fit a certain substructure such as a transcriptional unit. 
+                            Another user might want to bias against performing PCR on large parts or parts with hairpins or other problematic structures. A user might also encounter unsuccessful cloning steps or PCRs or wish to test specific intermediate parts or part junctions. 
+                            In all of these cases, it is imperative that these intermediates and/or part junctions are either biased or forced to appear or not appear. Raven optimizes around these additional constraints unless they are so restrictive that no valid solution can be found. 
+                            RavenCAD allows for lists of intermediates or overhangs to be input as optional parameters for the algorithm. Intermediate parts and overhangs can be biased for (recommended), biased against (discouraged), forced or forbidden. 
+                            These parts and overhangs can be specified either manually in the GUI or automatically via Eugene [8] scripts.
+                        </p>
                     </div>
                     <div class="well" id="toolChain">
                         <h3>Integrated Tool Chain</h3>
                         <hr/>
-                        <p>Two paragraphs describing integration of RavenCAD with Eugene and clotho</p>
+                        <p>
+                            RavenCAD is a ‘stand-alone’ tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
+                            However, this tool is also connected to a larger tool-chain in the Clotho design automation platform. 
+                            The tool chain is a top-down design flow and begins with the specification of device behavior. 
+                            One tool in the Clotho design flow that can do this is Eugene [8]. 
+                            Eugene can be used to generate a set of target devices based on libraries of parts and device design rule sets. 
+                            Once all target devices are determined, RavenCAD determines the best way to build all target parts. 
+                            These output instructions can be given to a liquid handling robot to automatically assemble these devices from its resources. 
+                            This flow allows a user to simply specify the behavior of a set of devices they would like to build and what resources they have and have the devices automatically constructed with liquid handling robots.
+                        </p>
                     </div>
                     <div class="well" id="guide">
                         <h3>Guides</h3>
                         <hr/>
-                        <p>Specific how to examples</p>
+                        <p>Specific how to examples are coming soon. In the meanwhile, please contact <a href="mailto:ravencad@gmail.com">ravencadhelp@gmail.com</a> for technical support.</p>
                     </div>
                     <div class="well" id="references">
                         <h3>References</h3>
                         <hr/>
-                        <p>Citations to NAR and NB paper will go here</p>
+                        <p>
+                            [1] Densmore, D. et al. Algorithms for automated DNA assembly. Nucleic Acids Research 38, 2607–2616 (2010).
+
+                            [2] Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).
+
+                            [3] Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A Modular Cloning System for Standardized Assembly of Multigene Con- structs. PloS ONE 6 (2010).
+
+                            [4] Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).
+
+                            [5] Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251– 256 (2007).
+
+                            [6] Quan, J. & Tian, J. Circular Polymerase Extension Cloning of Complex Gene Libraries and Pathways. PLoS ONE 4, e6441 (2009).
+
+                            [7] Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3, e3647 (2008).
+
+                            [8] Bilitchenko, L. et al. Eugene: A Domain Specific Language for Specify- ing and Constraining Synthetic Biological Parts, Devices, and Systems. PLoS ONE 6, e18882 (2011).
+                        </p>
                     </div>
                     <div class="well" id="help">
                         <h3>Help</h3>
                         <hr/>
-                        <p>FAQ and contact information</p>
+                        <dl>
+                            <dt>
+                            What do I need to use RavenCAD?
+                            </dt>
+                            <dd>
+                                A user must minimally provide a list of target parts and all DNA parts that are needed to build the target parts. 
+                                Part sequences are not mandatory, but no sequence-level optimization can be performed on parts without sequence.
+                            </dd>
+                            <dt>
+                            What do I input into RavenCAD?
+                            </dt>
+                            <dd>
+                                A user may input a list of target parts and library of existing parts or input a collection of annotated genbank files.
+                            </dd>
+                            <dt>
+                            What does RavenCAD output?
+                            </dt>
+                            <dd>
+                                RavenCAD outputs several types of information: 
+                                <ol>
+                                    <li>
+                                        A graphical representation of an optimized assembly plan for the selected target parts. 
+                                    </li>
+                                    <li>
+                                        A set of assembly instructions for a liquid handling robot (computer-readable)
+                                    </li>
+                                    <li>
+                                        A set of assembly instructions for a human user (human-readable)
+                                        <ol>
+                                            <li>
+                                                List of all primers to needed to accomplish assembly
+                                            </li>
+                                            <li>
+                                                List of all PCR reactions to perform (all part-primer sets)
+                                            </li>
+                                            <li>
+                                                List of cloning steps to perform with a graphical picture of each individual step
+                                            </li>
+                                        </ol>
+                                    </li>
+                                </ol>
+                            </dd>
+                            <dt>
+                            What information is mandatory to run RavenCAD and what information is optional?
+                            </dt>
+                            <dd>
+                                <ul>
+                                    <li>Mandatory: Target parts, parts composing all target parts</li>
+                                    <li>Optional: Existing overhangs for each input part; existing assembly vectors; complete parts library assembly efficiency information for a specific cloning method; recommended, discouraged, required, forbidden intermediate parts and/or overhangs</li>
+                                </ul>
+                            </dd>
+                        </dl>
                     </div>
                 </div>
             </div>
