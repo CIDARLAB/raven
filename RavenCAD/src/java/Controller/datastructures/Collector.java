@@ -15,23 +15,49 @@ import javax.swing.JOptionPane;
  */
 public class Collector {
 
-    public Part getPart(String uuid) {
-        return partUUIDHash.get(uuid);
+    public Part getPart(String uuid, boolean allowTransient) {
+        Part toReturn = partUUIDHash.get(uuid);
+        if (toReturn != null) {
+            if (!toReturn.isTransient() || allowTransient) {
+                return toReturn;
+            }
+        }
+        return null;
     }
 
-    public Vector getVector(String uuid) {
-        return vectorUUIDHash.get(uuid);
+    public Vector getVector(String uuid, boolean allowTransient) {
+        Vector toReturn = vectorUUIDHash.get(uuid);
+        if (toReturn != null) {
+            if (!toReturn.isTransient() || allowTransient) {
+                return toReturn;
+            }
+        }
+        return null;
     }
 
-    public ArrayList<Vector> getAllVectors() {
-        return new ArrayList(vectorUUIDHash.values());
+    public ArrayList<Vector> getAllVectors(boolean allowTransient) {
+        ArrayList<Vector> returnCandidates = new ArrayList(vectorUUIDHash.values());
+        ArrayList<Vector> toReturn = new ArrayList();
+        for (Vector v : returnCandidates) {
+            if (!v.isTransient() || allowTransient) {
+                toReturn.add(v);
+            }
+        }
+        return toReturn;
     }
 
-    public ArrayList<Part> getAllParts() {
-        return new ArrayList(partUUIDHash.values());
+    public ArrayList<Part> getAllParts(boolean allowTransient) {
+        ArrayList<Part> returnCandidates = new ArrayList(partUUIDHash.values());
+        ArrayList<Part> toReturn = new ArrayList();
+        for (Part p : returnCandidates) {
+            if (!p.isTransient() || allowTransient) {
+                toReturn.add(p);
+            }
+        }
+        return toReturn;
     }
 
-    public Vector getVectorByName(String name) {
+    public Vector getVectorByName(String name, boolean allowTransient) {
         Vector toReturn = vectorUUIDHash.get(vectorNameHash.get(name));
 
         if (toReturn == null) {
@@ -49,20 +75,31 @@ public class Collector {
                 }
             }
         }
-        return toReturn;
+        if (toReturn != null) {
+            if (!toReturn.isTransient() || allowTransient) {
+                return toReturn;
+            }
+        }
+        return null;
     }
 
-    public Vector getVectorByExactName(String name) {
-        return vectorUUIDHash.get(vectorNameHash.get(name));
-
+    public Vector getVectorByExactName(String name, boolean allowTransient) {
+        Vector toReturn = vectorUUIDHash.get(vectorNameHash.get(name));
+        if (!toReturn.isTransient() || allowTransient) {
+            return toReturn;
+        }
+        return null;
     }
 
-    public Part getPartByExactName(String name) {
-        return partUUIDHash.get(partNameHash.get(name));
-
+    public Part getPartByExactName(String name, boolean allowTransient) {
+        Part toReturn = partUUIDHash.get(partNameHash.get(name));
+        if (!toReturn.isTransient() || allowTransient) {
+            return toReturn;
+        }
+        return null;
     }
 
-    public Part getPartByName(String name) {
+    public Part getPartByName(String name, boolean allowTransient) {
         Part toReturn = partUUIDHash.get(partNameHash.get(name));
 
         if (toReturn == null) {
@@ -80,11 +117,16 @@ public class Collector {
                 }
             }
         }
-        return toReturn;
+        if (toReturn != null) {
+            if (!toReturn.isTransient() ||allowTransient) {
+                return toReturn;
+            }
+        }
+        return null;
     }
 
     public Boolean addPart(Part aPart) {
-        Part sameNamePart = this.getPartByName(aPart.getName());
+        Part sameNamePart = this.getPartByName(aPart.getName(),true);
         if (sameNamePart != null) {
             if (sameNamePart.getLeftOverhang().equals(aPart.getLeftOverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
 //                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
@@ -134,7 +176,7 @@ public class Collector {
     }
 
     public Boolean addVector(Vector aVector) {
-        Vector sameNameVector = this.getVectorByName(aVector.getName());
+        Vector sameNameVector = this.getVectorByName(aVector.getName(),true);
         if (sameNameVector != null) {
             if (sameNameVector.getLeftoverhang().equals(aVector.getLeftoverhang()) && sameNameVector.getRightOverhang().equals(aVector.getRightOverhang())) {
 //                int selValue = JOptionPane.showConfirmDialog(null, "Vector: " + aVector.getName() + " is already imported!\n Do you want to overrwrite it?");
@@ -198,6 +240,7 @@ public class Collector {
     //name root is essentially a part name without extra overhang information
     private HashMap<String, HashSet<String>> vectorNameRootHash = new HashMap(); //key: vector name root, value: arrayList of vector names that contains the name root
     //name root is essentially a vector name without extra overhang information
+
     public void purge() {
         vectorUUIDHash = new HashMap();
         vectorNameHash = new HashMap();
@@ -205,7 +248,7 @@ public class Collector {
         partUUIDHash = new HashMap();
         partNameRootHash = new HashMap();
         vectorNameRootHash = new HashMap();
-        
+
 
     }
 }

@@ -275,7 +275,7 @@ public class RavenController {
 
     public String fetchData() throws Exception {
         String toReturn = "[";
-        ArrayList<Part> allParts = _collector.getAllParts();
+        ArrayList<Part> allParts = _collector.getAllParts(false);
         for (Part p : allParts) {
             if (!p.isTransient()) {
                 toReturn = toReturn
@@ -289,7 +289,7 @@ public class RavenController {
                         + "\",\"Resistance\":\"\",\"Level\":\"\"},";
             }
         }
-        ArrayList<Vector> allVectors = _collector.getAllVectors();
+        ArrayList<Vector> allVectors = _collector.getAllVectors(false);
         for (Vector v : allVectors) {
             toReturn = toReturn + "{\"uuid\":\"" + v.getUUID()
                     + "\",\"Name\":\"" + v.getName()
@@ -377,6 +377,7 @@ public class RavenController {
                         newVector.addSearchTag("RO: " + rightOverhang);
                         newVector.addSearchTag("Level: " + level);
                         newVector.addSearchTag("Resistance: " + resistance);
+                        newVector.setTransientStatus(false);
                         Boolean toBreak = !newVector.saveDefault(_collector);
                         if (toBreak) {
                             break;
@@ -431,7 +432,7 @@ public class RavenController {
                             }
                             partName = partNameTokens[0];
                         }
-                        composition.add(_collector.getPartByName(partName));
+                        composition.add(_collector.getPartByName(partName,true));
                     }
                     String name = tokens[0].trim();
                     String leftOverhang = tokens[2].trim();
@@ -470,7 +471,7 @@ public class RavenController {
     //returns "loaded" or "not loaded" depending on whether there are objects in the collector
     public String getDataStatus() throws Exception {
         String toReturn = "not loaded";
-        if (_collector.getAllParts().size() > 0 || _collector.getAllVectors().size() > 0) {
+        if (_collector.getAllParts(false).size() > 0 || _collector.getAllVectors(false).size() > 0) {
             toReturn = "loaded";
         }
         return toReturn;
@@ -592,7 +593,7 @@ public class RavenController {
         method = method.toLowerCase().trim();
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
-                Part current = _collector.getPart(partLibraryIDs[i]);
+                Part current = _collector.getPart(partLibraryIDs[i],false);
                 if (current != null) {
                     _partLibrary.add(current);
                 }
@@ -600,14 +601,14 @@ public class RavenController {
         }
         if (vectorLibraryIDs.length > 0) {
             for (int i = 0; i < vectorLibraryIDs.length; i++) {
-                Vector current = _collector.getVector(vectorLibraryIDs[i]);
+                Vector current = _collector.getVector(vectorLibraryIDs[i],false);
                 if (current != null) {
                     _vectorLibrary.add(current);
                 }
             }
         }
         for (int i = 0; i < targetIDs.length; i++) {
-            Part current = _collector.getPart(targetIDs[i]);
+            Part current = _collector.getPart(targetIDs[i],false);
             _goalParts.put(current, ClothoReader.getComposition(current));
         }
         Statistics.start();

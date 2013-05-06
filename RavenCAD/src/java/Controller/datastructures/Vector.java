@@ -33,8 +33,8 @@ public class Vector {
         return newVector;
     }
 
-    public static Vector retrieveByName(Collector coll, String name) {
-        return coll.getVectorByName(name);
+    public static Vector retrieveByName(Collector coll, String name,boolean allowTransient) {
+        return coll.getVectorByName(name, allowTransient);
     }
 
     public String getUUID() {

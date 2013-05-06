@@ -32,8 +32,8 @@ public class Part {
         this.uuid = String.valueOf(UUID);
     }
 
-    public static Part retrieveByExactName(Collector coll, String name) {
-        return coll.getPartByName(name);
+    public static Part retrieveByExactName(Collector coll, String name, boolean allowTransient) {
+        return coll.getPartByName(name, allowTransient);
     }
 
     public static Part generateBasic(String name, String sequence) {
@@ -43,7 +43,7 @@ public class Part {
         newBasic.isComposite = false;
         newBasic.composition = new ArrayList<Part>();
         newBasic.composition.add(newBasic);
-        newBasic._transient=true;
+        newBasic._transient = true;
         return newBasic;
     }
 

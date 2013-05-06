@@ -27,7 +27,7 @@ public class ClothoReader {
      * Generate Clotho parts with uuids from intermediates without uuids *
      */
     public void nodesToClothoPartsVectors(Collector coll, SRSGraph graph) throws Exception {
-        String nameRoot = coll.getPart(graph.getRootNode().getUUID()).getName();
+        String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
         ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
         HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
         queue.add(graph.getRootNode());
@@ -53,8 +53,8 @@ public class ClothoReader {
 
                 //Get new intermediate composition
                 ArrayList<String> UUIDcomposition = new ArrayList();
-                for (String s : currentNode.getComposition()) {
-                    UUIDcomposition.add(Part.retrieveByExactName(coll, s).getUUID());
+                for (String uuid : currentNode.getComposition()) {
+                    UUIDcomposition.add(Part.retrieveByExactName(coll, uuid, true).getUUID());
                 }
 
                 //Get new intermediate overhangs
@@ -71,31 +71,34 @@ public class ClothoReader {
 
 
             //create new part and change node uuid if overhangs not match
+            Part currentPart = coll.getPart(currentNode.getUUID(), true);
             boolean createNewPart = false;
-            Part currentPart = coll.getPart(currentNode.getUUID());
             if (currentPart != null) {
                 if (!currentNode.getLOverhang().equals(currentPart.getLeftOverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
-                    //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
-                    Part betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang()); //search for a better match
-                    if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
-                        //if no better part exists, create a new one
-                        if (currentPart.isBasic()) {
-                            betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
-
-                        } else if (currentPart.isComposite()) {
-                            betterPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
-                        }
-                        betterPart.addSearchTag("LO: " + currentNode.getLOverhang());
-                        betterPart.addSearchTag("RO: " + currentNode.getROverhang());
-                        betterPart.addSearchTag("Type: " + currentPart.getType());
-                        betterPart.saveDefault(coll);
-                    }
-                    currentNode.setUUID(betterPart.getUUID());
-
+                    createNewPart = true;
                 }
             } else {
-                
+                createNewPart = true;
             }
+            if (createNewPart) {
+                //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
+                Part betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang(), true); //search for a better match
+                if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
+                    //if no better part exists, create a new one
+                    if (currentPart.isBasic()) {
+                        betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
+
+                    } else if (currentPart.isComposite()) {
+                        betterPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
+                    }
+                    betterPart.addSearchTag("LO: " + currentNode.getLOverhang());
+                    betterPart.addSearchTag("RO: " + currentNode.getROverhang());
+                    betterPart.addSearchTag("Type: " + currentPart.getType());
+                    betterPart.saveDefault(coll);
+                }
+                currentNode.setUUID(betterPart.getUUID());
+            }
+
 
 
 
@@ -137,7 +140,7 @@ public class ClothoReader {
 
         //For each composite part, get the basic part uuids
         for (String uuid : UUIDcomposition) {
-            Part inputPart = coll.getPart(uuid);
+            Part inputPart = coll.getPart(uuid, true);
             if (inputPart.isComposite()) {
                 try {
                     ArrayList<Part> inputPartComposition = getComposition(inputPart);
@@ -191,7 +194,7 @@ public class ClothoReader {
         if (inputPartUUIDComp.size() > 1) {
             ArrayList<Part> newComposition = new ArrayList<Part>();
             for (String uuid : inputPartUUIDComp) {
-                newComposition.add(coll.getPart(uuid));
+                newComposition.add(coll.getPart(uuid, true));
             }
             Part newPart = Part.generateComposite(newComposition, name);
             if (!LO.isEmpty()) {
@@ -205,7 +208,7 @@ public class ClothoReader {
 
             //Make a new basic part
         } else {
-            Part newPart = Part.generateBasic(name, coll.getPart(inputPartUUIDComp.get(0)).getSeq());
+            Part newPart = Part.generateBasic(name, coll.getPart(inputPartUUIDComp.get(0), true).getSeq());
             if (!LO.isEmpty()) {
                 newPart.addSearchTag("LO: " + LO);
             }
@@ -222,7 +225,7 @@ public class ClothoReader {
      * for solution graphs) *
      */
     private Vector generateNewClothoVector(Collector coll, String name, String sequence, String LO, String RO, String resistance, int level) {
-        _allVectors = coll.getAllVectors();
+        _allVectors = coll.getAllVectors(true);
         //Search all existing vectors to for vectors with same overhangs and level before saving
         for (Vector vector : _allVectors) {
             //Get an existing part's overhangs
@@ -262,9 +265,9 @@ public class ClothoReader {
         _allCompositeParts = new ArrayList<Part>();
         _allBasicParts = new ArrayList<Part>();
         _allVectors = new ArrayList<Vector>();
-        ArrayList<Vector> allVectors = coll.getAllVectors();
+        ArrayList<Vector> allVectors = coll.getAllVectors(true);
         _allVectors.addAll(allVectors);
-        ArrayList<Part> allParts = coll.getAllParts();
+        ArrayList<Part> allParts = coll.getAllParts(true);
         for (Part somePart : allParts) {
             if (somePart.isComposite()) {
                 _allCompositeParts.add(somePart);
@@ -278,7 +281,6 @@ public class ClothoReader {
      * Return the composition of a Clotho part *
      */
     public static ArrayList<Part> getComposition(Part part) throws Exception {
-        System.out.println("tyring to get composition for "+part.getName());
         ArrayList<Part> toReturn = new ArrayList<Part>();
         if (part.isBasic()) {
             toReturn.add(part);
@@ -338,13 +340,13 @@ public class ClothoReader {
             SRSNode current = sortedQueue.get(0);
             sortedQueue.remove(0);
             seenNodes.add(current);
-            Part currentPart = coll.getPart(current.getUUID());
+            Part currentPart = coll.getPart(current.getUUID(), true);
             ArrayList<SRSNode> neighbors = current.getNeighbors();
             ArrayList<Part> composition = new ArrayList();
             if (currentPart.getComposition().size() > 1) {
                 for (SRSNode neighbor : neighbors) {
                     if (current.getComposition().toString().length() > neighbor.getComposition().toString().length()) {
-                        composition.add(coll.getPart(neighbor.getUUID()));
+                        composition.add(coll.getPart(neighbor.getUUID(), true));
                     }
                 }
                 currentPart.setComposition(composition);

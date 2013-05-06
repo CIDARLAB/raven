@@ -665,7 +665,7 @@ public class SRSMoClo extends SRSGeneral {
     public void setForcedOverhangs(Collector coll, HashMap<String, ArrayList<String>> requiredOverhangs) {
         forcedOverhangHash = new HashMap();
         for (String key : requiredOverhangs.keySet()) {
-            Part part = coll.getPartByName(key);
+            Part part = coll.getPartByName(key, false);
             forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
         }
     }
