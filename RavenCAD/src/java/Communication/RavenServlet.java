@@ -40,6 +40,7 @@ public class RavenServlet extends HttpServlet {
      */
     protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        RavenLogger.setPath(this.getServletContext().getRealPath("/")+"/log/");
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
         String user = getUser(request);
@@ -63,6 +64,7 @@ public class RavenServlet extends HttpServlet {
                 out.write(responseString);
             } else if (command.equals("logout")) {
                 response.setContentType("text/html;charset=UTF-8");
+                RavenLogger.logSessionOut(user, request.getRemoteAddr(), String.valueOf(controller._designCount));
                 String responseString = "logged out";
                 _collectorHash.remove(user);
                 controller.clearData();
@@ -170,6 +172,7 @@ public class RavenServlet extends HttpServlet {
         try {
             List<FileItem> items = uploadHandler.parseRequest(request);
             String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
+            RavenLogger.setPath(this.getServletContext().getRealPath("/")+"/log/");
             new File(uploadFilePath).mkdir();
             ArrayList<File> toLoad = new ArrayList();
             for (FileItem item : items) {

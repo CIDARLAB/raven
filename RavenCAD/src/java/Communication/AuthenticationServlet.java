@@ -2,14 +2,10 @@ package Communication;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -45,6 +41,7 @@ public class AuthenticationServlet extends HttpServlet {
                 authenticateCookie.setMaxAge(60 * 24); //cookie lasts for an hour
                 response.addCookie(authenticateCookie);
                 response.addCookie(userCookie);
+                RavenLogger.logSessionIn(user, request.getRemoteAddr());
                 response.sendRedirect("index.html");
                 out.println("authenticated");
             } else {

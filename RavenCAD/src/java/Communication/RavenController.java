@@ -587,6 +587,7 @@ public class RavenController {
     }
 
     public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] vectorLibraryIDs, String[] partLibraryIDs) throws Exception {
+        _designCount ++;
         _goalParts = new HashMap();
         _required = required;
         _recommended = recommended;
@@ -722,4 +723,5 @@ public class RavenController {
     public String _path;
     public String _user;
     public String _error = "";
+    public int _designCount = 0;
 }
