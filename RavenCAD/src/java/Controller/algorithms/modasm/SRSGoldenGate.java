@@ -13,7 +13,7 @@ import java.util.Set;
 
 /**
  *
- * @author evanappleton
+ * @author jenhantao,evanappleton
  */
 public class SRSGoldenGate extends SRSGeneral {
 

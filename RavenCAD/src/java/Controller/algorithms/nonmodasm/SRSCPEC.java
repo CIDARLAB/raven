@@ -17,8 +17,8 @@ import java.util.Set;
  */
 public class SRSCPEC extends SRSGeneral {
     
-    /** Clotho part wrapper for sequence independent one pot reactions **/
-    public ArrayList<SRSGraph> cpecClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged,ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
+ /** Clotho part wrapper for sequence independent one pot reactions **/
+    public ArrayList<SRSGraph> cpecClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
         try {
             
             //Designate how many parts can be efficiently ligated in one step
@@ -68,32 +68,41 @@ public class SRSCPEC extends SRSGeneral {
             }
         }
         
-        //For all graphs traverse nodes of the graph and assign all nodes the biobricks vector
+        //For all graphs traverse nodes to count the number of reactions and assign a vector to the goal part        
         for (int i = 0; i < optimalGraphs.size(); i++) {
-            SRSGraph graph = optimalGraphs.get(i);
             
-            //Traverse nodes of a graph and assign all the selected vector
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-            HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-            queue.add(graph.getRootNode());
-            while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
-                queue.remove(0);
-                seenNodes.add(current);
-                for (SRSNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                    }
+            //Only the goal part gets a vector
+            SRSGraph optimalGraph = optimalGraphs.get(i);
+            SRSNode root = optimalGraph.getRootNode();
+            root.setVector(theVector);
+            
+            //Record left and right neighbors for each node... this will determine how many PCRs need to be performed
+            HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
+            ArrayList<String> rootComp = root.getComposition();
+            String prev = new String();
+            String next = new String();
+            for (int j = 0; j < rootComp.size(); j++) {
+                String current = rootComp.get(j);
+                if (j == 0) {
+                    next = rootComp.get(j+1);
+                } else if (j == rootComp.size()-1) {
+                    prev = rootComp.get(j-1);
+                } else {
+                    next = rootComp.get(j+1);
+                    prev = rootComp.get(j-1);
                 }
-                
-                //If the node is not an existing part, i.e. does not have a UUID and is not the goal part
-                if (current.getUUID() == null) {
-                    current.setVector(theVector);
-                } else if (current.getComposition() == graph.getRootNode().getComposition()) {
-                    current.setVector(theVector);
-                }               
-                seenNodes.add(current);
+                ArrayList<String> seq = new ArrayList<String>();
+                seq.add(prev);
+                seq.add(current);
+                seq.add(next);
+                neighborHash.add(seq);
             }
+            
+            int reactions = neighborHash.size();
+            
+//            System.out.println("For graph number: " + i + " there will be " + reactions);
+            
+            optimalGraph.setReactions(reactions);
         }
         
         return optimalGraphs;

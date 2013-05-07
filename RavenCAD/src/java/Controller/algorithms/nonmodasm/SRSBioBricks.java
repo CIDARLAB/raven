@@ -16,7 +16,7 @@ import Controller.datastructures.*;
  */
 public class SRSBioBricks extends SRSGeneral {
 
-    /** This is the only entry point for this class. A list of goal parts is passed and a list of optimal graphs is output. 
+/** This is the only entry point for this class. A list of goal parts is passed and a list of optimal graphs is output. 
      * PASS THE FOLLOWING ARGUMENTS: ArrayList(Goal_Parts), HashMap(A_Goal_Part, HashSet(Required_Part_Compositions)), HashMap(A_Goal_Part, HashSet(Recommended_Part_Compositions)), HashMap(Part_Compositions, Optimal_Assembly_Graphs) **/
     public ArrayList<SRSGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular) {
 
@@ -81,6 +81,10 @@ public class SRSBioBricks extends SRSGeneral {
                         queue.add(neighbor);
                     }
                 }
+                
+                //Give biobricks overhangs
+                current.setLOverhang("LeftBBa");
+                current.setROverhang("RightBBa");
                 
                 //If the node is not an existing part, i.e. does not have a UUID and is not the goal part
                 if (current.getUUID() == null) {

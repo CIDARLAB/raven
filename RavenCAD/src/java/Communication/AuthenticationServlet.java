@@ -37,7 +37,6 @@ public class AuthenticationServlet extends HttpServlet {
             String user = request.getParameter("user");
             String password = request.getParameter("password");
             if (passwordHash.containsKey(user) && password.equals(passwordHash.get(user))) {
-                System.out.println("logging in");
                 RavenLogger.logSessionIn(user, request.getRemoteAddr());
                 Cookie authenticateCookie = new Cookie("authenticate", "authenticated");
                 Cookie userCookie = new Cookie("user", user);

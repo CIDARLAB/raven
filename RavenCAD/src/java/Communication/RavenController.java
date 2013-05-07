@@ -486,7 +486,8 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    public void solutionStats(String method) throws Exception {
+    private void solutionStats(String method) throws Exception {
+
         //Initialize statistics
         boolean overhangValid = false;
         if (method.equals("biobrick")) {
@@ -505,16 +506,54 @@ public class RavenController {
         boolean valid = validateGraphComposition();
         valid = valid && overhangValid;
         HashSet<String> recd = new HashSet<String>();
-        HashSet<String> steps = new HashSet<String>();
-        HashSet<String> sharing = new HashSet<String>();
+        HashSet<String> disc = new HashSet<String>();
+        HashSet<String> seenSteps = new HashSet<String>();
+        HashSet<String> sharedSteps = new HashSet<String>();
+        int steps = 0;
         int stages = 0;
         int reactions = 0;
         double modularity = 0;
         double efficiency = 0;
         ArrayList<Double> effArray = new ArrayList<Double>();
+        HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
 
         for (SRSGraph graph : _assemblyGraphs) {
-            reactions = reactions + graph.getReaction();
+
+
+            SRSNode root = graph.getRootNode();
+            ArrayList<String> rootComp = root.getComposition();
+            String rRO = root.getROverhang();
+            String rLO = root.getLOverhang();
+            ArrayList<String> rootCompOH = new ArrayList<String>();
+            rootCompOH.add(rLO);
+            rootCompOH.addAll(rootCompOH);
+            rootCompOH.add(rRO);
+
+            //PCR Reactions for scarless assembly
+            if (root.getLOverhang().isEmpty() && root.getROverhang().isEmpty()) {
+
+                //Record left and right neighbors for each node... this will determine how many PCRs need to be performed                            
+                String prev = new String();
+                String next = new String();
+                for (int j = 0; j < rootComp.size(); j++) {
+                    String current = rootComp.get(j);
+                    if (j == 0) {
+                        next = rootComp.get(j + 1);
+                    } else if (j == rootComp.size() - 1) {
+                        prev = rootComp.get(j - 1);
+                    } else {
+                        next = rootComp.get(j + 1);
+                        prev = rootComp.get(j - 1);
+                    }
+                    ArrayList<String> seq = new ArrayList<String>();
+                    seq.add(prev);
+                    seq.add(current);
+                    seq.add(next);
+                    neighborHash.add(seq);
+                }
+
+            }
+
             //Get stages of this graph, if largest, set as assembly stages
             int currentStages = graph.getStages();
             if (currentStages > stages) {
@@ -530,24 +569,53 @@ public class RavenController {
             seenNodes.add(graph.getRootNode());
             ArrayList<SRSNode> queue = new ArrayList();
             queue.add(graph.getRootNode());
+
             while (!queue.isEmpty()) {
                 SRSNode current = queue.get(0);
+                String LO = current.getLOverhang();
+                String RO = current.getROverhang();
+                ArrayList<String> currentComp = current.getComposition();
+                ArrayList<String> currentCompOH = new ArrayList<String>();
+                currentCompOH.add(LO);
+                currentCompOH.addAll(currentComp);
+                currentCompOH.add(RO);
                 queue.remove(0);
 
-                if (current.getComposition().size() > 1) {
-                    if (steps.contains(current.getComposition().toString())) {
-                        sharing.add(current.getComposition().toString());
+                //Get sharing, steps, recommended and discouraged counts
+                if (current.getStage() > 0) {
+                    boolean add = seenSteps.add(currentCompOH.toString());
+                    if (!add && !(currentComp == rootComp)) {
+                        sharedSteps.add(currentCompOH.toString());
                     }
-                    if (!current.getNeighbors().isEmpty()) {
-                        steps.add(current.getComposition().toString());
+
+                    if (add) {
+                        steps++;
+                    } else if (currentComp == rootComp) {
+                        steps++;
                     }
+
                 }
-//                if (_required.contains(current.getPartComposition().toString())) {
-//                    reqd.add(current.getPartComposition().toString());
-//                }
                 if (_recommended.contains(current.getComposition().toString())) {
                     recd.add(current.getComposition().toString());
                 }
+                if (_discouraged.contains(current.getComposition().toString())) {
+                    disc.add(current.getComposition().toString());
+                }
+
+                //PCR Reaction for assemblies with scars
+                if (current.getStage() == 0) {
+                    String UUID = current.getUUID();
+                    Part part = _collector.getPart(UUID, true);
+                    if (!current.getLOverhang().equals(part.getLeftOverhang()) || !current.getROverhang().equals(part.getRightOverhang())) {
+                        ArrayList<String> seq = new ArrayList<String>();
+                        seq.add(current.getLOverhang());
+                        seq.add(current.getComposition().toString());
+                        seq.add(current.getROverhang());
+                        neighborHash.add(seq);
+                    }
+                }
+
+                //Add unseen neighbors to queue
                 for (SRSNode node : current.getNeighbors()) {
                     if (!seenNodes.contains(node)) {
                         seenNodes.add(node);
@@ -558,28 +626,32 @@ public class RavenController {
 
             //Get the average efficiency of all steps in this assembly
             double sum = 0;
-            for (int i = 0; i < effArray.size(); i++) {
-                sum = sum + effArray.get(i);
+            for (int j = 0; j < effArray.size(); j++) {
+                sum = sum + effArray.get(j);
             }
             efficiency = sum / effArray.size();
 
             //Warn if no steps or stages are required to build part - i.e. it already exists in a library
-            if (steps.isEmpty()) {
+            if (seenSteps.isEmpty()) {
                 System.out.println("Warning! All goal part(s) already exist! No assembly required");
             }
 
         }
-        if (reactions == 0) {
-            reactions = steps.size() * 2;
-        }
+
+        reactions = neighborHash.size();
         modularity = modularity / _assemblyGraphs.size();
+//
+//        for (String shared : sharedSteps) {
+//            System.out.println("Shared step: " + shared);
+//        }
+
         //Statistics determined
         _statistics.setModularity(modularity);
         _statistics.setEfficiency(efficiency);
         _statistics.setRecommended(recd.size());
         _statistics.setStages(stages);
-        _statistics.setSteps(steps.size());
-        _statistics.setSharing(sharing.size());
+        _statistics.setSteps(steps);
+        _statistics.setSharing(sharedSteps.size());
         _statistics.setGoalParts(_assemblyGraphs.size());
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(reactions);
@@ -587,7 +659,7 @@ public class RavenController {
     }
 
     public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] vectorLibraryIDs, String[] partLibraryIDs) throws Exception {
-        _designCount ++;
+        _designCount++;
         _goalParts = new HashMap();
         _required = required;
         _recommended = recommended;

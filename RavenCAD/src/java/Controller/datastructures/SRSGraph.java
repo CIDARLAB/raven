@@ -86,7 +86,7 @@ public class SRSGraph {
             SRSNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
-            Part toAdd = coll.getPart(current.getUUID(),true);
+            Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
                 toReturn.add(toAdd);
             }
@@ -109,7 +109,7 @@ public class SRSGraph {
             seenNodes.add(current);
             queue.remove(0);
             if (current.getVector() != null) {
-                Vector toAdd = coll.getVector(current.getVector().getUUID(),true);
+                Vector toAdd = coll.getVector(current.getVector().getUUID(), true);
                 if (toAdd != null) {
                     toReturn.add(toAdd);
                 }
@@ -204,15 +204,15 @@ public class SRSGraph {
         DateFormat dateFormat = new SimpleDateFormat("MMddyyyy@HHmm");
         Date date = new Date();
         arcsText.append("# AssemblyMethod: BioBrick\n# ").append(" ").append(dateFormat.format(date)).append("\n");
-        arcsText.append("# ").append(coll.getPart(this._node.getUUID(),true)).append("\n");
+        arcsText.append("# ").append(coll.getPart(this._node.getUUID(), true)).append("\n");
         arcsText.append("# ").append(this._node.getUUID()).append("\n\n");
 
         //Build arc file 
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
         for (String s : edges) {
             String[] tokens = s.split("->");
-            Part vertex1 = coll.getPart(tokens[0].trim(),true);
-            Part vertex2 = coll.getPart(tokens[1].trim(),true);
+            Part vertex1 = coll.getPart(tokens[0].trim(), true);
+            Part vertex2 = coll.getPart(tokens[1].trim(), true);
             nodeMap.put(vertex1.getUUID(), vertex1.getName());
             nodeMap.put(vertex2.getUUID(), vertex2.getName());
             arcsText.append("# ").append(vertex1.getName()).append(" -> ").append(vertex2.getName()).append("\n");
@@ -248,31 +248,31 @@ public class SRSGraph {
      * Generate a Weyekin image file for a list of edges *
      */
     public String generateWeyekinFile(Collector coll, ArrayList<String> edges, boolean pigeon) {
-  //Initiate weyekin file
+        //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
         weyekinText.append("digraph {\n");
 
         //If edges are empty (happens when no assembly is necessary)
         if (edges.isEmpty()) {
-            nodeMap.put(this.getRootNode().getUUID(), this.getRootNode().getComposition().toString()+this.getRootNode().getLOverhang()+this.getRootNode().getROverhang());
+            nodeMap.put(this.getRootNode().getUUID(), this.getRootNode().getComposition().toString() + this.getRootNode().getLOverhang() + this.getRootNode().getROverhang());
         }
-        
-               //Store list of edges
+
+        //Store list of edges
         String edgeLines = "";
         for (String s : edges) {
             String[] tokens = s.split("->");
-            Part vertex1 = coll.getPart(tokens[0].trim(),true);
-            Part vertex2 = coll.getPart(tokens[1].trim(),true);
-            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition()+vertex1.getLeftOverhang()+vertex1.getRightOverhang());
-            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition()+vertex2.getLeftOverhang()+vertex2.getRightOverhang());
+            Part vertex1 = coll.getPart(tokens[0].trim(), true);
+            Part vertex2 = coll.getPart(tokens[1].trim(), true);
+            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + vertex1.getLeftOverhang() + vertex1.getRightOverhang());
+            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + vertex2.getLeftOverhang() + vertex2.getRightOverhang());
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
 
         }
-        
+
         if (pigeon) {
             for (String key : nodeMap.keySet()) {
-                Part currentPart = coll.getPart(key,true);
+                Part currentPart = coll.getPart(key, true);
                 StringBuilder pigeonLine = new StringBuilder();
                 pigeonLine.append("PIGEON_START\n");
                 pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
@@ -280,7 +280,7 @@ public class SRSGraph {
                 //Assign left overhang if it exists
                 pigeonLine.append("o ").append(currentPart.getLeftOverhang()).append(" 1" + "\n");
 
-                for (Part p: currentPart.getComposition()) {
+                for (Part p : currentPart.getComposition()) {
                     if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
                         pigeonLine.append("P ").append(p.getName()).append(" 4" + "\n");
                     } else if (p.getType().equalsIgnoreCase("promoter_r") || p.getType().equalsIgnoreCase("p_r")) {
@@ -302,23 +302,23 @@ public class SRSGraph {
                     } else if (p.getType().equalsIgnoreCase("terminator_r") || p.getType().equalsIgnoreCase("t_r")) {
                         pigeonLine.append("<T ").append(p.getName()).append(" 6" + "\n");
                     } else if (p.getType().equalsIgnoreCase("invertase site") || p.getType().equalsIgnoreCase("is")) {
-                        pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");                       
+                        pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");
                     } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
                         pigeonLine.append("f1");
-                        String[] fusionParts = p.getName().split("-");                        
+                        String[] fusionParts = p.getName().split("-");
                         for (int i = 1; i < fusionParts.length; i++) {
                             int color = i % 13 + 1;
                             pigeonLine.append("-").append(color);
                         }
-                        pigeonLine.append(" ").append(p.getName()).append("\n");   
-                    }else if (p.getType().equalsIgnoreCase("fusion_r") || p.getType().equalsIgnoreCase("fu_r")) {
+                        pigeonLine.append(" ").append(p.getName()).append("\n");
+                    } else if (p.getType().equalsIgnoreCase("fusion_r") || p.getType().equalsIgnoreCase("fu_r")) {
                         pigeonLine.append("<f1");
-                        String[] fusionParts = p.getName().split("-");                        
+                        String[] fusionParts = p.getName().split("-");
                         for (int i = 1; i < fusionParts.length; i++) {
                             int color = i % 13 + 1;
                             pigeonLine.append("-").append(color);
                         }
-                        pigeonLine.append(" ").append(p.getName()).append("\n");   
+                        pigeonLine.append(" ").append(p.getName()).append("\n");
                     } else {
                         pigeonLine.append(key);
                     }
@@ -335,13 +335,13 @@ public class SRSGraph {
 
             //Write node properties - purple boxes if cannot pigeon
             for (String key : nodeMap.keySet()) {
-                weyekinText.append("\"").append(coll.getPart(key,true).getStringComposition()).append("\"" + " [shape=box, color=\"#B293C9\", style=\"filled,rounded\"]" + "\n");
+                weyekinText.append("\"").append(coll.getPart(key, true).getStringComposition()).append("\"" + " [shape=box, color=\"#B293C9\", style=\"filled,rounded\"]" + "\n");
             }
         }
 
-        
-        
-      //Write edge lines
+
+
+        //Write edge lines
         weyekinText.append(edgeLines);
         weyekinText.append("}");
         return weyekinText.toString();
@@ -517,7 +517,7 @@ public class SRSGraph {
         SRSNode root = this.getRootNode();
         ArrayList<String> types = root.getType();
         for (int i = 0; i < types.size(); i++) {
-            if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r"))) {
+            if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
                 canPigeon = false;
             }
         }
@@ -572,7 +572,7 @@ public class SRSGraph {
     public int getDiscouragedCount() {
         return _disCnt;
     }
-    
+
     /**
      * Determine if the graph in question is pinned *
      */
@@ -614,7 +614,7 @@ public class SRSGraph {
     public int getReaction() {
         return _reactions;
     }
-    
+
     /**
      * Set the number of stages for an SDSGraph *
      */
@@ -642,7 +642,7 @@ public class SRSGraph {
     public void setDiscouragedCount(int count) {
         _disCnt = count;
     }
-    
+
     /**
      * Set graph root node *
      */
@@ -677,13 +677,13 @@ public class SRSGraph {
     public void setEfficiency(ArrayList<Double> efficiency) {
         _efficiency = efficiency;
     }
+
     /**
      * Set the reaction score of a graph *
      */
     public void setReactions(int numReactions) {
         _reactions = numReactions;
     }
-    
     //FIELDS
     private ArrayList<SRSGraph> _subGraphs;
     private SRSNode _node;

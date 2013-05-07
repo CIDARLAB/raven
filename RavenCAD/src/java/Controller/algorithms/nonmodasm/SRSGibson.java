@@ -17,12 +17,10 @@ import java.util.Set;
  */
 public class SRSGibson extends SRSGeneral {
 
-    /**
-     * Clotho part wrapper for sequence independent one pot reactions *
-     */
+     /** Clotho part wrapper for sequence independent one pot reactions **/
     public ArrayList<SRSGraph> gibsonClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
         try {
-
+            
             //Designate how many parts can be efficiently ligated in one step
             int max = 0;
             Set<Integer> keySet = efficiencies.keySet();
@@ -39,7 +37,7 @@ public class SRSGibson extends SRSGeneral {
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
-
+            
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
             if (modular) {
@@ -50,7 +48,7 @@ public class SRSGibson extends SRSGeneral {
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, false);
             optimalGraphs = assignVector(optimalGraphs, vectorSet);
-
+            
             return optimalGraphs;
         } catch (Exception E) {
             ArrayList<SRSGraph> blank = new ArrayList<SRSGraph>();
@@ -58,30 +56,52 @@ public class SRSGibson extends SRSGeneral {
             return blank;
         }
     }
-
-    /**
-     * Optimize overhang assignments based on available parts and vectors with
-     * overhangs *
-     */
-    private ArrayList<SRSGraph> assignVector(ArrayList<SRSGraph> optimalGraphs, ArrayList<SRSVector> vectorSet) {
-
+    
+    /** Optimize overhang assignments based on available parts and vectors with overhangs **/
+    private ArrayList<SRSGraph> assignVector (ArrayList<SRSGraph> optimalGraphs, ArrayList<SRSVector> vectorSet) {
+        
         //If the vector set is of size one, use that vector everywhere applicable 
-        SRSVector theVector = new SRSVector();
-        if (vectorSet.size() == 1) {
-            for (SRSVector vector : vectorSet) {
-                theVector = vector;
-            }
-        }
-
-        //For all graphs traverse nodes of the graph and assign all nodes the biobricks vector
+//        SRSVector theVector = new SRSVector();
+//        if (vectorSet.size() == 1) {
+//            for (SRSVector vector : vectorSet) {
+//                theVector = vector;
+//            }
+//        }
+        
+        //For all graphs traverse nodes to count the number of reactions and assign a vector to the goal part        
         for (int i = 0; i < optimalGraphs.size(); i++) {
-            SRSGraph graph = optimalGraphs.get(i);
-
+            
             //Only the goal part gets a vector
-            SRSNode root = graph.getRootNode();
-            root.setVector(theVector);
+            SRSGraph optimalGraph = optimalGraphs.get(i);
+            SRSNode root = optimalGraph.getRootNode();
+//            root.setVector(theVector);
+            
+            //Record left and right neighbors for each node... this will determine how many PCRs need to be performed
+            HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
+            ArrayList<String> rootComp = root.getComposition();
+            String prev = new String();
+            String next = new String();
+            for (int j = 0; j < rootComp.size(); j++) {
+                String current = rootComp.get(j);
+                if (j == 0) {
+                    next = rootComp.get(j+1);
+                } else if (j == rootComp.size()-1) {
+                    prev = rootComp.get(j-1);
+                } else {
+                    next = rootComp.get(j+1);
+                    prev = rootComp.get(j-1);
+                }
+                ArrayList<String> seq = new ArrayList<String>();
+                seq.add(prev);
+                seq.add(current);
+                seq.add(next);
+                neighborHash.add(seq);
+            }
+            
+            int reactions = neighborHash.size();
+            optimalGraph.setReactions(reactions);
         }
-
+        
         return optimalGraphs;
     }
 
