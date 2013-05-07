@@ -40,7 +40,7 @@ public class RavenServlet extends HttpServlet {
      */
     protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        RavenLogger.setPath(this.getServletContext().getRealPath("/")+"/log/");
+        RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
         String user = getUser(request);
@@ -137,7 +137,9 @@ public class RavenServlet extends HttpServlet {
         } catch (Exception e) {
             StringWriter stringWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(stringWriter);
+            RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
             e.printStackTrace(printWriter);
+            RavenLogger.logError(user, request.getRemoteAddr(), stringWriter.toString());
             String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
             out.println("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
         } finally {
@@ -172,7 +174,7 @@ public class RavenServlet extends HttpServlet {
         try {
             List<FileItem> items = uploadHandler.parseRequest(request);
             String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
-            RavenLogger.setPath(this.getServletContext().getRealPath("/")+"/log/");
+            RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
             new File(uploadFilePath).mkdir();
             ArrayList<File> toLoad = new ArrayList();
             for (FileItem item : items) {

@@ -32,16 +32,18 @@ public class AuthenticationServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         initPasswordHash();
+        RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
         try {
             String user = request.getParameter("user");
             String password = request.getParameter("password");
             if (passwordHash.containsKey(user) && password.equals(passwordHash.get(user))) {
+                System.out.println("logging in");
+                RavenLogger.logSessionIn(user, request.getRemoteAddr());
                 Cookie authenticateCookie = new Cookie("authenticate", "authenticated");
                 Cookie userCookie = new Cookie("user", user);
                 authenticateCookie.setMaxAge(60 * 24); //cookie lasts for an hour
                 response.addCookie(authenticateCookie);
                 response.addCookie(userCookie);
-                RavenLogger.logSessionIn(user, request.getRemoteAddr());
                 response.sendRedirect("index.html");
                 out.println("authenticated");
             } else {
