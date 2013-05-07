@@ -80,7 +80,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var allTableBody = "<table id='allTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
         var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr></thead><tbody>";
         var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
-        $.each(data, function() {
+        $.each(data["result"], function() {
             allTableBody = allTableBody + "<tr><td>"
                     + this["uuid"] + "</td><td>"
                     + this["Name"] + "</td><td>"
@@ -141,7 +141,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 type = "Vector";
             }
             $('#editorArea').html('<form class="form-horizontal"><legend>Edit ' + type + '</legend><p>' + 'Name: ' + $(this).children('td:eq(0)').text() + '</p><p>Type: ' + $(this).children('td:eq(1)').text() + '</p></form>');
+        $('#errorArea').addClass("hidden");
         });
+        
+        if(data["status"]==="bad") {
+            $('#error').html(data["message"]);
+            $('#error').append('<hr/><p>We have uploaded the rest of your parts and vectors</p>');
+            $('#errorArea').removeClass("hidden");
+        }
     };
 
 
@@ -154,6 +161,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
     //EVENT HANDLERS
     $('.tablink').click(function() {
         tabResized = false;
+    });
+    $('#dismissButton').click(function(){
+       $('#errorArea').addClass("hidden"); 
     });
     $('#resetButton').click(function() {
         $.get("RavenServlet", {"command": "purge"}, function() {

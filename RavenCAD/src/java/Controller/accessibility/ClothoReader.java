@@ -132,7 +132,7 @@ public class ClothoReader {
      * Make intermediate parts of a graph into Clotho parts (typically only done
      * for solution graphs) *
      */
-    private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> UUIDcomposition, String LO, String RO) {
+    private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> UUIDcomposition, String LO, String RO) throws Exception {
         if (_allCompositeParts == null || _allBasicParts == null) {
             refreshPartVectorList(coll);
         }
@@ -142,13 +142,9 @@ public class ClothoReader {
         for (String uuid : UUIDcomposition) {
             Part inputPart = coll.getPart(uuid, true);
             if (inputPart.isComposite()) {
-                try {
-                    ArrayList<Part> inputPartComposition = getComposition(inputPart);
-                    for (Part basicPart : inputPartComposition) {
-                        inputPartUUIDComp.add(basicPart.getUUID());
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                ArrayList<Part> inputPartComposition = getComposition(inputPart);
+                for (Part basicPart : inputPartComposition) {
+                    inputPartUUIDComp.add(basicPart.getUUID());
                 }
             } else {
                 inputPartUUIDComp.add(uuid);
@@ -172,14 +168,11 @@ public class ClothoReader {
             }
 
             //Obtain the basic part uuids
-            try {
-                ArrayList<Part> existingPartComposition = getComposition(existingPart);
-                for (Part basicPart : existingPartComposition) {
-                    existingPartUUIDComp.add(basicPart.getUUID());
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            ArrayList<Part> existingPartComposition = getComposition(existingPart);
+            for (Part basicPart : existingPartComposition) {
+                existingPartUUIDComp.add(basicPart.getUUID());
             }
+
 
             //If the number of uuids is the same as the number of input composition uuids and the number of uuids in the composition of somePart and the overhangs match, return the part
             if (inputPartUUIDComp.equals(existingPartUUIDComp)) {

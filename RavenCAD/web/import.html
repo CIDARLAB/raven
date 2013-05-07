@@ -29,7 +29,6 @@
             <div class="row-fluid">
                 <div class="span12">
                     <div class="row-fluid">
-
                         <div class="span6"> 
                             <!--button area-->
                             <div class="btn-toolbar">
@@ -47,6 +46,14 @@
                                 </div>
                             </div>
 
+                        </div>
+                    </div>
+                    <div class="row-fluid">
+                        <div id="errorArea" class="collapse in alert alert-error hidden">
+                            <strong>Oops, an error occurred while uploading your data</strong> 
+                            <button id="dismissButton" class="btn" data-toggle="collapse" data-target="#errorArea">Dismiss</button>
+                            <hr/>
+                            <div id="error"></div>
                         </div>
                     </div>
                     <div id="dataArea" class="row-fluid">

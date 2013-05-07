@@ -257,7 +257,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             }
                         });
                         $('#discardButton' + designCount).click(function() {
-                            alert('discarding design' + designCount);
                             $('#designTabHeader' + designCount).remove();
                             $('#designTab' + designCount).remove();
                             $('#designTabHeader a:first').tab('show');
@@ -272,7 +271,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         });
                     } else {
                         $("#designTab" + designCount).html('<div class="alert alert-danger">' +
-                                '<strong>Oops, an error occured while generating your assembly plan</strong>' +
+                                '<strong>Oops, an error occurred while generating your assembly plan</strong>' +
                                 '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
                                 '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
                                 '<li>A brief summary of what you were trying to do</li></ul>' +
@@ -305,7 +304,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var targetListBody = "<select id=\"availableTargetPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
         var libraryPartListBody = "<select id=\"libraryPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
         var libraryVectorListBody = "<select id=\"libraryVectorList\" multiple=\"multiple\" class=\"fixedHeight\">";
-        $.each(data, function() {
+        $.each(data["result"], function() {
             if (this["Type"] === "composite") {
                 targetListBody = targetListBody + "<option class=\"composite ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
             } else if (this["Type"] === "vector") {
@@ -331,7 +330,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             data = json;
             drawPartVectorLists();
             //generate uuidCompositionHash
-            $.each(data, function() {
+            $.each(data["result"], function() {
                 if (this["Type"].toLowerCase() !== "vector") {
                     uuidCompositionHash[this["uuid"]] = this["Composition"];
                 }

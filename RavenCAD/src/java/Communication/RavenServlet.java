@@ -41,10 +41,10 @@ public class RavenServlet extends HttpServlet {
     protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         PrintWriter out = response.getWriter();
+        String command = request.getParameter("command");
+        String user = getUser(request);
+        RavenController controller = _collectorHash.get(user);
         try {
-            String command = request.getParameter("command");
-            String user = getUser(request);
-            RavenController controller = _collectorHash.get(user);
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
                 _collectorHash.put(user, new RavenController(path, user));
@@ -73,64 +73,64 @@ public class RavenServlet extends HttpServlet {
                 responseString = controller.fetchData();
                 out.write(responseString);
             } else if (command.equals("purge")) {
-                    response.setContentType("test/plain");
-                    String responseString = "purged";
-                    controller.clearData();
-                    out.write(responseString);
+                response.setContentType("test/plain");
+                String responseString = "purged";
+                controller.clearData();
+                out.write(responseString);
             } else if (command.equals("run")) {
-                    response.setContentType("application/json");
-                    //run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden)
-                    String[] targetIDs = request.getParameter("targets").split(",");
-                    String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
-                    String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
-                    String[] recArray = request.getParameter("recommended").split(";");
-                    String[] reqArray = request.getParameter("required").split(";");
-                    String[] forbiddenArray = request.getParameter("forbidden").split(";");
-                    String[] discouragedArray = request.getParameter("discouraged").split(";");
-                    String method = request.getParameter("method");
-                    HashSet<String> required = new HashSet();
-                    HashSet<String> recommended = new HashSet();
-                    HashSet<String> forbidden = new HashSet();
-                    HashSet<String> discouraged = new HashSet();
+                response.setContentType("application/json");
+                //run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden)
+                String[] targetIDs = request.getParameter("targets").split(",");
+                String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
+                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
+                String[] recArray = request.getParameter("recommended").split(";");
+                String[] reqArray = request.getParameter("required").split(";");
+                String[] forbiddenArray = request.getParameter("forbidden").split(";");
+                String[] discouragedArray = request.getParameter("discouraged").split(";");
+                String method = request.getParameter("method");
+                HashSet<String> required = new HashSet();
+                HashSet<String> recommended = new HashSet();
+                HashSet<String> forbidden = new HashSet();
+                HashSet<String> discouraged = new HashSet();
 
-                    if (recArray.length > 0) {
-                        for (int i = 0; i < recArray.length; i++) {
-                            if (recArray[i].length() > 0) {
-                                recommended.add(recArray[i]);
-                            }
+                if (recArray.length > 0) {
+                    for (int i = 0; i < recArray.length; i++) {
+                        if (recArray[i].length() > 0) {
+                            recommended.add(recArray[i]);
                         }
                     }
-                    if (reqArray.length > 0) {
-                        for (int i = 0; i < reqArray.length; i++) {
-                            if (reqArray[i].length() > 0) {
-                                required.add(reqArray[i]);
-                            }
+                }
+                if (reqArray.length > 0) {
+                    for (int i = 0; i < reqArray.length; i++) {
+                        if (reqArray[i].length() > 0) {
+                            required.add(reqArray[i]);
                         }
                     }
-                    if (forbiddenArray.length > 0) {
-                        for (int i = 0; i < forbiddenArray.length; i++) {
-                            if (forbiddenArray[i].length() > 0) {
-                                forbidden.add(forbiddenArray[i]);
-                            }
+                }
+                if (forbiddenArray.length > 0) {
+                    for (int i = 0; i < forbiddenArray.length; i++) {
+                        if (forbiddenArray[i].length() > 0) {
+                            forbidden.add(forbiddenArray[i]);
                         }
                     }
-                    if (discouragedArray.length > 0) {
-                        for (int i = 0; i < discouragedArray.length; i++) {
-                            if (discouragedArray[i].length() > 0) {
-                                discouraged.add(discouragedArray[i]);
-                            }
+                }
+                if (discouragedArray.length > 0) {
+                    for (int i = 0; i < discouragedArray.length; i++) {
+                        if (discouragedArray[i].length() > 0) {
+                            discouraged.add(discouragedArray[i]);
                         }
                     }
-                    String designCount = request.getParameter("designCount");
-                    String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs);
-                    String partsList = controller.generatePartsList(designCount);
-                    String instructions = controller.generateInstructionsFile(designCount);
-                    String statString = controller.generateStats();
-                    instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
-                    if (instructions.length() < 1) {
-                        instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
-                    }
-                    out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":"+partsList+"}");
+                }
+                String designCount = request.getParameter("designCount");
+                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs);
+                String partsList = controller.generatePartsList(designCount);
+                String instructions = controller.generateInstructionsFile(designCount);
+                String statString = controller.generateStats();
+                instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
+                if (instructions.length() < 1) {
+                    instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
+                }
+                out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":" + partsList + "}");
             }
         } catch (Exception e) {
             StringWriter stringWriter = new StringWriter();
@@ -187,13 +187,19 @@ public class RavenServlet extends HttpServlet {
                     item.write(file);
                     toLoad.add(file);
                 }
-                writer.write("{\"name\":\"" + item.getName() + "\",\"type\":\"" + item.getContentType() + "\",\"size\":\"" + item.getSize() + "\"}");
+                writer.write("{\"result\":\"good\",\"status\":\"good\"}");
             }
             controller.loadUploadedFiles(toLoad);
         } catch (FileUploadException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {
-            //File not found, no need to panick, or do anything....
+            e.printStackTrace();
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(stringWriter);
+            e.printStackTrace(printWriter);
+            String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
+            writer.write("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+
         } finally {
             writer.close();
 

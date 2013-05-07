@@ -21,6 +21,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -301,24 +303,37 @@ public class RavenController {
                     + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
         toReturn = toReturn.subSequence(0, toReturn.length() - 1) + "]";
+        if (_error.length() > 0) {
+            _error = _error.replaceAll("[\r\n\t]+", "<br/>");
+            toReturn = "{\"result\":" + toReturn + ",\"status\":\"bad\",\"message\":\"" + _error + "\"}";
+        } else {
+            toReturn = "{\"result\":" + toReturn + ",\"status\":\"good\"}";
+        }
         return toReturn;
     }
 
-    public void loadUploadedFiles(ArrayList<File> filesToRead) throws Exception {
+    public void loadUploadedFiles(ArrayList<File> filesToRead) {
+        _error = "";
 //        String uploadFilePath = _path + _user + "/";
 //        File[] filesInDirectory = new File(uploadFilePath).listFiles();
-        if (filesToRead != null) {
-            for (File currentFile : filesToRead) {
-                String filePath = currentFile.getAbsolutePath();
-                String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
-                if ("csv".equals(fileExtension)) {
-                    parseInputFile(currentFile);
+        try {
+            if (filesToRead != null) {
+                for (File currentFile : filesToRead) {
+                    String filePath = currentFile.getAbsolutePath();
+                    String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
+                    if ("csv".equals(fileExtension)) {
+                        parseInputFile(currentFile);
+                    }
                 }
             }
+        } catch (Exception e) {
+            String exceptionAsString = e.getMessage().replaceAll("[\r\n\t]+", "<br/>");
+            _error = exceptionAsString;
         }
     }
 
     public void loadDesign(String designCount) throws Exception {
+        _error = "";
         String filePath = _path + _user + "/partsList" + designCount + ".csv";
         File toLoad = new File(filePath);
         parseInputFile(toLoad);
@@ -330,132 +345,123 @@ public class RavenController {
         if (forcedOverhangHash == null) {
             forcedOverhangHash = new HashMap();
         }
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
-            String line = reader.readLine();
-            line = reader.readLine(); //skip first line
-            while (line != null) {
-                while (line.matches("^[\\s,]+")) {
-                    line = reader.readLine();
-                }
-                String[] tokens = line.split(",");
-                int tokenCount = tokens.length; //keeps track of how many columns are filled by counting backwards
-                for (int i = tokens.length - 1; i > -1; i--) {
-                    if (tokens[i].trim().matches("[\\s]*")) {
-                        tokenCount--;
-                    } else {
-                        break;
-                    }
-                }
-                if (tokenCount > 7) {
-                    // store line for making composite part
-                    try {
-                        String[] trimmedTokens = new String[tokenCount];
-                        System.arraycopy(tokens, 0, trimmedTokens, 0, tokenCount);
-                        compositePartTokens.add(trimmedTokens);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        badLines.add(line);
-                    }
-                } else if (tokenCount == 7) {
-                    //create vector
-                    try {
-                        String name = tokens[0].trim();
-                        String sequence = tokens[1].trim();
-                        String leftOverhang = tokens[2].trim();
-                        String rightOverhang = tokens[3].trim();
-                        String resistance = tokens[5].toLowerCase().trim();
-                        int level = -1;
-                        try {
-                            level = Integer.parseInt(tokens[6]);
-                        } catch (NumberFormatException e) {
-                            level = -1;
-                        }
-                        Vector newVector = Vector.generateVector(name, sequence);
-//                            System.out.println("creating vector: " + name + " resistance: " + resistance + " LO: " + leftOverhang + " RO: " + rightOverhang + " level: " + String.valueOf(level) + " seq: " + sequence);
-                        newVector.addSearchTag("LO: " + leftOverhang);
-                        newVector.addSearchTag("RO: " + rightOverhang);
-                        newVector.addSearchTag("Level: " + level);
-                        newVector.addSearchTag("Resistance: " + resistance);
-                        newVector.setTransientStatus(false);
-                        Boolean toBreak = !newVector.saveDefault(_collector);
-                        if (toBreak) {
-                            break;
-                        }
-                    } catch (Exception e) {
-                        badLines.add(line);
-                        e.printStackTrace();
-                    }
-                } else if (tokenCount == 5) {
-                    try {
-                        //create basic part 
-                        String name = tokens[0].trim();
-                        String sequence = tokens[1].trim();
-                        String leftOverhang = tokens[2].trim();
-                        String rightOverhang = tokens[3].trim();
-                        String type = tokens[4].trim();
-                        Part newBasicPart = Part.generateBasic(name, sequence);
-                        newBasicPart.addSearchTag("LO: " + leftOverhang);
-                        newBasicPart.addSearchTag("RO: " + rightOverhang);
-                        newBasicPart.addSearchTag("Type: " + type);
-                        Boolean toBreak = !newBasicPart.saveDefault(_collector);
-                        newBasicPart.setTransientStatus(false);
-                        if (toBreak) {
-                            break;
-                        }
-                    } catch (Exception e) {
-                        badLines.add(line);
-                        e.printStackTrace();
-                    }
-                } else {
-                    //poorly formed line
-                    badLines.add(line);
-
-                }
+        BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
+        String line = reader.readLine();
+        line = reader.readLine(); //skip first line
+        while (line != null) {
+            while (line.matches("^[\\s,]+")) {
                 line = reader.readLine();
             }
-            reader.close();
-            //create the composite parts
-            for (String[] tokens : compositePartTokens) {
-                try {
-                    ArrayList<Part> composition = new ArrayList<Part>();
-                    for (int i = 7; i < tokens.length; i++) {
-                        String partName = tokens[i].trim();
-                        if (partName.contains("|")) {
-                            String[] partNameTokens = partName.split("\\|");
-                            if (forcedOverhangHash.get(tokens[0]) != null) {
-                                forcedOverhangHash.get(tokens[0]).add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
-                            } else {
-                                ArrayList<String> toAdd = new ArrayList();
-                                toAdd.add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
-                                forcedOverhangHash.put(tokens[0], toAdd);
-                            }
-                            partName = partNameTokens[0];
-                        }
-                        composition.add(_collector.getPartByName(partName,true));
-                    }
-                    String name = tokens[0].trim();
-                    String leftOverhang = tokens[2].trim();
-                    String rightOverhang = tokens[3].trim();
-
-                    Part newComposite = Part.generateComposite(composition, name);
-                    newComposite.addSearchTag("LO: " + leftOverhang);
-                    newComposite.addSearchTag("RO: " + rightOverhang);
-                    newComposite.addSearchTag("Type: composite");
-                    newComposite.saveDefault(_collector);
-                    newComposite.setTransientStatus(false);
-                } catch (NullPointerException e) {
-                    String badLine = "";
-                    for (int j = 0; j < tokens.length; j++) {
-                        badLine = badLine + tokens[j] + ",";
-                    }
-                    badLines.add(badLine.substring(0, badLine.length() - 1));//trim the last period
-                    e.printStackTrace();
+            String[] tokens = line.split(",");
+            int tokenCount = tokens.length; //keeps track of how many columns are filled by counting backwards
+            for (int i = tokens.length - 1; i > -1; i--) {
+                if (tokens[i].trim().matches("[\\s]*")) {
+                    tokenCount--;
+                } else {
+                    break;
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return;
+            if (tokenCount > 7) {
+                // store line for making composite part
+                try {
+                    String[] trimmedTokens = new String[tokenCount];
+                    System.arraycopy(tokens, 0, trimmedTokens, 0, tokenCount);
+                    compositePartTokens.add(trimmedTokens);
+                } catch (Exception e) {
+                    badLines.add(line);
+                }
+            } else if (tokenCount == 7) {
+                //create vector
+                try {
+                    String name = tokens[0].trim();
+                    String sequence = tokens[1].trim();
+                    String leftOverhang = tokens[2].trim();
+                    String rightOverhang = tokens[3].trim();
+                    String resistance = tokens[5].toLowerCase().trim();
+                    int level = -1;
+                    try {
+                        level = Integer.parseInt(tokens[6]);
+                    } catch (NumberFormatException e) {
+                        level = -1;
+                    }
+                    Vector newVector = Vector.generateVector(name, sequence);
+//                            System.out.println("creating vector: " + name + " resistance: " + resistance + " LO: " + leftOverhang + " RO: " + rightOverhang + " level: " + String.valueOf(level) + " seq: " + sequence);
+                    newVector.addSearchTag("LO: " + leftOverhang);
+                    newVector.addSearchTag("RO: " + rightOverhang);
+                    newVector.addSearchTag("Level: " + level);
+                    newVector.addSearchTag("Resistance: " + resistance);
+                    newVector.setTransientStatus(false);
+                    Boolean toBreak = !newVector.saveDefault(_collector);
+                    if (toBreak) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    badLines.add(line);
+                }
+            } else if (tokenCount == 5) {
+                try {
+                    //create basic part 
+                    String name = tokens[0].trim();
+                    String sequence = tokens[1].trim();
+                    String leftOverhang = tokens[2].trim();
+                    String rightOverhang = tokens[3].trim();
+                    String type = tokens[4].trim();
+                    Part newBasicPart = Part.generateBasic(name, sequence);
+                    newBasicPart.addSearchTag("LO: " + leftOverhang);
+                    newBasicPart.addSearchTag("RO: " + rightOverhang);
+                    newBasicPart.addSearchTag("Type: " + type);
+                    Boolean toBreak = !newBasicPart.saveDefault(_collector);
+                    newBasicPart.setTransientStatus(false);
+                    if (toBreak) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    badLines.add(line);
+                }
+            } else {
+                //poorly formed line
+                badLines.add(line);
+
+            }
+            line = reader.readLine();
+        }
+        reader.close();
+        //create the composite parts
+        for (String[] tokens : compositePartTokens) {
+            try {
+                ArrayList<Part> composition = new ArrayList<Part>();
+                for (int i = 7; i < tokens.length; i++) {
+                    String partName = tokens[i].trim();
+                    if (partName.contains("|")) {
+                        String[] partNameTokens = partName.split("\\|");
+                        if (forcedOverhangHash.get(tokens[0]) != null) {
+                            forcedOverhangHash.get(tokens[0]).add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
+                        } else {
+                            ArrayList<String> toAdd = new ArrayList();
+                            toAdd.add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
+                            forcedOverhangHash.put(tokens[0], toAdd);
+                        }
+                        partName = partNameTokens[0];
+                    }
+                    composition.add(_collector.getPartByName(partName, true));
+                }
+                String name = tokens[0].trim();
+                String leftOverhang = tokens[2].trim();
+                String rightOverhang = tokens[3].trim();
+
+                Part newComposite = Part.generateComposite(composition, name);
+                newComposite.addSearchTag("LO: " + leftOverhang);
+                newComposite.addSearchTag("RO: " + rightOverhang);
+                newComposite.addSearchTag("Type: composite");
+                newComposite.saveDefault(_collector);
+                newComposite.setTransientStatus(false);
+            } catch (NullPointerException e) {
+                String badLine = "";
+                for (int j = 0; j < tokens.length; j++) {
+                    badLine = badLine + tokens[j] + ",";
+                }
+                badLines.add(badLine.substring(0, badLine.length() - 1));//trim the last comma
+            }
         }
         if (badLines.size() > 0) {
             //print warning about bad line
@@ -463,7 +469,7 @@ public class RavenController {
             for (String bl : badLines) {
                 badLineMessage = badLineMessage + "\n" + bl;
             }
-            System.out.println(badLineMessage);
+            throw new Exception(badLineMessage);
 
         }
     }
@@ -593,7 +599,7 @@ public class RavenController {
         method = method.toLowerCase().trim();
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
-                Part current = _collector.getPart(partLibraryIDs[i],false);
+                Part current = _collector.getPart(partLibraryIDs[i], false);
                 if (current != null) {
                     _partLibrary.add(current);
                 }
@@ -601,14 +607,14 @@ public class RavenController {
         }
         if (vectorLibraryIDs.length > 0) {
             for (int i = 0; i < vectorLibraryIDs.length; i++) {
-                Vector current = _collector.getVector(vectorLibraryIDs[i],false);
+                Vector current = _collector.getVector(vectorLibraryIDs[i], false);
                 if (current != null) {
                     _vectorLibrary.add(current);
                 }
             }
         }
         for (int i = 0; i < targetIDs.length; i++) {
-            Part current = _collector.getPart(targetIDs[i],false);
+            Part current = _collector.getPart(targetIDs[i], false);
             _goalParts.put(current, ClothoReader.getComposition(current));
         }
         Statistics.start();
@@ -715,4 +721,5 @@ public class RavenController {
     public Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
     public String _path;
     public String _user;
+    public String _error = "";
 }
