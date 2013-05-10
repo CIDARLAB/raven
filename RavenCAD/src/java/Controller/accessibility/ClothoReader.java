@@ -51,18 +51,12 @@ public class ClothoReader {
                     partName = partName.substring(0, 255);
                 }
 
-                //Get new intermediate composition
-                ArrayList<String> UUIDcomposition = new ArrayList();
-                for (String component : currentNode.getComposition()) {
-                    UUIDcomposition.add(coll.getPartByName(component, true).getUUID());
-                }
-
                 //Get new intermediate overhangs
                 String LO = currentNode.getLOverhang();
                 String RO = currentNode.getROverhang();
 
                 //If there's overhangs, add search tags
-                Part newPart = generateNewClothoPart(coll, partName, "", UUIDcomposition, LO, RO);
+                Part newPart = generateNewClothoPart(coll, partName, "", currentNode.getComposition(), LO, RO);
                 currentNode.setName(partName);
                 newPart.saveDefault(coll);
                 currentNode.setUUID(newPart.getUUID());
@@ -132,33 +126,21 @@ public class ClothoReader {
      * Make intermediate parts of a graph into Clotho parts (typically only done
      * for solution graphs) *
      */
-    private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> UUIDcomposition, String LO, String RO) throws Exception {
-        if (_allCompositeParts == null || _allBasicParts == null) {
+    private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> composition, String LO, String RO) throws Exception {
+        if (_allCompositeParts.size()==0 || _allBasicParts.size()==0) {
             refreshPartVectorList(coll);
         }
-        ArrayList<String> inputPartUUIDComp = new ArrayList<String>();
-
+//        System.out.println("creating   : "+composition+" overhangs: "+LO+"|"+RO);
         //For each composite part, get the basic part uuids
-        for (String uuid : UUIDcomposition) {
-            Part inputPart = coll.getPart(uuid, true);
-            if (inputPart.isComposite()) {
-                ArrayList<Part> inputPartComposition = getComposition(inputPart);
-                for (Part basicPart : inputPartComposition) {
-                    inputPartUUIDComp.add(basicPart.getUUID());
-                }
-            } else {
-                inputPartUUIDComp.add(uuid);
-            }
-        }
 
         //Every time a new composite part can be made, search to see there's nothing made from the same components before saving
         for (Part existingPart : _allCompositeParts) {
-            ArrayList<String> existingPartUUIDComp = new ArrayList<String>();
+            ArrayList<String> existingPartComp = new ArrayList<String>();
 
             //Get an existing part's overhangs
             ArrayList<String> sTags = existingPart.getSearchTags();
-            String existingPartLO = new String();
-            String existingPartRO = new String();
+            String existingPartLO="";
+            String existingPartRO="";
             for (int k = 0; k < sTags.size(); k++) {
                 if (sTags.get(k).startsWith("LO:")) {
                     existingPartLO = sTags.get(k).substring(4);
@@ -170,13 +152,14 @@ public class ClothoReader {
             //Obtain the basic part uuids
             ArrayList<Part> existingPartComposition = getComposition(existingPart);
             for (Part basicPart : existingPartComposition) {
-                existingPartUUIDComp.add(basicPart.getUUID());
+                existingPartComp.add(basicPart.getName());
             }
-
+//            System.out.println("considering: "+existingPartComp+" overhangs: "+existingPartLO+"|"+existingPartRO);
 
             //If the number of uuids is the same as the number of input composition uuids and the number of uuids in the composition of somePart and the overhangs match, return the part
-            if (inputPartUUIDComp.equals(existingPartUUIDComp)) {
+            if (composition.toString().equals(existingPartComp.toString())) {
                 if (existingPartLO.equalsIgnoreCase(LO) && existingPartRO.equalsIgnoreCase(RO)) {
+//                    System.out.println("returning existing part");
                     return existingPart;
                 }
             }
@@ -184,10 +167,10 @@ public class ClothoReader {
 
 
         //If a new composite part needs to be made
-        if (inputPartUUIDComp.size() > 1) {
+        if (composition.size() > 1) {
             ArrayList<Part> newComposition = new ArrayList<Part>();
-            for (String uuid : inputPartUUIDComp) {
-                newComposition.add(coll.getPart(uuid, true));
+            for (String component : composition) {
+                newComposition.add(coll.getPartByName(component, true));
             }
             Part newPart = Part.generateComposite(newComposition, name);
             if (!LO.isEmpty()) {
@@ -196,12 +179,11 @@ public class ClothoReader {
             if (!RO.isEmpty()) {
                 newPart.addSearchTag("RO: " + RO);
             }
-//            newPart.saveDefault();
             return newPart;
 
             //Make a new basic part
         } else {
-            Part newPart = Part.generateBasic(name, coll.getPart(inputPartUUIDComp.get(0), true).getSeq());
+            Part newPart = Part.generateBasic(name, coll.getPart(composition.get(0), true).getSeq());
             if (!LO.isEmpty()) {
                 newPart.addSearchTag("LO: " + LO);
             }
@@ -254,7 +236,7 @@ public class ClothoReader {
     /**
      * Refresh a part list (used by the viewer) *
      */
-    private static void refreshPartVectorList(Collector coll) {
+    private void refreshPartVectorList(Collector coll) {
         _allCompositeParts = new ArrayList<Part>();
         _allBasicParts = new ArrayList<Part>();
         _allVectors = new ArrayList<Vector>();
@@ -352,7 +334,7 @@ public class ClothoReader {
 
     }
     //Fields
-    static ArrayList<Part> _allCompositeParts;
-    static ArrayList<Part> _allBasicParts;
-    static ArrayList<Vector> _allVectors;
+    ArrayList<Part> _allCompositeParts;
+    ArrayList<Part> _allBasicParts;
+    ArrayList<Vector> _allVectors;
 }
