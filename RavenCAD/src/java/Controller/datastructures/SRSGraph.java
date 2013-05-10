@@ -280,7 +280,7 @@ public class SRSGraph {
                 //Assign left overhang if it exists
                 pigeonLine.append("o ").append(currentPart.getLeftOverhang()).append(" 1" + "\n");
 
-                for (Part p : currentPart.getComposition()) {
+                for (Part p: currentPart.getComposition()) {
                     if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
                         pigeonLine.append("P ").append(p.getName()).append(" 4" + "\n");
                     } else if (p.getType().equalsIgnoreCase("promoter_r") || p.getType().equalsIgnoreCase("p_r")) {
@@ -302,23 +302,27 @@ public class SRSGraph {
                     } else if (p.getType().equalsIgnoreCase("terminator_r") || p.getType().equalsIgnoreCase("t_r")) {
                         pigeonLine.append("<T ").append(p.getName()).append(" 6" + "\n");
                     } else if (p.getType().equalsIgnoreCase("invertase site") || p.getType().equalsIgnoreCase("is")) {
-                        pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");
+                        pigeonLine.append("> ").append(p.getName()).append(" 12" + "\n");                       
+                    } else if (p.getType().equalsIgnoreCase("invertase site_r") || p.getType().equalsIgnoreCase("is_r")) {
+                        pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");                       
+                    } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s") || p.getType().equalsIgnoreCase("spacer_r") || p.getType().equalsIgnoreCase("s_r")) {
+                        pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");                       
                     } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
                         pigeonLine.append("f1");
-                        String[] fusionParts = p.getName().split("-");
+                        String[] fusionParts = p.getName().split("-");                        
                         for (int i = 1; i < fusionParts.length; i++) {
                             int color = i % 13 + 1;
                             pigeonLine.append("-").append(color);
                         }
-                        pigeonLine.append(" ").append(p.getName()).append("\n");
-                    } else if (p.getType().equalsIgnoreCase("fusion_r") || p.getType().equalsIgnoreCase("fu_r")) {
+                        pigeonLine.append(" ").append(p.getName()).append("\n");   
+                    }else if (p.getType().equalsIgnoreCase("fusion_r") || p.getType().equalsIgnoreCase("fu_r")) {
                         pigeonLine.append("<f1");
-                        String[] fusionParts = p.getName().split("-");
+                        String[] fusionParts = p.getName().split("-");                        
                         for (int i = 1; i < fusionParts.length; i++) {
                             int color = i % 13 + 1;
                             pigeonLine.append("-").append(color);
                         }
-                        pigeonLine.append(" ").append(p.getName()).append("\n");
+                        pigeonLine.append(" ").append(p.getName()).append("\n");   
                     } else {
                         pigeonLine.append(key);
                     }
