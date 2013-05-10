@@ -124,7 +124,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
                         '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
                         '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
-                        '<li><button class="btn" id="discardButton' + designCount + '">Discard Design</button></li>' +
+                        '<li><button class="btn" id="discardButton' + designCount + '" val="' + designCount + '">Discard Design</button></li>' +
                         '</ul>');
                 //add tab content
                 $('#resultTabs' + designCount).append(
@@ -189,7 +189,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             status = '<span class="label label-success">Graph structure verified!</span>';
                             saveButtons = '<p><button id="reportButton' + designCount +
                                     '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
-                                    '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '">Save to working library</button></p>';
+                                    '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '" val="' + designCount + '">Save to working library</button></p>';
                             $('#download' + designCount).prepend(saveButtons);
                             $('#reportButton' + designCount).click(function() {
                                 alert("this feature will be coming soon");
@@ -206,16 +206,17 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
 
                         $('#saveButton' + designCount).click(function() {
+                            var designNumber = $(this).attr("val");
                             $.get('RavenServlet', {"command": "load", "designCount": designCount}, function(result) {
                                 if (result === "loaded data") {
-                                    $('#saveButton' + designCount).prop('disabled', true);
-                                    $('#saveButton' + designCount).text("Successful Save");
+                                    $('#saveButton' + designNumber).prop('disabled', true);
+                                    $('#saveButton' + designNumber).text("Successful Save");
                                 } else {
                                     alert("Failed to save parts");
-                                    $('#saveButton' + designCount).text("Report Error");
-                                    $('#saveButton' + designCount).removeClass('btn-success');
-                                    $('#saveButton' + designCount).addClass('btn-danger');
-                                    $('#saveButton' + designCount).click(function() {
+                                    $('#saveButton' + designNumber).text("Report Error");
+                                    $('#saveButton' + designNumber).removeClass('btn-success');
+                                    $('#saveButton' + designNumber).addClass('btn-danger');
+                                    $('#saveButton' + designNumber).click(function() {
                                         alert('this feature will be coming soon');
                                     })
                                 }
@@ -257,8 +258,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             }
                         });
                         $('#discardButton' + designCount).click(function() {
-                            $('#designTabHeader' + designCount).remove();
-                            $('#designTab' + designCount).remove();
+                            var designNumber = $(this).attr("val");
+                            $('#designTabHeader' + designNumber).remove();
+                            $('#designTab' + designNumber).remove();
                             $('#designTabHeader a:first').tab('show');
                             refreshData();
                         });

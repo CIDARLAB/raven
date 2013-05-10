@@ -53,8 +53,8 @@ public class ClothoReader {
 
                 //Get new intermediate composition
                 ArrayList<String> UUIDcomposition = new ArrayList();
-                for (String uuid : currentNode.getComposition()) {
-                    UUIDcomposition.add(Part.retrieveByExactName(coll, uuid, true).getUUID());
+                for (String component : currentNode.getComposition()) {
+                    UUIDcomposition.add(coll.getPartByName(component, true).getUUID());
                 }
 
                 //Get new intermediate overhangs
