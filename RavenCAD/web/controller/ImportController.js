@@ -5,6 +5,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var loaded = false;
     var data = null;
     var tabResized = true;
+    var sequenceHash = {}; //key: composition/name; value: sequence
 
 // FUNCTIONS
     var allTable = $("#allTable").dataTable({
@@ -26,7 +27,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#allTable').dataTable().fnAddData([
             rowData["uuid"],
             rowData["Name"],
-            rowData["Sequence"],
             rowData["LO"],
             rowData["RO"],
             rowData["Type"],
@@ -77,14 +77,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
 //draw table
     var drawTable = function() {
         //TODO draw parts and vectors into separate tabs
-        var allTableBody = "<table id='allTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
-        var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr></thead><tbody>";
-        var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
+        var allTableBody = "<table id='allTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
+        var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr></thead><tbody>";
+        var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
         $.each(data["result"], function() {
             allTableBody = allTableBody + "<tr><td>"
                     + this["uuid"] + "</td><td>"
                     + this["Name"] + "</td><td>"
-                    + this["Sequence"] + "</td><td>"
                     + this["LO"] + "</td><td>"
                     + this["RO"] + "</td><td>"
                     + this["Type"] + "</td><td>"
@@ -92,20 +91,20 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     + this["Resistance"] + "</td><td>"
                     + this["Level"] + "</td></tr>";
             if (this["Type"] === "vector") {
+                sequenceHash["vector_"+this["uuid"]] = this["sequence"];
                 vectorTableBody = vectorTableBody + "<tr><td>"
                         + this["uuid"] + "</td><td>"
                         + this["Name"] + "</td><td>"
-                        + this["Sequence"] + "</td><td>"
                         + this["LO"] + "</td><td>"
                         + this["RO"] + "</td><td>"
                         + this["Type"] + "</td><td>"
                         + this["Resistance"] + "</td><td>"
                         + this["Level"] + "</td></tr>";
             } else {
+                sequenceHash["part_"+this["uuid"]] = this["sequence"];                
                 partTableBody = partTableBody + "<tr><td>"
                         + this["uuid"] + "</td><td>"
                         + this["Name"] + "</td><td>"
-                        + this["Sequence"] + "</td><td>"
                         + this["LO"] + "</td><td>"
                         + this["RO"] + "</td><td>"
                         + this["Type"] + "</td><td>"

@@ -103,7 +103,7 @@
                                             <li class="active"><a href="#libraryPartArea" data-toggle="tab">Parts</a></li>
                                             <li><a href="#libraryVectorArea" data-toggle="tab">Vectors</a></li>
                                         </ul>
-                                        <div id="libraryTabContent" class="tab-content">
+                                        <div id="libraryTabContent" class="tab-content" style="overflow:visible">
                                             <div class="tab-pane active" id="libraryPartArea">
                                                 <div class="row-fluid">
                                                     <div class="span4">
@@ -165,138 +165,17 @@
                                     <h3>Intermediates</h3>
                                     <hr/>
                                     <h4>Modify the intermediates that appear in your assembly</h4>
-<!--                                    <div class="tabbable">
-                                        <ul id="intermediateTabHeader" class="nav nav-tabs">
-                                            <li class="active"><a href="#intermediateSelect" data-toggle="tab">Intermediates</a></li>
-                                            <li><a href="#recommended" data-toggle="tab">Recommended</a></li>
-                                            <li><a href="#required" data-toggle="tab">Required</a></li>
-                                            <li><a href="#forbidden" data-toggle="tab">Forbidden</a></li>
-                                            <li><a href="#discouraged" data-toggle="tab">Discouraged</a></li>
-                                        </ul>
-                                        <div id="indermediateTabContent" class="tab-content">
-                                            <div class="tab-pane active" id="intermediateSelect">-->
-                                                <div class="row-fluid">
-                                                    <div class="span12">
-                                                        <div id="intermediateTableArea">
-                                                            <table id='intermediateTable' class='table table-bordered table-hover'>
-                                                                <thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th><th>Discouraged</th></tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                        <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>                                                    
-                                                    </div>
-                                                </div>
-<!--                                            </div>
-                                            <div class="tab-pane" id="recommended"> 
-                                                <div class="row-fluid">
-                                                    <div class="span4">
-                                                        <h5>Available Intermediates</h5>
-                                                        <div id="availableRecommendedListArea">
-                                                            <select id="availableRecommendedListt" class="fixedHeight" multiple="multiple">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class ="span2">
-                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
-                                                            <button type="button" class="btn" id="recommendedSelectAllButton" style="width:100%">Select All</button>
-                                                            <button type="button" class="btn" id="recommendedSelectButton" style="width:100%">Select</button>
-                                                            <button type="button" class="btn" id="recommendedDeselectButton" style="width:100%">Deselect</button>
-                                                            <button type="button" class="btn" id="recommendedDeselectAllButton" style="width:100%">Deselect All</button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="span4">
-                                                        <h5>Recommended Intermediates</h5>
-                                                        <div id="recommendedListArea">
-                                                            <select id="recommendedList" multiple="multiple" class="fixedHeight">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="tab-pane" id="required"> 
-                                                <div class="row-fluid">
-                                                    <div class="span4">
-                                                        <h5>Available Intermediates</h5>
-                                                        <div id="availableRequiredListArea">
-                                                            <select id="availableRequiredList" class="fixedHeight" multiple="multiple">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class ="span2">
-                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
-                                                            <button type="button" class="btn" id="requiredSelectAllButton" style="width:100%">Select All</button>
-                                                            <button type="button" class="btn" id="requiredSelectButton" style="width:100%">Select</button>
-                                                            <button type="button" class="btn" id="requiredDeselectButton" style="width:100%">Deselect</button>
-                                                            <button type="button" class="btn" id="requiredDeselectAllButton" style="width:100%">Deselect All</button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="span4">
-                                                        <h5>Required Intermediates</h5>
-                                                        <div id="requiredListArea">
-                                                            <select id="requiredList" multiple="multiple" class="fixedHeight">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>                                            
-                                            </div>
-                                            <div class="tab-pane" id="forbidden"> 
-                                                <div class="row-fluid">
-                                                    <div class="span4">
-                                                        <h5>Available Intermediates</h5>
-                                                        <div id="availableForbiddenListArea">
-                                                            <select id="availableForbiddenList" class="fixedHeight" multiple="multiple">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class ="span2">
-                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
-                                                            <button type="button" class="btn" id="forbiddenSelectAllButton" style="width:100%">Select All</button>
-                                                            <button type="button" class="btn" id="forbiddenSelectButton" style="width:100%">Select</button>
-                                                            <button type="button" class="btn" id="forbiddenDeselectButton" style="width:100%">Deselect</button>
-                                                            <button type="button" class="btn" id="forbiddenDeselectAllButton" style="width:100%">Deselect All</button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="span4">
-                                                        <h5>Forbidden Intermediates</h5>
-                                                        <div id="forbiddenListArea">
-                                                            <select id="forbiddenList" multiple="multiple" class="fixedHeight">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>                                           
-                                            </div>
-                                            <div class="tab-pane" id="discouraged">
-                                                <div class="row-fluid">
-                                                    <div class="span4">
-                                                        <h5>Available Discouraged Intermediates</h5>
-                                                        <div id="availableDiscouragedListArea">
-                                                            <select id="availableDiscouragedList" class="fixedHeight" multiple="multiple">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class ="span2">
-                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
-                                                            <button type="button" class="btn" id="discouragedSelectAllButton" style="width:100%">Select All</button>
-                                                            <button type="button" class="btn" id="discouragedSelectButton" style="width:100%">Select</button>
-                                                            <button type="button" class="btn" id="discouragedDeselectButton" style="width:100%">Deselect</button>
-                                                            <button type="button" class="btn" id="discouragedDeselectAllButton" style="width:100%">Deselect All</button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="span4">
-                                                        <h5>Discouraged Intermediates</h5>
-                                                        <div id="discouragedListArea">
-                                                            <select id="discouragedList" multiple="multiple" class="fixedHeight">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>                                           
-                                            </div>
-                                        </div>
+                                    <div id="intermediateTableArea">
+                                        <table id='intermediateTable' class='table table-bordered table-hover'>
+                                            <thead><tr><th>Composition</th><th>Recommended</th><th>Required</th><th>Forbidden</th><th>Discouraged</th></tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
                                     </div>
+                                    <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>                                                    
                                 </div>
-                                <hr/>
+
                                 <div class="well" id="run"> 
                                     <h3>Run</h3>
                                     <hr/>
@@ -304,11 +183,9 @@
                                     <div class ="well" ><div id="designSummaryArea" style="height:500px; overflow:auto">A summary of your assembly plan will appear here</div></div>
                                     <button id="runButton" type="button" class="btn btn-success">Design Assembly</button>
                                 </div>
-                                <hr/>
                             </div>
-
                         </div>
-                    </div>-->
+                    </div>
                 </div>
             </div>
         </div>
