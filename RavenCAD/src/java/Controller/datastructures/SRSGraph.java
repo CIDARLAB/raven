@@ -123,6 +123,121 @@ public class SRSGraph {
         return toReturn;
     }
 
+    public static ArrayList<SRSGraph> mergeGraphs(ArrayList<SRSGraph> graphs) {
+
+        ArrayList<SRSGraph> mergedGraphs = new ArrayList<SRSGraph>();
+        HashMap<String, SRSNode> mergedNodesHash = new HashMap<String, SRSNode>();
+        
+        //Traverse and merge graphs
+        for (int i = 0; i < graphs.size(); i++) {
+            SRSGraph aGraph = graphs.get(i);
+            
+            HashSet<SRSNode> seenNodes = new HashSet();
+            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+            queue.add(aGraph.getRootNode());
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+ 
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+                
+                String currentCompOHStage = current.getComposition().toString() + current.getLOverhang() + current.getROverhang() + current.getStage();
+                
+                //If a node with this composition, overhangs and stage has not been seen before
+                if (!mergedNodesHash.containsKey(currentCompOHStage)) {
+                    mergedNodesHash.put(currentCompOHStage, current);
+                
+                //If it has been seen merge the node in the hash and disconnect this node from solution
+                } else {
+                    SRSNode finalNode = mergedNodesHash.get(currentCompOHStage);
+                    ArrayList<SRSNode> neighbors = current.getNeighbors();
+                    
+                    //Remove parent from current node's neighbors, add it to the hashed node's nieghbors
+                    for (int j = 0; j < neighbors.size(); j++) {
+                        if (neighbors.get(j).getStage() > current.getStage()) {
+                            finalNode.addNeighbor(neighbors.get(j));
+                            current.removeNeighbor(neighbors.get(j));
+                        }
+                    }
+                }
+            }            
+        }
+
+        return mergedGraphs;
+    }
+
+    public static void getStepPCRCount(ArrayList<SRSGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
+        for (int i = 0; i < mergedGraphs.size(); i++) {
+            int PCRs = 0;
+            int steps = 0;
+            
+            SRSGraph aGraph = mergedGraphs.get(i);
+            
+            HashSet<SRSNode> seenNodes = new HashSet();
+            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+            queue.add(aGraph.getRootNode());
+            
+            //Traverse the graph
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+ 
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+                
+                //If this node is higher than stage 0
+                if (current.getStage() > 0) {
+                    steps++;
+                }
+                
+                ArrayList<String> composition = current.getComposition();
+                String lOverhang = current.getLOverhang();
+                String rOverhang = current.getROverhang();
+                int level = current.getVector().getLevel();
+                
+                //If a part with this composition and overhangs doesn't exist, there must be a PCR done
+                PCRs++;
+                for (Part aPart : partLib) {
+                    String leftOverhang = aPart.getLeftOverhang();
+                    String rightOverhang = aPart.getRightOverhang();
+                    ArrayList<Part> partComp = aPart.getComposition();
+                    ArrayList<String> comp = new ArrayList<String>();
+                    for (int j = 0; j < partComp.size(); j++) {
+                        String name = partComp.get(j).getName();
+                        comp.add(name);
+                    }
+                    
+                    if (lOverhang.equals(leftOverhang) && rOverhang.equals(rightOverhang) && composition.equals(comp)) {
+                        PCRs--;
+                    }
+                }
+                
+                
+                //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
+                PCRs++;
+                for (Vector aVec : vectorLib) {
+                    String leftoverhang = aVec.getLeftoverhang();
+                    String rightOverhang = aVec.getRightOverhang();
+                    int stage = aVec.getLevel();
+                   
+                    if (lOverhang.equals(leftoverhang) && rOverhang.equals(rightOverhang) && level == stage) {
+                        PCRs--;
+                    }
+                }
+            }
+            aGraph._reactions = PCRs;
+        }
+    }
+    
     /**
      * ************************************************************************
      *

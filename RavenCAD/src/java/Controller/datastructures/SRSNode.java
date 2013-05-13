@@ -212,6 +212,11 @@ public class SRSNode {
     public void addNeighbor(SRSNode newNeighbor) {
         _neighbors.add(newNeighbor);
     }
+    
+    /** Remove a node's neighbor **/
+    public void removeNeighbor(SRSNode neighbor) {
+        _neighbors.remove(neighbor);
+    }
 
     /** Set node composition **/
     public void setComposition(ArrayList<String> comp) {
