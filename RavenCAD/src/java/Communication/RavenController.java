@@ -519,7 +519,6 @@ public class RavenController {
 
         for (SRSGraph graph : _assemblyGraphs) {
 
-
             SRSNode root = graph.getRootNode();
             ArrayList<String> rootComp = root.getComposition();
             String rRO = root.getROverhang();
@@ -603,17 +602,17 @@ public class RavenController {
                 }
 
                 //PCR Reaction for assemblies with scars
-                if (current.getStage() == 0) {
-                    String UUID = current.getUUID();
-                    Part part = _collector.getPart(UUID, true);
-                    if (!current.getLOverhang().equals(part.getLeftOverhang()) || !current.getROverhang().equals(part.getRightOverhang())) {
-                        ArrayList<String> seq = new ArrayList<String>();
-                        seq.add(current.getLOverhang());
-                        seq.add(current.getComposition().toString());
-                        seq.add(current.getROverhang());
-                        neighborHash.add(seq);
-                    }
-                }
+//                if (current.getStage() == 0) {
+//                    String UUID = current.getUUID();
+//                    Part part = _collector.getPart(UUID, true);
+//                    if (!current.getLOverhang().equals(part.getLeftOverhang()) || !current.getROverhang().equals(part.getRightOverhang())) {
+//                        ArrayList<String> seq = new ArrayList<String>();
+//                        seq.add(current.getLOverhang());
+//                        seq.add(current.getComposition().toString());
+//                        seq.add(current.getROverhang());
+//                        neighborHash.add(seq);
+//                    }
+//                }
 
                 //Add unseen neighbors to queue
                 for (SRSNode node : current.getNeighbors()) {
@@ -708,14 +707,22 @@ public class RavenController {
         solutionStats(method);
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
+        System.out.println("Assembly graph set size BEFORE merged graph method: " + _assemblyGraphs.size());
+        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        System.out.println("Assembly graph set size AFTER merged graph method: " + _assemblyGraphs.size());
+        SRSGraph.getStepPCRCount(_assemblyGraphs, _partLibrary, _vectorLibrary);
         for (SRSGraph result : _assemblyGraphs) {
+            System.out.println("Merged graph PCR count: " + result.getReaction());
             reader.nodesToClothoPartsVectors(_collector, result);
             reader.fixCompositeUUIDs(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
         }
+        System.out.println("Gone through all assembly graph solutions and now merging graph text files");
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
+        System.out.println("Graph text merged");
+        
         //save graph text file
         File file = new File(_path + _user + "/pigeon" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);
