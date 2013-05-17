@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -505,155 +506,21 @@ public class RavenController {
         }
         boolean valid = validateGraphComposition();
         valid = valid && overhangValid;
-        HashSet<String> recd = new HashSet<String>();
-        HashSet<String> disc = new HashSet<String>();
-        HashSet<String> seenSteps = new HashSet<String>();
-        HashSet<String> sharedSteps = new HashSet<String>();
-        int steps = 0;
-        int stages = 0;
-        int reactions = 0;
-        double modularity = 0;
-        double efficiency = 0;
-        ArrayList<Double> effArray = new ArrayList<Double>();
-        HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
-
-        for (SRSGraph graph : _assemblyGraphs) {
-
-            SRSNode root = graph.getRootNode();
-            ArrayList<String> rootComp = root.getComposition();
-            String rRO = root.getROverhang();
-            String rLO = root.getLOverhang();
-            ArrayList<String> rootCompOH = new ArrayList<String>();
-            rootCompOH.add(rLO);
-            rootCompOH.addAll(rootCompOH);
-            rootCompOH.add(rRO);
-
-            //PCR Reactions for scarless assembly
-            if (root.getLOverhang().isEmpty() && root.getROverhang().isEmpty()) {
-
-                //Record left and right neighbors for each node... this will determine how many PCRs need to be performed                            
-                String prev = new String();
-                String next = new String();
-                for (int j = 0; j < rootComp.size(); j++) {
-                    String current = rootComp.get(j);
-                    if (j == 0) {
-                        next = rootComp.get(j + 1);
-                    } else if (j == rootComp.size() - 1) {
-                        prev = rootComp.get(j - 1);
-                    } else {
-                        next = rootComp.get(j + 1);
-                        prev = rootComp.get(j - 1);
-                    }
-                    ArrayList<String> seq = new ArrayList<String>();
-                    seq.add(prev);
-                    seq.add(current);
-                    seq.add(next);
-                    neighborHash.add(seq);
-                }
-
-            }
-
-            //Get stages of this graph, if largest, set as assembly stages
-            int currentStages = graph.getStages();
-            if (currentStages > stages) {
-                stages = currentStages;
-            }
-
-            //Tabulate efficiency and modularity
-            modularity = modularity + graph.getModularity();
-            effArray.addAll(graph.getEfficiency());
-
-            //Traverse nodes to get scores for steps, recommended and sharing
-            HashSet<SRSNode> seenNodes = new HashSet();
-            seenNodes.add(graph.getRootNode());
-            ArrayList<SRSNode> queue = new ArrayList();
-            queue.add(graph.getRootNode());
-
-            while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
-                String LO = current.getLOverhang();
-                String RO = current.getROverhang();
-                ArrayList<String> currentComp = current.getComposition();
-                ArrayList<String> currentCompOH = new ArrayList<String>();
-                currentCompOH.add(LO);
-                currentCompOH.addAll(currentComp);
-                currentCompOH.add(RO);
-                queue.remove(0);
-
-                //Get sharing, steps, recommended and discouraged counts
-                if (current.getStage() > 0) {
-                    boolean add = seenSteps.add(currentCompOH.toString());
-                    if (!add && !(currentComp == rootComp)) {
-                        sharedSteps.add(currentCompOH.toString());
-                    }
-
-                    if (add) {
-                        steps++;
-                    } else if (currentComp == rootComp) {
-                        steps++;
-                    }
-
-                }
-                if (_recommended.contains(current.getComposition().toString())) {
-                    recd.add(current.getComposition().toString());
-                }
-                if (_discouraged.contains(current.getComposition().toString())) {
-                    disc.add(current.getComposition().toString());
-                }
-
-                //PCR Reaction for assemblies with scars
-//                if (current.getStage() == 0) {
-//                    String UUID = current.getUUID();
-//                    Part part = _collector.getPart(UUID, true);
-//                    if (!current.getLOverhang().equals(part.getLeftOverhang()) || !current.getROverhang().equals(part.getRightOverhang())) {
-//                        ArrayList<String> seq = new ArrayList<String>();
-//                        seq.add(current.getLOverhang());
-//                        seq.add(current.getComposition().toString());
-//                        seq.add(current.getROverhang());
-//                        neighborHash.add(seq);
-//                    }
-//                }
-
-                //Add unseen neighbors to queue
-                for (SRSNode node : current.getNeighbors()) {
-                    if (!seenNodes.contains(node)) {
-                        seenNodes.add(node);
-                        queue.add(node);
-                    }
-                }
-            }
-
-            //Get the average efficiency of all steps in this assembly
-            double sum = 0;
-            for (int j = 0; j < effArray.size(); j++) {
-                sum = sum + effArray.get(j);
-            }
-            efficiency = sum / effArray.size();
-
-            //Warn if no steps or stages are required to build part - i.e. it already exists in a library
-            if (seenSteps.isEmpty()) {
-                System.out.println("Warning! All goal part(s) already exist! No assembly required");
-            }
-
+        SRSGraph firstSoln = new SRSGraph();
+        if (!_assemblyGraphs.isEmpty()) {
+            firstSoln = _assemblyGraphs.get(0);
         }
 
-        reactions = neighborHash.size();
-        modularity = modularity / _assemblyGraphs.size();
-//
-//        for (String shared : sharedSteps) {
-//            System.out.println("Shared step: " + shared);
-//        }
-
-        //Statistics determined
-        _statistics.setModularity(modularity);
-        _statistics.setEfficiency(efficiency);
-        _statistics.setRecommended(recd.size());
-        _statistics.setStages(stages);
-        _statistics.setSteps(steps);
-        _statistics.setSharing(sharedSteps.size());
+        System.out.println("EFFICIENCY ARRAY: " + firstSoln.getEfficiencyArray());
+        
+        _statistics.setEfficiency(firstSoln.getAveEfficiency());
+        _statistics.setRecommended(firstSoln.getReccomendedCount());
+        _statistics.setStages(firstSoln.getStages());
+        _statistics.setSteps(firstSoln.getSteps());
+        _statistics.setSharing(firstSoln.getSharing());
         _statistics.setGoalParts(_assemblyGraphs.size());
         _statistics.setExecutionTime(Statistics.getTime());
-        _statistics.setReaction(reactions);
+        _statistics.setReaction(firstSoln.getReaction());
         _statistics.setValid(valid);
     }
 
@@ -689,36 +556,52 @@ public class RavenController {
             Part current = _collector.getPart(targetIDs[i], false);
             _goalParts.put(current, ClothoReader.getComposition(current));
         }
+        
+        Set<Part> keySet = _goalParts.keySet();
+        for (Part goalpart : keySet) {
+            System.out.println("GOAL PART:");
+            for (int k = 0; k < goalpart.getComposition().size(); k++) {
+                Part bp = goalpart.getComposition().get(k);
+                System.out.print(bp.getName());
+            }
+        }
+        
         Statistics.start();
+        boolean scarless = false;
         if (method.equals("biobrick")) {
             _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
+            scarless = true;
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
+            scarless = true;
         } else if (method.equals("golden gate")) {
             _assemblyGraphs = runGoldenGate();
+            scarless = true;
         } else if (method.equals("moclo")) {
             _assemblyGraphs = runMoClo();
         } else if (method.equals("slic")) {
             _assemblyGraphs = runSLIC();
+            scarless = true;
         }
+        
         Statistics.stop();
-        solutionStats(method);
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
-        System.out.println("Assembly graph set size BEFORE merged graph method: " + _assemblyGraphs.size());
         _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
-        System.out.println("Assembly graph set size AFTER merged graph method: " + _assemblyGraphs.size());
-        SRSGraph.getStepPCRCount(_assemblyGraphs, _partLibrary, _vectorLibrary);
-        for (SRSGraph result : _assemblyGraphs) {
-            System.out.println("Merged graph PCR count: " + result.getReaction());
+        SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
+        solutionStats(method);
+        
+        if (!_assemblyGraphs.isEmpty()) {
+            SRSGraph result = _assemblyGraphs.get(0);
             reader.nodesToClothoPartsVectors(_collector, result);
-            reader.fixCompositeUUIDs(_collector, result);
+//            reader.fixCompositeUUIDs(_collector, result);
             boolean canPigeon = result.canPigeon();
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
         }
+        
         System.out.println("Gone through all assembly graph solutions and now merging graph text files");
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
         System.out.println("Graph text merged");
@@ -733,7 +616,7 @@ public class RavenController {
         WeyekinPoster.postMyVision();
 
 
-        String toReturn = "";
+        String toReturn;
         toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }

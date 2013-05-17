@@ -56,7 +56,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
             //Reinitialize memoization hash with part library and pinned graphs each with zero cost
             HashMap<String, SRSGraph> hashMem = new HashMap<String, SRSGraph>();
-            if (partHash != null && pinnedPartHash != null) {
+            if (partHash != null) {
                 hashMem.putAll(partHash);
                 hashMem.putAll(pinnedPartHash);
             }
@@ -292,54 +292,57 @@ public class SRSGeneral extends SRSAlgorithmCore {
     /** Combine multiple graphs, including efficiency and modularity scoring **/
     //Currently, it is assumed that efficiencies are additive and not multiplicative
     protected SRSGraph combineGraphsModEff(ArrayList<SRSGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharing, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies) {
+        
         //Call method without efficiency and modularity first
         SRSGraph combineGraphsME = combineGraphsShareRecDis(graphs, recommended, discouraged, sharing);
         SRSNode root = combineGraphsME.getRootNode();
 
-        //Get effiency and modularity of subgraphs
-        double subModularity = 0; //modularity of subgraphs
-        double modularity = 0; //modularity of new root
+        //Get effiency of subgraphs
+//        double subModularity = 0; //modularity of subgraphs
+//        double modularity = 0; //modularity of new root
         double efficiency = 0;
         int numCombine = graphs.size();
         if (efficiencies.containsKey(numCombine)) {
             efficiency = efficiencies.get(numCombine);
+            root.setEfficiency(efficiency);
         }
         ArrayList<Double> allEfficiencies = new ArrayList<Double>();
-        for (int i = 0; i < graphs.size(); i++) {
-            subModularity = graphs.get(i).getModularity() + subModularity;
-            allEfficiencies.addAll(graphs.get(i).getEfficiency());
-        }
         allEfficiencies.add(efficiency);
-        if (numCombine == 0) {
-            subModularity = 0;
-        } else {
-            subModularity = subModularity / numCombine;
-        }
-        double max = 0;
-        
-        //Get the modularity of the root node
-        ArrayList<String> type = root.getType();
-        for (int j = 0; j < type.size(); j++) {
-            String part = type.get(j);
-            if (!modularityHash.isEmpty()) {
-                HashMap<String, Double> aPos = modularityHash.get(j);
-                Set<String> keySet = aPos.keySet();
-                for (String partType : keySet) {
-                    if (part.equals(partType)) {
-                        modularity = modularity + aPos.get(partType);
-                        max = max + aPos.get("maximum");
-                    }
-                }
-            }
-        }
-        modularity = modularity / max;
-        if (max == 0) {
-            modularity = 0;
+        for (int i = 0; i < graphs.size(); i++) {
+            allEfficiencies.addAll(graphs.get(i).getEfficiencyArray());
         }
 
-        //Set the new graph's modularity and efficiency scores
-        combineGraphsME.setEfficiency(allEfficiencies);
-        combineGraphsME.setModularity((subModularity + modularity) / 2);
+        //        System.out.println(allEfficiencies);
+//        if (numCombine == 0) {
+//            subModularity = 0;
+//        } else {
+//            subModularity = subModularity / numCombine;
+//        }
+//        double max = 0;
+        
+//        //Get the modularity of the root node
+//        ArrayList<String> type = root.getType();
+//        for (int j = 0; j < type.size(); j++) {
+//            String part = type.get(j);
+//            if (!modularityHash.isEmpty()) {
+//                HashMap<String, Double> aPos = modularityHash.get(j);
+//                Set<String> keySet = aPos.keySet();
+//                for (String partType : keySet) {
+//                    if (part.equals(partType)) {
+//                        modularity = modularity + aPos.get(partType);
+//                        max = max + aPos.get("maximum");
+//                    }
+//                }
+//            }
+//        }
+//        modularity = modularity / max;
+//        if (max == 0) {
+//            modularity = 0;
+//        }
+
+        //Set the new graph's efficiency scores
+        System.out.println(allEfficiencies);
+        combineGraphsME.setEfficiencyArray(allEfficiencies);
 
         return combineGraphsME;
     }
@@ -447,19 +450,8 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }
 
         //Efficiency
-        ArrayList<Double> g0effs = g0.getEfficiency();
-        double sum = 0;
-        for (int i = 0; i < g0effs.size(); i++) {
-            sum = sum + g0effs.get(i);
-        }
-        double aveEffg0 = sum / g0effs.size();
-
-        ArrayList<Double> g1effs = g1.getEfficiency();
-        sum = 0;
-        for (int i = 0; i < g1effs.size(); i++) {
-            sum = sum + g1effs.get(i);
-        }
-        double aveEffg1 = sum / g1effs.size();
+        double aveEffg0 = g0.getAveEfficiency();
+        double aveEffg1 = g1.getAveEfficiency();
 
         if (aveEffg0 > aveEffg1) {
             return g0;
@@ -478,13 +470,6 @@ public class SRSGeneral extends SRSAlgorithmCore {
         if (g0.getReccomendedCount() > g1.getReccomendedCount()) {
             return g0;
         } else if (g1.getReccomendedCount() > g0.getReccomendedCount()) {
-            return g1;
-        }
-
-        //Modularity
-        if (g0.getModularity() > g1.getModularity()) {
-            return g0;
-        } else if (g1.getModularity() > g0.getModularity()) {
             return g1;
         }
 
