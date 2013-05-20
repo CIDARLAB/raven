@@ -492,17 +492,22 @@ public class RavenController {
         //Initialize statistics
         boolean overhangValid = false;
         if (method.equals("biobrick")) {
-            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
+//            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
+            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
         } else if (method.equals("cpec")) {
-            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
+//            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
+            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
         } else if (method.equals("gibson")) {
-            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
+//            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
+            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
         } else if (method.equals("golden gate")) {
-            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
+//            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
+            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
         } else if (method.equals("moclo")) {
-            overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
+            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
         } else if (method.equals("slic")) {
-            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
+//            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
+            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
         }
         boolean valid = validateGraphComposition();
         valid = valid && overhangValid;
@@ -511,8 +516,6 @@ public class RavenController {
             firstSoln = _assemblyGraphs.get(0);
         }
 
-        System.out.println("EFFICIENCY ARRAY: " + firstSoln.getEfficiencyArray());
-        
         _statistics.setEfficiency(firstSoln.getAveEfficiency());
         _statistics.setRecommended(firstSoln.getReccomendedCount());
         _statistics.setStages(firstSoln.getStages());
@@ -536,6 +539,7 @@ public class RavenController {
         _partLibrary = new ArrayList();
         _assemblyGraphs = new ArrayList<SRSGraph>();
         method = method.toLowerCase().trim();
+        
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
                 Part current = _collector.getPart(partLibraryIDs[i], false);
@@ -544,6 +548,7 @@ public class RavenController {
                 }
             }
         }
+        
         if (vectorLibraryIDs.length > 0) {
             for (int i = 0; i < vectorLibraryIDs.length; i++) {
                 Vector current = _collector.getVector(vectorLibraryIDs[i], false);
@@ -552,18 +557,10 @@ public class RavenController {
                 }
             }
         }
+        
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
             _goalParts.put(current, ClothoReader.getComposition(current));
-        }
-        
-        Set<Part> keySet = _goalParts.keySet();
-        for (Part goalpart : keySet) {
-            System.out.println("GOAL PART:");
-            for (int k = 0; k < goalpart.getComposition().size(); k++) {
-                Part bp = goalpart.getComposition().get(k);
-                System.out.print(bp.getName());
-            }
         }
         
         Statistics.start();
@@ -601,10 +598,7 @@ public class RavenController {
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
         }
-        
-        System.out.println("Gone through all assembly graph solutions and now merging graph text files");
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        System.out.println("Graph text merged");
         
         //save graph text file
         File file = new File(_path + _user + "/pigeon" + designCount + ".txt");

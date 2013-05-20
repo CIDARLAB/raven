@@ -146,6 +146,7 @@ public class SRSGraph {
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompOHStage) == false) {
                     mergedNodesHash.put(currentCompOHStage, current);
+                    
                     for (SRSNode neighbor : current.getNeighbors()) {
                         if (!seenNodes.contains(neighbor)) {
                             queue.add(neighbor);
@@ -154,6 +155,7 @@ public class SRSGraph {
                 
                 //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
+                 
                     SRSNode finalNode = mergedNodesHash.get(currentCompOHStage);
                     ArrayList<SRSNode> neighbors = current.getNeighbors();
                     
@@ -162,11 +164,10 @@ public class SRSGraph {
                     for (int j = 0; j < neighbors.size(); j++) {
                         if (neighbors.get(j).getStage() > current.getStage()) {
                             SRSNode parent = neighbors.get(j);
-                            hasParent = true;
+                            hasParent = true;                           
+                            parent.replaceNeighbor(current, finalNode);                           
                             finalNode.addNeighbor(parent);
-                            parent.addNeighbor(finalNode);
                             current.removeNeighbor(parent);
-                            parent.removeNeighbor(current);
                         }
                     }
                     
@@ -359,6 +360,62 @@ public class SRSGraph {
             aGraph.setEfficiencyArray(efficiency);
             aGraph.setSharing(shared);
         }
+    }
+    
+    public static boolean evanValidate(ArrayList<SRSGraph> graphs) {
+        
+        boolean valid = true;
+        
+        for (int i = 0; i < graphs.size(); i++) {
+            SRSNode root = graphs.get(i).getRootNode();
+            HashSet<SRSNode> seenNodes = new HashSet();
+            ArrayList<SRSNode> queue = new ArrayList();
+            queue.add(root);
+            
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+                ArrayList<String> composition = current.getComposition();
+                ArrayList<String> checkComp = new ArrayList<String>();
+                ArrayList<SRSNode> children = new ArrayList<SRSNode>();
+
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        if (!queue.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+
+                    if (neighbor.getStage() < current.getStage()) {
+                        children.add(neighbor);
+                        checkComp.addAll(neighbor.getComposition());
+                    }
+                }
+
+                if (!children.isEmpty()) {
+                    
+                    //If the left-most composition is the same as the current
+                    if (!current.getLOverhang().equals(children.get(0).getLOverhang())) {
+                        System.out.println("Failure #1!!! " + composition + children.get(0).getComposition());
+                        valid = false;
+                    }
+
+                    //If the right-most composition is the same as the current
+                    if (!current.getROverhang().equals(children.get(children.size() - 1).getROverhang())) {
+                        System.out.println("Failure #2!!! " + composition + children.get(children.size() - 1).getComposition());
+                        valid = false;
+                    }
+                    
+                    //If the composition of all the chilren does not equal the composition of the node, there is another error
+                    if (!checkComp.equals(composition)) {
+                        System.out.println("Failure #3!!! " + composition + checkComp);
+                        valid = false;
+                    }
+                }
+            }
+        }
+        return valid;
     }
     
     /**

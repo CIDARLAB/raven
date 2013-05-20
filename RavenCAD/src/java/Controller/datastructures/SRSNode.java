@@ -221,7 +221,14 @@ public class SRSNode {
     public void removeNeighbor(SRSNode neighbor) {
         _neighbors.remove(neighbor);
     }
-
+    
+    /** Replace a neighbor with the same composition at an exact point in the list to conserve order **/
+    public void replaceNeighbor(SRSNode oldNode, SRSNode newNode) {
+        int indexOf = _neighbors.indexOf(oldNode);
+        _neighbors.remove(indexOf);
+        _neighbors.add(indexOf, newNode);
+    }
+    
     /** Set node composition **/
     public void setComposition(ArrayList<String> comp) {
         _composition = comp;

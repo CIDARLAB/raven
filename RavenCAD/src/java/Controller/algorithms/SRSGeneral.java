@@ -298,8 +298,6 @@ public class SRSGeneral extends SRSAlgorithmCore {
         SRSNode root = combineGraphsME.getRootNode();
 
         //Get effiency of subgraphs
-//        double subModularity = 0; //modularity of subgraphs
-//        double modularity = 0; //modularity of new root
         double efficiency = 0;
         int numCombine = graphs.size();
         if (efficiencies.containsKey(numCombine)) {
@@ -312,36 +310,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
             allEfficiencies.addAll(graphs.get(i).getEfficiencyArray());
         }
 
-        //        System.out.println(allEfficiencies);
-//        if (numCombine == 0) {
-//            subModularity = 0;
-//        } else {
-//            subModularity = subModularity / numCombine;
-//        }
-//        double max = 0;
-        
-//        //Get the modularity of the root node
-//        ArrayList<String> type = root.getType();
-//        for (int j = 0; j < type.size(); j++) {
-//            String part = type.get(j);
-//            if (!modularityHash.isEmpty()) {
-//                HashMap<String, Double> aPos = modularityHash.get(j);
-//                Set<String> keySet = aPos.keySet();
-//                for (String partType : keySet) {
-//                    if (part.equals(partType)) {
-//                        modularity = modularity + aPos.get(partType);
-//                        max = max + aPos.get("maximum");
-//                    }
-//                }
-//            }
-//        }
-//        modularity = modularity / max;
-//        if (max == 0) {
-//            modularity = 0;
-//        }
-
         //Set the new graph's efficiency scores
-        System.out.println(allEfficiencies);
         combineGraphsME.setEfficiencyArray(allEfficiencies);
 
         return combineGraphsME;
