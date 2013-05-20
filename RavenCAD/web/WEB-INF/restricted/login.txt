@@ -13,5 +13,5 @@ ernst,oberortner
 shawn,jin
 pooja,shah
 devina,desai
-thomas,lozanski
+thomas,lozanoski
 jake,awtry
