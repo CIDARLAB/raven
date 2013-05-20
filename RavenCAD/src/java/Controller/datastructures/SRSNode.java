@@ -16,6 +16,7 @@ public class SRSNode {
     public SRSNode() {
         _recommended = false;
         _discouraged = false;
+        _efficiency = 0;
         _neighbors = new ArrayList<SRSNode>();
         _composition = new ArrayList<String>();
         _uuid = null;
@@ -33,7 +34,8 @@ public class SRSNode {
     public SRSNode(boolean recommended, boolean discouraged, ArrayList<SRSNode> neighbors, ArrayList<String> composition, ArrayList<String> type) {
         _uuid = null;
         _recommended = recommended;
-        _discouraged = false;
+        _discouraged = discouraged;
+        _efficiency = 0;
         _neighbors = neighbors;
         if (_neighbors == null) {
             _neighbors = new ArrayList<SRSNode>();
@@ -63,6 +65,7 @@ public class SRSNode {
         clone._name = this._name;
         clone._stage = this._stage;
         clone._vector = this._vector;
+        clone._efficiency = this._efficiency;
         ArrayList<SRSNode> neighbors = this._neighbors;
         cloneHelper(clone, this, neighbors);
         
@@ -86,6 +89,7 @@ public class SRSNode {
             neighborClone._name = neighbor._name;
             neighborClone._stage = neighbor._stage;
             neighborClone._vector = neighbor._vector;
+            neighborClone._efficiency = neighbor._efficiency;
             
             parentClone.addNeighbor(neighborClone);
             neighborClone.addNeighbor(parentClone);
@@ -168,14 +172,14 @@ public class SRSNode {
         return _stage;
     }
     
-    /** Get lefty comp **/
-    public ArrayList<String> getLeftyComp() {
-        return _leftyComp;
+    /** Get efficiency **/
+    public double getEfficiency() {
+        return _efficiency;
     }
     
-    /** Get righty comp **/
-    public ArrayList<String> getRightyComp() {
-        return _rightyComp;
+    /** Get modularity **/
+    public double getModularity() {
+        return _modularity;
     }
     
     /** Set part as recommended or not required **/
@@ -212,6 +216,11 @@ public class SRSNode {
     public void addNeighbor(SRSNode newNeighbor) {
         _neighbors.add(newNeighbor);
     }
+    
+    /** Remove a node's neighbor **/
+    public void removeNeighbor(SRSNode neighbor) {
+        _neighbors.remove(neighbor);
+    }
 
     /** Set node composition **/
     public void setComposition(ArrayList<String> comp) {
@@ -233,17 +242,19 @@ public class SRSNode {
         _stage = stage;
     }
     
-    /** Set lefty comp **/
-    public void setLeftyComp(ArrayList<String> leftC) {
-        _leftyComp = leftC;
+    /** Set the efficiency of a node **/
+    public void setEfficiency(double eff) {
+        _efficiency = eff;
     }
     
-    /** Set righty comp **/
-    public void setRightyComp(ArrayList<String> rightC) {
-        _rightyComp = rightC;
+    /** Set the modularity of a node **/
+    public void setModularity(double mod) {
+        _modularity = mod;
     }
     
     //FIELDS
+    private double _efficiency;
+    private double _modularity;
     private boolean _recommended;
     private boolean _discouraged;
     private ArrayList<SRSNode> _neighbors;
@@ -256,7 +267,5 @@ public class SRSNode {
     private String _name;
     private int _nodeID;
     private int _stage;
-    private ArrayList<String> _leftyComp;
-    private ArrayList<String> _rightyComp;
     private static int _nodeCount = 0;
 }
