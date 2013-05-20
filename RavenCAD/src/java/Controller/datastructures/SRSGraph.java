@@ -232,6 +232,9 @@ public class SRSGraph {
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
         for (int i = 0; i < mergedGraphs.size(); i++) {
+            
+            System.out.println("Merged graph number: " + i);
+            
             HashSet<String> partsLOcompRO = new HashSet<String>();
             HashSet<String> vectorsLOlevelRO = new HashSet<String>();
             HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
@@ -267,10 +270,6 @@ public class SRSGraph {
                     if (neighbor.getStage() > current.getStage()) {
                         numParents++;
                     }
-                }
-                
-                if (numParents > 1) {
-                    shared++;
                 }
 
                 ArrayList<String> composition = current.getComposition();
@@ -329,8 +328,13 @@ public class SRSGraph {
                 if (current.getStage() > 0) {
                     steps++;
                     efficiency.add(current.getEfficiency());
+
+                    //If the step is shared
+                    if (numParents > 1) {
+                        shared++;
+                    }
                 }
-                
+
                 //Save max stage
                 if (current.getStage() > stage) {
                     stage = current.getStage();
