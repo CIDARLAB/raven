@@ -11,6 +11,7 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -30,8 +31,7 @@ public class SRSGraph {
         _recCnt = 0;
         _disCnt = 0;
         _sharing = 0;
-        _modularity = 0;
-        _efficiency = new ArrayList<Double>();
+        _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
 
@@ -46,8 +46,7 @@ public class SRSGraph {
         _recCnt = 0;
         _disCnt = 0;
         _sharing = 0;
-        _modularity = 0;
-        _efficiency = new ArrayList<Double>();
+        _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
 
@@ -63,8 +62,7 @@ public class SRSGraph {
         clone._stages = this._stages;
         clone._steps = this._steps;
         clone._sharing = this._sharing;
-        clone._modularity = this._modularity;
-        clone._efficiency = this._efficiency;
+        clone._efficiencyArray = this._efficiencyArray;
         clone._reactions = this._reactions;
         return clone;
     }
@@ -123,6 +121,303 @@ public class SRSGraph {
         return toReturn;
     }
 
+    public static ArrayList<SRSGraph> mergeGraphs(ArrayList<SRSGraph> graphs) {
+
+        ArrayList<SRSGraph> mergedGraphs = new ArrayList<SRSGraph>();
+        HashMap<String, SRSNode> mergedNodesHash = new HashMap<String, SRSNode>();
+        
+        //Traverse and merge graphs
+        for (int i = 0; i < graphs.size(); i++) {
+            
+            SRSGraph aGraph = graphs.get(i);
+            boolean hasParent = true;
+            
+            HashSet<SRSNode> seenNodes = new HashSet();
+            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+            queue.add(aGraph.getRootNode());
+            
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+                
+                String currentCompOHStage = current.getComposition().toString() + current.getLOverhang() + current.getROverhang() + current.getStage();
+                
+                //If a node with this composition, overhangs and stage has not been seen before
+                if (mergedNodesHash.containsKey(currentCompOHStage) == false) {
+                    mergedNodesHash.put(currentCompOHStage, current);
+                    
+                    for (SRSNode neighbor : current.getNeighbors()) {
+                        if (!seenNodes.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+                
+                //If it has been seen merge the node in the hash and disconnect this node from solution
+                } else {
+                 
+                    SRSNode finalNode = mergedNodesHash.get(currentCompOHStage);
+                    ArrayList<SRSNode> neighbors = current.getNeighbors();
+                    
+                    //Remove parent from current node's neighbors, add it to the hashed node's nieghbors
+                    hasParent = false;
+                    for (int j = 0; j < neighbors.size(); j++) {
+                        if (neighbors.get(j).getStage() > current.getStage()) {
+                            SRSNode parent = neighbors.get(j);
+                            hasParent = true;                           
+                            parent.replaceNeighbor(current, finalNode);                           
+                            finalNode.addNeighbor(parent);
+                            current.removeNeighbor(parent);
+                        }
+                    }
+                    
+                    //Edge case where multiple goal parts have the same composition
+                    if (hasParent == false) {
+                        String name = finalNode.getName();
+                        name = name + " | " + current.getName();
+                        finalNode.setName(name);                        
+                    }                   
+                }
+            }
+            
+            if (hasParent == true) {
+                mergedGraphs.add(aGraph);
+            }            
+        }        
+        return mergedGraphs;
+    }
+
+    public static void getGraphStats(ArrayList<SRSGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless) {
+        
+        HashSet<String> startPartsLOcompRO = new HashSet<String>();
+        HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
+        
+        //Get goal part compositions
+        Set<Part> keySet = goalParts.keySet();
+        HashSet<ArrayList<String>> gpComps = new HashSet<ArrayList<String>>();
+        for (Part gp : keySet) {
+            ArrayList<String> compStr = new ArrayList<String>();
+            ArrayList<Part> compPart = goalParts.get(gp);
+            for (int i = 0; i < compPart.size(); i++) {
+                Part p = compPart.get(i);
+                compStr.add(p.getName());
+            }
+            gpComps.add(compStr);
+        }
+        
+        //Go through parts library, put all compositions into hash of things that already exist
+        for (Part aPart : partLib) {
+            String leftOverhang = aPart.getLeftOverhang();
+            String rightOverhang = aPart.getRightOverhang();
+            ArrayList<Part> partComp = aPart.getComposition();
+            ArrayList<String> comp = new ArrayList<String>();
+            for (int j = 0; j < partComp.size(); j++) {
+                String name = partComp.get(j).getName();
+                comp.add(name);
+            }
+
+            String aPartLOnameRO = leftOverhang + comp + rightOverhang;
+            startPartsLOcompRO.add(aPartLOnameRO);
+        }
+
+        //Go through vectors library, put all compositions into hash of things that already exist
+        for (Vector aVec : vectorLib) {
+            String leftoverhang = aVec.getLeftoverhang();
+            String rightOverhang = aVec.getRightOverhang();
+            int stage = aVec.getLevel();
+
+            String aVecLOlevelRO = leftoverhang + stage + rightOverhang;
+            startVectorsLOlevelRO.add(aVecLOlevelRO);
+        }
+
+        //Will get stats for a set of graphs and assign the values to the individual graphs
+        for (int i = 0; i < mergedGraphs.size(); i++) {
+            HashSet<String> partsLOcompRO = new HashSet<String>();
+            HashSet<String> vectorsLOlevelRO = new HashSet<String>();
+            HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
+            partsLOcompRO.addAll(startPartsLOcompRO);
+            vectorsLOlevelRO.addAll(startVectorsLOlevelRO);
+
+            int PCRs = 0;
+            int steps = 0;
+            int recCount = 0;
+            int disCount = 0;
+            int stage = 0;
+            int shared = 0;
+            ArrayList<Double> efficiency = new ArrayList<Double>();
+
+            SRSGraph aGraph = mergedGraphs.get(i);
+            HashSet<SRSNode> seenNodes = new HashSet();
+            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+            queue.add(aGraph.getRootNode());
+
+            //Traverse the graph
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+                int numParents = 0;
+
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        if (!queue.contains(neighbor)) {
+                            queue.add(neighbor);
+                        } 
+                    }
+                    if (neighbor.getStage() > current.getStage()) {
+                        numParents++;
+                    }
+                }
+                
+                if (numParents > 1) {
+                    shared++;
+                }
+
+                ArrayList<String> composition = current.getComposition();
+                String lOverhang = current.getLOverhang();
+                String rOverhang = current.getROverhang();
+                String aPartLOcompRO = lOverhang + composition + rOverhang;
+                String aVecLOlevelRO = new String();
+
+                //PCR Reactions for scarless assembly
+                if (scarless == true) {
+                    if (gpComps.contains(composition)) {
+                        if (lOverhang.isEmpty() && rOverhang.isEmpty()) {
+
+                            //Record left and right neighbors for each node... this will determine how many PCRs need to be performed                            
+                            String prev = new String();
+                            String next = new String();
+                            for (int j = 0; j < composition.size(); j++) {
+                                String currentBP = composition.get(j);
+                                if (j == 0) {
+                                    next = composition.get(j + 1);
+                                } else if (j == composition.size() - 1) {
+                                    prev = composition.get(j - 1);
+                                } else {
+                                    next = composition.get(j + 1);
+                                    prev = composition.get(j - 1);
+                                }
+                                ArrayList<String> seq = new ArrayList<String>();
+                                seq.add(prev);
+                                seq.add(currentBP);
+                                seq.add(next);
+                                neighborHash.add(seq);
+                            }
+                        }
+                    }
+                }
+                
+                if (current.getVector() != null) {
+                    int level = current.getVector().getLevel();
+                    aVecLOlevelRO = lOverhang + level + rOverhang;
+                }
+
+
+                //If a part with this composition and overhangs doesn't exist, there must be a PCR done                
+                if (current.getStage() == 0) {
+                    if (partsLOcompRO.add(aPartLOcompRO) != false) {
+                        PCRs++;
+                    }
+                } 
+                
+                //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
+                if (vectorsLOlevelRO.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
+                    PCRs++;
+                }
+                
+                //If the node is grater than stage 0, it is a step and add to efficiency list
+                if (current.getStage() > 0) {
+                    steps++;
+                    efficiency.add(current.getEfficiency());
+                }
+                
+                //Save max stage
+                if (current.getStage() > stage) {
+                    stage = current.getStage();
+                } 
+                
+                //Add it to recommended count if it's recommended
+                if (recommended.contains(current.getComposition().toString())) {
+                    recCount++;
+                }
+                
+                //Add it to discouraged count if it's discouraged
+                if (discouraged.contains(current.getComposition().toString())) {
+                    disCount++;
+                }
+            }
+            
+            if (scarless == false) {
+                aGraph.setReactions(PCRs);
+            } else {
+                aGraph.setReactions(neighborHash.size());
+            }
+
+            aGraph.setSteps(steps);
+            aGraph.setDiscouragedCount(disCount);
+            aGraph.setReccomendedCount(recCount);
+            aGraph.setStages(stage);
+            aGraph.setEfficiencyArray(efficiency);
+            aGraph.setSharing(shared);
+        }
+    }
+    
+    public static boolean evanValidate(ArrayList<SRSGraph> graphs) {
+        
+        boolean valid = true;
+        
+        for (int i = 0; i < graphs.size(); i++) {
+            SRSNode root = graphs.get(i).getRootNode();
+            HashSet<SRSNode> seenNodes = new HashSet();
+            ArrayList<SRSNode> queue = new ArrayList();
+            queue.add(root);
+            
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+                ArrayList<String> composition = current.getComposition();
+                ArrayList<String> checkComp = new ArrayList<String>();
+                ArrayList<SRSNode> children = new ArrayList<SRSNode>();
+
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        if (!queue.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+
+                    if (neighbor.getStage() < current.getStage()) {
+                        children.add(neighbor);
+                        checkComp.addAll(neighbor.getComposition());
+                    }
+                }
+
+                if (!children.isEmpty()) {
+                    
+                    //If the left-most composition is the same as the current
+                    if (!current.getLOverhang().equals(children.get(0).getLOverhang())) {
+                        System.out.println("Failure #1!!! " + composition + children.get(0).getComposition());
+                        valid = false;
+                    }
+
+                    //If the right-most composition is the same as the current
+                    if (!current.getROverhang().equals(children.get(children.size() - 1).getROverhang())) {
+                        System.out.println("Failure #2!!! " + composition + children.get(children.size() - 1).getComposition());
+                        valid = false;
+                    }
+                    
+                    //If the composition of all the chilren does not equal the composition of the node, there is another error
+                    if (!checkComp.equals(composition)) {
+                        System.out.println("Failure #3!!! " + composition + checkComp);
+                        valid = false;
+                    }
+                }
+            }
+        }
+        return valid;
+    }
+    
     /**
      * ************************************************************************
      *
@@ -137,6 +432,7 @@ public class SRSGraph {
         ArrayList<String> edges = new ArrayList();
         HashSet<String> seenUUIDs = new HashSet();
         seenUUIDs.add(this._node.getUUID());
+        
         //Start at the root node and look at all children
         for (SRSNode neighbor : this._node.getNeighbors()) {
             seenUUIDs.add(neighbor.getUUID());
@@ -178,7 +474,8 @@ public class SRSGraph {
 
             //Write arc connecting to the parent
             if (neighbor.getComposition().toString().equals(parent.getComposition().toString())) {
-//                //Make the edge going in the direction of the node with the greatest composition, whether this is parent or child
+          
+                //Make the edge going in the direction of the node with the greatest composition, whether this is parent or child
                 if (current.getComposition().size() > neighbor.getComposition().size()) {
                     edgesToAdd.add(current.getUUID() + " -> " + neighbor.getUUID());
                 } else if (current.getComposition().size() < neighbor.getComposition().size()) {
@@ -599,19 +896,27 @@ public class SRSGraph {
     }
 
     /**
-     * Get the modularity score of a graph *
+     * Get the array of efficiency scores for all nodes of a graph *
      */
-    public double getModularity() {
-        return _modularity;
+    public ArrayList<Double> getEfficiencyArray() {
+        return _efficiencyArray;
     }
-
+    
     /**
-     * Get the efficiency score of a graph *
+     * Get the average efficiency score of a graph *
      */
-    public ArrayList<Double> getEfficiency() {
-        return _efficiency;
+    public double getAveEfficiency() {
+        
+        ArrayList<Double> efficiencyArray = this.getEfficiencyArray();
+        double sumEff = 0;
+        double aveEff;
+        for (int i = 0; i < efficiencyArray.size(); i++) {
+            sumEff = sumEff + efficiencyArray.get(i);
+        }
+        aveEff = sumEff/efficiencyArray.size();        
+        return aveEff;
     }
-
+    
     /**
      * Get the reaction score of a graph *
      */
@@ -669,32 +974,25 @@ public class SRSGraph {
     }
 
     /**
-     * Set modularity score *
-     */
-    public void setModularity(double modularity) {
-        _modularity = modularity;
-    }
-
-    /**
      * Set the efficiency score of a graph *
      */
-    public void setEfficiency(ArrayList<Double> efficiency) {
-        _efficiency = efficiency;
+    public void setEfficiencyArray(ArrayList<Double> efficiency) {
+        _efficiencyArray = efficiency;
     }
-
+    
     /**
      * Set the reaction score of a graph *
      */
     public void setReactions(int numReactions) {
         _reactions = numReactions;
     }
+    
     //FIELDS
     private ArrayList<SRSGraph> _subGraphs;
     private SRSNode _node;
     private int _stages;
     private int _steps;
-    private double _modularity;
-    private ArrayList<Double> _efficiency;
+    private ArrayList<Double> _efficiencyArray;
     private int _recCnt;
     private int _disCnt;
     private int _sharing;
