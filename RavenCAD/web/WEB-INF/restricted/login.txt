@@ -10,3 +10,8 @@ stephanie,paige
 cassie,huang
 rishi,ganguly
 ernst,oberortner
+shawn,jin
+pooja,shah
+devina,desai
+thomas,lozanski
+jake,awtry
