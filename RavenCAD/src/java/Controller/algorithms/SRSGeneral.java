@@ -7,6 +7,7 @@ package Controller.algorithms;
 import Controller.datastructures.SRSGraph;
 import Controller.datastructures.SRSNode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -103,7 +104,8 @@ public class SRSGeneral extends SRSAlgorithmCore {
             //Also search through the subgraphs of the bestGraph to see if it has any basic parts
             boolean cantMake = true;
             pinnedPartHash.put(pinnedGraph.getRootNode().getComposition().toString(), pinnedGraph.clone());
-            if (pinnedGraph.getSubGraphs().isEmpty()) {
+            
+            if (!pinnedGraph.getSubGraphs().isEmpty()) {
                 cantMake = false;
             }
 
@@ -114,15 +116,16 @@ public class SRSGeneral extends SRSAlgorithmCore {
                 pinnedPartHash.put(subGraph.getRootNode().getComposition().toString(), subGraphClone);
 
                 //If a basic part is seen in the solution graph
-                if (subGraph.getRootNode().getUUID() != null) {
+                if (subGraph.getRootNode().getStage() > 0) {
                     cantMake = false;
                 }
             }
 
 //            //If it does not have any parts except from goal parts with a 
-//            if (cantMake) {
+            if (cantMake) {
+                System.out.println("WARNING, THERE ARE EITHER NO BASIC PARTS OR NO SUBGRAPHS... SOMETHING MAY ALREADY EXISTS OR SOMETHING CANNOT BE MADE");
 //                JOptionPane.showMessageDialog(null, "Forbidden part conflict discovered! Forbidden set is too restrictive. Please select compatible set of forbidden parts so that part can be constructed.");
-//            }
+            }
 
             //Remove pinned graph from goal part list and add to result list
             gps.remove(gps.get(index));
@@ -204,11 +207,14 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }
         
         HashMap<Integer, ArrayList<int[]>> partitions = getPartitions(indexes, partitionSizes);
+        Set<Integer> keySet = partitions.keySet();
+        ArrayList<Integer> keys = new ArrayList<Integer>(keySet);
+        Collections.sort(keys);
         boolean canPartitionAny = false;
 
         //Iterate over all part "breaks"
         //Find best graph for all possible number of partition sizes        
-        for (Integer nBreaks : partitions.keySet()) {
+        for (Integer nBreaks : keys) {
 
             ArrayList<int[]> forbiddenPartitions = new ArrayList<int[]>();
             ArrayList<int[]> candidatePartitions = partitions.get(nBreaks);
@@ -510,8 +516,10 @@ public class SRSGeneral extends SRSAlgorithmCore {
         int[] newIndexes = buildIntArray(indexes);
         HashMap<Integer, ArrayList<int[]>> partitions = new HashMap<Integer, ArrayList<int[]>>();
         Set<Integer> keySet = forbiddenPartitions.keySet();
+        ArrayList<Integer> keys = new ArrayList<Integer>(keySet);
+        Collections.sort(keys);
 
-        for (Integer n : keySet) {
+        for (Integer n : keys) {
             ArrayList<int[]> subsets = getSubsets(newIndexes, n, forbiddenPartitions.get(n));
             partitions.put(n, subsets);
         }
