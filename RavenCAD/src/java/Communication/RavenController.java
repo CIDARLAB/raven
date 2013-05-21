@@ -210,7 +210,7 @@ public class RavenController {
                 String composition = "";
                 type = "composite";
                 for (Part subpart : p.getComposition()) {
-                    composition = composition + "," + subpart.getName();
+                    composition = composition + "," + subpart.getName()+"|"+subpart.getLeftOverhang()+subpart.getRightOverhang();
                 }
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             }

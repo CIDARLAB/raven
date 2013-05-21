@@ -166,8 +166,8 @@ public class SRSGraph {
                             SRSNode parent = neighbors.get(j);
                             hasParent = true;                           
                             parent.replaceNeighbor(current, finalNode); 
-                            System.out.println("replacing "+current.getComposition()+" stage: "+current.getStage()+" "+current.getLOverhang()+current.getROverhang());
-                            System.out.println("with      "+finalNode.getComposition()+" stage: "+finalNode.getStage()+" "+finalNode.getLOverhang()+finalNode.getROverhang());
+//                            System.out.println("replacing "+current.getComposition()+" stage: "+current.getStage()+" "+current.getLOverhang()+current.getROverhang());
+//                            System.out.println("with      "+finalNode.getComposition()+" stage: "+finalNode.getStage()+" "+finalNode.getLOverhang()+finalNode.getROverhang());
                             finalNode.addNeighbor(parent);
                             current.removeNeighbor(parent);
                         }
