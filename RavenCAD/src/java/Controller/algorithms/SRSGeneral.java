@@ -93,7 +93,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
                 //If no recommended parts, pin the graph with the most sharing
                 } else {
-                    if (newGraph.getSharing() > pinnedGraph.getSharing()) {
+                    if (newGraph.getSharingFactor() > pinnedGraph.getSharingFactor()) {
                         pinnedGraph = newGraph;
                         index = j;
                     }
@@ -334,7 +334,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
         int recCount = 0;
         int disCount = 0;
         for (int i = 0; i < graphs.size(); i++) {
-            graphSharing = graphs.get(i).getSharing() + graphSharing;
+            graphSharing = graphs.get(i).getSharingFactor() + graphSharing;
             recCount = graphs.get(i).getReccomendedCount() + recCount;
             disCount = graphs.get(i).getDiscouragedCount() + disCount;
         }
@@ -342,9 +342,9 @@ public class SRSGeneral extends SRSAlgorithmCore {
         //If sharing hash contains the root's composition and sharing hash is not empty
         if (!sharing.isEmpty()) {
             if (sharing.containsKey(root.getComposition().toString())) {
-                combineGraphsSRD.setSharing(graphSharing + sharing.get(root.getComposition().toString()));
+                combineGraphsSRD.setSharingFactor(graphSharing + sharing.get(root.getComposition().toString()));
             } else {
-                combineGraphsSRD.setSharing(graphSharing);
+                combineGraphsSRD.setSharingFactor(graphSharing);
             }
         }
 
@@ -453,9 +453,9 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }
 
         //Sharing factor
-        if (g0.getSharing() > g1.getSharing()) {
+        if (g0.getSharingFactor() > g1.getSharingFactor()) {
             return g0;
-        } else if (g1.getSharing() > g0.getSharing()) {
+        } else if (g1.getSharingFactor() > g0.getSharingFactor()) {
             return g1;
         }
         

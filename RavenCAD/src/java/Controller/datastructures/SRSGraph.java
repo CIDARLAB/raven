@@ -30,7 +30,7 @@ public class SRSGraph {
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
-        _sharing = 0;
+        _sharingFactor = 0;
         _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
@@ -45,7 +45,7 @@ public class SRSGraph {
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
-        _sharing = 0;
+        _sharingFactor = 0;
         _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
@@ -61,7 +61,7 @@ public class SRSGraph {
         clone._disCnt = this._disCnt;
         clone._stages = this._stages;
         clone._steps = this._steps;
-        clone._sharing = this._sharing;
+        clone._sharingFactor = this._sharingFactor;
         clone._efficiencyArray = this._efficiencyArray;
         clone._reactions = this._reactions;
         return clone;
@@ -185,7 +185,37 @@ public class SRSGraph {
             if (hasParent == true) {
                 mergedGraphs.add(aGraph);
             }            
-        }        
+        }
+        
+        //Remove graphs that have identical nodes to ones already seen from returned set
+        HashSet<SRSNode> seenNodes = new HashSet();
+        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+        ArrayList<SRSGraph> remGraphs = new ArrayList<SRSGraph>();
+
+        for (SRSGraph graph : mergedGraphs) {
+            queue.add(graph.getRootNode());
+            boolean newNodes = seenNodes.add(graph.getRootNode());
+
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                        newNodes = true;
+                    }
+                }
+            }
+            
+            if (newNodes == false) {
+                remGraphs.add(graph);
+            }
+        }
+        
+        mergedGraphs.removeAll(remGraphs);
+        System.out.println("mergedGraphs size: " + mergedGraphs.size());
         return mergedGraphs;
     }
 
@@ -833,8 +863,15 @@ public class SRSGraph {
     /**
      * Find sharing score for a given SDSGraph *
      */
+    public int getSharingFactor() {
+        return _sharingFactor;
+    }
+    
+    /**
+     * Get the number of shared steps in a graph
+     */
     public int getSharing() {
-        return _sharing;
+        return _sharedSteps;
     }
 
     /**
@@ -911,8 +948,15 @@ public class SRSGraph {
     /**
      * Find sharing score for a given SDSGraph *
      */
+    public void setSharingFactor(int sharing) {
+        _sharingFactor = sharing;
+    }
+    
+    /**
+     * Set the number of shared steps in a graph
+     */
     public void setSharing(int sharing) {
-        _sharing = sharing;
+        _sharedSteps = sharing;
     }
 
     /**
@@ -941,10 +985,11 @@ public class SRSGraph {
     private SRSNode _node;
     private int _stages;
     private int _steps;
+    private int _sharedSteps;
     private ArrayList<Double> _efficiencyArray;
     private int _recCnt;
     private int _disCnt;
-    private int _sharing;
-    private int _reactions; //number of reactions that will be used to assemble this graph
+    private int _sharingFactor;
+    private int _reactions;
     private boolean _pinned;
 }
