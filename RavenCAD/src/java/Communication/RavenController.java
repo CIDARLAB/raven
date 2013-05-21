@@ -492,22 +492,17 @@ public class RavenController {
         //Initialize statistics
         boolean overhangValid = false;
         if (method.equals("biobrick")) {
-//            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
-            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
+            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("cpec")) {
-//            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
-            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
+            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("gibson")) {
-//            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
-            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
+            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("golden gate")) {
-//            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
-            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
+            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("moclo")) {
-            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
+            overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("slic")) {
-//            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
-            overhangValid = SRSGraph.evanValidate(_assemblyGraphs);
+            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
         }
         boolean valid = validateGraphComposition();
         valid = valid && overhangValid;
@@ -539,7 +534,7 @@ public class RavenController {
         _partLibrary = new ArrayList();
         _assemblyGraphs = new ArrayList<SRSGraph>();
         method = method.toLowerCase().trim();
-        
+
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
                 Part current = _collector.getPart(partLibraryIDs[i], false);
@@ -548,7 +543,7 @@ public class RavenController {
                 }
             }
         }
-        
+
         if (vectorLibraryIDs.length > 0) {
             for (int i = 0; i < vectorLibraryIDs.length; i++) {
                 Vector current = _collector.getVector(vectorLibraryIDs[i], false);
@@ -557,12 +552,12 @@ public class RavenController {
                 }
             }
         }
-        
+
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
             _goalParts.put(current, ClothoReader.getComposition(current));
         }
-        
+
         Statistics.start();
         boolean scarless = false;
         if (method.equals("biobrick")) {
@@ -582,24 +577,25 @@ public class RavenController {
             _assemblyGraphs = runSLIC();
             scarless = true;
         }
-        
+
         Statistics.stop();
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
         _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
         SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
         solutionStats(method);
-        
+
         if (!_assemblyGraphs.isEmpty()) {
-            SRSGraph result = _assemblyGraphs.get(0);
-            reader.nodesToClothoPartsVectors(_collector, result);
-//            reader.fixCompositeUUIDs(_collector, result);
-            boolean canPigeon = result.canPigeon();
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
+            for (SRSGraph result : _assemblyGraphs) {
+                reader.nodesToClothoPartsVectors(_collector, result);
+                reader.fixCompositeUUIDs(_collector, result);
+                boolean canPigeon = result.canPigeon();
+                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+                graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
+            }
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
-        
+
         //save graph text file
         File file = new File(_path + _user + "/pigeon" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);

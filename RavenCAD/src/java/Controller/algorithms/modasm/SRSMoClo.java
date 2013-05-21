@@ -789,22 +789,22 @@ public class SRSMoClo extends SRSGeneral {
                             }
                             if (i == 0) {
                                 if (!child.getLOverhang().equals(parent.getLOverhang())) {
-//                                    System.out.println(child.getComposition() + " left caused failure " + child.getLOverhang());
-//                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
+                                    System.out.println(child.getComposition() + " left caused failure " + child.getLOverhang());
+                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
                                     toReturn = false;
                                 }
                             }
                             if (i == parent.getNeighbors().size() - 1) {
                                 if (!child.getROverhang().equals(parent.getROverhang())) {
-//                                    System.out.println(child.getComposition() + " right caused failure " + child.getROverhang());
-//                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
+                                    System.out.println(child.getComposition() + " right caused failure " + child.getROverhang());
+                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
                                     toReturn = false;
                                 }
                             }
                             if (previous != null) {
                                 if (!child.getLOverhang().equals(previous.getROverhang())) {
-//                                    System.out.println(child.getComposition() + " previous caused failure " + child.getLOverhang());
-//                                    System.out.println("previous: " + previous.getComposition() + " " + previous.getLOverhang() + "|" + previous.getROverhang());
+                                    System.out.println(child.getComposition() + " previous caused failure " + child.getLOverhang());
+                                    System.out.println("previous: " + previous.getComposition() + " " + previous.getLOverhang() + "|" + previous.getROverhang());
 
                                     toReturn = false;
                                 }
@@ -815,7 +815,7 @@ public class SRSMoClo extends SRSGeneral {
                         }
                     }
                     if (leftFrequencyHash.containsValue(2) || rightFrequencyHash.containsValue(2)) {
-//                        System.out.println("repeat overhang use occurred in " + parent.getComposition());
+                        System.out.println("repeat overhang use occurred in " + parent.getComposition());
                         toReturn = false;
                     }
                 }
