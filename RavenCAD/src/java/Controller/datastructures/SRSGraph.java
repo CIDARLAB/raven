@@ -62,6 +62,7 @@ public class SRSGraph {
         clone._stages = this._stages;
         clone._steps = this._steps;
         clone._sharing = this._sharing;
+        clone._adjSteps = this._adjSteps;
         clone._efficiencyArray = this._efficiencyArray;
         clone._reactions = this._reactions;
         return clone;
@@ -927,6 +928,13 @@ public class SRSGraph {
     public int getReaction() {
         return _reactions;
     }
+    
+    /**
+     * Get the adjusted step count of a graph based on sharing
+     */
+    public int getAdjSteps() {
+        return _adjSteps;
+    }
 
     /**
      * Set the number of stages for an SDSGraph *
@@ -991,11 +999,19 @@ public class SRSGraph {
         _reactions = numReactions;
     }
     
+    /**
+     * Set the adjusted steps of a graph based on sharing
+     */
+    public void setAdjSteps(int adjSteps) {
+        _adjSteps = adjSteps;
+    }
+    
     //FIELDS
     private ArrayList<SRSGraph> _subGraphs;
     private SRSNode _node;
     private int _stages;
     private int _steps;
+    private int _adjSteps;
     private ArrayList<Double> _efficiencyArray;
     private int _recCnt;
     private int _disCnt;
