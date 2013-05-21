@@ -215,7 +215,6 @@ public class SRSGraph {
         }
         
         mergedGraphs.removeAll(remGraphs);
-        System.out.println("mergedGraphs size: " + mergedGraphs.size());
         return mergedGraphs;
     }
 
@@ -582,7 +581,9 @@ public class SRSGraph {
                     } else if (p.getType().equalsIgnoreCase("invertase site_r") || p.getType().equalsIgnoreCase("is_r")) {
                         pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");                       
                     } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s") || p.getType().equalsIgnoreCase("spacer_r") || p.getType().equalsIgnoreCase("s_r")) {
-                        pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");                       
+                        pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");  
+                    } else if (p.getType().equalsIgnoreCase("origin") || p.getType().equalsIgnoreCase("o")) {
+                        pigeonLine.append("z ").append(p.getName()).append(" 14" + "\n");
                     } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
                         pigeonLine.append("f1");
                         String[] fusionParts = p.getName().split("-");                        
@@ -797,7 +798,7 @@ public class SRSGraph {
         SRSNode root = this.getRootNode();
         ArrayList<String> types = root.getType();
         for (int i = 0; i < types.size(); i++) {
-            if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
+            if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("origin") || types.get(i).equalsIgnoreCase("o") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
                 canPigeon = false;
             }
         }
