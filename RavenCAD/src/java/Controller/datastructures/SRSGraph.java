@@ -62,7 +62,6 @@ public class SRSGraph {
         clone._stages = this._stages;
         clone._steps = this._steps;
         clone._sharing = this._sharing;
-        clone._adjSteps = this._adjSteps;
         clone._efficiencyArray = this._efficiencyArray;
         clone._reactions = this._reactions;
         return clone;
@@ -235,8 +234,6 @@ public class SRSGraph {
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
         for (int i = 0; i < mergedGraphs.size(); i++) {
-            
-            System.out.println("Merged graph number: " + i);
             
             HashSet<String> partsLOcompRO = new HashSet<String>();
             HashSet<String> vectorsLOlevelRO = new HashSet<String>();
@@ -857,7 +854,7 @@ public class SRSGraph {
     /**
      * Get the average efficiency score of a graph *
      */
-    public double getAveEfficiency() {
+    public double getAveEff() {
         
         ArrayList<Double> efficiencyArray = this.getEfficiencyArray();
         double sumEff = 0;
@@ -874,13 +871,6 @@ public class SRSGraph {
      */
     public int getReaction() {
         return _reactions;
-    }
-    
-    /**
-     * Get the adjusted step count of a graph based on sharing
-     */
-    public int getAdjSteps() {
-        return _adjSteps;
     }
 
     /**
@@ -946,19 +936,11 @@ public class SRSGraph {
         _reactions = numReactions;
     }
     
-    /**
-     * Set the adjusted steps of a graph based on sharing
-     */
-    public void setAdjSteps(int adjSteps) {
-        _adjSteps = adjSteps;
-    }
-    
     //FIELDS
     private ArrayList<SRSGraph> _subGraphs;
     private SRSNode _node;
     private int _stages;
     private int _steps;
-    private int _adjSteps;
     private ArrayList<Double> _efficiencyArray;
     private int _recCnt;
     private int _disCnt;

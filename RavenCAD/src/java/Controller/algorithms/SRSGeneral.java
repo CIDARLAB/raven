@@ -425,12 +425,9 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }
 
         //Efficiency
-        double aveEffg0 = g0.getAveEfficiency();
-        double aveEffg1 = g1.getAveEfficiency();
-
-        if (aveEffg0 > aveEffg1) {
+        if (g0.getAveEff() > g1.getAveEff()) {
             return g0;
-        } else if (aveEffg1 > aveEffg0) {
+        } else if (g1.getAveEff() > g0.getAveEff()) {
             return g1;
         }
 
@@ -448,10 +445,10 @@ public class SRSGeneral extends SRSAlgorithmCore {
             return g1;
         }
 
-        //Adjusted steps
-        if (g0.getAdjSteps() < g1.getAdjSteps()) {
+        //Steps
+        if (g0.getSteps() < g1.getSteps()) {
             return g0;
-        } else if (g1.getAdjSteps() < g0.getAdjSteps()) {
+        } else if (g1.getSteps() < g0.getSteps()) {
             return g1;
         }
 
@@ -531,6 +528,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
         return partitions;
     }
+    
     //Fields
     protected int _maxNeighbors;
 }

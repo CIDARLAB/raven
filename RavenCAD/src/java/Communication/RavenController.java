@@ -511,7 +511,7 @@ public class RavenController {
             firstSoln = _assemblyGraphs.get(0);
         }
 
-        _statistics.setEfficiency(firstSoln.getAveEfficiency());
+        _statistics.setEfficiency(firstSoln.getAveEff());
         _statistics.setRecommended(firstSoln.getReccomendedCount());
         _statistics.setStages(firstSoln.getStages());
         _statistics.setSteps(firstSoln.getSteps());
