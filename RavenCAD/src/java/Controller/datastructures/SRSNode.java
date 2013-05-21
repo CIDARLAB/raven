@@ -221,6 +221,7 @@ public class SRSNode {
     public void removeNeighbor(SRSNode neighbor) {
         _neighbors.remove(neighbor);
     }
+
     
     /** Replace a neighbor with the same composition at an exact point in the list to conserve order **/
     public void replaceNeighbor(SRSNode oldNode, SRSNode newNode) {
