@@ -141,7 +141,7 @@ public class SRSGraph {
                 seenNodes.add(current);
                 queue.remove(0);
                 
-                String currentCompOHStage = current.getComposition().toString() + current.getLOverhang() + current.getROverhang() + current.getStage();
+                String currentCompOHStage = current.getComposition().toString() + "|" + current.getLOverhang() + "|" + current.getROverhang() + "|" + current.getStage();
                 
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompOHStage) == false) {

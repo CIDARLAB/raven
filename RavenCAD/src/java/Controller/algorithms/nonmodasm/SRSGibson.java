@@ -46,6 +46,7 @@ public class SRSGibson extends SRSGeneral {
 
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, false);
+            assignOverhangs(optimalGraphs);
             
             return optimalGraphs;
         } catch (Exception E) {
@@ -55,6 +56,53 @@ public class SRSGibson extends SRSGeneral {
         }
     }
 
+    /** Assign overhangs for scarless assembly **/
+    private void assignOverhangs(ArrayList<SRSGraph> asmGraphs) {
+        
+        for (int i = 0; i < asmGraphs.size(); i++) {
+            
+            SRSGraph graph = asmGraphs.get(i);
+            SRSNode root = graph.getRootNode();
+            ArrayList<SRSNode> neighbors = root.getNeighbors();
+            assignOverhangsHelper(root, neighbors);
+        }
+        
+    }
+    
+    /** Overhang assignment helper **/
+    private void assignOverhangsHelper(SRSNode parent, ArrayList<SRSNode> neighbors) {
+
+        ArrayList<SRSNode> children = new ArrayList<SRSNode>();
+        
+        //Get children
+        for (int i = 0; i < neighbors.size(); i++) {
+            SRSNode current = neighbors.get(i);
+            if (current.getStage() < parent.getStage()) {
+                children.add(current);
+            }            
+        }
+        
+        //For each of the children, assign overhangs based on neighbors
+        for (int j = 0; j < children.size(); j++) {
+            SRSNode current = children.get(j);
+            
+            if (j == 0) {
+                ArrayList<String> nextComp = children.get(j+1).getComposition();
+                current.setROverhang(nextComp.get(0));
+            } else if (j == children.size() - 1) {
+                ArrayList<String> prevComp = children.get(j-1).getComposition();
+                current.setLOverhang(prevComp.get(prevComp.size()-1));
+            } else {
+                ArrayList<String> nextComp = children.get(j + 1).getComposition();
+                ArrayList<String> prevComp = children.get(j - 1).getComposition();
+                current.setLOverhang(prevComp.get(prevComp.size() - 1));
+                current.setROverhang(nextComp.get(0));
+            }
+            
+            assignOverhangsHelper(current, children);
+        }
+    }
+    
     public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         return true;
     }
