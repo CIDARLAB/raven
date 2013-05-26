@@ -30,7 +30,7 @@ public class SRSGraph {
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
-        _sharing = 0;
+        _sharingFactor = 0;
         _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
@@ -45,7 +45,7 @@ public class SRSGraph {
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
-        _sharing = 0;
+        _sharingFactor = 0;
         _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
@@ -61,7 +61,7 @@ public class SRSGraph {
         clone._disCnt = this._disCnt;
         clone._stages = this._stages;
         clone._steps = this._steps;
-        clone._sharing = this._sharing;
+        clone._sharingFactor = this._sharingFactor;
         clone._efficiencyArray = this._efficiencyArray;
         clone._reactions = this._reactions;
         return clone;
@@ -141,7 +141,7 @@ public class SRSGraph {
                 seenNodes.add(current);
                 queue.remove(0);
                 
-                String currentCompOHStage = current.getComposition().toString() + current.getLOverhang() + current.getROverhang() + current.getStage();
+                String currentCompOHStage = current.getComposition().toString() + "|" + current.getLOverhang() + "|" + current.getROverhang() + "|" + current.getStage();
                 
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompOHStage) == false) {
@@ -185,7 +185,36 @@ public class SRSGraph {
             if (hasParent == true) {
                 mergedGraphs.add(aGraph);
             }            
-        }        
+        }
+        
+        //Remove graphs that have identical nodes to ones already seen from returned set
+        HashSet<SRSNode> seenNodes = new HashSet();
+        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+        ArrayList<SRSGraph> remGraphs = new ArrayList<SRSGraph>();
+
+        for (SRSGraph graph : mergedGraphs) {
+            queue.add(graph.getRootNode());
+            boolean newNodes = seenNodes.add(graph.getRootNode());
+
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                        newNodes = true;
+                    }
+                }
+            }
+            
+            if (newNodes == false) {
+                remGraphs.add(graph);
+            }
+        }
+        
+        mergedGraphs.removeAll(remGraphs);
         return mergedGraphs;
     }
 
@@ -234,8 +263,6 @@ public class SRSGraph {
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
         for (int i = 0; i < mergedGraphs.size(); i++) {
-            
-            System.out.println("Merged graph number: " + i);
             
             HashSet<String> partsLOcompRO = new HashSet<String>();
             HashSet<String> vectorsLOlevelRO = new HashSet<String>();
@@ -554,7 +581,9 @@ public class SRSGraph {
                     } else if (p.getType().equalsIgnoreCase("invertase site_r") || p.getType().equalsIgnoreCase("is_r")) {
                         pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");                       
                     } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s") || p.getType().equalsIgnoreCase("spacer_r") || p.getType().equalsIgnoreCase("s_r")) {
-                        pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");                       
+                        pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");  
+                    } else if (p.getType().equalsIgnoreCase("origin") || p.getType().equalsIgnoreCase("o")) {
+                        pigeonLine.append("z ").append(p.getName()).append(" 14" + "\n");
                     } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
                         pigeonLine.append("f1");
                         String[] fusionParts = p.getName().split("-");                        
@@ -769,7 +798,7 @@ public class SRSGraph {
         SRSNode root = this.getRootNode();
         ArrayList<String> types = root.getType();
         for (int i = 0; i < types.size(); i++) {
-            if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
+            if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("origin") || types.get(i).equalsIgnoreCase("o") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
                 canPigeon = false;
             }
         }
@@ -835,8 +864,15 @@ public class SRSGraph {
     /**
      * Find sharing score for a given SDSGraph *
      */
+    public int getSharingFactor() {
+        return _sharingFactor;
+    }
+    
+    /**
+     * Get the number of shared steps in a graph
+     */
     public int getSharing() {
-        return _sharing;
+        return _sharedSteps;
     }
 
     /**
@@ -856,7 +892,7 @@ public class SRSGraph {
     /**
      * Get the average efficiency score of a graph *
      */
-    public double getAveEfficiency() {
+    public double getAveEff() {
         
         ArrayList<Double> efficiencyArray = this.getEfficiencyArray();
         double sumEff = 0;
@@ -913,8 +949,15 @@ public class SRSGraph {
     /**
      * Find sharing score for a given SDSGraph *
      */
+    public void setSharingFactor(int sharing) {
+        _sharingFactor = sharing;
+    }
+    
+    /**
+     * Set the number of shared steps in a graph
+     */
     public void setSharing(int sharing) {
-        _sharing = sharing;
+        _sharedSteps = sharing;
     }
 
     /**
@@ -943,10 +986,11 @@ public class SRSGraph {
     private SRSNode _node;
     private int _stages;
     private int _steps;
+    private int _sharedSteps;
     private ArrayList<Double> _efficiencyArray;
     private int _recCnt;
     private int _disCnt;
-    private int _sharing;
-    private int _reactions; //number of reactions that will be used to assemble this graph
+    private int _sharingFactor;
+    private int _reactions;
     private boolean _pinned;
 }
