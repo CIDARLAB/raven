@@ -28,6 +28,17 @@
         <div class="page-header" style="margin-top:50px">
             <h1>RavenCAD <small>Log in and get started today.</small></h1>
         </div>
+        <div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loginLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="loginLabel">Sign in</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please enter your user name and password to sign in.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
+            </div>
+        </div>
         <div class="container">
             <div class="row-fluid">
                 <div class="span2">
@@ -120,9 +131,9 @@
                 var self = this;
                 e.preventDefault();
                 if ($('#loginForm input[name="user"]').val() === "") {
-                    alert("Please enter your user name.");
+                    $('#loginModal').modal();
                 } else if ($('#loginForm input[name="password"]') === "") {
-                    alert("Please enter your password");
+                    $('#loginModal').modal();
                 } else {
                     self.submit(function() {
                         if (getCookie("authenticate") === "authenticated") {

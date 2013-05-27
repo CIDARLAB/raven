@@ -4,9 +4,9 @@ $(document).ready(function() {
         var self = this;
         e.preventDefault();
         if ($('#loginForm input[name="user"]').val() === "") {
-            alert("Please enter your user name.");
+            $('#loginModal').modal();
         } else if ($('#loginForm input[name="password"]') === "") {
-            alert("Please enter your password");
+            $('#loginModal').modal();
         } else {
             self.submit(function() {
                 if (getCookie("authenticate") === "authenticated") {

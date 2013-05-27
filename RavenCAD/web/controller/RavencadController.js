@@ -327,11 +327,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     }
                 });
             } else {
-                alert("Please select some target parts");
+//                alert("Please select some target parts");
+                $('#selectTargetModal').modal();
             }
             canRun = true;
         } else {
-            alert('Please Wait until current design is finished!');
+//            alert('Please Wait until current design is finished!');
+                $('#waitModal').modal();
         }
     });
     //FUNCTIONS
