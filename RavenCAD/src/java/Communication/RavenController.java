@@ -210,7 +210,7 @@ public class RavenController {
                 String composition = "";
                 type = "composite";
                 for (Part subpart : p.getComposition()) {
-                    composition = composition + "," + subpart.getName()+"|"+subpart.getLeftOverhang()+subpart.getRightOverhang();
+                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + subpart.getRightOverhang();
                 }
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             }
@@ -654,8 +654,9 @@ public class RavenController {
                 + "\",\"stages\":\"" + _statistics.getStages()
                 + "\",\"reactions\":\"" + _statistics.getReactions()
                 + "\",\"recommended\":\"" + _statistics.getRecommended()
+                + "\",\"discouraged\":\"" + _statistics.getDiscouraged()
                 + "\",\"efficiency\":\"" + _statistics.getEfficiency()
-                + "\",\"modularity\":\"" + _statistics.getModularity()
+                + "\",\"sharing\":\"" + _statistics.getSharing()
                 + "\",\"time\":\"" + _statistics.getExecutionTime()
                 + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
         return statString;
