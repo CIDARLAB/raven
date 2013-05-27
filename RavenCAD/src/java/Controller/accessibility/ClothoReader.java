@@ -76,7 +76,10 @@ public class ClothoReader {
             }
             if (createNewPart) {
                 //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
-                Part betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang(), true); //search for a better match
+                Part betterPart = null;
+                if (currentPart != null) {
+                    betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang(), true); //search for a better match
+                }
                 if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
                     //if no better part exists, create a new one
                     if (currentPart.isBasic()) {
@@ -127,7 +130,7 @@ public class ClothoReader {
      * for solution graphs) *
      */
     private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> composition, String LO, String RO) throws Exception {
-        if (_allCompositeParts.size()==0 || _allBasicParts.size()==0) {
+        if (_allCompositeParts.size() == 0 || _allBasicParts.size() == 0) {
             refreshPartVectorList(coll);
         }
 //        System.out.println("creating   : "+composition+" overhangs: "+LO+"|"+RO);
@@ -139,8 +142,8 @@ public class ClothoReader {
 
             //Get an existing part's overhangs
             ArrayList<String> sTags = existingPart.getSearchTags();
-            String existingPartLO="";
-            String existingPartRO="";
+            String existingPartLO = "";
+            String existingPartRO = "";
             for (int k = 0; k < sTags.size(); k++) {
                 if (sTags.get(k).startsWith("LO:")) {
                     existingPartLO = sTags.get(k).substring(4);
