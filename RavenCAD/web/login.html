@@ -146,7 +146,7 @@
                 var self = this;
                 $('#loginModal').modal();
                 if ($('#loginFormMain input[name="user"]').val() === "") {
-                    alert("Please enter your user name.");
+                    $('#loginModal').modal();
                 } else if ($('#loginFormMain input[name="password"]') === "") {
                     $('#loginModal').modal();
                 } else {

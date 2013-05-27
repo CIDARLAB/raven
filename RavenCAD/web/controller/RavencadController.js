@@ -23,6 +23,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $("#libraryPartList #" + $(this).attr("id")).remove();
         });
         $('#targetPartList').append($('#availableTargetPartList option'));
+        sortPartLists();
         drawIntermediates();
     });
     $('#targetDeselectAllButton').click(function() {
@@ -31,6 +32,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $("#availableLibraryPartList #" + $(this).attr("id")).addClass("composite");
         });
         $('#availableTargetPartList').append($('#targetPartList option'));
+        sortPartLists();
         drawIntermediates();
     });
     $('#targetSelectButton').click(function() {
@@ -39,6 +41,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#libraryPartList #' + $(this).attr("id")).remove();
         });
         $('#targetPartList').append($('#availableTargetPartList :selected'));
+        sortPartLists();
         drawIntermediates();
     });
     $('#targetDeselectButton').click(function() {
@@ -47,6 +50,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $("#availableLibraryPartList #" + $(this).attr("id")).addClass("composite");
         });
         $('#availableTargetPartList').append($('#targetPartList :selected'));
+        sortPartLists();
         drawIntermediates();
     });
     //library part button event handlers
@@ -56,6 +60,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#targetPartList #' + $(this).attr("id")).remove();
         });
         $('#libraryPartList').append($('#availableLibraryPartList option'));
+        sortPartLists();
         drawIntermediates();
     });
     $('#libraryPartDeselectAllButton').click(function() {
@@ -63,6 +68,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#availableTargetPartList').append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
         });
         $('#availableLibraryPartList').append($('#libraryPartList option'));
+        sortPartLists();
         drawIntermediates();
     });
     $('#libraryPartSelectButton').click(function() {
@@ -71,6 +77,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#targetPartList #' + $(this).attr("id")).remove();
         });
         $('#libraryPartList').append($('#availableLibraryPartList :selected'));
+        sortPartLists();
         drawIntermediates();
     });
     $('#libraryPartDeselectButton').click(function() {
@@ -78,19 +85,24 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#availableTargetPartList').append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
         });
         $('#availableLibraryPartList').append($('#libraryPartList :selected'));
+        sortPartLists();
         drawIntermediates();
     });
     $('#libraryVectorSelectAllButton').click(function() {
         $('#libraryVectorList').append($('#availableLibraryVectorList option'));
+        sortVectorLists();
     });
     $('#libraryVectorDeselectAllButton').click(function() {
         $('#availableLibraryVectorList').append($('#libraryVectorList option'));
+        sortVectorLists();
     });
     $('#libraryVectorSelectButton').click(function() {
         $('#libraryVectorList').append($('#availableLibraryVectorList :selected'));
+        sortVectorLists();
     });
     $('#libraryVectorDeselectButton').click(function() {
         $('#availableLibraryVectorList').append($('#libraryVectorList :selected'));
+        sortVectorLists();
     });
     $('#resetIntermediatesButton').click(function() {
         $(':checked').attr("checked", false);
@@ -333,7 +345,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             canRun = true;
         } else {
 //            alert('Please Wait until current design is finished!');
-                $('#waitModal').modal();
+            $('#waitModal').modal();
         }
     });
     //FUNCTIONS
@@ -371,7 +383,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#libraryVectorListArea").html(libraryVectorListBody);
         //clear lists
         $('#targetPartList').html("");
-        $('#availableLibraryPartList').html("");
+        $('#availableLibraryPartList').html(targetListBody);
         $('#availableLibraryVectorList').html("");
     };
     var getData = function() {
@@ -591,6 +603,83 @@ $(document).ready(function() { //don't run javascript until page is loaded
         window.location.replace("login.html");
     }
 
+    function partComparator(a, b) {
+        if (a.hasClass("composite") && !b.hasClass("composite")) {
+            return -1;
+        } else {
+            if (b.hasClass("composite") && !a.hasClass("composite")) {
+                return 1;
+            }
+            if (a.text() > b.text()) {
+                return 1;
+            } else {
+                return -1;
+            }
+            return 0;
+        }
+    }
+
+    function sortPartLists() {
+        var items = [];
+        //sort part lists
+        $('#availableTargetPartList option').each(function() {
+            items.push($(this));
+        });
+        items.sort(partComparator);
+        $('#availableTargetPartList').html("");
+        for (var i = 0; i < items.length; i++) {
+            $('#availableTargetPartList').append(items[i]);
+        }
+        items = [];
+        $('#targetPartList option').each(function() {
+            items.push($(this));
+        });
+        items.sort(partComparator);
+        $('#targetPartList').html("");
+        for (var i = 0; i < items.length; i++) {
+            $('#targetPartList').append(items[i]);
+        }
+        items = [];
+        $('#availableLibraryPartList option').each(function() {
+            items.push($(this));
+        });
+        items.sort(partComparator);
+        $('#availableLibraryPartList').html("");
+        for (var i = 0; i < items.length; i++) {
+            $('#availableLibraryPartList').append(items[i]);
+        }
+        items = [];
+        $('#libraryPartList option').each(function() {
+            items.push($(this));
+        });
+        items.sort(partComparator);
+        $('#libraryPartList').html("");
+        for (var i = 0; i < items.length; i++) {
+            $('#libraryPartList').append(items[i]);
+        }
+    }
+
+    function sortVectorLists() {
+        //sort vector lists
+        var items = [];
+        $('#availableLibraryVectorList option').each(function() {
+            items.push($(this));
+        });
+        items.sort();
+        $('#availableLibraryVectorList').html("");
+        for (var i = 0; i < items.length; i++) {
+            $('#availableLibraryVectorList').append(items[i]);
+        }
+        items = [];
+        $('#libraryVectorList option').each(function() {
+            items.push($(this));
+        });
+        items.sort();
+        $('#libraryVectorList').html("");
+        for (var i = 0; i < items.length; i++) {
+            $('#libraryVectorList').append(items[i]);
+        }
+    }
 
 });
 
