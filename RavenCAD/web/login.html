@@ -144,11 +144,11 @@
             });
             $('#loginFormMain').submit(function(e) {
                 var self = this;
-                e.preventDefault();
+                $('#loginModal').modal();
                 if ($('#loginFormMain input[name="user"]').val() === "") {
                     alert("Please enter your user name.");
                 } else if ($('#loginFormMain input[name="password"]') === "") {
-                    alert("Please enter your password");
+                    $('#loginModal').modal();
                 } else {
                     self.submit(function() {
                         if (getCookie("authenticate") === "authenticated") {
