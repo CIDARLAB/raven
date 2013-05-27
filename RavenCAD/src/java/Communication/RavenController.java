@@ -439,8 +439,10 @@ public class RavenController {
                             forcedOverhangHash.get(tokens[0]).add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
                         } else {
                             ArrayList<String> toAdd = new ArrayList();
-                            toAdd.add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
-                            forcedOverhangHash.put(tokens[0], toAdd);
+                            if (partNameTokens.length > 2) {
+                                toAdd.add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
+                                forcedOverhangHash.put(tokens[0], toAdd);
+                            }
                         }
                         partName = partNameTokens[0];
                     }
