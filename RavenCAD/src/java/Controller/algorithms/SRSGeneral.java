@@ -93,7 +93,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
                 //If no recommended parts, pin the graph with the most sharing
                 } else {
-                    if (newGraph.getSharing() > pinnedGraph.getSharing()) {
+                    if (newGraph.getSharingFactor() > pinnedGraph.getSharingFactor()) {
                         pinnedGraph = newGraph;
                         index = j;
                     }
@@ -121,7 +121,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
                 }
             }
 
-//            //If it does not have any parts except from goal parts with a 
+            //Send warning if there might be missing basic parts or subgraphs
             if (cantMake) {
                 System.out.println("WARNING, THERE ARE EITHER NO BASIC PARTS OR NO SUBGRAPHS... SOMETHING MAY ALREADY EXISTS OR SOMETHING CANNOT BE MADE");
 //                JOptionPane.showMessageDialog(null, "Forbidden part conflict discovered! Forbidden set is too restrictive. Please select compatible set of forbidden parts so that part can be constructed.");
@@ -266,7 +266,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
                         toCombine.add(solution);
                     }
 
-                    SRSGraph newGraph = combineGraphsModEff(toCombine, recommended, discouraged, sharingHash, modularityHash, efficiencies);
+                    SRSGraph newGraph = combineGraphsModEff(toCombine, recommended, discouraged, sharingHash, modularityHash, efficiencies, partsHash);
 
                     //Edge case: best graph does not exist yet
                     if (bestGraph.getRootNode().getNeighbors().isEmpty()) {
@@ -297,7 +297,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
     /** Combine multiple graphs, including efficiency and modularity scoring **/
     //Currently, it is assumed that efficiencies are additive and not multiplicative
-    protected SRSGraph combineGraphsModEff(ArrayList<SRSGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharing, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies) {
+    protected SRSGraph combineGraphsModEff(ArrayList<SRSGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharing, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, HashMap<String, SRSGraph> partsHash) {
         
         //Call method without efficiency and modularity first
         SRSGraph combineGraphsME = combineGraphsShareRecDis(graphs, recommended, discouraged, sharing);
@@ -334,7 +334,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
         int recCount = 0;
         int disCount = 0;
         for (int i = 0; i < graphs.size(); i++) {
-            graphSharing = graphs.get(i).getSharing() + graphSharing;
+            graphSharing = graphs.get(i).getSharingFactor() + graphSharing;
             recCount = graphs.get(i).getReccomendedCount() + recCount;
             disCount = graphs.get(i).getDiscouragedCount() + disCount;
         }
@@ -342,9 +342,9 @@ public class SRSGeneral extends SRSAlgorithmCore {
         //If sharing hash contains the root's composition and sharing hash is not empty
         if (!sharing.isEmpty()) {
             if (sharing.containsKey(root.getComposition().toString())) {
-                combineGraphsSRD.setSharing(graphSharing + sharing.get(root.getComposition().toString()));
+                combineGraphsSRD.setSharingFactor(graphSharing + sharing.get(root.getComposition().toString()));
             } else {
-                combineGraphsSRD.setSharing(graphSharing);
+                combineGraphsSRD.setSharingFactor(graphSharing);
             }
         }
 
@@ -385,7 +385,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }
         SRSGraph newGraph = new SRSGraph(newRoot);
 
-        //Determine stages, steps, recommended for the new graph
+        //Determine stages, steps, adjusted steps for the new graph
         int steps = 0;
         int maxStage = 0;
 
@@ -425,12 +425,9 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }
 
         //Efficiency
-        double aveEffg0 = g0.getAveEfficiency();
-        double aveEffg1 = g1.getAveEfficiency();
-
-        if (aveEffg0 > aveEffg1) {
+        if (g0.getAveEff() > g1.getAveEff()) {
             return g0;
-        } else if (aveEffg1 > aveEffg0) {
+        } else if (g1.getAveEff() > g0.getAveEff()) {
             return g1;
         }
 
@@ -448,15 +445,20 @@ public class SRSGeneral extends SRSAlgorithmCore {
             return g1;
         }
 
-        //Adjusted steps
-        int stepsAdjg0 = g0.getSteps() - g0.getSharing();
-        int stepsAdjg1 = g1.getSteps() - g1.getSharing();
-        if (stepsAdjg0 < stepsAdjg1) {
+        //Steps
+        if (g0.getSteps() < g1.getSteps()) {
             return g0;
-        } else if (stepsAdjg1 < stepsAdjg0) {
+        } else if (g1.getSteps() < g0.getSteps()) {
             return g1;
         }
 
+        //Sharing factor
+        if (g0.getSharingFactor() > g1.getSharingFactor()) {
+            return g0;
+        } else if (g1.getSharingFactor() > g0.getSharingFactor()) {
+            return g1;
+        }
+        
         //If equal, return the original
         return g0;
     }
@@ -526,6 +528,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
         return partitions;
     }
+    
     //Fields
     protected int _maxNeighbors;
 }

@@ -59,10 +59,10 @@ public class SRSBioBricks extends SRSGeneral {
         //If the vector set is of size one, use that vector everywhere applicable 
         SRSVector theVector = new SRSVector();
         if (vectorSet.size() == 1) {
-            for (SRSVector vector : vectorSet) {
-                theVector = vector;
-            }
+            theVector = vectorSet.get(0);
         }
+        theVector.setLOverhang("LeftBBa");
+        theVector.setROverhang("RightBBa");
         
         //For all graphs traverse nodes of the graph and assign all nodes the biobricks vector
         for (int i = 0; i < optimalGraphs.size(); i++) {
@@ -86,10 +86,8 @@ public class SRSBioBricks extends SRSGeneral {
                 current.setLOverhang("LeftBBa");
                 current.setROverhang("RightBBa");
                 
-                //If the node is not an existing part, i.e. does not have a UUID and is not the goal part
-                if (current.getUUID() == null) {
-                    current.setVector(theVector);
-                } else if (current.getComposition() == graph.getRootNode().getComposition()) {
+                //If the node is a step, it gets the biobricks vector
+                if (current.getStage() > 0) {
                     current.setVector(theVector);
                 }               
                 seenNodes.add(current);

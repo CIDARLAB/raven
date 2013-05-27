@@ -33,7 +33,6 @@ public class SRSSLIC extends SRSGeneral {
 
             //Initialize part hash and vector set
             HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended);
-            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectors);
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
@@ -47,7 +46,7 @@ public class SRSSLIC extends SRSGeneral {
             
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, false);
-            optimalGraphs = assignVectors(optimalGraphs, vectorSet);
+            assignOverhangs(optimalGraphs);
             
             return optimalGraphs;
         } catch (Exception E) {
@@ -57,56 +56,52 @@ public class SRSSLIC extends SRSGeneral {
         }
     }
     
-    /** Optimize overhang assignments based on available parts and vectors with overhangs **/
-    private ArrayList<SRSGraph> assignVectors (ArrayList<SRSGraph> optimalGraphs, ArrayList<SRSVector> vectorSet) {
+    /** Assign overhangs for scarless assembly **/
+    private void assignOverhangs(ArrayList<SRSGraph> asmGraphs) {
         
-        //If the vector set is of size one, use that vector everywhere applicable 
-        SRSVector theVector = new SRSVector();
-        if (vectorSet.size() == 1) {
-            for (SRSVector vector : vectorSet) {
-                theVector = vector;
-            }
+        for (int i = 0; i < asmGraphs.size(); i++) {
+            
+            SRSGraph graph = asmGraphs.get(i);
+            SRSNode root = graph.getRootNode();
+            ArrayList<SRSNode> neighbors = root.getNeighbors();
+            assignOverhangsHelper(root, neighbors);
         }
         
-        //For all graphs traverse nodes to count the number of reactions and assign a vector to the goal part        
-        for (int i = 0; i < optimalGraphs.size(); i++) {
-            
-            //Only the goal part gets a vector
-            SRSGraph optimalGraph = optimalGraphs.get(i);
-            SRSNode root = optimalGraph.getRootNode();
-            root.setVector(theVector);
-            
-            //Record left and right neighbors for each node... this will determine how many PCRs need to be performed
-            HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
-            ArrayList<String> rootComp = root.getComposition();
-            String prev = new String();
-            String next = new String();
-            for (int j = 0; j < rootComp.size(); j++) {
-                String current = rootComp.get(j);
-                if (j == 0) {
-                    next = rootComp.get(j+1);
-                } else if (j == rootComp.size()-1) {
-                    prev = rootComp.get(j-1);
-                } else {
-                    next = rootComp.get(j+1);
-                    prev = rootComp.get(j-1);
-                }
-                ArrayList<String> seq = new ArrayList<String>();
-                seq.add(prev);
-                seq.add(current);
-                seq.add(next);
-                neighborHash.add(seq);
-            }
-            
-            int reactions = neighborHash.size();
-            
-//            System.out.println("For graph number: " + i + " there will be " + reactions);
-            
-            optimalGraph.setReactions(reactions);
+    }
+    
+    /** Overhang assignment helper **/
+    private void assignOverhangsHelper(SRSNode parent, ArrayList<SRSNode> neighbors) {
+
+        ArrayList<SRSNode> children = new ArrayList<SRSNode>();
+        
+        //Get children
+        for (int i = 0; i < neighbors.size(); i++) {
+            SRSNode current = neighbors.get(i);
+            if (current.getStage() < parent.getStage()) {
+                children.add(current);
+            }            
         }
         
-        return optimalGraphs;
-    }  
+        //For each of the children, assign overhangs based on neighbors
+        for (int j = 0; j < children.size(); j++) {
+            SRSNode current = children.get(j);
+            
+            if (j == 0) {
+                ArrayList<String> nextComp = children.get(j+1).getComposition();
+                current.setROverhang(nextComp.get(0));
+            } else if (j == children.size() - 1) {
+                ArrayList<String> prevComp = children.get(j-1).getComposition();
+                current.setLOverhang(prevComp.get(prevComp.size()-1));
+            } else {
+                ArrayList<String> nextComp = children.get(j + 1).getComposition();
+                ArrayList<String> prevComp = children.get(j - 1).getComposition();
+                current.setLOverhang(prevComp.get(prevComp.size() - 1));
+                current.setROverhang(nextComp.get(0));
+            }
+            
+            assignOverhangsHelper(current, children);
+        }
+    }
     
     public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         return true;

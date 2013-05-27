@@ -509,18 +509,46 @@ public class RavenController {
         boolean valid = validateGraphComposition();
         valid = valid && overhangValid;
         SRSGraph firstSoln = new SRSGraph();
+        
+        int steps = 0;
+        int stages = 0;
+        int recCnt = 0;
+        int disCnt = 0;
+        int shr = 0;
+        int rxn = 0;
+        ArrayList<Double> effArray = new ArrayList<Double>();
+        double eff = 0;
+        
         if (!_assemblyGraphs.isEmpty()) {
-            firstSoln = _assemblyGraphs.get(0);
+            
+            for (SRSGraph graph : _assemblyGraphs) {              
+                if (graph.getStages() > stages) {
+                    stages = graph.getStages();
+                }
+                steps = steps + graph.getSteps();
+                recCnt = recCnt + graph.getReccomendedCount();
+                disCnt = disCnt + graph.getDiscouragedCount();
+                shr = shr + graph.getSharing();
+                rxn = rxn + graph.getReaction();
+                effArray.addAll(graph.getEfficiencyArray());
+            }
+            double sum = 0;
+            
+            for (Double anEff : effArray) {
+                sum = sum + anEff;
+            }
+            eff = sum/effArray.size();
         }
 
-        _statistics.setEfficiency(firstSoln.getAveEfficiency());
-        _statistics.setRecommended(firstSoln.getReccomendedCount());
-        _statistics.setStages(firstSoln.getStages());
-        _statistics.setSteps(firstSoln.getSteps());
-        _statistics.setSharing(firstSoln.getSharing());
-        _statistics.setGoalParts(_assemblyGraphs.size());
+        _statistics.setEfficiency(eff);
+        _statistics.setRecommended(recCnt);
+        _statistics.setDiscouraged(disCnt);
+        _statistics.setStages(stages);
+        _statistics.setSteps(steps);
+        _statistics.setSharing(shr);
+        _statistics.setGoalParts(_goalParts.keySet().size());
         _statistics.setExecutionTime(Statistics.getTime());
-        _statistics.setReaction(firstSoln.getReaction());
+        _statistics.setReaction(rxn);
         _statistics.setValid(valid);
     }
 
