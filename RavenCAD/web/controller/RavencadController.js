@@ -124,8 +124,57 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
                         '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
                         '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
-                        '<li><button class="btn" id="discardButton' + designCount + '" val="' + designCount + '">Discard Design</button></li>' +
+                        '<li><a href="#discardDialog' + designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + designCount + '" name="' + designCount + '">Discard Design</a></li>' +
                         '</ul>');
+                //append modal dialog
+                $('#resultTabs' + designCount).append('<div id="discardDialog' + designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + designCount + '" aria-hidden="true">'
+                        + '<div class="modal-header">'
+                        + '<h4 id="discardDialogLabel' + designCount + '">Save Parts?</h4></div>'
+                        + '<div class="modal-body">There are parts in this design that have not been saved. Do you want to save them?</div>'
+                        + '<div class="modal-footer">'
+                        + '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" id="modalDiscardButton' + designCount + '" val="' + designCount + '">Discard Parts</button>'
+                        + '<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" id="modalSaveButton' + designCount + '" val="' + designCount + '">Save</button>'
+                        + '<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>'
+                        + "</div></div>"
+                        );
+                //event handler for discard modal dialog
+                $('#discardButton' + designCount).click(function() {
+                    var designNumber = $(this).attr("name");
+                    if ($(this).attr("val") === "notSaved") {
+                        $('#discardDialog' + designNumber).modal();
+                    } else {
+                        $('#designTabHeader' + designNumber).remove();
+                        $('#designTab' + designNumber).remove();
+                        $('#designTabHeader a:first').tab('show');
+                        refreshData();
+                    }
+                });
+                $('#modalSaveButton' + designCount).click(function() {
+                    var designNumber = $(this).attr("val");
+                    $.get('RavenServlet', {"command": "load", "designCount": designNumber}, function(result) {
+                        if (result === "loaded data") {
+                            $('#discardButton' + designNumber).attr("val", "saved");
+                            $('#saveButton' + designNumber).prop('disabled', true);
+                            $('#saveButton' + designNumber).text("Successful Save");
+                            refreshData();
+                        } else {
+                            alert("Failed to save parts");
+                            $('#saveButton' + designNumber).text("Report Error");
+                            $('#saveButton' + designNumber).removeClass('btn-success');
+                            $('#saveButton' + designNumber).addClass('btn-danger');
+                            $('#saveButton' + designNumber).click(function() {
+                                alert('this feature will be coming soon');
+                            });
+                        }
+                    });
+                });
+                $('#modalDiscardButton' + designCount).click(function() {
+                    var designNumber = $(this).attr("val");
+                    $('#designTabHeader' + designNumber).remove();
+                    $('#designTab' + designNumber).remove();
+                    $('#designTabHeader a:first').tab('show');
+                    refreshData();
+                });
                 //add tab content
                 $('#resultTabs' + designCount).append(
                         '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
@@ -207,10 +256,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
                         $('#saveButton' + designCount).click(function() {
                             var designNumber = $(this).attr("val");
-                            $.get('RavenServlet', {"command": "load", "designCount": designCount}, function(result) {
+                            $.get('RavenServlet', {"command": "load", "designCount": designNumber}, function(result) {
                                 if (result === "loaded data") {
+                                    $('#discardButton' + designCount).attr("val", "saved");
                                     $('#saveButton' + designNumber).prop('disabled', true);
                                     $('#saveButton' + designNumber).text("Successful Save");
+                                    refreshData();
                                 } else {
                                     alert("Failed to save parts");
                                     $('#saveButton' + designNumber).text("Report Error");
@@ -218,7 +269,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                                     $('#saveButton' + designNumber).addClass('btn-danger');
                                     $('#saveButton' + designNumber).click(function() {
                                         alert('this feature will be coming soon');
-                                    })
+                                    });
                                 }
                             });
                         });
@@ -257,13 +308,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             } else {
                                 toDeletePart.push(this["uuid"]);
                             }
-                        });
-                        $('#discardButton' + designCount).click(function() {
-                            var designNumber = $(this).attr("val");
-                            $('#designTabHeader' + designNumber).remove();
-                            $('#designTab' + designNumber).remove();
-                            $('#designTabHeader a:first').tab('show');
-                            refreshData();
                         });
                         partsListTableBody = partsListTableBody + '</tbody></table>';
                         $('#partsListArea' + designCount).html(partsListTableBody);
