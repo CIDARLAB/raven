@@ -249,6 +249,9 @@ public class SRSGraph {
 
             String aPartLOnameRO = leftOverhang + comp + rightOverhang;
             startPartsLOcompRO.add(aPartLOnameRO);
+            
+            System.out.println("aPartLOnameRO: " + aPartLOnameRO);
+            
         }
 
         //Go through vectors library, put all compositions into hash of things that already exist
@@ -259,6 +262,9 @@ public class SRSGraph {
 
             String aVecLOlevelRO = leftoverhang + stage + rightOverhang;
             startVectorsLOlevelRO.add(aVecLOlevelRO);
+            
+            System.out.println("aVecLOlevelRO: " + aVecLOlevelRO);
+            
         }
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
@@ -345,12 +351,16 @@ public class SRSGraph {
                 if (current.getStage() == 0) {
                     if (partsLOcompRO.add(aPartLOcompRO) != false) {
                         PCRs++;
+                        System.out.println("aPartLOcompRO: " + aPartLOcompRO);
+                        System.out.println("PCRS: " + PCRs);
                     }
                 } 
                 
                 //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
                 if (vectorsLOlevelRO.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
                     PCRs++;
+                    System.out.println("aVecLOlevelRO: " + aVecLOlevelRO);
+                    System.out.println("PCRS: " + PCRs);
                 }
                 
                 //If the node is grater than stage 0, it is a step and add to efficiency list
