@@ -182,6 +182,21 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 });
                 $('#modalDiscardButton' + designCount).click(function() {
                     var designNumber = $(this).attr("val");
+                    if ($('#discardButton' + designNumber).attr("val") === "notSaved") {
+                        var toDeleteVectors = [];
+                        var toDeleteParts = [];
+                        $('#partsListTable' + designNumber + ' tr').each(function() {
+                            var toSplit = $(this).attr("val");
+                            if (typeof toSplit !== "undefined") {
+                                var tokens = $(this).attr("val").split("|");
+                                if (tokens[0].toLowerCase() === "vector" && tokens[0].toLowerCase() !== "undefined") {
+                                    toDeleteVectors.push(tokens[1]);
+                                } else {
+                                    toDeleteParts.push(tokens[1]);
+                                }
+                            }
+                        });
+                    }
                     $('#designTabHeader' + designNumber).remove();
                     $('#designTab' + designNumber).remove();
                     $('#designTabHeader a:first').tab('show');
@@ -303,10 +318,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
                         //render parts list
                         var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + designCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
-                        var toDeletePart = [];
-                        var toDeleteVector = [];
                         $.each(data["partsList"], function() {
-                            partsListTableBody = partsListTableBody + "<tr><td>"
+                            partsListTableBody = partsListTableBody + '<tr val="' + this["Type"] + '|' + this["uuid"] + '"><td>'
                                     + this["uuid"] + "</td><td>"
                                     + this["Name"] + "</td><td>"
                                     + this["LO"] + "</td><td>"
@@ -315,11 +328,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                                     + this["Composition"] + "</td><td>"
                                     + this["Resistance"] + "</td><td>"
                                     + this["Level"] + "</td></tr>";
-                            if (this["Type"].toLowerCase() === "vector") {
-                                toDeleteVector.push(this["uuid"]);
-                            } else {
-                                toDeletePart.push(this["uuid"]);
-                            }
                         });
                         partsListTableBody = partsListTableBody + '</tbody></table>';
                         $('#partsListArea' + designCount).html(partsListTableBody);

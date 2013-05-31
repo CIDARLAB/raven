@@ -44,12 +44,12 @@ public class RavenServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
         String user = getUser(request);
-        RavenController controller = _collectorHash.get(user);
+        RavenController controller = _controllerHash.get(user);
         try {
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
-                _collectorHash.put(user, new RavenController(path, user));
-                controller = _collectorHash.get(user);
+                _controllerHash.put(user, new RavenController(path, user));
+                controller = _controllerHash.get(user);
             }
             if (command.equals("dataStatus")) {
                 response.setContentType("text/html;charset=UTF-8");
@@ -66,7 +66,7 @@ public class RavenServlet extends HttpServlet {
                 response.setContentType("text/html;charset=UTF-8");
                 RavenLogger.logSessionOut(user, request.getRemoteAddr(), String.valueOf(controller._designCount));
                 String responseString = "logged out";
-                _collectorHash.remove(user);
+                _controllerHash.remove(user);
                 controller.clearData();
                 out.write(responseString);
             } else if (command.equals("fetch")) {
@@ -79,6 +79,15 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "purged";
                 controller.clearData();
                 out.write(responseString);
+            } else if (command.equals("delete")) {
+                String[] partIDs = request.getParameter("parts").split(",");
+                String[] vectorIDs = request.getParameter("vectors").split(",");
+                for (int i = 0; i < partIDs.length; i++) {
+                    controller._collector.removePart(partIDs[i]);
+                }
+                for (int i = 0; i < vectorIDs.length; i++) {
+                    controller._collector.removeVector(partIDs[i]);
+                }
             } else if (command.equals("run")) {
                 response.setContentType("application/json");
                 //run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden)
@@ -165,11 +174,11 @@ public class RavenServlet extends HttpServlet {
         response.setContentType("text/plain");
         response.sendRedirect("import.html");
         String user = getUser(request);
-        RavenController controller = _collectorHash.get(user);
+        RavenController controller = _controllerHash.get(user);
         if (controller == null) {
             String path = this.getServletContext().getRealPath("/") + "/data/";
-            _collectorHash.put(user, new RavenController(path, user));
-            controller = _collectorHash.get(user);
+            _controllerHash.put(user, new RavenController(path, user));
+            controller = _controllerHash.get(user);
         }
         try {
             List<FileItem> items = uploadHandler.parseRequest(request);
@@ -265,5 +274,5 @@ public class RavenServlet extends HttpServlet {
         }
         return user;
     }
-    private HashMap<String, RavenController> _collectorHash = new HashMap(); //key:user, value: collector assocaited with that user
+    private HashMap<String, RavenController> _controllerHash = new HashMap(); //key:user, value: collector assocaited with that user
 }
