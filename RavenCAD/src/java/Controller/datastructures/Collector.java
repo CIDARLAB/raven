@@ -118,7 +118,7 @@ public class Collector {
             }
         }
         if (toReturn != null) {
-            if (!toReturn.isTransient() ||allowTransient) {
+            if (!toReturn.isTransient() || allowTransient) {
                 return toReturn;
             }
         }
@@ -126,7 +126,7 @@ public class Collector {
     }
 
     public Boolean addPart(Part aPart) {
-        Part sameNamePart = this.getPartByName(aPart.getName(),true);
+        Part sameNamePart = this.getPartByName(aPart.getName(), true);
         if (sameNamePart != null) {
             if (sameNamePart.getLeftOverhang().equals(aPart.getLeftOverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
 //                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
@@ -176,7 +176,7 @@ public class Collector {
     }
 
     public Boolean addVector(Vector aVector) {
-        Vector sameNameVector = this.getVectorByName(aVector.getName(),true);
+        Vector sameNameVector = this.getVectorByName(aVector.getName(), true);
         if (sameNameVector != null) {
             if (sameNameVector.getLeftoverhang().equals(aVector.getLeftoverhang()) && sameNameVector.getRightOverhang().equals(aVector.getRightOverhang())) {
 //                int selValue = JOptionPane.showConfirmDialog(null, "Vector: " + aVector.getName() + " is already imported!\n Do you want to overrwrite it?");

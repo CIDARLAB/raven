@@ -103,7 +103,6 @@ public class RavenServlet extends HttpServlet {
                 HashSet<String> recommended = new HashSet();
                 HashSet<String> forbidden = new HashSet();
                 HashSet<String> discouraged = new HashSet();
-
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {

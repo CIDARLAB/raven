@@ -475,6 +475,7 @@ public class RavenController {
             throw new Exception(badLineMessage);
 
         }
+
     }
 
     //returns "loaded" or "not loaded" depending on whether there are objects in the collector
@@ -508,8 +509,7 @@ public class RavenController {
         }
         boolean valid = validateGraphComposition();
         valid = valid && overhangValid;
-        SRSGraph firstSoln = new SRSGraph();
-        
+
         int steps = 0;
         int stages = 0;
         int recCnt = 0;
@@ -518,10 +518,10 @@ public class RavenController {
         int rxn = 0;
         ArrayList<Double> effArray = new ArrayList<Double>();
         double eff = 0;
-        
+
         if (!_assemblyGraphs.isEmpty()) {
-            
-            for (SRSGraph graph : _assemblyGraphs) {              
+
+            for (SRSGraph graph : _assemblyGraphs) {
                 if (graph.getStages() > stages) {
                     stages = graph.getStages();
                 }
@@ -533,11 +533,11 @@ public class RavenController {
                 effArray.addAll(graph.getEfficiencyArray());
             }
             double sum = 0;
-            
+
             for (Double anEff : effArray) {
                 sum = sum + anEff;
             }
-            eff = sum/effArray.size();
+            eff = sum / effArray.size();
         }
 
         _statistics.setEfficiency(eff);
@@ -552,7 +552,7 @@ public class RavenController {
         _statistics.setValid(valid);
     }
 
-    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] vectorLibraryIDs, String[] partLibraryIDs) throws Exception {
+    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs) throws Exception {
         _designCount++;
         _goalParts = new HashMap();
         _required = required;
@@ -564,7 +564,6 @@ public class RavenController {
         _partLibrary = new ArrayList();
         _assemblyGraphs = new ArrayList<SRSGraph>();
         method = method.toLowerCase().trim();
-
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
                 Part current = _collector.getPart(partLibraryIDs[i], false);
