@@ -57,6 +57,7 @@ public class ClothoReader {
 
                 //If there's overhangs, add search tags
                 Part newPart = generateNewClothoPart(coll, partName, "", currentNode.getComposition(), LO, RO);
+                newPart.addSearchTag("Type: composite");
                 currentNode.setName(partName);
                 newPart.saveDefault(coll);
                 currentNode.setUUID(newPart.getUUID());
@@ -79,18 +80,23 @@ public class ClothoReader {
                 Part betterPart = null;
                 if (currentPart != null) {
                     betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang(), true); //search for a better match
-                }
-                if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
-                    //if no better part exists, create a new one
-                    if (currentPart.isBasic()) {
-                        betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
+                    if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
+                        //if no better part exists, create a new one
+                        if (currentPart.isBasic()) {
+                            betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
 
-                    } else if (currentPart.isComposite()) {
-                        betterPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
+                        } else if (currentPart.isComposite()) {
+                            betterPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
+                        }
                     }
                     betterPart.addSearchTag("LO: " + currentNode.getLOverhang());
                     betterPart.addSearchTag("RO: " + currentNode.getROverhang());
-                    betterPart.addSearchTag("Type: " + currentPart.getType());
+                    String type = currentNode.getType().toString();
+                    type = type.substring(1, type.length() - 1);
+                    if(currentNode.getComposition().size()>1) {
+                        type = "composite";
+                    }
+                    betterPart.addSearchTag("Type: " + type);
                     betterPart.saveDefault(coll);
                 }
                 currentNode.setUUID(betterPart.getUUID());
