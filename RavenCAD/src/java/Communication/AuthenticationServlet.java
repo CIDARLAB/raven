@@ -40,16 +40,16 @@ public class AuthenticationServlet extends HttpServlet {
                 RavenLogger.logSessionIn(user, request.getRemoteAddr());
                 Cookie authenticateCookie = new Cookie("authenticate", "authenticated");
                 Cookie userCookie = new Cookie("user", user);
-                authenticateCookie.setMaxAge(60 * 24); //cookie lasts for an hour
+                authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
                 response.addCookie(authenticateCookie);
                 response.addCookie(userCookie);
                 response.sendRedirect("index.html");
                 out.println("authenticated");
             } else {
-                response.sendRedirect("login.html");
                 Cookie authenticateCookie = new Cookie("authenticate", "failed");
                 authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
                 response.addCookie(authenticateCookie);
+                response.sendRedirect("login.html");
                 out.println("failed");
             }
         } finally {

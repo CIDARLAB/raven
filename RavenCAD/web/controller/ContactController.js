@@ -5,7 +5,7 @@ $(document).ready(function() {
         e.preventDefault();
         if ($('#loginForm input[name="user"]').val() === "") {
             $('#loginModal').modal();
-        } else if ($('#loginForm input[name="password"]') === "") {
+        } else if ($('#loginForm input[name="password"]').val() === "") {
             $('#loginModal').modal();
         } else {
             self.submit(function() {
@@ -49,7 +49,6 @@ $(document).ready(function() {
     }
 
     if (getCookie("authenticate") !== "authenticated") {
-        deleteCookie("authenticate");
         deleteCookie("user");
     }
 

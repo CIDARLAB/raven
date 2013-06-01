@@ -153,8 +153,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $('#discardButton' + designCount).click(function() {
                     var designNumber = $(this).attr("name");
                     if ($(this).attr("val") === "notSaved") {
-                        $('#discardDialog' + designNumber).modal();
+                        $('#discardDialog' + designNumber).modal('show');
                     } else {
+                        $('#discardDialog' + designNumber).modal('hide');
                         $('#designTabHeader' + designNumber).remove();
                         $('#designTab' + designNumber).remove();
                         $('#designTabHeader a:first').tab('show');
@@ -197,6 +198,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             }
                         });
                     }
+                    $('#discardDialog' + designNumber).modal('hide');
                     $('#designTabHeader' + designNumber).remove();
                     $('#designTab' + designNumber).remove();
                     $('#designTabHeader a:first').tab('show');
@@ -594,7 +596,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
     }
 
     if (getCookie("authenticate") !== "authenticated") {
-        deleteCookie("authenticate");
         deleteCookie("user");
     }
 

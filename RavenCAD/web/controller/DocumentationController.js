@@ -33,7 +33,6 @@ $(document).ready(function() {
     }
 
     if (getCookie("authenticate") !== "authenticated") {
-        deleteCookie("authenticate");
         deleteCookie("user");
     }
 
@@ -49,5 +48,19 @@ $(document).ready(function() {
     } else {
         window.location.replace("login.html");
     }
-
+    $('#loginForm').submit(function(e) {
+        var self = this;
+        e.preventDefault();
+        if ($('#loginForm input[name="user"]').val() === "") {
+            $('#loginModal').modal();
+        } else if ($('#loginForm input[name="password"]').val() === "") {
+            $('#loginModal').modal();
+        } else {
+            self.submit(function() {
+                if (getCookie("authenticate") === "authenticated") {
+                    $.get("RavenServlet", {"command": "purge"});
+                }
+            });
+        }
+    });
 });

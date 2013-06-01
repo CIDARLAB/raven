@@ -18,7 +18,7 @@
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
                 <div id="loginArea"><form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
-                        <input name="user" type="text" class="span2" placeholder="Login">
+                        <input name="user" type="text" class="span2" placeholder="User Name">
                         <input name="password" type="password" class="span2" placeholder="Password">
                         <input type="submit" value="Login" class="btn"/>
                     </form>
@@ -28,17 +28,7 @@
         <div class="page-header" style="margin-top:50px">
             <h1>RavenCAD <small>Log in and get started today.</small></h1>
         </div>
-        <div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loginLabel" aria-hidden="true">
-            <div class="modal-header">
-                <h4 id="loginLabel">Sign in</h4>
-            </div>
-            <div class="modal-body">
-                <p>Please enter your user name and password to sign in.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
-            </div>
-        </div>
+
         <div class="container">
             <div class="row-fluid">
                 <div class="span2">
@@ -104,6 +94,33 @@
                 </div>
             </div>
         </div>
+
+        <!--modal dialogs-->
+        <div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loginLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="loginLabel">Sign in</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please enter your user name and password to sign in.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
+            </div>
+        </div>
+
+        <div id="failModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="failLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="failLabel">User name or password incorrect</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-error">
+                    <p>Please try entering your user name and password again. For assistance recovering your account, contact the RavenCAD support at <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
+            </div>
+        </div>
         <!--scripts placed at the end to enhance page loading speed--> 
         <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
         <script src="jsLibraries/bootstrap.min.js"></script>
@@ -127,12 +144,24 @@
                 }
                 return c_value;
             }
+
+            function deleteCookie(key) {
+                // Delete a cookie by setting the date of expiry to yesterday
+                date = new Date();
+                date.setDate(date.getDate() - 1);
+                document.cookie = escape(key) + '=;expires=' + date;
+            }
+
+            if (getCookie("authenticate") === "failed") {
+                $('#failModal').modal();
+                deleteCookie("authenticate");
+            }
             $('#loginForm').submit(function(e) {
                 var self = this;
                 e.preventDefault();
                 if ($('#loginForm input[name="user"]').val() === "") {
                     $('#loginModal').modal();
-                } else if ($('#loginForm input[name="password"]') === "") {
+                } else if ($('#loginForm input[name="password"]').val() === "") {
                     $('#loginModal').modal();
                 } else {
                     self.submit(function() {
@@ -144,10 +173,10 @@
             });
             $('#loginFormMain').submit(function(e) {
                 var self = this;
-                $('#loginModal').modal();
+                e.preventDefault();
                 if ($('#loginFormMain input[name="user"]').val() === "") {
                     $('#loginModal').modal();
-                } else if ($('#loginFormMain input[name="password"]') === "") {
+                } else if ($('#loginFormMain input[name="password"]').val() === "") {
                     $('#loginModal').modal();
                 } else {
                     self.submit(function() {

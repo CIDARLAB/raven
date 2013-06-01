@@ -173,7 +173,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         if (loaded) {
             window.location = "ravencad.html";
         } else {
-            alert("You probably want to upload some data first");
+            $('#uploadModal').modal();
         }
     });
     $('#allTableArea').mouseenter(function() {
@@ -238,7 +238,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
     }
 
     if (getCookie("authenticate") !== "authenticated") {
-        deleteCookie("authenticate");
         deleteCookie("user");
     }
 
