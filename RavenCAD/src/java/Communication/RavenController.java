@@ -5,28 +5,17 @@
 package Communication;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.modasm.SRSGoldenGate;
-import Controller.algorithms.modasm.SRSMoClo;
-import Controller.algorithms.nonmodasm.SRSBioBricks;
-import Controller.algorithms.nonmodasm.SRSCPEC;
-import Controller.algorithms.nonmodasm.SRSGibson;
-import Controller.algorithms.nonmodasm.SRSSLIC;
-import Controller.datastructures.Collector;
-import Controller.datastructures.Part;
-import Controller.datastructures.SRSGraph;
-import Controller.datastructures.SRSNode;
-import Controller.datastructures.Vector;
+import Controller.algorithms.modasm.*;
+import Controller.algorithms.nonmodasm.*;
+import Controller.datastructures.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  *
@@ -258,13 +247,15 @@ public class RavenController {
         return toReturn;
     }
 
-    public String generateInstructionsFile(String designNumber) throws Exception {
-        File file = new File(_path + _user + "/instructions" + designNumber + ".txt");
+    public void generateInstructionsFile() throws Exception {
+        if (_instructions == null) {
+            _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
+        }
+        File file = new File(_path + _user + "/instructions" + _designCount + ".txt");
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
         out.write(_instructions);
         out.close();
-        return _instructions;
     }
 
     public void clearData() throws Exception {
@@ -591,25 +582,32 @@ public class RavenController {
         boolean scarless = false;
         if (method.equals("biobrick")) {
             _assemblyGraphs = runBioBricks();
+            _instructions = SRSBioBricks.generateInstructions(_assemblyGraphs);
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
             scarless = true;
+            _instructions = SRSCPEC.generateInstructions(_assemblyGraphs);
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
             scarless = true;
+            _instructions = SRSGibson.generateInstructions(_assemblyGraphs);
         } else if (method.equals("golden gate")) {
             _assemblyGraphs = runGoldenGate();
             scarless = true;
+            _instructions = SRSGoldenGate.generateInstructions(_assemblyGraphs);
         } else if (method.equals("moclo")) {
             _assemblyGraphs = runMoClo();
+            _instructions = SRSMoClo.generateInstructions(_assemblyGraphs);
         } else if (method.equals("slic")) {
             _assemblyGraphs = runSLIC();
             scarless = true;
+            _instructions = SRSSLIC.generateInstructions(_assemblyGraphs);
         }
 
         Statistics.stop();
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
+        generateInstructionsFile();
         _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
         SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
         solutionStats(method);
@@ -624,6 +622,21 @@ public class RavenController {
             }
         }
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
+
+        //generate instructions
+        if (method.equals("biobrick")) {
+            _instructions = SRSBioBricks.generateInstructions(_assemblyGraphs);
+        } else if (method.equals("cpec")) {
+            _instructions = SRSCPEC.generateInstructions(_assemblyGraphs);
+        } else if (method.equals("gibson")) {
+            _instructions = SRSGibson.generateInstructions(_assemblyGraphs);
+        } else if (method.equals("golden gate")) {
+            _instructions = SRSGoldenGate.generateInstructions(_assemblyGraphs);
+        } else if (method.equals("moclo")) {
+            _instructions = SRSMoClo.generateInstructions(_assemblyGraphs);
+        } else if (method.equals("slic")) {
+            _instructions = SRSSLIC.generateInstructions(_assemblyGraphs);
+        }
 
         //save graph text file
         File file = new File(_path + _user + "/pigeon" + designCount + ".txt");
@@ -675,6 +688,10 @@ public class RavenController {
             return false;
         }
 
+    }
+
+    public String getInstructions() {
+        return _instructions;
     }
 
     public String generateStats() throws Exception {

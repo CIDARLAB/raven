@@ -774,8 +774,8 @@ public class SRSMoClo extends SRSGeneral {
                     //each overhang should appear only once in the set of all left overhangs and once in the set of all right overhangs
                     HashMap<String, Integer> leftFrequencyHash = new HashMap();
                     HashMap<String, Integer> rightFrequencyHash = new HashMap();
-                    int i=0; //counter for number of children encountered
-                        for (SRSNode child:parent.getNeighbors()) {
+                    int i = 0; //counter for number of children encountered
+                    for (SRSNode child : parent.getNeighbors()) {
                         //only visit children, aka neighbors with a lower stage
                         if (!seenNodes.contains(child) && parent.getStage() > child.getStage()) {
                             //count the left and right overhangs
@@ -827,6 +827,31 @@ public class SRSMoClo extends SRSGeneral {
             }
         }
         return toReturn;
+    }
+
+    public static String generateInstructions(ArrayList<SRSGraph> graphs) {
+        HashSet<String> seenCompositions = new HashSet(); //stores composition|LO|RO combinations that have been encountered
+        for (SRSGraph graph : graphs) {
+            ArrayList<SRSNode> queue = new ArrayList();
+            queue.add(graph.getRootNode());
+            while (!queue.isEmpty()) {
+                SRSNode currentNode = queue.get(0);
+                queue.remove(0);
+
+                String compositionOH = currentNode.getComposition() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang();
+                if (!seenCompositions.contains(compositionOH)) {
+                    //only need to generate instructions for assembling a part that has not already been encountered
+                    seenCompositions.add(compositionOH);
+                    for (SRSNode neighbor : currentNode.getNeighbors()) {
+                        
+                    }
+                }
+
+
+            }
+
+        }
+        return null;
     }
     private HashMap<String, ArrayList<String>> abstractOverhangCompositionHash; //key: overhangs delimited by "|", value: compositions with overhangs indicated by keys
     private HashMap<String, Integer> partOverhangFrequencyHash; //key: part composition concatenated with abstract overhang with "_" delimited with "|", value: number of occurences of part with given overhangs

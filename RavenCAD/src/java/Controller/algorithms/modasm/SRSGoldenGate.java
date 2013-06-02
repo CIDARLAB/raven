@@ -70,4 +70,8 @@ public class SRSGoldenGate extends SRSGeneral {
     public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         return true;
     }
+    
+    public static String generateInstructions(ArrayList<SRSGraph> graphs) {
+        return null;
+    }
 }

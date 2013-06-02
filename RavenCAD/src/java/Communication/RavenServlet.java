@@ -134,7 +134,7 @@ public class RavenServlet extends HttpServlet {
                 String designCount = request.getParameter("designCount");
                 String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs);
                 String partsList = controller.generatePartsList(designCount);
-                String instructions = controller.generateInstructionsFile(designCount);
+                String instructions = controller.getInstructions();
                 String statString = controller.generateStats();
                 instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
                 if (instructions.length() < 1) {

@@ -102,4 +102,7 @@ public class SRSBioBricks extends SRSGeneral {
         return true;
     }
     
+    public static String generateInstructions(ArrayList<SRSGraph> graphs) {
+        return null;
+    }
 }
