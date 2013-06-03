@@ -582,36 +582,34 @@ public class RavenController {
         boolean scarless = false;
         if (method.equals("biobrick")) {
             _assemblyGraphs = runBioBricks();
-            _instructions = SRSBioBricks.generateInstructions(_assemblyGraphs);
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
             scarless = true;
-            _instructions = SRSCPEC.generateInstructions(_assemblyGraphs);
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
             scarless = true;
-            _instructions = SRSGibson.generateInstructions(_assemblyGraphs);
         } else if (method.equals("golden gate")) {
             _assemblyGraphs = runGoldenGate();
             scarless = true;
-            _instructions = SRSGoldenGate.generateInstructions(_assemblyGraphs);
         } else if (method.equals("moclo")) {
             _assemblyGraphs = runMoClo();
-            _instructions = SRSMoClo.generateInstructions(_assemblyGraphs);
         } else if (method.equals("slic")) {
             _assemblyGraphs = runSLIC();
             scarless = true;
-            _instructions = SRSSLIC.generateInstructions(_assemblyGraphs);
         }
 
         Statistics.stop();
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
-        generateInstructionsFile();
+        ArrayList<SRSNode> targetRootNodes = new ArrayList();
+        if (!_assemblyGraphs.isEmpty()) {
+            for (SRSGraph result : _assemblyGraphs) {
+                targetRootNodes.add(result.getRootNode());
+            }
+        }
         _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
         SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
         solutionStats(method);
-
         if (!_assemblyGraphs.isEmpty()) {
             for (SRSGraph result : _assemblyGraphs) {
                 reader.nodesToClothoPartsVectors(_collector, result);
@@ -625,18 +623,20 @@ public class RavenController {
 
         //generate instructions
         if (method.equals("biobrick")) {
-            _instructions = SRSBioBricks.generateInstructions(_assemblyGraphs);
+            _instructions = SRSBioBricks.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("cpec")) {
-            _instructions = SRSCPEC.generateInstructions(_assemblyGraphs);
+            _instructions = SRSCPEC.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("gibson")) {
-            _instructions = SRSGibson.generateInstructions(_assemblyGraphs);
+            _instructions = SRSGibson.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("golden gate")) {
-            _instructions = SRSGoldenGate.generateInstructions(_assemblyGraphs);
+            _instructions = SRSGoldenGate.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("moclo")) {
-            _instructions = SRSMoClo.generateInstructions(_assemblyGraphs);
+            _instructions = SRSMoClo.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("slic")) {
-            _instructions = SRSSLIC.generateInstructions(_assemblyGraphs);
+            _instructions = SRSSLIC.generateInstructions(targetRootNodes, _collector);
         }
+        //write instructions file
+        generateInstructionsFile();
 
         //save graph text file
         File file = new File(_path + _user + "/pigeon" + designCount + ".txt");

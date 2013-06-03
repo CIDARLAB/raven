@@ -829,29 +829,61 @@ public class SRSMoClo extends SRSGeneral {
         return toReturn;
     }
 
-    public static String generateInstructions(ArrayList<SRSGraph> graphs) {
-        HashSet<String> seenCompositions = new HashSet(); //stores composition|LO|RO combinations that have been encountered
-        for (SRSGraph graph : graphs) {
+    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll) {
+        String oligoNameRoot = "oligo"; //TODO this should be passed in as a parameter
+        int oligoCount = 0;
+        String toReturn = "";
+
+        ArrayList<String> oligoNames = new ArrayList();
+        ArrayList<String> oligoSequences = new ArrayList();
+        HashSet<SRSNode> seenNodes = new HashSet();
+        for (SRSNode root : roots) {
+            toReturn = toReturn + "**********************************************"
+                    + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName();
             ArrayList<SRSNode> queue = new ArrayList();
-            queue.add(graph.getRootNode());
+            queue.add(root);
             while (!queue.isEmpty()) {
                 SRSNode currentNode = queue.get(0);
-                queue.remove(0);
+                queue.remove(0); //queue for traversing graphs (bfs)
 
-                String compositionOH = currentNode.getComposition() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang();
-                if (!seenCompositions.contains(compositionOH)) {
+                if (!seenNodes.contains(currentNode)) {
                     //only need to generate instructions for assembling a part that has not already been encountered
-                    seenCompositions.add(compositionOH);
-                    for (SRSNode neighbor : currentNode.getNeighbors()) {
-                        
+                    seenNodes.add(currentNode);
+                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
+
+                    if (currentPart.getComposition().size() > 1) {
+                        toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
+                        for (SRSNode neighbor : currentNode.getNeighbors()) {
+                            if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
+                                toReturn = toReturn + coll.getPart(neighbor.getUUID(), true).getName() + ", ";
+                                if (!seenNodes.contains(neighbor)) {
+                                    queue.add(neighbor);
+                                }
+                            }
+                        }
+                    } else {
+                        String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
+                        String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
+                        String forwardOligoSequence = "" + currentNode.getLOverhang(); //TODO generate actual oligo sequence
+                        String reverseOligoSequence = "" + currentNode.getROverhang(); //TODO generate actual oligo sequence
+                        toReturn = toReturn + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName;
+                        oligoNames.add(forwardOligoName);
+                        oligoNames.add(reverseOligoName);
+                        oligoSequences.add(forwardOligoSequence);
+                        oligoSequences.add(reverseOligoSequence);
+                        oligoCount++;
                     }
+
                 }
-
-
             }
-
+            toReturn = toReturn + "\n\n";
         }
-        return null;
+        toReturn = toReturn + "\n**********************************************\nOLIGOS";
+        for (int i = 0; i < oligoNames.size(); i++) {
+            toReturn = toReturn + "\n>" + oligoNames.get(i);
+            toReturn = toReturn + "\n" + oligoSequences.get(i);
+        }
+        return toReturn;
     }
     private HashMap<String, ArrayList<String>> abstractOverhangCompositionHash; //key: overhangs delimited by "|", value: compositions with overhangs indicated by keys
     private HashMap<String, Integer> partOverhangFrequencyHash; //key: part composition concatenated with abstract overhang with "_" delimited with "|", value: number of occurences of part with given overhangs

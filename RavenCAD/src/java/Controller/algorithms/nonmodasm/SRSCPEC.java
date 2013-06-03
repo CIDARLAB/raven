@@ -107,7 +107,7 @@ public class SRSCPEC extends SRSGeneral {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<SRSGraph> graphs) {
+    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll) {
         return null;
     }
 }
