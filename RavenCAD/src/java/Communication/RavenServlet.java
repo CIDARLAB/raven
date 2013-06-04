@@ -193,9 +193,9 @@ public class RavenServlet extends HttpServlet {
                         System.out.println("You forgot to choose a file.");
                     }
                     if (fileName.lastIndexOf("\\") >= 0) {
-                        file = new File(uploadFilePath + "\\" + fileName.substring(fileName.lastIndexOf("\\")));
+                        file = new File(uploadFilePath + fileName.substring(fileName.lastIndexOf("\\")));
                     } else {
-                        file = new File(uploadFilePath + "\\" + fileName.substring(fileName.lastIndexOf("\\") + 1));
+                        file = new File(uploadFilePath + fileName.substring(fileName.lastIndexOf("\\") + 1));
                     }
                     item.write(file);
                     toLoad.add(file);
