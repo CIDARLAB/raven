@@ -106,4 +106,8 @@ public class SRSSLIC extends SRSGeneral {
     public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         return true;
     }
+    
+    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll) {
+        return null;
+    }
 }

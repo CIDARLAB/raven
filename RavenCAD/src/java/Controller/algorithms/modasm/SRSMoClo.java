@@ -774,8 +774,8 @@ public class SRSMoClo extends SRSGeneral {
                     //each overhang should appear only once in the set of all left overhangs and once in the set of all right overhangs
                     HashMap<String, Integer> leftFrequencyHash = new HashMap();
                     HashMap<String, Integer> rightFrequencyHash = new HashMap();
-                    int i=0; //counter for number of children encountered
-                        for (SRSNode child:parent.getNeighbors()) {
+                    int i = 0; //counter for number of children encountered
+                    for (SRSNode child : parent.getNeighbors()) {
                         //only visit children, aka neighbors with a lower stage
                         if (!seenNodes.contains(child) && parent.getStage() > child.getStage()) {
                             //count the left and right overhangs
@@ -825,6 +825,63 @@ public class SRSMoClo extends SRSGeneral {
                     }
                 }
             }
+        }
+        return toReturn;
+    }
+
+    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll) {
+        String oligoNameRoot = "oligo"; //TODO this should be passed in as a parameter
+        int oligoCount = 0;
+        String toReturn = "";
+
+        ArrayList<String> oligoNames = new ArrayList();
+        ArrayList<String> oligoSequences = new ArrayList();
+        HashSet<SRSNode> seenNodes = new HashSet();
+        for (SRSNode root : roots) {
+            toReturn = toReturn + "**********************************************"
+                    + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName();
+            ArrayList<SRSNode> queue = new ArrayList();
+            queue.add(root);
+            while (!queue.isEmpty()) {
+                SRSNode currentNode = queue.get(0);
+                queue.remove(0); //queue for traversing graphs (bfs)
+
+                if (!seenNodes.contains(currentNode)) {
+                    //only need to generate instructions for assembling a part that has not already been encountered
+                    seenNodes.add(currentNode);
+                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
+
+                    if (currentPart.getComposition().size() > 1) {
+                        toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
+                        for (SRSNode neighbor : currentNode.getNeighbors()) {
+                            if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
+                                toReturn = toReturn + coll.getPart(neighbor.getUUID(), true).getName() + ", ";
+                                if (!seenNodes.contains(neighbor)) {
+                                    queue.add(neighbor);
+                                }
+                            }
+                        }
+                    } else {
+                        String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
+                        String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
+                        String forwardOligoSequence = "" + currentNode.getLOverhang(); //TODO generate actual oligo sequence
+                        String reverseOligoSequence = "" + currentNode.getROverhang(); //TODO generate actual oligo sequence
+                        toReturn = toReturn + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName;
+                        oligoNames.add(forwardOligoName);
+                        oligoNames.add(reverseOligoName);
+                        oligoSequences.add(forwardOligoSequence);
+                        oligoSequences.add(reverseOligoSequence);
+                        oligoCount++;
+                    }
+
+                }
+            }
+            toReturn = toReturn + "\n\n";
+        }
+        toReturn = toReturn + "\n**********************************************\nOLIGOS";
+        for (int i = 0; i < oligoNames.size(); i++) {
+            toReturn = toReturn + "\n>" + oligoNames.get(i);
+            toReturn = toReturn + "\n" + oligoSequences.get(i);
         }
         return toReturn;
     }
