@@ -4,6 +4,7 @@
  */
 package Controller.algorithms.modasm;
 
+import Controller.algorithms.SRSAlgorithmCore;
 import Controller.algorithms.SRSGeneral;
 import Controller.datastructures.*;
 import java.util.ArrayList;
@@ -829,8 +830,34 @@ public class SRSMoClo extends SRSGeneral {
         return toReturn;
     }
 
-    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll) {
-        String oligoNameRoot = "oligo"; //TODO this should be passed in as a parameter
+    //generates human readable instructions as well as primer sequences
+    //primerParameters contains (in this order): 
+    //[primerNameRoot, forwardPrimerPrefix, reversePrimerPrefix, forwardEnzymeCutSite, reverseEnzymeCutSite, forwardEnzymeCutDistance, reverseEnzymeCutDistance,meltingTemperature)
+    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll, ArrayList<String> primerParameters) {
+        //initialize primer parameters
+        String oligoNameRoot = "";
+        String forwardPrimerPrefix = "";
+        String reversePrimerPrefix = "";
+        String forwardEnzymeCutSite = "";
+        String reverseEnzymeCutSite = "";
+        int forwardEnzymeCutDistance = 0;
+        int reverseEnzymeCutDistance = 0;
+        Double meltingTemp = 0.0;
+        boolean designPrimers = false;
+        if (primerParameters != null) {
+            designPrimers = true;
+            oligoNameRoot = primerParameters.get(0); //your oligos will be named olignoNameRoot+Number+F/R (F/R = forward/reverse)
+            forwardPrimerPrefix = primerParameters.get(1); //prepended to the 5' end of your forward primer; 
+            //your primer sequence will be: forwardPrimerPrefix+forwardEnzymeCutSite+partHomology
+            reversePrimerPrefix = primerParameters.get(2); //prepended to the 5' end of your reverse primer; 
+            //your primer sequence will be: reversePrimerPrefix+reverseEnzymeCutSite+partHomology
+            forwardEnzymeCutSite = primerParameters.get(3); //the restriction enzyme cut site that appears in the forward primer
+            reverseEnzymeCutSite = primerParameters.get(4); //the restriction enzyme cut site that appears in the reverse primer
+            forwardEnzymeCutDistance = Integer.parseInt(primerParameters.get(5)); //distance from which forward enzyme cuts from its recognition site
+            reverseEnzymeCutDistance = Integer.parseInt(primerParameters.get(6)); //distance from which reverse enzyme cuts its recognition site
+            meltingTemp = Double.parseDouble(primerParameters.get(7)); //desired melting temperature of your primers; determines homology length
+        }
+
         int oligoCount = 0;
         String toReturn = "";
 
@@ -838,8 +865,10 @@ public class SRSMoClo extends SRSGeneral {
         ArrayList<String> oligoSequences = new ArrayList();
         HashSet<SRSNode> seenNodes = new HashSet();
         for (SRSNode root : roots) {
+            //append header for each goal part
             toReturn = toReturn + "**********************************************"
-                    + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName();
+                    + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
+                    + "**********************************************";
             ArrayList<SRSNode> queue = new ArrayList();
             queue.add(root);
             while (!queue.isEmpty()) {
@@ -852,6 +881,7 @@ public class SRSMoClo extends SRSGeneral {
                     Part currentPart = coll.getPart(currentNode.getUUID(), true);
 
                     if (currentPart.getComposition().size() > 1) {
+                        //append which parts to use for a moclo reaction
                         toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
                         for (SRSNode neighbor : currentNode.getNeighbors()) {
                             if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
@@ -862,26 +892,34 @@ public class SRSMoClo extends SRSGeneral {
                             }
                         }
                     } else {
-                        String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
-                        String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                        String forwardOligoSequence = "" + currentNode.getLOverhang(); //TODO generate actual oligo sequence
-                        String reverseOligoSequence = "" + currentNode.getROverhang(); //TODO generate actual oligo sequence
-                        toReturn = toReturn + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName;
-                        oligoNames.add(forwardOligoName);
-                        oligoNames.add(reverseOligoName);
-                        oligoSequences.add(forwardOligoSequence);
-                        oligoSequences.add(reverseOligoSequence);
-                        oligoCount++;
+                        //design primers
+                        if (designPrimers) {
+                            String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
+                            String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
+                            String forwardOligoSequence = forwardPrimerPrefix + forwardEnzymeCutSite + SRSAlgorithmCore.generateRandomSequence(forwardEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getLOverhang()) + currentPart.getSeq().substring(0, SRSAlgorithmCore.getPrimerHomologyLength(meltingTemp, currentPart.getSeq()));
+                            String reverseOligoSequence = SRSAlgorithmCore.reverseComplement(reversePrimerPrefix + reverseEnzymeCutSite + SRSAlgorithmCore.generateRandomSequence(reverseEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getROverhang()) + currentPart.getSeq().substring(currentPart.getSeq().length() - SRSAlgorithmCore.getPrimerHomologyLength(meltingTemp, SRSAlgorithmCore.reverseComplement(currentPart.getSeq()))));
+                            oligoNames.add(forwardOligoName);
+                            oligoNames.add(reverseOligoName);
+                            oligoSequences.add(forwardOligoSequence);
+                            oligoSequences.add(reverseOligoSequence);
+                            oligoCount++;
+                            toReturn = toReturn + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName;
+                        } else {
+                            toReturn = toReturn + "\nPCR " + currentPart.getName() + " to prepend overhang " + currentNode.getLOverhang() + " and append overhang " + currentNode.getROverhang();
+                        }
                     }
 
                 }
             }
             toReturn = toReturn + "\n\n";
         }
-        toReturn = toReturn + "\n**********************************************\nOLIGOS";
-        for (int i = 0; i < oligoNames.size(); i++) {
-            toReturn = toReturn + "\n>" + oligoNames.get(i);
-            toReturn = toReturn + "\n" + oligoSequences.get(i);
+        if (designPrimers) {
+            //append primer designs
+            toReturn = toReturn + "\n**********************************************\nOLIGOS";
+            for (int i = 0; i < oligoNames.size(); i++) {
+                toReturn = toReturn + "\n>" + oligoNames.get(i);
+                toReturn = toReturn + "\n" + oligoSequences.get(i);
+            }
         }
         return toReturn;
     }
@@ -894,4 +932,5 @@ public class SRSMoClo extends SRSGeneral {
     private HashMap<SRSNode, ArrayList<SRSNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
     private ArrayList<Part> _partLibrary = new ArrayList();
     private ArrayList<Vector> _vectorLibrary = new ArrayList();
+    private static HashMap<String, String> _overhangVariableSequenceHash = new HashMap(); //key:variable name, value: sequence associated with that variable
 }

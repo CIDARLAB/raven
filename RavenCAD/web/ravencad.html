@@ -23,7 +23,7 @@
 
     </head>
     <body data-spy="scroll" data-target="#sidebar">
-        <div class="navbar navbar-fixed-top" >
+        <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="index.html">RavenCAD</a>
@@ -46,9 +46,11 @@
                 <div class="span2">
                     <div id="sidebar">
                         <ul  class=" well nav nav-list affix">
-                            <li class="active"><a href="#target">Target</a></li>
+                            <li class="active"><a href="#method">Method</a></li>
+                            <li><a href="#target">Target</a></li>
                             <li><a href="#library">Library</a></li>
                             <li><a href="#intermediate">Intermediates</a></li>
+                            <li><a href="#primer">Primers</a></li>
                             <li><a href="#run">Run</a></li>
                         </ul>
                     </div>
@@ -60,6 +62,19 @@
                         </ul>
                         <div id="designTabContent" class="tab-content">
                             <div id="currentDesign" class="tab-pane active">
+                                <div class="well" id="method">
+                                    <h3>Assembly Method</h3>
+                                    <hr/>
+                                    <h4>Select the assembly method you want to use</h4>
+                                    <select id="methodSelection">
+                                        <option>BioBrick</option>
+                                        <option>CPEC</option>
+                                        <option>Gibson</option>
+                                        <option>Golden Gate</option>
+                                        <option>MoClo</option>
+                                        <option>SLIC</option>
+                                    </select>
+                                </div>
                                 <div class="well" id="target">
                                     <h3>Target</h3> 
                                     <hr/>
@@ -87,15 +102,6 @@
 
                                         </div>
                                     </div>
-                                    <h4>Select the assembly method you want to use</h4>
-                                    <select id="methodSelection">
-                                        <option>BioBrick</option>
-                                        <option>CPEC</option>
-                                        <option>Gibson</option>
-                                        <option>Golden Gate</option>
-                                        <option>MoClo</option>
-                                        <option>SLIC</option>
-                                    </select>
                                     <hr/>
                                 </div>
                                 <div class="well" id="library">
@@ -165,6 +171,11 @@
                                     </div>
                                 </div>
                                 <hr/>
+                                <div class="well" id="primer">
+                                    <h3>Primer</h3>
+                                    <hr/>
+                                    <h4>Specify your requirements for primers that will be designed for your assembly</h4>
+                                </div>
                                 <div class="well" id="intermediate">
                                     <h3>Intermediates</h3>
                                     <hr/>
