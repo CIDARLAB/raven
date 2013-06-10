@@ -12,8 +12,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
     $('#designTabHeader a:first').click(function() {
         refreshData();
     });
-    $('#methodSelection').change(function() {
-        method = $("#methodSelection :selected").text();
+    $('#methodTabHeader li').click(function() {
+        method = $(this).text();
         updateSummary();
     });
     //target part button event handlers
@@ -557,6 +557,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
         $('#designSummaryArea').html(summary);
     };
+
     $("#intermediateTable").dataTable({
         "sScrollY": "300px",
         "bPaginate": false,

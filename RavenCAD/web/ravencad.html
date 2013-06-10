@@ -66,28 +66,202 @@
                                     <h3>Assembly Method</h3>
                                     <hr/>
                                     <h4>Select the assembly method you want to use</h4>
-                                    <select id="methodSelection">
-                                        <option>BioBrick</option>
-                                        <option>CPEC</option>
-                                        <option>Gibson</option>
-                                        <option>Golden Gate</option>
-                                        <option>MoClo</option>
-                                        <option>SLIC</option>
-                                    </select>
+                                    <div class="row-fluid">
+                                        <div class="span12">
+                                            <div class="tabbable tabs-left">
+                                                <ul id="methodTabHeader" class="nav nav-tabs nav-pills">
+                                                    <li class="active"><a href="#biobricksTab" data-toggle="tab">BioBrick</a></li>
+                                                    <li><a href="#cpecTab" data-toggle="tab">CPEC</a></li>
+                                                    <li><a href="#gibsonTab" data-toggle="tab">Gibson</a></li>
+                                                    <li><a href="#goldenGateTab" data-toggle="tab">Golden Gate</a></li>
+                                                    <li><a href="#mocloTab" data-toggle="tab">MoClo</a></li>
+                                                    <li><a href="#slicTab" data-toggle="tab">SLIC</a></li>
+                                                </ul>
+                                                <div class="tab-content">
+                                                    <div class="tab-pane active" id="biobricksTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Assembly Method</h5>
+                                                                <!--Description of BioBrick-->
+                                                                <p>
+                                                                    Raven implements the 3A variant of the binary assembly method BioBricks. 
+                                                                    In Biobricks, all parts are preceded by EcoRI and XbaI restriction sites, and followed by SpeI and PstI.
+                                                                    Digesting these restriction sites produces common sticky ends, which allow 2 different BioBrick parts to be assembled.
+                                                                    3A assembly differs from other variants of Biobricks in that it relies on a 3 way ligation between 2 BioBrick parts and the vector.
+                                                                    By utilizing a 3 way ligation, BioBrick 3A assembly uses both positive and negative selection to reduce the number of undesired assembly products. 
+                                                                </p>
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5>Assembly Efficiency</h5>
+                                                                <table class="table table-bordered table-condensed">
+                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                    <tbody>
+                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="tab-pane" id="cpecTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Assembly Method</h5>
+                                                                <!--Description of CPEC-->
+                                                                <p>
+                                                                    CPEC (Circular Polymerase Extension Cloning) is a one step multiway assembly method.
+                                                                    Multiple double stranded DNA parts with overlapping sequences can be denatured and amplified using DNA polymermase.
+                                                                    The final concatenated part must have homology on both ends with the assembly vector for a plasmid to form properly.
+                                                                </p>
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5>Assembly Efficiency</h5>
+                                                                <table class="table table-bordered table-condensed">
+                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                    <tbody>
+                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="gibsonTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Assembly Method</h5>
+                                                                <!--Description of Gibson-->
+                                                                <p>
+                                                                    Gibson is a one-pot, ithothermal, multi-way assembly method. 
+                                                                    Gibson assembly relies on the combined effects of a 5' exonuclease, DNA polymerase, and a DNA ligase to assemble overlapping DNA molecules.
+                                                                    In the first part of the reaction, overhangs between two overlapping parts are created by the exonuclease, 
+                                                                    which allows the two parts to anneal.
+                                                                    The gaps on each strand of the annealed parts is then repaired with DNA polymerase and DNA ligase.
+                                                                </p>
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5>Assembly Efficiency</h5>
+                                                                <table class="table table-bordered table-condensed">
+                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                    <tbody>
+                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="goldenGateTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Assembly Method</h5>
+                                                                <!--Description of Golden Gate-->
+                                                                <p>
+                                                                    Golden Gate is a one step multi-way assembly method that relies on Type IIs restriction enzymes.
+                                                                    Type IIs restriction enzymes cut downstream from their recognition site,
+                                                                    which can be leveraged to generate unique overhangs.
+                                                                    Parts with matching overhangs are first annealed and then ligated together using DNA ligase.
+                                                                </p>
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5>Assembly Efficiency</h5>
+                                                                <table class="table table-bordered table-condensed">
+                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                    <tbody>
+                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="tab-pane" id="mocloTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Assembly Method</h5>
+                                                                <!--Description of MoClo-->
+                                                                <p>
+                                                                    MoClo is a one step multi-way assembly method that uses common overhang junctions generated by type IIs restriction enzymes.
+                                                                    Although the common overhang junctions are effectively assembly scars, 
+                                                                    the use of common junctions allows the reuse of parts, which reduces the cost.
+                                                                    First parts are digested with Type IIs restriction enzymes and then the digested parts are ligated together.
+                                                                </p>
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5>Assembly Efficiency</h5>
+                                                                <table class="table table-bordered table-condensed">
+                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                    <tbody>
+                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    </tbody>
+                                                                </table>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="slicTab">
+                                                        <div class="span6">
+                                                            <h5>Description of Assembly Method</h5>
+                                                            <!--Description of SLIC-->
+                                                            <p>
+                                                                SLIC (Sequence and Ligation Independent Cloning) is a one-pot multi-way assembly methods taht uses in vitro homologous recombination and single-strand annealing.
+                                                                SLIC uses exonuclease to generate single stranded DNA overhangs in inserts as well as vectors.
+                                                                SLIC effectively mimics in vivo homologous recombination.
+                                                            </p>
+                                                        </div>
+                                                        <div class="offset1 span5">
+                                                            <h5>Assembly Efficiency</h5>
+                                                            <table class="table table-bordered table-condensed">
+                                                                <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                <tbody>
+                                                                    <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                            <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
                                 </div>
                                 <div class="well" id="target">
                                     <h3>Target</h3> 
                                     <hr/>
                                     <h4>Select the parts you want to assemble</h4>
                                     <div class="row-fluid">
-                                        <div class="span4">
+                                        <div class="span4 text-center">
                                             <h5>Available Target Parts</h5>
                                             <div id="availableTargetPartListArea">
                                                 <select class="fixedHeight" multiple="multiple">
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class ="span2">
+                                        <div class ="span4 text-center">
                                             <div class="btn-group btn-group-vertical" style="margin-top:100px;">
                                                 <button type="button" class="btn" id="targetSelectAllButton" style="width:100%">Select All</button>
                                                 <button type="button" class="btn" id="targetSelectButton" style="width:100%">Select</button>
@@ -95,7 +269,7 @@
                                                 <button type="button" class="btn" id="targetDeselectAllButton" style="width:100%">Deselect All</button>
                                             </div>
                                         </div>
-                                        <div class="span4">
+                                        <div class="span4 text-center">
                                             <h5>Selected Target Parts</h5>
                                             <select id="targetPartList" multiple="multiple" class="fixedHeight">
                                             </select>
@@ -116,14 +290,14 @@
                                         <div id="libraryTabContent" class="tab-content" style="overflow:visible">
                                             <div class="tab-pane active" id="libraryPartArea">
                                                 <div class="row-fluid">
-                                                    <div class="span4">
+                                                    <div class="span4 text-center">
                                                         <h5>Available Library Parts</h5>
                                                         <div id="availableLibraryPartListArea">
                                                             <select id="availableLibraryPartList" class="fixedHeight" multiple="multiple">
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div class ="span2">
+                                                    <div class ="span4 text-center">
                                                         <div class="btn-group btn-group-vertical" style="margin-top:100px">
                                                             <button type="button" class="btn" id="libraryPartSelectAllButton" style="width:100%">Select All</button>
                                                             <button type="button" class="btn" id="libraryPartSelectButton" style="width:100%">Select</button>
@@ -131,7 +305,7 @@
                                                             <button type="button" class="btn" id="libraryPartDeselectAllButton" style="width:100%">Deselect All</button>
                                                         </div>
                                                     </div>
-                                                    <div class="span4">
+                                                    <div class="span4 text-center">
                                                         <h5>Selected Library Parts</h5>
                                                         <div id="libraryPartListArea">
                                                             <select id="libraryPartList" multiple="multiple" class="fixedHeight">
@@ -142,14 +316,14 @@
                                             </div>
                                             <div class="tab-pane" id="libraryVectorArea">
                                                 <div class="row-fluid">
-                                                    <div class="span4">
+                                                    <div class="span4 text-center">
                                                         <h5>Available Library Vectors</h5>
                                                         <div id="availableLibraryVectorListArea">
                                                             <select id="availableLibraryVectorList" class="fixedHeight" multiple="multiple">
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div class ="span2">
+                                                    <div class="span4 text-center">
                                                         <div class="btn-group btn-group-vertical" style="margin-top:100px">
                                                             <button type="button" class="btn" id="libraryVectorSelectAllButton" style="width:100%">Select All</button>
                                                             <button type="button" class="btn" id="libraryVectorSelectButton" style="width:100%">Select</button>
@@ -157,7 +331,7 @@
                                                             <button type="button" class="btn" id="libraryVectorDeselectAllButton" style="width:100%">Deselect All</button>
                                                         </div>
                                                     </div>
-                                                    <div class="span4">
+                                                    <div class="span4 text-center">
                                                         <h5>Selected Library Vectors</h5>
                                                         <div id="libraryVectorListArea">
                                                             <select id="libraryVectorList" multiple="multiple" class="fixedHeight">
