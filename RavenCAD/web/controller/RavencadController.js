@@ -2,10 +2,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var designCount = 0;
     var loaded = false;
     var data = null;
-    var method = "BioBrick";
+    var method = "BioBricks";
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
     var canRun = true;
-//EVENT HANDLERS
+    var efficiencyArray = [];
+    /********************EVENT HANDLERS********************/
     $('#sidebar').click(function() {
         $('#designTabHeader a:first').tab('show');
     });
@@ -15,6 +16,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
     $('#methodTabHeader li').click(function() {
         method = $(this).text();
         updateSummary();
+    });
+    $('.addEfficiencyButton').click(function() {
+        var table = $('#methodTabs div.active table');
+        table.find('tbody').append('<tr><td>' + (table.find('tr').length + 1) + '</td><td><input class="input-mini" placeholder="1.0"/></td></tr>');
+    });
+    $('.minusEfficiencyButton').click(function() {
+        $('#methodTabs div.active table tbody tr').last().remove();
     });
     //target part button event handlers
     $('#targetSelectAllButton').click(function() {
@@ -252,12 +260,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 rec = rec.substring(0, rec.length - 1);
                 targets = targets.substring(0, targets.length - 1);
                 partLibrary = partLibrary.substring(0, partLibrary.length - 1);
+                method = method.toLowerCase().replace(/\s+/g, '');
                 var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": ""
                             + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": ""
-                            + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage};
+                            + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage, "efficiency": "" + efficiencyArray};
                 $.get("RavenServlet", requestInput, function(data) {
                     if (data["status"] === "good") {
-//render image
+                        //render image
                         $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
                         $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
                         $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
@@ -280,9 +289,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                                 alert("this feature will be coming soon");
                             });
                         }
-//prepend status
-
-
+                        //prepend status badge and report button
                         $('#saveButton' + designCount).click(function() {
                             var designNumber = $(this).attr("val");
                             $.get('RavenServlet', {"command": "load", "designCount": designNumber}, function(result) {
@@ -339,6 +346,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             "bScrollCollapse": true
                         });
                     } else {
+                        //display error
                         $("#designTab" + designCount).html('<div class="alert alert-danger">' +
                                 '<strong>Oops, an error occurred while generating your assembly plan</strong>' +
                                 '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
@@ -349,16 +357,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     }
                 });
             } else {
-//                alert("Please select some target parts");
                 $('#selectTargetModal').modal();
             }
             canRun = true;
         } else {
-//            alert('Please Wait until current design is finished!');
             $('#waitModal').modal();
         }
     });
-    //FUNCTIONS
+    /********************FUNCTIONS/********************/
     var refreshData = function() {
         $.get("RavenServlet", {"command": "dataStatus"}, function(data) {
             if (data === "loaded") {
@@ -492,6 +498,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
     };
     var updateSummary = function() {
+        var pattern = /^[\d]+\.[\d]+/;
         var summary = "<p>You're trying to assemble</p>";
         if ($('#targetPartList option').length > 0) {
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
@@ -502,7 +509,20 @@ $(document).ready(function() { //don't run javascript until page is loaded
         } else {
             summary = summary + '<div class="alert alert-danger"><strong>Nothing</strong>. Try selecting some target parts</div>';
         }
+        var tabMethod = method.toLowerCase().replace(/\s+/g, '');
         summary = summary + '<p>You will be using the <strong>' + method + '</strong> assembly method</p>';
+        summary = summary + '<p>You will be using the following efficiency table for your assembly</p>' + $('#' + tabMethod + 'Tab table').parent().html();
+        efficiencyArray = [];
+        var table = $('#' + tabMethod + 'Tab table').parent();
+        table.find('input').each(function() {
+            if (pattern.test($(this).val())) {
+                efficiencyArray.push($(this).val());
+            } else {
+                efficiencyArray.push('1.0');
+            }
+
+        });
+        summary = summary + '<p>This is the efficiency matrix that you are using for your assembly</p>';
         if ($('.recommended:checked').length > 0) {
             summary = summary + '<p>The following intermediates are recommended:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
@@ -556,6 +576,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
 
         $('#designSummaryArea').html(summary);
+        $('#designSummaryArea table').css("width", "50%");
+        var i = 0;
+        $('#designSummaryArea table input').each(function() {
+            $(this).parent().html(efficiencyArray[i]);
+            i++;
+        });
     };
 
     $("#intermediateTable").dataTable({

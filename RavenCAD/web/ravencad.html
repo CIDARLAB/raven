@@ -70,14 +70,14 @@
                                         <div class="span12">
                                             <div class="tabbable tabs-left">
                                                 <ul id="methodTabHeader" class="nav nav-tabs nav-pills">
-                                                    <li class="active"><a href="#biobricksTab" data-toggle="tab">BioBrick</a></li>
+                                                    <li class="active"><a href="#biobricksTab" data-toggle="tab">BioBricks</a></li>
                                                     <li><a href="#cpecTab" data-toggle="tab">CPEC</a></li>
                                                     <li><a href="#gibsonTab" data-toggle="tab">Gibson</a></li>
-                                                    <li><a href="#goldenGateTab" data-toggle="tab">Golden Gate</a></li>
+                                                    <li><a href="#goldengateTab" data-toggle="tab">Golden Gate</a></li>
                                                     <li><a href="#mocloTab" data-toggle="tab">MoClo</a></li>
                                                     <li><a href="#slicTab" data-toggle="tab">SLIC</a></li>
                                                 </ul>
-                                                <div class="tab-content">
+                                                <div id="methodTabs" class="tab-content">
                                                     <div class="tab-pane active" id="biobricksTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
@@ -93,15 +93,15 @@
                                                             </div>
                                                             <div class="offset1 span5">
                                                                 <h5>Assembly Efficiency</h5>
-                                                                <table class="table table-bordered table-condensed">
-                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
-                                                                    <tbody>
-                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                    </tbody>
-                                                                </table>
-                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
-                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>                                                            </div>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
                                                         </div>
 
                                                     </div>
@@ -118,15 +118,16 @@
                                                             </div>
                                                             <div class="offset1 span5">
                                                                 <h5>Assembly Efficiency</h5>
-                                                                <table class="table table-bordered table-condensed">
-                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
-                                                                    <tbody>
-                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                        <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                        <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                    </tbody>
-                                                                </table>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
                                                                 <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
                                                                 <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
                                                             </div>
@@ -147,21 +148,22 @@
                                                             </div>
                                                             <div class="offset1 span5">
                                                                 <h5>Assembly Efficiency</h5>
+                                                                <div>
                                                                 <table class="table table-bordered table-condensed">
                                                                     <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
                                                                     <tbody>
-                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                     </tbody>
                                                                 </table>
+                                                                </div>
                                                                 <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
                                                                 <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="tab-pane" id="goldenGateTab">
+                                                    <div class="tab-pane" id="goldengateTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
                                                                 <h5>Description of Assembly Method</h5>
@@ -175,15 +177,16 @@
                                                             </div>
                                                             <div class="offset1 span5">
                                                                 <h5>Assembly Efficiency</h5>
+                                                            <div>
                                                                 <table class="table table-bordered table-condensed">
                                                                     <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
                                                                     <tbody>
-                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                     </tbody>
                                                                 </table>
+                                                            </div>
                                                                 <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
                                                                 <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
                                                             </div>
@@ -204,15 +207,16 @@
                                                             </div>
                                                             <div class="offset1 span5">
                                                                 <h5>Assembly Efficiency</h5>
+                                                                <div>
                                                                 <table class="table table-bordered table-condensed">
                                                                     <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
                                                                     <tbody>
-                                                                        <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                     </tbody>
                                                                 </table>
+                                                                </div>
                                                                 <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
                                                                 <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
                                                             </div>
@@ -230,15 +234,16 @@
                                                         </div>
                                                         <div class="offset1 span5">
                                                             <h5>Assembly Efficiency</h5>
+                                                            <div>
                                                             <table class="table table-bordered table-condensed">
                                                                 <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
                                                                 <tbody>
-                                                                    <tr><td>1</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                     <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                     <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                     <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                 </tbody>
                                                             </table>
+                                                            </div>
                                                             <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
                                                             <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
                                                         </div>
