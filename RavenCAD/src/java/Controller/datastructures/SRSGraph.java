@@ -563,7 +563,7 @@ public class SRSGraph {
                 pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
 
                 //Assign left overhang if it exists
-                pigeonLine.append("o ").append(currentPart.getLeftOverhang()).append(" 1" + "\n");
+                pigeonLine.append("5 ").append(currentPart.getLeftOverhang()).append(" 1" + "\n");
 
                 for (Part p: currentPart.getComposition()) {
                     if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
@@ -616,7 +616,7 @@ public class SRSGraph {
                 }
 
                 //Assign right overhang
-                pigeonLine.append("o ").append(currentPart.getRightOverhang()).append(" 1" + "\n");
+                pigeonLine.append("3 ").append(currentPart.getRightOverhang()).append(" 1" + "\n");
 
                 pigeonLine.append("# Arcs\n");
                 pigeonLine.append("PIGEON_END\n\n");

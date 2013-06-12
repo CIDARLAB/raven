@@ -90,7 +90,6 @@ public class RavenServlet extends HttpServlet {
                 }
             } else if (command.equals("run")) {
                 response.setContentType("application/json");
-                //run(String method, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden)
                 String[] targetIDs = request.getParameter("targets").split(",");
                 String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
                 String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
@@ -98,11 +97,14 @@ public class RavenServlet extends HttpServlet {
                 String[] reqArray = request.getParameter("required").split(";");
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
                 String[] discouragedArray = request.getParameter("discouraged").split(";");
+                String[] efficiencyArray = request.getParameter("efficiency").split(",");
                 String method = request.getParameter("method");
                 HashSet<String> required = new HashSet();
                 HashSet<String> recommended = new HashSet();
                 HashSet<String> forbidden = new HashSet();
                 HashSet<String> discouraged = new HashSet();
+                HashMap<Integer, Double> efficiencyHash = new HashMap();
+
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {
@@ -131,8 +133,14 @@ public class RavenServlet extends HttpServlet {
                         }
                     }
                 }
+                //generate efficiency hash
+                if (efficiencyArray.length > 0) {
+                    for (int i = 0; i < efficiencyArray.length; i++) {
+                        efficiencyHash.put(i+2, Double.parseDouble(efficiencyArray[i]));
+                    }
+                }
                 String designCount = request.getParameter("designCount");
-                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs);
+                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash);
                 String partsList = controller.generatePartsList(designCount);
                 String instructions = controller.getInstructions();
                 String statString = controller.generateStats();

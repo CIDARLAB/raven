@@ -49,18 +49,7 @@ public class RavenController {
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
         SRSGibson gibson = new SRSGibson();
-
-        HashMap<Integer, Double> efficiencies = new HashMap<Integer, Double>();
-        efficiencies.put(2, 1.0);
-        efficiencies.put(3, 1.0);
-        efficiencies.put(4, 1.0);
-        efficiencies.put(5, 1.0);
-        efficiencies.put(6, 1.0);
-        efficiencies.put(7, 1.0);
-        efficiencies.put(8, 1.0);
-        efficiencies.put(9, 1.0);
-        efficiencies.put(10, 1.0);
-        ArrayList<SRSGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency);
         return optimalGraphs;
     }
 
@@ -75,12 +64,7 @@ public class RavenController {
         gps.addAll(_goalParts.keySet());
         SRSCPEC cpec = new SRSCPEC();
 
-        HashMap<Integer, Double> efficiencies = new HashMap<Integer, Double>();
-        efficiencies.put(2, 1.0);
-        efficiencies.put(3, 1.0);
-        efficiencies.put(4, 1.0);
-
-        ArrayList<SRSGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency);
         return optimalGraphs;
     }
 
@@ -94,13 +78,7 @@ public class RavenController {
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
         SRSSLIC slic = new SRSSLIC();
-
-        HashMap<Integer, Double> efficiencies = new HashMap<Integer, Double>();
-        efficiencies.put(2, 1.0);
-        efficiencies.put(3, 1.0);
-        efficiencies.put(4, 1.0);
-
-        ArrayList<SRSGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency);
         return optimalGraphs;
     }
 
@@ -116,16 +94,8 @@ public class RavenController {
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
         SRSMoClo moclo = new SRSMoClo();
-
-        HashMap<Integer, Double> efficiencies = new HashMap<Integer, Double>();
-        efficiencies.put(2, 1.0);
-        efficiencies.put(3, 1.0);
-        efficiencies.put(4, 1.0);
-        efficiencies.put(5, 1.0);
-        efficiencies.put(6, 1.0);
-
         moclo.setForcedOverhangs(_collector, forcedOverhangHash);
-        ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency);
 
         return optimalGraphs;
 
@@ -143,13 +113,7 @@ public class RavenController {
         gps.addAll(_goalParts.keySet());
         SRSGoldenGate gg = new SRSGoldenGate();
 
-        HashMap<Integer, Double> efficiencies = new HashMap<Integer, Double>();
-        efficiencies.put(2, 1.0);
-        efficiencies.put(3, 1.0);
-        efficiencies.put(4, 1.0);
-        efficiencies.put(5, 1.0);
-        efficiencies.put(6, 1.0);
-        ArrayList<SRSGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, true, efficiencies);
+        ArrayList<SRSGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, true, _efficiency);
         return optimalGraphs;
 
     }
@@ -423,21 +387,29 @@ public class RavenController {
             try {
                 ArrayList<Part> composition = new ArrayList<Part>();
                 for (int i = 7; i < tokens.length; i++) {
-                    String partName = tokens[i].trim();
-                    if (partName.contains("|")) {
-                        String[] partNameTokens = partName.split("\\|");
-                        if (forcedOverhangHash.get(tokens[0]) != null) {
-                            forcedOverhangHash.get(tokens[0]).add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
+                    String basicPartString = tokens[i].trim();
+                    String[] partNameTokens = basicPartString.split("\\|");
+                    String forcedLeft = " ";
+                    String forcedRight = " ";
+                    String compositePartName = tokens[0];
+                    String basicPartName = partNameTokens[0];
+                    if (partNameTokens.length > 1) {
+                        if (partNameTokens.length == 2) {
+                            forcedLeft = partNameTokens[1];
                         } else {
-                            ArrayList<String> toAdd = new ArrayList();
-                            if (partNameTokens.length > 2) {
-                                toAdd.add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
-                                forcedOverhangHash.put(tokens[0], toAdd);
-                            }
+                            forcedLeft = partNameTokens[1];
+                            forcedRight = partNameTokens[2];
                         }
-                        partName = partNameTokens[0];
                     }
-                    composition.add(_collector.getPartByName(partName, true));
+                    if (forcedOverhangHash.get(compositePartName) != null) {
+                        forcedOverhangHash.get(compositePartName).add(forcedLeft + "|" + forcedRight);
+                    } else {
+                        ArrayList<String> toAdd = new ArrayList();
+                            toAdd.add(forcedLeft + "|" + forcedRight);
+                            forcedOverhangHash.put(compositePartName, toAdd);
+                    }
+
+                    composition.add(_collector.getPartByName(basicPartName, true));
                 }
                 String name = tokens[0].trim();
                 String leftOverhang = tokens[2].trim();
@@ -485,13 +457,13 @@ public class RavenController {
 
         //Initialize statistics
         boolean overhangValid = false;
-        if (method.equals("biobrick")) {
+        if (method.equals("biobricks")) {
             overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("cpec")) {
             overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("gibson")) {
             overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("golden gate")) {
+        } else if (method.equals("goldengate")) {
             overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("moclo")) {
             overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
@@ -543,7 +515,7 @@ public class RavenController {
         _statistics.setValid(valid);
     }
 
-    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs) throws Exception {
+    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash) throws Exception {
         _designCount++;
         _goalParts = new HashMap();
         _required = required;
@@ -554,6 +526,7 @@ public class RavenController {
         _vectorLibrary = new ArrayList();
         _partLibrary = new ArrayList();
         _assemblyGraphs = new ArrayList<SRSGraph>();
+        _efficiency = efficiencyHash;
         method = method.toLowerCase().trim();
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
@@ -580,7 +553,7 @@ public class RavenController {
 
         Statistics.start();
         boolean scarless = false;
-        if (method.equals("biobrick")) {
+        if (method.equals("biobricks")) {
             _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
@@ -588,7 +561,7 @@ public class RavenController {
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
             scarless = true;
-        } else if (method.equals("golden gate")) {
+        } else if (method.equals("goldengate")) {
             _assemblyGraphs = runGoldenGate();
             scarless = true;
         } else if (method.equals("moclo")) {
@@ -631,7 +604,7 @@ public class RavenController {
         } else if (method.equals("golden gate")) {
             _instructions = SRSGoldenGate.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("moclo")) {
-            _instructions = SRSMoClo.generateInstructions(targetRootNodes, _collector);
+            _instructions = SRSMoClo.generateInstructions(targetRootNodes, _collector, null);
         } else if (method.equals("slic")) {
             _instructions = SRSSLIC.generateInstructions(targetRootNodes, _collector);
         }
@@ -708,6 +681,7 @@ public class RavenController {
         return statString;
     }
     public HashMap<Part, ArrayList<Part>> _goalParts = new HashMap();//key: target part, value: composition
+    public HashMap<Integer, Double> _efficiency = new HashMap();
     public HashSet<String> _required = new HashSet();
     public HashSet<String> _recommended = new HashSet();
     public HashSet<String> _discouraged = new HashSet();

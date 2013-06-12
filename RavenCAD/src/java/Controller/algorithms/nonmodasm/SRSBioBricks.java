@@ -61,8 +61,8 @@ public class SRSBioBricks extends SRSGeneral {
         if (vectorSet.size() == 1) {
             theVector = vectorSet.get(0);
         }
-        theVector.setLOverhang("LeftBBa");
-        theVector.setROverhang("RightBBa");
+        theVector.setLOverhang("EX");
+        theVector.setROverhang("SP");
         
         //For all graphs traverse nodes of the graph and assign all nodes the biobricks vector
         for (int i = 0; i < optimalGraphs.size(); i++) {
@@ -83,8 +83,8 @@ public class SRSBioBricks extends SRSGeneral {
                 }
                 
                 //Give biobricks overhangs
-                current.setLOverhang("LeftBBa");
-                current.setROverhang("RightBBa");
+                current.setLOverhang("EX");
+                current.setROverhang("SP");
                 
                 //If the node is a step, it gets the biobricks vector
                 if (current.getStage() > 0) {

@@ -407,14 +407,14 @@ public class SRSAlgorithmCore {
                 if (Arrays.equals(subset, forbiddenSets.get(j))) {
                     forbidden = true;
                 }
-            }                
-            
+            }
+
             //If this set has no zeros and is not forbidden
             if (noZeros && !forbidden) {
                 int score = 0;
 
                 //Determine score of subset
-                int[] setCopy = set.clone();                                          
+                int[] setCopy = set.clone();
                 for (int k = 0; k < subset.length; k++) {
                     for (int l = 0; l < setCopy.length; l++) {
                         if (setCopy[l] == subset[k]) {
@@ -781,6 +781,44 @@ public class SRSAlgorithmCore {
         }
         stageHash.put(parent.getStage() - 1, stageNodes);
         return stageHash;
+    }
+
+    public static String reverseComplement(String seq) {
+        String toReturn = "";
+        for (int i = 0; i < seq.length(); i++) {
+            if (seq.charAt(i) == 'A') {
+                toReturn = "T" + toReturn;
+            } else if (seq.charAt(i) == 'a') {
+                toReturn = "t" + toReturn;
+            } else if (seq.charAt(i) == 'G') {
+                toReturn = "C" + toReturn;
+            } else if (seq.charAt(i) == 'g') {
+                toReturn = "c" + toReturn;
+            } else if (seq.charAt(i) == 'C') {
+                toReturn = "G" + toReturn;
+            } else if (seq.charAt(i) == 'c') {
+                toReturn = "g" + toReturn;
+            } else if (seq.charAt(i) == 'T') {
+                toReturn = "A" + toReturn;
+            } else if (seq.charAt(i) == 't') {
+                toReturn = "a" + toReturn;
+            } else {
+                toReturn = "N" + toReturn;
+            }
+        }
+        return toReturn;
+    }
+    
+    //calculates the length of homology required for primers based on nearest neighbor calculations
+    public static int getPrimerHomologyLength(Double meltingTemp, String sequence) {
+        //TODO write actual code
+        return 20;
+    }
+    
+    //generates a random DNA sequence with input length
+    public static String generateRandomSequence(int length) {
+        //TODO write actual code
+        return "agac";
     }
     //Fields
     private int _subsetScore;
