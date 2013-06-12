@@ -723,13 +723,13 @@ public class SRSMoClo extends SRSGeneral {
 
                 for (int i = 0; i < basicParts.size(); i++) {
                     String[] forcedTokens = forcedOverhangs.get(i).split("\\|");
-                    String forcedLeft = forcedTokens[0];
-                    String forcedRight = forcedTokens[1];
+                    String forcedLeft = forcedTokens[0].trim();
+                    String forcedRight = forcedTokens[1].trim();
                     SRSNode basicNode = basicParts.get(i);
-                    if (!forcedLeft.equals(" ")) {
+                    if (forcedLeft.length()>0) {
                         toReturn.put(basicNode.getLOverhang(), forcedLeft);
                     }
-                    if (!forcedRight.equals(" ")) {
+                    if (forcedRight.length()>0) {
                         toReturn.put(basicNode.getROverhang(), forcedRight);
                     }
                 }
