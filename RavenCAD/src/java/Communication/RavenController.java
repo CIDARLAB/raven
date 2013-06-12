@@ -387,21 +387,29 @@ public class RavenController {
             try {
                 ArrayList<Part> composition = new ArrayList<Part>();
                 for (int i = 7; i < tokens.length; i++) {
-                    String partName = tokens[i].trim();
-                    if (partName.contains("|")) {
-                        String[] partNameTokens = partName.split("\\|");
-                        if (forcedOverhangHash.get(tokens[0]) != null) {
-                            forcedOverhangHash.get(tokens[0]).add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
+                    String basicPartString = tokens[i].trim();
+                    String[] partNameTokens = basicPartString.split("\\|");
+                    String forcedLeft = " ";
+                    String forcedRight = " ";
+                    String compositePartName = tokens[0];
+                    String basicPartName = partNameTokens[0];
+                    if (partNameTokens.length > 1) {
+                        if (partNameTokens.length == 2) {
+                            forcedLeft = partNameTokens[1];
                         } else {
-                            ArrayList<String> toAdd = new ArrayList();
-                            if (partNameTokens.length > 2) {
-                                toAdd.add((i - 7) + "|" + partNameTokens[1] + "|" + partNameTokens[2]);
-                                forcedOverhangHash.put(tokens[0], toAdd);
-                            }
+                            forcedLeft = partNameTokens[1];
+                            forcedRight = partNameTokens[2];
                         }
-                        partName = partNameTokens[0];
                     }
-                    composition.add(_collector.getPartByName(partName, true));
+                    if (forcedOverhangHash.get(compositePartName) != null) {
+                        forcedOverhangHash.get(compositePartName).add(forcedLeft + "|" + forcedRight);
+                    } else {
+                        ArrayList<String> toAdd = new ArrayList();
+                            toAdd.add(forcedLeft + "|" + forcedRight);
+                            forcedOverhangHash.put(compositePartName, toAdd);
+                    }
+
+                    composition.add(_collector.getPartByName(basicPartName, true));
                 }
                 String name = tokens[0].trim();
                 String leftOverhang = tokens[2].trim();

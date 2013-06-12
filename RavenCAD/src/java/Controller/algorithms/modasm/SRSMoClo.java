@@ -721,22 +721,16 @@ public class SRSMoClo extends SRSGeneral {
                 }
                 ArrayList<String> forcedOverhangs = forcedOverhangHash.get(root.getComposition().toString());
 
-                while (!forcedOverhangs.isEmpty()) {
-                    String[] forcedTokens = forcedOverhangs.get(0).split("\\|");
-                    int composition = Integer.parseInt(forcedTokens[0]);
-                    String forcedLeft = forcedTokens[1];
-                    String forcedRight = forcedTokens[2];
-
-                    for (int i = 0; i < basicParts.size(); i++) {
-                        SRSNode basicNode = basicParts.get(i);
-
-                        if (i == composition) {
-                            toReturn.put(basicNode.getLOverhang(), forcedLeft);
-                            toReturn.put(basicNode.getROverhang(), forcedRight);
-                            forcedOverhangs.remove(0);
-                            break;
-                        }
-
+                for (int i = 0; i < basicParts.size(); i++) {
+                    String[] forcedTokens = forcedOverhangs.get(i).split("\\|");
+                    String forcedLeft = forcedTokens[0];
+                    String forcedRight = forcedTokens[1];
+                    SRSNode basicNode = basicParts.get(i);
+                    if (!forcedLeft.equals(" ")) {
+                        toReturn.put(basicNode.getLOverhang(), forcedLeft);
+                    }
+                    if (!forcedRight.equals(" ")) {
+                        toReturn.put(basicNode.getROverhang(), forcedRight);
                     }
                 }
             }
