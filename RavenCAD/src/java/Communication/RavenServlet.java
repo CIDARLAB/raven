@@ -43,7 +43,7 @@ public class RavenServlet extends HttpServlet {
         RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
-        String user = getUser(request);
+        String user = getUser(request).toLowerCase();
         RavenController controller = _controllerHash.get(user);
         try {
             if (controller == null) {
@@ -64,7 +64,7 @@ public class RavenServlet extends HttpServlet {
                 out.write(responseString);
             } else if (command.equals("logout")) {
                 response.setContentType("text/html;charset=UTF-8");
-                RavenLogger.logSessionOut(user, request.getRemoteAddr(), String.valueOf(controller._designCount));
+                RavenLogger.logSessionOut(user, request.getRemoteAddr());
                 String responseString = "logged out";
                 _controllerHash.remove(user);
                 controller.clearData();

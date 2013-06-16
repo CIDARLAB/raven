@@ -32,14 +32,13 @@ public class RavenLogger {
         }
     }
 
-    public static void logSessionOut(String user, String address, String designCount) {
+    public static void logSessionOut(String user, String address) {
         try {
-            System.out.println(_path);
             File file = new File(_path + "userLog.txt");
             FileWriter fw = new FileWriter(file, true);
             BufferedWriter out = new BufferedWriter(fw);
             Date date = new Date();
-            out.write("\nOUT|" + user + " time: " + date.toString() + " location: " + address + " designCount: " + designCount);
+            out.write("\nOUT|" + user + " time: " + date.toString() + " location: " + address);
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
