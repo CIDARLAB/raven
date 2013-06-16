@@ -211,17 +211,6 @@ public class RavenController {
         return toReturn;
     }
 
-    public void generateInstructionsFile() throws Exception {
-        if (_instructions == null) {
-            _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
-        }
-        File file = new File(_path + _user + "/instructions" + _designCount + ".txt");
-        FileWriter fw = new FileWriter(file);
-        BufferedWriter out = new BufferedWriter(fw);
-        out.write(_instructions);
-        out.close();
-    }
-
     public void clearData() throws Exception {
         _collector.purge();
         String uploadFilePath = _path + _user + "/";
@@ -405,8 +394,8 @@ public class RavenController {
                         forcedOverhangHash.get(compositePartName).add(forcedLeft + "|" + forcedRight);
                     } else {
                         ArrayList<String> toAdd = new ArrayList();
-                            toAdd.add(forcedLeft + "|" + forcedRight);
-                            forcedOverhangHash.put(compositePartName, toAdd);
+                        toAdd.add(forcedLeft + "|" + forcedRight);
+                        forcedOverhangHash.put(compositePartName, toAdd);
                     }
 
                     composition.add(_collector.getPartByName(basicPartName, true));
@@ -516,7 +505,6 @@ public class RavenController {
     }
 
     public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash) throws Exception {
-        _designCount++;
         _goalParts = new HashMap();
         _required = required;
         _recommended = recommended;
@@ -574,6 +562,7 @@ public class RavenController {
         Statistics.stop();
         ClothoReader reader = new ClothoReader();
         ArrayList<String> graphTextFiles = new ArrayList();
+        ArrayList<String> arcTextFiles = new ArrayList<String>();
         ArrayList<SRSNode> targetRootNodes = new ArrayList();
         if (!_assemblyGraphs.isEmpty()) {
             for (SRSGraph result : _assemblyGraphs) {
@@ -589,9 +578,11 @@ public class RavenController {
                 reader.fixCompositeUUIDs(_collector, result);
                 boolean canPigeon = result.canPigeon();
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges));
                 graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
             }
         }
+        String mergedArcText = SRSGraph.mergeArcFiles(arcTextFiles);
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
 
         //generate instructions
@@ -609,19 +600,36 @@ public class RavenController {
             _instructions = SRSSLIC.generateInstructions(targetRootNodes, _collector);
         }
         //write instructions file
-        generateInstructionsFile();
-
-        //save graph text file
-        File file = new File(_path + _user + "/pigeon" + designCount + ".txt");
+        if (_instructions == null) {
+            _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
+        }
+        File file = new File(_path + _user + "/instructions" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
+        out.write(_instructions);
+        out.close();
+
+        //write graph text file
+        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
+        fw = new FileWriter(file);
+        out = new BufferedWriter(fw);
         out.write(mergedGraphText);
         out.close();
+        //post request to graphviz
         WeyekinPoster.setDotText(mergedGraphText);
         WeyekinPoster.postMyVision();
 
+        //write arcs text file
+        file = new File(_path + _user + "/arcs" + designCount + ".txt");
+        fw = new FileWriter(file);
+        out = new BufferedWriter(fw);
+        out.write(mergedArcText);
+        out.close();
 
-        String toReturn;
+       
+
+
+        String toReturn ="";
         toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }
@@ -696,5 +704,4 @@ public class RavenController {
     public String _path;
     public String _user;
     public String _error = "";
-    public int _designCount = 0;
 }
