@@ -94,7 +94,7 @@ public class RavenController {
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
         SRSMoClo moclo = new SRSMoClo();
-        moclo.setForcedOverhangs(_collector, forcedOverhangHash);
+        moclo.setForcedOverhangs(_collector,forcedOverhangHash);
         ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency);
 
         return optimalGraphs;
@@ -390,6 +390,7 @@ public class RavenController {
                             forcedRight = partNameTokens[2];
                         }
                     }
+                    System.out.println("forcing "+forcedLeft+"|"+forcedRight+" for "+basicPartName);
                     if (forcedOverhangHash.get(compositePartName) != null) {
                         forcedOverhangHash.get(compositePartName).add(forcedLeft + "|" + forcedRight);
                     } else {
