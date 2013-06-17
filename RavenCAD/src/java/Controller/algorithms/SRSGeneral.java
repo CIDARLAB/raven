@@ -7,6 +7,7 @@ package Controller.algorithms;
 import Controller.datastructures.SRSGraph;
 import Controller.datastructures.SRSNode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,6 @@ public class SRSGeneral extends SRSAlgorithmCore {
         HashMap<String, SRSGraph> slackLibrary = new HashMap<String, SRSGraph>();
         slackLibrary.putAll(partHash);
         int slack = determineSlack(gps, required, recommended, forbidden, slackLibrary);
-        slackLibrary = null;
         System.gc();
 
         //Compute sharing scores for all goal parts
@@ -67,7 +67,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
             SRSGraph pinnedGraph = null;
             for (int j = 0; j < gps.size(); j++) {
                 SRSNode gp = gps.get(j);
-                SRSGraph newGraph = createAsmGraph_sgp(gp, hashMem, required, recommended, forbidden, discouraged, slack, sharingHash, modularityHash, efficiencies);
+                SRSGraph newGraph = createAsmGraph_sgp(gp, hashMem, partHash, required, recommended, forbidden, discouraged, slack, sharingHash, modularityHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
 
                 //Pin graph if no existing pinned graph
@@ -136,11 +136,14 @@ public class SRSGeneral extends SRSAlgorithmCore {
     }
 
     /** Find assembly graph for a single goal part factoring in slack and sharing **/
-    protected SRSGraph createAsmGraph_sgp(SRSNode goalPartNode, HashMap<String, SRSGraph> partsHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, int slack, HashMap<String, Integer> sharingHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies) {
+    protected SRSGraph createAsmGraph_sgp(SRSNode goalPartNode, HashMap<String, SRSGraph> partsHash, HashMap<String, SRSGraph> libHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, int slack, HashMap<String, Integer> sharingHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies) {
 
         //If any of the parameters is null, must be set to a new object to avoid null pointer issues
         if (partsHash == null) {
             partsHash = new HashMap<String, SRSGraph>();
+        }
+        if (libHash == null) {
+            libHash = new HashMap<String, SRSGraph>();
         }
         if (sharingHash == null) {
             sharingHash = new HashMap<String, Integer>();
@@ -164,10 +167,16 @@ public class SRSGeneral extends SRSAlgorithmCore {
             modularityHash = new HashMap<Integer, HashMap<String, Double>>();
         }
 
+        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
+        
         //Memoization Case - If graph already exists for this composition. This is the case for all basic parts and library parts
         if (partsHash.containsKey(goalPartNode.getComposition().toString())) {
+//            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
             return partsHash.get(goalPartNode.getComposition().toString());
         }
+        
+//        System.out.println("THIS NODE DOES NOT YET EXIST, MUST SEARCH HOW TO BUILD IT");
+        
         SRSGraph bestGraph = new SRSGraph(goalPartNode);
 
         //Recursive Programing to find best graph
@@ -180,8 +189,8 @@ public class SRSGeneral extends SRSAlgorithmCore {
         for (int i = 1; i < gpSize; i++) {
             indexes.add(i);
         }
-
-        //Remove indexes of required parts
+        
+        //Remove indexes for required parts
         for (int start = 0; start < gpSize; start++) {
             for (int end = start + 2; end < gpSize + 1; end++) {
                 if (start == 0 && end == gpSize) {
@@ -196,29 +205,82 @@ public class SRSGeneral extends SRSAlgorithmCore {
                 }
             }
         }
+                
+//        System.out.println("************* gpComp: " + gpComp + "********************");
+        
+        //Have a new partition set if library parts already physically exist
+        Set<String> libSet = libHash.keySet();
+        ArrayList<ArrayList<Integer>> libIndexes = new ArrayList<ArrayList<Integer>>();
+        libIndexes.add(indexes);
+        System.out.println("ORIGINAL INDEXES: " + indexes);
 
+        for (int startL = 0; startL < gpSize; startL++) {
+            for (int endL = startL + 2; endL < gpSize + 1; endL++) {
+                if (startL == 0 && endL == gpSize) {
+                    continue;
+                }
+                ArrayList<String> gpSub = new ArrayList<String>();
+                gpSub.addAll(gpComp.subList(startL, endL));
+                if (libSet.contains(gpSub.toString())) {
+                    ArrayList<Integer> aLibIndexes = new ArrayList<Integer>(indexes);
+                    for (int j = startL + 1; j < endL; j++) {
+                        aLibIndexes.remove(new Integer(j));
+                    }
+                    libIndexes.add(aLibIndexes);
+                    System.out.println("INDEXES FOUND BECAUSE OF SHARING: " + aLibIndexes);
+                }
+            }
+        }
+        
         //If a large part has a combination of smaller parts that are all forbidden, which make it impossible make, this part must also be forbidden
         //We must record if there is any way to break it
         forbidden = conflictSearchForbidden(gpComp, forbidden);
-        HashMap<Integer, ArrayList<int[]>> partitionSizes = new HashMap<Integer, ArrayList<int[]>>();
+        HashMap<Integer, ArrayList<int[]>> forbPartitionsBySize = new HashMap<Integer, ArrayList<int[]>>();
         for (int i = 1; i < _maxNeighbors; i++) {
             ArrayList<int[]> forbiddenPartitions = new ArrayList<int[]>();
-            partitionSizes.put(i, forbiddenPartitions);
+            forbPartitionsBySize.put(i, forbiddenPartitions);
         }
         
-        HashMap<Integer, ArrayList<int[]>> partitions = getPartitions(indexes, partitionSizes);
-        Set<Integer> keySet = partitions.keySet();
+        //For all of the allowed index sets, find the best way to break it into even peices for 1 to the maximum number of neighbors 
+        HashMap<Integer, ArrayList<int[]>> partitionSetByNBreaks = new HashMap<Integer, ArrayList<int[]>>();
+        for (int j = 0; j < libIndexes.size(); j++) {
+            
+            HashMap<Integer, ArrayList<int[]>> aPartitionSetByNBreaks = getPartitions(libIndexes.get(j), forbPartitionsBySize);
+            Set<Integer> keySet = aPartitionSetByNBreaks.keySet();
+            ArrayList<Integer> nNeighbors = new ArrayList<Integer>(keySet);
+            Collections.sort(nNeighbors);
+            
+            //Add partitions to larger set
+            if (partitionSetByNBreaks.isEmpty()) {
+                partitionSetByNBreaks = aPartitionSetByNBreaks;
+            } else {
+                for (Integer k : nNeighbors) {
+                    ArrayList<int[]> sets = partitionSetByNBreaks.get(k);
+                    sets.addAll(aPartitionSetByNBreaks.get(k));
+                    partitionSetByNBreaks.put(k, sets);
+                }
+            }
+        }
+        
+        Set<Integer> keySet = partitionSetByNBreaks.keySet();
         ArrayList<Integer> keys = new ArrayList<Integer>(keySet);
         Collections.sort(keys);
         boolean canPartitionAny = false;
 
+        for (Integer breaks : keys) {
+            System.out.println("Number of breaks: " + breaks);
+            for (int[] part : partitionSetByNBreaks.get(breaks)) {
+                System.out.println("A partitions: " + Arrays.toString(part));
+            }
+        }
+        
         //Iterate over all part "breaks"
         //Find best graph for all possible number of partition sizes        
         for (Integer nBreaks : keys) {
 
             ArrayList<int[]> forbiddenPartitions = new ArrayList<int[]>();
-            ArrayList<int[]> candidatePartitions = partitions.get(nBreaks);
-             
+            ArrayList<int[]> candidatePartitions = partitionSetByNBreaks.get(nBreaks);
+            
             //For each partition of this size
             while (!candidatePartitions.isEmpty()) {
                 
@@ -262,7 +324,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
                     canPartitionAny = true;
                     ArrayList<SRSGraph> toCombine = new ArrayList<SRSGraph>();
                     for (int o = 0; o < allSubParts.size(); o++) {
-                        SRSGraph solution = createAsmGraph_sgp(allSubParts.get(o), partsHash, required, recommended, forbidden, discouraged, slack - 1, sharingHash, modularityHash, efficiencies);
+                        SRSGraph solution = createAsmGraph_sgp(allSubParts.get(o), partsHash, null, required, recommended, forbidden, discouraged, slack - 1, sharingHash, modularityHash, efficiencies);
                         toCombine.add(solution);
                     }
 
@@ -280,9 +342,9 @@ public class SRSGeneral extends SRSAlgorithmCore {
                 
                 //If none so far can be partitioned and the list is empty, find next most optimal set using partitioning method
                 if (!canPartitionAny && candidatePartitions.isEmpty()) {
-                    HashMap<Integer, ArrayList<int[]>> newPartitionSizes = new HashMap<Integer, ArrayList<int[]>>();
-                    newPartitionSizes.put(nBreaks, forbiddenPartitions);                    
-                    HashMap<Integer, ArrayList<int[]>> newPartitions = getPartitions(indexes, newPartitionSizes);
+                    HashMap<Integer, ArrayList<int[]>> newForbPartitionsBySize = new HashMap<Integer, ArrayList<int[]>>();
+                    newForbPartitionsBySize.put(nBreaks, forbiddenPartitions);                    
+                    HashMap<Integer, ArrayList<int[]>> newPartitions = getPartitions(indexes, newForbPartitionsBySize);
                     candidatePartitions.addAll(newPartitions.get(nBreaks));
                 }
             }
@@ -503,7 +565,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
         int slack = 0;
         for (int i = 0; i < gps.size(); i++) {
             SRSNode gp = gps.get(i);
-            SRSGraph graph = createAsmGraph_sgp(gp, library, required, null, forbidden, null, 0, null, null, null);
+            SRSGraph graph = createAsmGraph_sgp(gp, library, library, required, null, forbidden, null, 0, null, null, null);
             if (graph.getStages() > slack) {
                 slack = graph.getStages();
             }

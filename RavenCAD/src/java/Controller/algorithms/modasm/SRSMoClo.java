@@ -66,6 +66,33 @@ public class SRSMoClo extends SRSGeneral {
 
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
+            
+            System.out.println("optimalGraphs: " + optimalGraphs);
+            
+            for (SRSGraph graph : optimalGraphs) {
+                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+                SRSNode root = graph.getRootNode();
+                queue.add(root);
+                while (!queue.isEmpty()) {
+                    SRSNode current = queue.get(0);
+                    queue.remove(0);
+                    seenNodes.add(current);
+                    
+                    System.out.println("node composition: " + current.getComposition());
+                    System.out.println("LO: " + current.getLOverhang());
+                    System.out.println("RO: " + current.getROverhang());
+                    
+                    ArrayList<SRSNode> neighbors = current.getNeighbors();
+
+                    for (SRSNode neighbor : neighbors) {
+                        if (!seenNodes.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+                }
+            }
+            
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
@@ -753,11 +780,17 @@ public class SRSMoClo extends SRSGeneral {
         boolean toReturn = true;
         for (SRSGraph graph : graphs) {
             SRSNode root = graph.getRootNode();
+            
+            System.out.println("root composition: " + root.getComposition());
+            
             HashSet<SRSNode> seenNodes = new HashSet();
             ArrayList<SRSNode> queue = new ArrayList();
             queue.add(root);
             while (!queue.isEmpty()) {
                 SRSNode parent = queue.get(0);
+                
+                System.out.println("parent composition: " + parent.getComposition());
+                
                 queue.remove(0);
                 seenNodes.add(parent);
                 //a node's left overhang can't be the same as the right overhang

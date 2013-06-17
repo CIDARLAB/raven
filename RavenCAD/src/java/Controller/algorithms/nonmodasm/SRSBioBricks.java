@@ -42,6 +42,32 @@ public class SRSBioBricks extends SRSGeneral {
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, null, true);
             optimalGraphs = assignVectors(optimalGraphs, vectorSet);
+           
+            System.out.println("optimalGraphs: " + optimalGraphs);
+
+            for (SRSGraph graph : optimalGraphs) {
+                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+                SRSNode root = graph.getRootNode();
+                queue.add(root);
+                while (!queue.isEmpty()) {
+                    SRSNode current = queue.get(0);
+                    queue.remove(0);
+                    seenNodes.add(current);
+
+                    System.out.println("node composition: " + current.getComposition());
+                    System.out.println("LO: " + current.getLOverhang());
+                    System.out.println("RO: " + current.getROverhang());
+
+                    ArrayList<SRSNode> neighbors = current.getNeighbors();
+
+                    for (SRSNode neighbor : neighbors) {
+                        if (!seenNodes.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+                }
+            }
             
             return optimalGraphs;
         } catch (Exception E) {
