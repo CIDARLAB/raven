@@ -98,6 +98,8 @@ public class RavenServlet extends HttpServlet {
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
                 String[] discouragedArray = request.getParameter("discouraged").split(";");
                 String[] efficiencyArray = request.getParameter("efficiency").split(",");
+//                boolean writeSQL = Boolean.parseBoolean(request.getParameter("writesql"));
+                boolean writeSQL = true;
                 String method = request.getParameter("method");
                 HashSet<String> required = new HashSet();
                 HashSet<String> recommended = new HashSet();
@@ -141,7 +143,7 @@ public class RavenServlet extends HttpServlet {
                 }
                 String designCount = request.getParameter("designCount");
                 String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash);
-                String partsList = controller.generatePartsList(designCount);
+                String partsList = controller.generatePartsList(designCount, writeSQL);
                 String instructions = controller.getInstructions();
                 String statString = controller.generateStats();
                 instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");

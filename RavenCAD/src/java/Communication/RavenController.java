@@ -26,6 +26,12 @@ public class RavenController {
     public RavenController(String path, String user) {
         _path = path;
         _user = user;
+        //temporary default values
+        _databaseConfig.add("jdbc:mysql://128.197.164.27");
+//        _databaseConfig.add("SenDesPlaygroundv1");
+        _databaseConfig.add("TestClothoDBv3");
+        _databaseConfig.add("cidar.rwdu");
+        _databaseConfig.add("cidar");
     }
 
     public ArrayList<SRSGraph> runBioBricks() throws Exception {
@@ -119,20 +125,20 @@ public class RavenController {
     }
 
     //returns json array containing all objects in parts list; generates parts list file
-    public String generatePartsList(String designNumber) throws Exception {
+    public String generatePartsList(String designNumber, boolean writeSQL) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
         //traverse graphs to get uuids
-        ArrayList<Part> usedPartsHash = new ArrayList<Part>();
-        ArrayList<Vector> usedVectorsHash = new ArrayList<Vector>();
+        ArrayList<Part> usedParts = new ArrayList<Part>();
+        ArrayList<Vector> usedVectors = new ArrayList<Vector>();
         for (SRSGraph result : _assemblyGraphs) {
             for (Part p : result.getPartsInGraph(_collector)) {
-                if (!usedPartsHash.contains(p)) {
-                    usedPartsHash.add(p);
+                if (!usedParts.contains(p)) {
+                    usedParts.add(p);
                 }
             }
             for (Vector v : result.getVectorsInGraph(_collector)) {
-                if (!usedVectorsHash.contains(v)) {
-                    usedVectorsHash.add(v);
+                if (!usedVectors.contains(v)) {
+                    usedVectors.add(v);
                 }
             }
         }
@@ -142,7 +148,7 @@ public class RavenController {
         BufferedWriter out = new BufferedWriter(fw);
         out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
 
-        for (Part p : usedPartsHash) {
+        for (Part p : usedParts) {
             ArrayList<String> tags = p.getSearchTags();
             String RO = "";
             String LO = "";
@@ -178,7 +184,7 @@ public class RavenController {
                     + "\",\"Resistance\":\"\",\"Level\":\"\"},";
         }
 
-        for (Vector v : usedVectorsHash) {
+        for (Vector v : usedVectors) {
             ArrayList<String> tags = v.getSearchTags();
             String RO = "";
             String LO = "";
@@ -208,6 +214,11 @@ public class RavenController {
         out.close();
         toReturn = toReturn.substring(0, toReturn.length() - 1);
         toReturn = toReturn + "]";
+        
+        if(writeSQL) {
+            PuppeteerWriter.savePart(usedParts,_databaseConfig);
+            PuppeteerWriter.saveVector(usedVectors,_databaseConfig);
+        }
         return toReturn;
     }
 
@@ -689,20 +700,22 @@ public class RavenController {
                 + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
         return statString;
     }
-    public HashMap<Part, ArrayList<Part>> _goalParts = new HashMap();//key: target part, value: composition
-    public HashMap<Integer, Double> _efficiency = new HashMap();
-    public HashSet<String> _required = new HashSet();
-    public HashSet<String> _recommended = new HashSet();
-    public HashSet<String> _discouraged = new HashSet();
-    public HashSet<String> _forbidden = new HashSet();
-    public Statistics _statistics = new Statistics();
-    public ArrayList<SRSGraph> _assemblyGraphs = new ArrayList<SRSGraph>();
-    public HashMap<String, ArrayList<String>> forcedOverhangHash = new HashMap();
-    public ArrayList<Part> _partLibrary = new ArrayList();
-    public ArrayList<Vector> _vectorLibrary = new ArrayList();
-    public String _instructions = "";
-    public Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
-    public String _path;
-    public String _user;
-    public String _error = "";
+    private HashMap<Part, ArrayList<Part>> _goalParts = new HashMap();//key: target part, value: composition
+    private HashMap<Integer, Double> _efficiency = new HashMap();
+    private HashSet<String> _required = new HashSet();
+    private HashSet<String> _recommended = new HashSet();
+    private HashSet<String> _discouraged = new HashSet();
+    private HashSet<String> _forbidden = new HashSet();
+    private Statistics _statistics = new Statistics();
+    private ArrayList<SRSGraph> _assemblyGraphs = new ArrayList<SRSGraph>();
+    private HashMap<String, ArrayList<String>> forcedOverhangHash = new HashMap();
+    private ArrayList<Part> _partLibrary = new ArrayList();
+    private ArrayList<Vector> _vectorLibrary = new ArrayList();
+    private String _instructions = "";
+    protected Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
+    private String _path;
+    private String _user;
+    private String _error = "";
+    private ArrayList<String> _databaseConfig = new ArrayList(); //0:database url, 1:database schema, 2:user, 3:password
+    
 }
