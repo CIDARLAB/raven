@@ -226,8 +226,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
                         '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
                         '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                        '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>'
-                        );
+                        '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>'+
+                        '<p><a id="downloadArcs' + designCount + '">Download Puppeteer Arcs File</a></p>'
+
+            );
                 var partLibrary = ""; //parts to use in library
                 var vectorLibrary = ""; //vectors to use in library
                 var rec = ""; //recommended intermediates
@@ -324,6 +326,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         $('#downloadInstructions' + designCount).attr("href", "data/" + user + "/instructions" + designCount + ".txt");
                         $('#downloadParts' + designCount).attr("href", "data/" + user + "/partsList" + designCount + ".csv");
                         $('#downloadPigeon' + designCount).attr("href", "data/" + user + "/pigeon" + designCount + ".txt");
+                        $('#downloadArcs' + designCount).attr("href", "data/" + user + "/arcs" + designCount + ".txt");
+
                         $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
                         //render parts list
                         var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + designCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';

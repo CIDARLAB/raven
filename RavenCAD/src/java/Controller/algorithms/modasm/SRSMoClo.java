@@ -693,11 +693,12 @@ public class SRSMoClo extends SRSGeneral {
     //sets user specified overhangs before algorithm computes the rest
     private HashMap<String, String> preAssignOverhangs(ArrayList<SRSGraph> optimalGraphs) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
-
+        System.out.println(forcedOverhangHash.keySet());
         for (SRSGraph graph : optimalGraphs) {
             SRSNode root = graph.getRootNode();
-
+            System.out.println("looking for: "+root.getComposition().toString());
             if (forcedOverhangHash.containsKey(root.getComposition().toString())) {
+                System.out.println("contained");
                 //traverse the graph and find all of the basic parts and then put them in order
                 ArrayList<SRSNode> queue = new ArrayList();
                 HashSet<SRSNode> seenNodes = new HashSet();
@@ -726,6 +727,7 @@ public class SRSMoClo extends SRSGeneral {
                     String forcedLeft = forcedTokens[0].trim();
                     String forcedRight = forcedTokens[1].trim();
                     SRSNode basicNode = basicParts.get(i);
+                    System.out.println("Setting "+forcedLeft+"|"+forcedRight+" for "+basicNode.getComposition());
                     if (forcedLeft.length()>0) {
                         toReturn.put(basicNode.getLOverhang(), forcedLeft);
                     }
@@ -739,7 +741,7 @@ public class SRSMoClo extends SRSGeneral {
         return toReturn;
     }
 
-    public void setForcedOverhangs(Collector coll, HashMap<String, ArrayList<String>> requiredOverhangs) {
+ public void setForcedOverhangs(Collector coll, HashMap<String, ArrayList<String>> requiredOverhangs) {
         forcedOverhangHash = new HashMap();
         for (String key : requiredOverhangs.keySet()) {
             Part part = coll.getPartByName(key, false);
@@ -862,7 +864,7 @@ public class SRSMoClo extends SRSGeneral {
             //append header for each goal part
             toReturn = toReturn + "**********************************************"
                     + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
-                    + "**********************************************";
+                    + "\n**********************************************";
             ArrayList<SRSNode> queue = new ArrayList();
             queue.add(root);
             while (!queue.isEmpty()) {
