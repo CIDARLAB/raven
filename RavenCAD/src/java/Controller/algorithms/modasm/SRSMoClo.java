@@ -696,9 +696,8 @@ public class SRSMoClo extends SRSGeneral {
         System.out.println(forcedOverhangHash.keySet());
         for (SRSGraph graph : optimalGraphs) {
             SRSNode root = graph.getRootNode();
-            System.out.println("looking for: "+root.getComposition().toString());
+            System.out.println("looking for: " + root.getComposition().toString());
             if (forcedOverhangHash.containsKey(root.getComposition().toString())) {
-                System.out.println("contained");
                 //traverse the graph and find all of the basic parts and then put them in order
                 ArrayList<SRSNode> queue = new ArrayList();
                 HashSet<SRSNode> seenNodes = new HashSet();
@@ -727,11 +726,11 @@ public class SRSMoClo extends SRSGeneral {
                     String forcedLeft = forcedTokens[0].trim();
                     String forcedRight = forcedTokens[1].trim();
                     SRSNode basicNode = basicParts.get(i);
-                    System.out.println("Setting "+forcedLeft+"|"+forcedRight+" for "+basicNode.getComposition());
-                    if (forcedLeft.length()>0) {
+                    System.out.println("Setting " + forcedLeft + "|" + forcedRight + " for " + basicNode.getComposition());
+                    if (forcedLeft.length() > 0) {
                         toReturn.put(basicNode.getLOverhang(), forcedLeft);
                     }
-                    if (forcedRight.length()>0) {
+                    if (forcedRight.length() > 0) {
                         toReturn.put(basicNode.getROverhang(), forcedRight);
                     }
                 }
@@ -741,11 +740,13 @@ public class SRSMoClo extends SRSGeneral {
         return toReturn;
     }
 
- public void setForcedOverhangs(Collector coll, HashMap<String, ArrayList<String>> requiredOverhangs) {
-        forcedOverhangHash = new HashMap();
-        for (String key : requiredOverhangs.keySet()) {
-            Part part = coll.getPartByName(key, false);
-            forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
+    public void setForcedOverhangs(Collector coll, HashMap<String, ArrayList<String>> requiredOverhangs) {
+        if (requiredOverhangs != null) {
+            forcedOverhangHash = new HashMap();
+            for (String key : requiredOverhangs.keySet()) {
+                Part part = coll.getPartByName(key, false);
+                forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
+            }
         }
     }
 
