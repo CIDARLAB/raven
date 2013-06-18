@@ -24,12 +24,12 @@ public class SRSAlgorithmCore {
      * Given goal parts and library, create hashMem, key: composition with
      * overhangs concatenated at the end, value: corresponding graph *
      */
-    protected HashMap<String, SRSGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> required, HashSet<String> recommended) throws Exception {
+    protected HashMap<String, SRSGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
 
         //Create library to initialize hashMem
         HashMap<String, SRSGraph> library = new HashMap<String, SRSGraph>();
 
-        //Add basic parts to memoization hash so that uuid can be retrieved
+        //Add goal parts to memoization hash, making new nodes with only type and composition from library
         for (Part goalPart : goalParts) {
             try {
                 ArrayList<Part> basicParts = ClothoReader.getComposition(goalPart);
@@ -39,13 +39,12 @@ public class SRSAlgorithmCore {
                     SRSGraph newBasicGraph = new SRSGraph();
                     newBasicGraph.getRootNode().setUUID(basicParts.get(i).getUUID());
 
-                    //Get basic part compositions and search tags relating to feature type and overhangs
+                    //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
                     ArrayList<String> composition = new ArrayList<String>();
                     composition.add(basicParts.get(i).getName());
                     ArrayList<String> sTags = basicParts.get(i).getSearchTags();
                     ArrayList<String> type = new ArrayList<String>();
-                    String LO = new String();
-                    String RO = new String();
+
                     for (int k = 0; k < sTags.size(); k++) {
                         if (sTags.get(k).startsWith("Type:")) {
                             String typeTag = sTags.get(k);
@@ -66,7 +65,7 @@ public class SRSAlgorithmCore {
             }
         }
 
-        //If there is an input Clotho part library
+        //If there is an input Clotho part library, make a new node with only type and composition from library
         if (partLibrary != null) {
             if (partLibrary.size() > 0) {
                 for (Part libraryPart : partLibrary) {
@@ -111,6 +110,12 @@ public class SRSAlgorithmCore {
                     if (recommended.contains(composition.toString())) {
                         libraryPartGraph.setReccomendedCount(libraryPartGraph.getReccomendedCount() + 1);
                         libraryPartGraph.getRootNode().setRecommended(true);
+                    }
+                    
+                    //If discouraged, give graph a recommended score of 1, make root node recommended
+                    if (discouraged.contains(composition.toString())) {
+                        libraryPartGraph.setDiscouragedCount(libraryPartGraph.getDiscouragedCount() + 1);
+                        libraryPartGraph.getRootNode().setDiscouraged(true);
                     }
 
                     //Put library part into library for assembly

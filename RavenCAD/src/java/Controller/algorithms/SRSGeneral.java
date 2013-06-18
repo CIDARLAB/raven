@@ -167,7 +167,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
             modularityHash = new HashMap<Integer, HashMap<String, Double>>();
         }
 
-        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
+//        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
         
         //Memoization Case - If graph already exists for this composition. This is the case for all basic parts and library parts
         if (partsHash.containsKey(goalPartNode.getComposition().toString())) {
@@ -212,7 +212,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
         Set<String> libSet = libHash.keySet();
         ArrayList<ArrayList<Integer>> libIndexes = new ArrayList<ArrayList<Integer>>();
         libIndexes.add(indexes);
-        System.out.println("ORIGINAL INDEXES: " + indexes);
+//        System.out.println("ORIGINAL INDEXES: " + indexes);
 
         for (int startL = 0; startL < gpSize; startL++) {
             for (int endL = startL + 2; endL < gpSize + 1; endL++) {
@@ -227,7 +227,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
                         aLibIndexes.remove(new Integer(j));
                     }
                     libIndexes.add(aLibIndexes);
-                    System.out.println("INDEXES FOUND BECAUSE OF SHARING: " + aLibIndexes);
+//                    System.out.println("INDEXES FOUND BECAUSE OF SHARING: " + aLibIndexes);
                 }
             }
         }
@@ -267,13 +267,13 @@ public class SRSGeneral extends SRSAlgorithmCore {
         Collections.sort(keys);
         boolean canPartitionAny = false;
 
-        for (Integer breaks : keys) {
-            System.out.println("Number of breaks: " + breaks);
-            for (int[] part : partitionSetByNBreaks.get(breaks)) {
-                System.out.println("A partitions: " + Arrays.toString(part));
-            }
-        }
-        
+//        for (Integer breaks : keys) {
+//            System.out.println("Number of breaks: " + breaks);
+//            for (int[] part : partitionSetByNBreaks.get(breaks)) {
+//                System.out.println("A partitions: " + Arrays.toString(part));
+//            }
+//        }
+//        
         //Iterate over all part "breaks"
         //Find best graph for all possible number of partition sizes        
         for (Integer nBreaks : keys) {

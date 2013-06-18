@@ -84,22 +84,26 @@ public class SRSSLIC extends SRSGeneral {
         
         //For each of the children, assign overhangs based on neighbors
         for (int j = 0; j < children.size(); j++) {
-            SRSNode current = children.get(j);
+            SRSNode child = children.get(j);
             
             if (j == 0) {
                 ArrayList<String> nextComp = children.get(j+1).getComposition();
-                current.setROverhang(nextComp.get(0));
+                child.setROverhang(nextComp.get(0));
+                child.setLOverhang(parent.getLOverhang());
             } else if (j == children.size() - 1) {
                 ArrayList<String> prevComp = children.get(j-1).getComposition();
-                current.setLOverhang(prevComp.get(prevComp.size()-1));
+                child.setLOverhang(prevComp.get(prevComp.size()-1));
+                child.setROverhang(parent.getROverhang());
             } else {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
-                current.setLOverhang(prevComp.get(prevComp.size() - 1));
-                current.setROverhang(nextComp.get(0));
+                child.setLOverhang(prevComp.get(prevComp.size() - 1));
+                child.setROverhang(nextComp.get(0));
             }
             
-            assignOverhangsHelper(current, children);
+            ArrayList<SRSNode> grandChildren = child.getNeighbors();
+            
+            assignOverhangsHelper(child, grandChildren);
         }
     }
     

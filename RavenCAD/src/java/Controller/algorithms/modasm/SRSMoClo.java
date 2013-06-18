@@ -79,17 +79,21 @@ public class SRSMoClo extends SRSGeneral {
                     queue.remove(0);
                     seenNodes.add(current);
                     
+                    System.out.println("*********************");
                     System.out.println("node composition: " + current.getComposition());
                     System.out.println("LO: " + current.getLOverhang());
-                    System.out.println("RO: " + current.getROverhang());
-                    
-                    ArrayList<SRSNode> neighbors = current.getNeighbors();
+                    System.out.println("RO: " + current.getROverhang());                                      
+                    System.out.println("NodeID: " + current.getNodeID());
+                    System.out.println("uuid: " + current.getUUID());
 
+                    ArrayList<SRSNode> neighbors = current.getNeighbors();
                     for (SRSNode neighbor : neighbors) {
+                        System.out.println("neighbor: " + neighbor.getComposition());
                         if (!seenNodes.contains(neighbor)) {
                             queue.add(neighbor);
                         }
                     }
+                    System.out.println("*********************");
                 }
             }
             
