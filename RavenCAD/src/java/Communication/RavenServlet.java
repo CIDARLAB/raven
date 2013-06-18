@@ -162,6 +162,7 @@ public class RavenServlet extends HttpServlet {
 
             }
         } catch (Exception e) {
+            e.printStackTrace();
             StringWriter stringWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(stringWriter);
             RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
