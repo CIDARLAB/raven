@@ -98,8 +98,6 @@ public class RavenServlet extends HttpServlet {
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
                 String[] discouragedArray = request.getParameter("discouraged").split(";");
                 String[] efficiencyArray = request.getParameter("efficiency").split(",");
-//                boolean writeSQL = Boolean.parseBoolean(request.getParameter("writesql"));
-                boolean writeSQL = true;
                 String method = request.getParameter("method");
                 HashSet<String> required = new HashSet();
                 HashSet<String> recommended = new HashSet();
@@ -138,12 +136,12 @@ public class RavenServlet extends HttpServlet {
                 //generate efficiency hash
                 if (efficiencyArray.length > 0) {
                     for (int i = 0; i < efficiencyArray.length; i++) {
-                        efficiencyHash.put(i+2, Double.parseDouble(efficiencyArray[i]));
+                        efficiencyHash.put(i + 2, Double.parseDouble(efficiencyArray[i]));
                     }
                 }
                 String designCount = request.getParameter("designCount");
                 String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash);
-                String partsList = controller.generatePartsList(designCount, writeSQL);
+                String partsList = controller.generatePartsList(designCount);
                 String instructions = controller.getInstructions();
                 String statString = controller.generateStats();
                 instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
@@ -151,6 +149,17 @@ public class RavenServlet extends HttpServlet {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
                 out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":" + partsList + "}");
+            } else if (command.equals("save")) {
+                String[] partIDs = request.getParameter("partIDs").split(",");
+                String[] vectorIDs = request.getParameter("vectorIDs").split(",");
+                boolean writeSQL = Boolean.parseBoolean(request.getParameter("writeSQL"));
+//                Boolean writeSQL= true;
+                response.setContentType("text/html;charset=UTF-8");
+                String responseString = "failed save data";
+                responseString = controller.save(partIDs, vectorIDs, writeSQL);
+                out.write(responseString);
+
+
             }
         } catch (Exception e) {
             StringWriter stringWriter = new StringWriter();

@@ -100,7 +100,7 @@ public class RavenController {
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
         SRSMoClo moclo = new SRSMoClo();
-        moclo.setForcedOverhangs(_collector,forcedOverhangHash);
+        moclo.setForcedOverhangs(_collector, forcedOverhangHash);
         ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency);
 
         return optimalGraphs;
@@ -125,7 +125,7 @@ public class RavenController {
     }
 
     //returns json array containing all objects in parts list; generates parts list file
-    public String generatePartsList(String designNumber, boolean writeSQL) throws Exception {
+    public String generatePartsList(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
@@ -214,11 +214,6 @@ public class RavenController {
         out.close();
         toReturn = toReturn.substring(0, toReturn.length() - 1);
         toReturn = toReturn + "]";
-        
-        if(writeSQL) {
-            PuppeteerWriter.savePart(usedParts,_databaseConfig);
-            PuppeteerWriter.saveVector(usedVectors,_databaseConfig);
-        }
         return toReturn;
     }
 
@@ -401,7 +396,7 @@ public class RavenController {
                             forcedRight = partNameTokens[2];
                         }
                     }
-                    System.out.println("forcing "+forcedLeft+"|"+forcedRight+" for "+basicPartName);
+                    System.out.println("forcing " + forcedLeft + "|" + forcedRight + " for " + basicPartName);
                     if (forcedOverhangHash.get(compositePartName) != null) {
                         forcedOverhangHash.get(compositePartName).add(forcedLeft + "|" + forcedRight);
                     } else {
@@ -439,6 +434,31 @@ public class RavenController {
             throw new Exception(badLineMessage);
 
         }
+
+    }
+
+    public String save(String[] partIDs, String[] vectorIDs, boolean writeSQL) {
+        ArrayList<Part> toSaveParts = new ArrayList();
+        ArrayList<Vector> toSaveVectors = new ArrayList();
+        if (partIDs.length > 0) {
+            for (int i = 0; i < partIDs.length; i++) {
+                Part p = _collector.getPart(partIDs[i], true);
+                p.setTransientStatus(false);
+                toSaveParts.add(p);
+            }
+        }
+        if (vectorIDs.length > 0) {
+            for (int i = 0; i < vectorIDs.length; i++) {
+                Vector v = _collector.getVector(vectorIDs[i], true);
+                v.setTransientStatus(false);
+                toSaveVectors.add(v);
+            }
+        }
+        if (writeSQL) {
+            PuppeteerWriter.saveParts(toSaveParts, _databaseConfig);
+            PuppeteerWriter.saveVectors(toSaveVectors, _databaseConfig);
+        }
+        return "saved data";
 
     }
 
@@ -638,10 +658,10 @@ public class RavenController {
         out.write(mergedArcText);
         out.close();
 
-       
 
 
-        String toReturn ="";
+
+        String toReturn = "";
         toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }
@@ -717,5 +737,4 @@ public class RavenController {
     private String _user;
     private String _error = "";
     private ArrayList<String> _databaseConfig = new ArrayList(); //0:database url, 1:database schema, 2:user, 3:password
-    
 }
