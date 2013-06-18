@@ -293,7 +293,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             saveButtons = '<p><button id="reportButton' + designCount +
                                     '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
                                     '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '" val="' + designCount + '">Save to working library</button></p>';
-                            if (user === "jenhan") {
+                            if (user === "admin") {
                                 saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + designCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
                             } else {
                                 saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + designCount + '" type="checkbox" checked=false/></p>';
