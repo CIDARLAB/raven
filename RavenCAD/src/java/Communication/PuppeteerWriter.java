@@ -59,42 +59,9 @@ public class PuppeteerWriter {
                 }
             }
 
-            for (Part basic : basicParts) {
-                //handle basic parts
-                //remove from compositeXref
-                statement.executeUpdate("DELETE FROM " + schema + ".CompositeXref WHERE parentPart='" + basic.getUUID() + "'");
-                statement.executeUpdate("DELETE FROM " + schema + ".CompositeXref WHERE childPart='" + basic.getUUID() + "'");
-
-                //remove from collectionTable
-                statement.executeUpdate("DELETE FROM " + schema + ".CollectionXref WHERE objectId='" + basic.getUUID() + "'");
-                //remove from partTable
-                statement.executeUpdate("DELETE FROM " + schema + ".PartTable WHERE idPart='" + basic.getUUID() + "'");
-                //remove nucSeq
-                statement.executeUpdate("DELETE FROM " + schema + ".NucseqTable WHERE idNucseq='" + basic.getUUID().replace("part", "seq") + "'");
-
-                //insert row for nucseq
-                statement.executeUpdate("INSERT INTO " + schema + ".NucseqTable (idNucSeq,sequence,isLocked,dateCreated,lastmodified) VALUES ("
-                        + "'" + basic.getUUID().replace("part", "seq") + "',"
-                        + "'" + basic.getSeq() + "',"
-                        + "0,"
-                        + "'" + getDate() + "',"
-                        + "'" + getDate() + "'"
-                        + ")");
-                //insert row for part
-                statement.executeUpdate("INSERT INTO " + schema + ".PartTable (idPart,formatId,nucseqId,description,authorId,name,riskGroup,dateCreated,lastModified,isBasic) VALUES("
-                        + "'" + basic.getUUID() + "',"
-                        + "'org-clothocad-format-freeform-connect',"
-                        + "'" + basic.getUUID().replace("part", "seq") + "',"
-                        + "'made by Raven',"
-                        + "'" + authorId + "',"
-                        + "'" + basic.getName() + "',"
-                        + "-1,"
-                        + "'" + getDate() + "',"
-                        + "'" + getDate() + "',"
-                        + "0"
-                        + ")");
-
-            }
+//            for (Part basic : basicParts) {
+//                
+//            }
             //after basic parts have been added, add composite parts
             int compositeCount = 0;
             for (Part compositePart : compositeParts) {
@@ -111,6 +78,45 @@ public class PuppeteerWriter {
                         + ")");
                 int i = 0;
                 for (Part p : compositePart.getComposition()) {
+                    
+                    
+                    
+                    //handle basic parts
+                //remove from compositeXref
+                statement.executeUpdate("DELETE FROM " + schema + ".CompositeXref WHERE parentPart='" + p.getUUID() + "'");
+                statement.executeUpdate("DELETE FROM " + schema + ".CompositeXref WHERE childPart='" + p.getUUID() + "'");
+
+                //remove from collectionTable
+                statement.executeUpdate("DELETE FROM " + schema + ".CollectionXref WHERE objectId='" + p.getUUID() + "'");
+                //remove from partTable
+                statement.executeUpdate("DELETE FROM " + schema + ".PartTable WHERE idPart='" + p.getUUID() + "'");
+                //remove nucSeq
+                statement.executeUpdate("DELETE FROM " + schema + ".NucseqTable WHERE idNucseq='" + p.getUUID().replace("part", "seq") + "'");
+
+                //insert row for nucseq
+                statement.executeUpdate("INSERT INTO " + schema + ".NucseqTable (idNucSeq,sequence,isLocked,dateCreated,lastmodified) VALUES ("
+                        + "'" + p.getUUID().replace("part", "seq") + "',"
+                        + "'" + p.getSeq() + "',"
+                        + "0,"
+                        + "'" + getDate() + "',"
+                        + "'" + getDate() + "'"
+                        + ")");
+                //insert row for part
+                statement.executeUpdate("INSERT INTO " + schema + ".PartTable (idPart,formatId,nucseqId,description,authorId,name,riskGroup,dateCreated,lastModified,isBasic) VALUES("
+                        + "'" + p.getUUID() + "',"
+                        + "'org-clothocad-format-freeform-connect',"
+                        + "'" + p.getUUID().replace("part", "seq") + "',"
+                        + "'made by Raven',"
+                        + "'" + authorId + "',"
+                        + "'" + p.getName() + "',"
+                        + "-1,"
+                        + "'" + getDate() + "',"
+                        + "'" + getDate() + "',"
+                        + "0"
+                        + ")");
+
+                    
+                    //write compoite part
                     statement.executeUpdate("DELETE FROM " + schema + ".CompositeXref WHERE idComposite='composite_" + compositeCount + "'");
                     statement.executeUpdate("INSERT INTO " + schema + ".CompositeXref (idComposite,childPart,parentPart,position) VALUES ("
                             + "'" + "composite_" + compositeCount + "',"
