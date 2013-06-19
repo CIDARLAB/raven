@@ -35,7 +35,6 @@ public class ClothoReader {
             SRSNode currentNode = queue.get(0);
             seenNodes.add(currentNode);
             queue.remove(0);
-            System.out.println("saving " + currentNode.getComposition());
             for (SRSNode neighbor : currentNode.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
@@ -124,7 +123,6 @@ public class ClothoReader {
                 currentNode.setVector(vector);
             }
             seenNodes.add(currentNode);
-            System.out.println("saved: " + coll.getPart(currentNode.getUUID(), true).getStringComposition());
         }
 
     }
@@ -137,7 +135,6 @@ public class ClothoReader {
         if (_allCompositeParts.size() == 0 || _allBasicParts.size() == 0) {
             refreshPartVectorList(coll);
         }
-//        System.out.println("creating   : "+composition+" overhangs: "+LO+"|"+RO);
         //For each composite part, get the basic part uuids
 
         //Every time a new composite part can be made, search to see there's nothing made from the same components before saving
@@ -161,12 +158,10 @@ public class ClothoReader {
             for (Part basicPart : existingPartComposition) {
                 existingPartComp.add(basicPart.getName());
             }
-//            System.out.println("considering: "+existingPartComp+" overhangs: "+existingPartLO+"|"+existingPartRO);
 
             //If the number of uuids is the same as the number of input composition uuids and the number of uuids in the composition of somePart and the overhangs match, return the part
             if (composition.toString().equals(existingPartComp.toString())) {
                 if (existingPartLO.equalsIgnoreCase(LO) && existingPartRO.equalsIgnoreCase(RO)) {
-//                    System.out.println("returning existing part");
                     return existingPart;
                 }
             }

@@ -139,9 +139,10 @@ public class SRSMoClo extends SRSGeneral {
 
                 for (SRSNode neighbor : neighbors) {
 
-                    if (neighbor.getComposition().size() == 1) {
+                    if (neighbor.getStage()==0) {
                         basic.add(neighbor);
-                    }
+                    } 
+                    
 
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
