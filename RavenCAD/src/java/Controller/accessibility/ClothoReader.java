@@ -35,7 +35,7 @@ public class ClothoReader {
             SRSNode currentNode = queue.get(0);
             seenNodes.add(currentNode);
             queue.remove(0);
-
+            System.out.println("saving " + currentNode.getComposition());
             for (SRSNode neighbor : currentNode.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
@@ -93,7 +93,7 @@ public class ClothoReader {
                     betterPart.addSearchTag("RO: " + currentNode.getROverhang());
                     String type = currentNode.getType().toString();
                     type = type.substring(1, type.length() - 1);
-                    if(currentNode.getComposition().size()>1) {
+                    if (currentNode.getComposition().size() > 1) {
                         type = "composite";
                     }
                     betterPart.addSearchTag("Type: " + type);
@@ -101,9 +101,6 @@ public class ClothoReader {
                 }
                 currentNode.setUUID(betterPart.getUUID());
             }
-
-
-
 
 
             //Get the vector and save a new vector if it does not have a uuid
@@ -127,6 +124,7 @@ public class ClothoReader {
                 currentNode.setVector(vector);
             }
             seenNodes.add(currentNode);
+            System.out.println("saved: " + coll.getPart(currentNode.getUUID(), true).getStringComposition());
         }
 
     }
@@ -312,10 +310,10 @@ public class ClothoReader {
             queue.remove(0);
             seenNodes.add(current);
             ArrayList<SRSNode> neighbors = current.getNeighbors();
+            sortedQueue.add(0, current);
             for (SRSNode neighbor : neighbors) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
-                    sortedQueue.add(0, neighbor);
                 }
             }
         }
@@ -326,10 +324,11 @@ public class ClothoReader {
             seenNodes.add(current);
             Part currentPart = coll.getPart(current.getUUID(), true);
             ArrayList<SRSNode> neighbors = current.getNeighbors();
-            ArrayList<Part> composition = new ArrayList();
-            if (currentPart.getComposition().size() > 1) {
+            //second part of if statement is for library parts with large compositions but no child neighbors
+            if (currentPart.isComposite() && current.getNeighbors().size()>=currentPart.getComposition().size()) {
+                ArrayList<Part> composition = new ArrayList();
                 for (SRSNode neighbor : neighbors) {
-                    if (current.getStage()> neighbor.getStage()) {
+                    if (current.getStage() > neighbor.getStage()) {
                         composition.add(coll.getPart(neighbor.getUUID(), true));
                     }
                 }
