@@ -329,7 +329,7 @@ public class ClothoReader {
             ArrayList<Part> composition = new ArrayList();
             if (currentPart.getComposition().size() > 1) {
                 for (SRSNode neighbor : neighbors) {
-                    if (current.getComposition().toString().length() > neighbor.getComposition().toString().length()) {
+                    if (current.getStage()> neighbor.getStage()) {
                         composition.add(coll.getPart(neighbor.getUUID(), true));
                     }
                 }

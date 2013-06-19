@@ -336,7 +336,6 @@ public class RavenController {
                         level = -1;
                     }
                     Vector newVector = Vector.generateVector(name, sequence);
-//                            System.out.println("creating vector: " + name + " resistance: " + resistance + " LO: " + leftOverhang + " RO: " + rightOverhang + " level: " + String.valueOf(level) + " seq: " + sequence);
                     newVector.addSearchTag("LO: " + leftOverhang);
                     newVector.addSearchTag("RO: " + rightOverhang);
                     newVector.addSearchTag("Level: " + level);
@@ -396,7 +395,6 @@ public class RavenController {
                             forcedRight = partNameTokens[2];
                         }
                     }
-                    System.out.println("forcing " + forcedLeft + "|" + forcedRight + " for " + basicPartName);
                     if (forcedOverhangHash.get(compositePartName) != null) {
                         forcedOverhangHash.get(compositePartName).add(forcedLeft + "|" + forcedRight);
                     } else {
