@@ -162,14 +162,14 @@ public class RavenController {
                     type = tags.get(k).substring(6);
                 }
             }
-
-            if (p.isBasic()) {
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type);
-            } else {
                 String composition = "";
+            if (p.isBasic()) {
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type+",,"+composition);
+            } else {
+                composition = "";
                 type = "composite";
                 for (Part subpart : p.getComposition()) {
-                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + subpart.getRightOverhang();
+                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang();
                 }
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             }
@@ -180,7 +180,7 @@ public class RavenController {
                     + "\",\"LO\":\"" + p.getLeftOverhang()
                     + "\",\"RO\":\"" + p.getRightOverhang()
                     + "\",\"Type\":\"" + p.getType()
-                    + "\",\"Composition\":\"" + p.getStringComposition()
+                    + "\",\"Composition\":\"" + composition
                     + "\",\"Resistance\":\"\",\"Level\":\"\"},";
         }
 
