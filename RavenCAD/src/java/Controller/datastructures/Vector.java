@@ -23,7 +23,7 @@ public class Vector {
 
     private Vector() {
         UUID++;
-        this.uuid = String.valueOf(UUID);
+        this.uuid = "vector_"+String.valueOf(UUID);
     }
 
     public static Vector generateVector(String name) {

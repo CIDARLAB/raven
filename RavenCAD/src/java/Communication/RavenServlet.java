@@ -136,7 +136,7 @@ public class RavenServlet extends HttpServlet {
                 //generate efficiency hash
                 if (efficiencyArray.length > 0) {
                     for (int i = 0; i < efficiencyArray.length; i++) {
-                        efficiencyHash.put(i+2, Double.parseDouble(efficiencyArray[i]));
+                        efficiencyHash.put(i + 2, Double.parseDouble(efficiencyArray[i]));
                     }
                 }
                 String designCount = request.getParameter("designCount");
@@ -149,6 +149,17 @@ public class RavenServlet extends HttpServlet {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
                 out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":" + partsList + "}");
+            } else if (command.equals("save")) {
+                String[] partIDs = request.getParameter("partIDs").split(",");
+                String[] vectorIDs = request.getParameter("vectorIDs").split(",");
+                boolean writeSQL = Boolean.parseBoolean(request.getParameter("writeSQL"));
+//                Boolean writeSQL= true;
+                response.setContentType("text/html;charset=UTF-8");
+                String responseString = "failed save data";
+                responseString = controller.save(partIDs, vectorIDs, writeSQL);
+                out.write(responseString);
+
+
             }
         } catch (Exception e) {
             e.printStackTrace();

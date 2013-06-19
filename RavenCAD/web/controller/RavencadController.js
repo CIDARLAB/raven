@@ -172,9 +172,23 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 });
                 $('#modalSaveButton' + designCount).click(function() {
                     var designNumber = $(this).attr("val");
-                    $.get('RavenServlet', {"command": "load", "designCount": designNumber}, function(result) {
-                        if (result === "loaded data") {
-                            $('#discardButton' + designNumber).attr("val", "saved");
+                    var partIDs = [];
+                    var vectorIDs = [];
+                    var writeSQL = false;
+                    if ($('#sqlCheckbox' + designNumber).attr("checked")) {
+                        writeSQL = true;
+                    }
+                    $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                        var tokens = $(this).attr("val").split("|");
+                        if (tokens[0].toLowerCase() === "vector") {
+                            vectorIDs.push(tokens[1]);
+                        } else {
+                            partIDs.push(tokens[1]);
+                        }
+                    });
+                    $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
+                        if (result === "saved data") {
+                            $('#discardButton' + designCount).attr("val", "saved");
                             $('#saveButton' + designNumber).prop('disabled', true);
                             $('#saveButton' + designNumber).text("Successful Save");
                             refreshData();
@@ -226,10 +240,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
                         '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
                         '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                        '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>'+
+                        '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>' +
                         '<p><a id="downloadArcs' + designCount + '">Download Puppeteer Arcs File</a></p>'
 
-            );
+                        );
                 var partLibrary = ""; //parts to use in library
                 var vectorLibrary = ""; //vectors to use in library
                 var rec = ""; //recommended intermediates
@@ -265,7 +279,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 method = method.toLowerCase().replace(/\s+/g, '');
                 var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": ""
                             + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": ""
-                            + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage, "efficiency": "" + efficiencyArray};
+                            + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage, "efficiency": "" + efficiencyArray, "writeSQL": ""};
                 $.get("RavenServlet", requestInput, function(data) {
                     if (data["status"] === "good") {
                         //render image
@@ -279,6 +293,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             saveButtons = '<p><button id="reportButton' + designCount +
                                     '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
                                     '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '" val="' + designCount + '">Save to working library</button></p>';
+                            if (user === "admin") {
+                                saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + designCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
+                            } else {
+                                saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + designCount + '" type="checkbox" checked=false/></p>';
+                            }
                             $('#download' + designCount).prepend(saveButtons);
                             $('#reportButton' + designCount).click(function() {
                                 alert("this feature will be coming soon");
@@ -294,8 +313,22 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         //prepend status badge and report button
                         $('#saveButton' + designCount).click(function() {
                             var designNumber = $(this).attr("val");
-                            $.get('RavenServlet', {"command": "load", "designCount": designNumber}, function(result) {
-                                if (result === "loaded data") {
+                            var partIDs = [];
+                            var vectorIDs = [];
+                            var writeSQL = false;
+                            if ($('#sqlCheckbox' + designNumber).attr("checked")) {
+                                writeSQL = true;
+                            }
+                            $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                                var tokens = $(this).attr("val").split("|");
+                                if (tokens[0].toLowerCase() === "vector") {
+                                    vectorIDs.push(tokens[1]);
+                                } else {
+                                    partIDs.push(tokens[1]);
+                                }
+                            });
+                            $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
+                                if (result === "saved data") {
                                     $('#discardButton' + designCount).attr("val", "saved");
                                     $('#saveButton' + designNumber).prop('disabled', true);
                                     $('#saveButton' + designNumber).text("Successful Save");
@@ -418,9 +451,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
         });
     };
-//    $.get("RavenServlet", {"command": "load"}, function() {
     refreshData();
-//    });
     var generateIntermediates = function(composition) {
         toSplit = composition.substring(1, composition.length - 1);
         var toReturn = [];

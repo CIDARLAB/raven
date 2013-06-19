@@ -35,7 +35,6 @@ public class ClothoReader {
             SRSNode currentNode = queue.get(0);
             seenNodes.add(currentNode);
             queue.remove(0);
-
             for (SRSNode neighbor : currentNode.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
@@ -93,7 +92,7 @@ public class ClothoReader {
                     betterPart.addSearchTag("RO: " + currentNode.getROverhang());
                     String type = currentNode.getType().toString();
                     type = type.substring(1, type.length() - 1);
-                    if(currentNode.getComposition().size()>1) {
+                    if (currentNode.getComposition().size() > 1) {
                         type = "composite";
                     }
                     betterPart.addSearchTag("Type: " + type);
@@ -101,9 +100,6 @@ public class ClothoReader {
                 }
                 currentNode.setUUID(betterPart.getUUID());
             }
-
-
-
 
 
             //Get the vector and save a new vector if it does not have a uuid
@@ -139,7 +135,6 @@ public class ClothoReader {
         if (_allCompositeParts.size() == 0 || _allBasicParts.size() == 0) {
             refreshPartVectorList(coll);
         }
-//        System.out.println("creating   : "+composition+" overhangs: "+LO+"|"+RO);
         //For each composite part, get the basic part uuids
 
         //Every time a new composite part can be made, search to see there's nothing made from the same components before saving
@@ -163,12 +158,10 @@ public class ClothoReader {
             for (Part basicPart : existingPartComposition) {
                 existingPartComp.add(basicPart.getName());
             }
-//            System.out.println("considering: "+existingPartComp+" overhangs: "+existingPartLO+"|"+existingPartRO);
 
             //If the number of uuids is the same as the number of input composition uuids and the number of uuids in the composition of somePart and the overhangs match, return the part
             if (composition.toString().equals(existingPartComp.toString())) {
                 if (existingPartLO.equalsIgnoreCase(LO) && existingPartRO.equalsIgnoreCase(RO)) {
-//                    System.out.println("returning existing part");
                     return existingPart;
                 }
             }
@@ -312,10 +305,10 @@ public class ClothoReader {
             queue.remove(0);
             seenNodes.add(current);
             ArrayList<SRSNode> neighbors = current.getNeighbors();
+            sortedQueue.add(0, current);
             for (SRSNode neighbor : neighbors) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
-                    sortedQueue.add(0, neighbor);
                 }
             }
         }
@@ -326,10 +319,11 @@ public class ClothoReader {
             seenNodes.add(current);
             Part currentPart = coll.getPart(current.getUUID(), true);
             ArrayList<SRSNode> neighbors = current.getNeighbors();
-            ArrayList<Part> composition = new ArrayList();
-            if (currentPart.getComposition().size() > 1) {
+            //second part of if statement is for library parts with large compositions but no child neighbors
+            if (currentPart.isComposite() && current.getNeighbors().size()>=currentPart.getComposition().size()) {
+                ArrayList<Part> composition = new ArrayList();
                 for (SRSNode neighbor : neighbors) {
-                    if (current.getComposition().toString().length() > neighbor.getComposition().toString().length()) {
+                    if (current.getStage() > neighbor.getStage()) {
                         composition.add(coll.getPart(neighbor.getUUID(), true));
                     }
                 }

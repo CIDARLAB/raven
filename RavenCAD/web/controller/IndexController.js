@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    setCookie("authenticate","authenticated",1);
-    setCookie("user", "jenhan", 1);
     $('#loginForm').submit(function(e) {
         var self = this;
         e.preventDefault();
