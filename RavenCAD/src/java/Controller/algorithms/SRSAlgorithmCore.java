@@ -20,10 +20,27 @@ import javax.swing.JOptionPane;
  */
 public class SRSAlgorithmCore {
 
+     /**
+     * ************************************************************************
+     *
+     * THIS CLASS HAS A LOT OF METHODS THAT ARE USED BY THE GENERAL ALGORITHM WITH NO REAL HOME
+     *
+     *************************************************************************
+     */
+    
     /**
      * Given goal parts and library, create hashMem, key: composition with
      * overhangs concatenated at the end, value: corresponding graph *
      */
+    
+     /**
+     * ************************************************************************
+     *
+     * DATA IMPORT FROM CLOTHO DATA STRUCTURE
+     *
+     *************************************************************************
+     */
+    
     protected HashMap<String, SRSGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
 
         //Create library to initialize hashMem
@@ -226,6 +243,15 @@ public class SRSAlgorithmCore {
         return types;
     }
 
+    
+    /**
+     * ************************************************************************
+     *
+     * SHARING, REQUIRED, FORBIDDEN
+     *
+     *************************************************************************
+     */
+    
     /**
      * Find sharing score for all possible intermediates for a set of goal parts
      * *
@@ -343,13 +369,15 @@ public class SRSAlgorithmCore {
         }
     }
 
+    
     /**
      * ************************************************************************
      *
-     * UTILITIES
+     * PARTITIONING
      *
      *************************************************************************
      */
+    
     /**
      * Get all subsets of a set for a specific sized subset *
      */
@@ -531,6 +559,15 @@ public class SRSAlgorithmCore {
         return ints;
     }
 
+    
+    /**
+     * ************************************************************************
+     *
+     * MODULARITY CALCULATION METHODS
+     *
+     *************************************************************************
+     */
+    
     /**
      * Get all subgraphs of a graph by traversing a graph *
      */
@@ -788,6 +825,15 @@ public class SRSAlgorithmCore {
         return stageHash;
     }
 
+    
+    /**
+     * ************************************************************************
+     *
+     * PRIMER DESIGN
+     *
+     *************************************************************************
+     */
+    
     public static String reverseComplement(String seq) {
         String toReturn = "";
         for (int i = 0; i < seq.length(); i++) {

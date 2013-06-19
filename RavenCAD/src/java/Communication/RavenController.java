@@ -576,7 +576,7 @@ public class RavenController {
         if (!_assemblyGraphs.isEmpty()) {
             for (SRSGraph result : _assemblyGraphs) {
                 reader.nodesToClothoPartsVectors(_collector, result);
-                reader.fixCompositeUUIDs(_collector, result);
+//                reader.fixCompositeUUIDs(_collector, result);
                 boolean canPigeon = result.canPigeon();
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges));
@@ -616,6 +616,7 @@ public class RavenController {
         out = new BufferedWriter(fw);
         out.write(mergedGraphText);
         out.close();
+        
         //post request to graphviz
         WeyekinPoster.setDotText(mergedGraphText);
         WeyekinPoster.postMyVision();
