@@ -66,8 +66,8 @@ public class SRSMoClo extends SRSGeneral {
 
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
-            
-            
+
+
             for (SRSGraph graph : optimalGraphs) {
                 ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
                 HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
@@ -86,7 +86,7 @@ public class SRSMoClo extends SRSGeneral {
                     }
                 }
             }
-            
+
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
@@ -139,10 +139,10 @@ public class SRSMoClo extends SRSGeneral {
 
                 for (SRSNode neighbor : neighbors) {
 
-                    if (neighbor.getStage()==0) {
+                    if (neighbor.getStage() == 0) {
                         basic.add(neighbor);
-                    } 
-                    
+                    }
+
 
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
@@ -763,7 +763,12 @@ public class SRSMoClo extends SRSGeneral {
             forcedOverhangHash = new HashMap();
             for (String key : requiredOverhangs.keySet()) {
                 Part part = coll.getPartByName(key, false);
-                forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
+//                System.out.println("forcedOverhangHash " + forcedOverhangHash);
+//                System.out.println("requiredOverhangs " + requiredOverhangs);
+//                System.out.println("part " + part);
+                if (part != null) {
+                    forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
+                }
             }
         }
     }
@@ -772,13 +777,13 @@ public class SRSMoClo extends SRSGeneral {
         boolean toReturn = true;
         for (SRSGraph graph : graphs) {
             SRSNode root = graph.getRootNode();
-                        
+
             HashSet<SRSNode> seenNodes = new HashSet();
             ArrayList<SRSNode> queue = new ArrayList();
             queue.add(root);
             while (!queue.isEmpty()) {
                 SRSNode parent = queue.get(0);
-                                
+
                 queue.remove(0);
                 seenNodes.add(parent);
                 //a node's left overhang can't be the same as the right overhang

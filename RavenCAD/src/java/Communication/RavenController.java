@@ -162,9 +162,9 @@ public class RavenController {
                     type = tags.get(k).substring(6);
                 }
             }
-                String composition = "";
+            String composition = "";
             if (p.isBasic()) {
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type+",,"+composition);
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             } else {
                 composition = "";
                 type = "composite";
@@ -219,6 +219,20 @@ public class RavenController {
 
     public void clearData() throws Exception {
         _collector.purge();
+        _goalParts = new HashMap();//key: target part, value: composition
+        _efficiency = new HashMap();
+        _required = new HashSet();
+        _recommended = new HashSet();
+        _discouraged = new HashSet();
+        _forbidden = new HashSet();
+        _statistics = new Statistics();
+        _assemblyGraphs = new ArrayList<SRSGraph>();
+        forcedOverhangHash = new HashMap();
+        _partLibrary = new ArrayList();
+        _vectorLibrary = new ArrayList();
+        _instructions = "";
+        _error = "";
+
         String uploadFilePath = _path + _user + "/";
         File[] filesInDirectory = new File(uploadFilePath).listFiles();
         for (File currentFile : filesInDirectory) {
@@ -400,7 +414,9 @@ public class RavenController {
                     } else {
                         ArrayList<String> toAdd = new ArrayList();
                         toAdd.add(forcedLeft + "|" + forcedRight);
-                        forcedOverhangHash.put(compositePartName, toAdd);
+                        if (!forcedLeft.equals(" ") || !forcedRight.equals(" ")) {
+                            forcedOverhangHash.put(compositePartName, toAdd);
+                        }
                     }
 
                     composition.add(_collector.getPartByName(basicPartName, true));
