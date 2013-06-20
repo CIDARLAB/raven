@@ -453,7 +453,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
     refreshData();
     var generateIntermediates = function(composition) {
-        toSplit = composition.substring(1, composition.length - 1);
+        var toSplit = composition.substring(1, composition.length - 1);
         var toReturn = [];
         var compositionArray = toSplit.split(",");
         var seenIntermediates = {};
@@ -485,16 +485,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#targetPartList option").each(function() {
             targets = targets + "\n" + uuidCompositionHash[$(this).attr("id")];
 //            var intermediates = generateIntermediates(uuidCompositionHash[$(this).attr("id")]);
-            $.each(intermediates, function() {
-                if (seen[this] !== "seen") {
-                    tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this
-                            + '"></td><td><input class="required" type="checkbox" value="' + this
-                            + '"></td><td><input class="forbidden" type="checkbox" value="' + this
-                            + '"></td><td><input class="discouraged" type="checkbox" value="' + this
-                            + '"></td></tr>';
-                    seen[this] = "seen";
-                }
-            });
+//            $.each(intermediates, function() {
+//                if (seen[this] !== "seen") {
+//                    tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this
+//                            + '"></td><td><input class="required" type="checkbox" value="' + this
+//                            + '"></td><td><input class="forbidden" type="checkbox" value="' + this
+//                            + '"></td><td><input class="discouraged" type="checkbox" value="' + this
+//                            + '"></td></tr>';
+//                    seen[this] = "seen";
+//                }
+//            });
         });
         seen = null;
         tableBody = tableBody + '</tbody>';
