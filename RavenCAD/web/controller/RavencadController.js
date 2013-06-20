@@ -484,7 +484,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var seen = {};
         $("#targetPartList option").each(function() {
             targets = targets + "\n" + uuidCompositionHash[$(this).attr("id")];
-            var intermediates = generateIntermediates(uuidCompositionHash[$(this).attr("id")]);
+//            var intermediates = generateIntermediates(uuidCompositionHash[$(this).attr("id")]);
             $.each(intermediates, function() {
                 if (seen[this] !== "seen") {
                     tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this

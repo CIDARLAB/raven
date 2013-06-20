@@ -205,14 +205,11 @@ public class SRSGeneral extends SRSAlgorithmCore {
                 }
             }
         }
-                
-//        System.out.println("************* gpComp: " + gpComp + "********************");
         
         //Have a new partition set if library parts already physically exist
         Set<String> libSet = libHash.keySet();
         ArrayList<ArrayList<Integer>> libIndexes = new ArrayList<ArrayList<Integer>>();
         libIndexes.add(indexes);
-//        System.out.println("ORIGINAL INDEXES: " + indexes);
 
         for (int startL = 0; startL < gpSize; startL++) {
             for (int endL = startL + 2; endL < gpSize + 1; endL++) {
@@ -227,7 +224,6 @@ public class SRSGeneral extends SRSAlgorithmCore {
                         aLibIndexes.remove(new Integer(j));
                     }
                     libIndexes.add(aLibIndexes);
-//                    System.out.println("INDEXES FOUND BECAUSE OF SHARING: " + aLibIndexes);
                 }
             }
         }
@@ -267,13 +263,6 @@ public class SRSGeneral extends SRSAlgorithmCore {
         Collections.sort(keys);
         boolean canPartitionAny = false;
 
-//        for (Integer breaks : keys) {
-//            System.out.println("Number of breaks: " + breaks);
-//            for (int[] part : partitionSetByNBreaks.get(breaks)) {
-//                System.out.println("A partitions: " + Arrays.toString(part));
-//            }
-//        }
-//        
         //Iterate over all part "breaks"
         //Find best graph for all possible number of partition sizes        
         for (Integer nBreaks : keys) {

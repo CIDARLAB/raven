@@ -647,8 +647,8 @@ public class RavenController {
         out.close();
         
         //post request to graphviz
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
+//        WeyekinPoster.setDotText(mergedGraphText);
+//        WeyekinPoster.postMyVision();
 
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
