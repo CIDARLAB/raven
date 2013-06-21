@@ -788,6 +788,7 @@ public class SRSMoClo extends SRSGeneral {
                 seenNodes.add(parent);
                 //a node's left overhang can't be the same as the right overhang
                 if (parent.getLOverhang().equals(parent.getROverhang())) {
+                    System.out.println(parent.getComposition()+" has the same left overhang as it's right overhang");
                     toReturn = false;
                 }
                 if (parent.getNeighbors().size() > 1) {
@@ -814,18 +815,21 @@ public class SRSMoClo extends SRSGeneral {
                             if (i == 0) {
                                 //the first 
                                 if (!child.getLOverhang().equals(parent.getLOverhang())) {
+                                    System.out.println(child.getComposition()+", which is the 1st part, doesnt have the same left overhang as its parent");
                                     toReturn = false;
                                 }
                             }
                             //last child should have the same right overhang as the parent
                             if (i == parent.getComposition().size() - 1) {
                                 if (!child.getROverhang().equals(parent.getROverhang())) {
+                                   System.out.println(child.getComposition()+", which is the last part, doesnt have the same right overhang as its parent");
                                     toReturn = false;
                                 }
                             }
                             //each nodes left overhang should be the same as the right overhang of the adjacent node
                             if (previous != null) {
                                 if (!child.getLOverhang().equals(previous.getROverhang())) {
+                                    System.out.println(child.getComposition()+" has a left overhang that doesn't match the right overhang of its neighbor");
                                     toReturn = false;
                                 }
                             }
@@ -836,6 +840,9 @@ public class SRSMoClo extends SRSGeneral {
                     }
                     //each overhang should appear only once in the set of all left overhangs and once in the set of all right overhangs                       
                     if (leftFrequencyHash.containsValue(2) || rightFrequencyHash.containsValue(2)) {
+                        System.out.println("in "+parent.getComposition()+", an overhang is used twice for the left overhang or twice for the right overhang\n");
+                        System.out.println("leftFrequencyHash: "+leftFrequencyHash);
+                        System.out.println("rightFrequencyHash: "+rightFrequencyHash);
                         toReturn = false;
                     }
                 }

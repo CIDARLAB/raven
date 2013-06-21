@@ -615,9 +615,12 @@ public class RavenController {
                 targetRootNodes.add(result.getRootNode());
             }
         }
+        System.out.println("MERGING GRAPHS");
         _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        System.out.println("GRAPHS MERGED");
         SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
         solutionStats(method);
+        System.out.println("MAKING GRAPH AND ARCS FILES");
         if (!_assemblyGraphs.isEmpty()) {
             for (SRSGraph result : _assemblyGraphs) {
                 reader.nodesToClothoPartsVectors(_collector, result);
@@ -628,6 +631,7 @@ public class RavenController {
                 graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
             }
         }
+        System.out.println("GRAPH AND ARCS FILES CREATED");
         String mergedArcText = SRSGraph.mergeArcFiles(arcTextFiles);
         String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
 
