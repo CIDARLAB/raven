@@ -18,7 +18,7 @@ import java.util.Set;
 public class SRSSLIC extends SRSGeneral {
 
      /** Clotho part wrapper for SLIC assembly **/
-    public ArrayList<SRSGraph> slicClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
+    public ArrayList<SRSGraph> slicClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
         try {
             
             //Designate how many parts can be efficiently ligated in one step

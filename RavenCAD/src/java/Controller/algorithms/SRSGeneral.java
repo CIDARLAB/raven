@@ -7,7 +7,6 @@ package Controller.algorithms;
 import Controller.datastructures.SRSGraph;
 import Controller.datastructures.SRSNode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -304,7 +303,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
                     //If not, make the new SRSNode
                     boolean rec = recommended.contains(comp.toString());
                     boolean dis = discouraged.contains(comp.toString());
-                    SRSNode aSubPart = new SRSNode(rec, dis, null, comp, type);
+                    SRSNode aSubPart = new SRSNode(rec, dis, null, comp, type, false);
                     allSubParts.add(aSubPart);
                 }
 

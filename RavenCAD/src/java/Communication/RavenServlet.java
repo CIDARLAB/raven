@@ -144,6 +144,7 @@ public class RavenServlet extends HttpServlet {
                 String partsList = controller.generatePartsList(designCount);
                 String instructions = controller.getInstructions();
                 String statString = controller.generateStats();
+                System.out.println("Stats: " + statString);
                 instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
                 if (instructions.length() < 1) {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";

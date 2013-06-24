@@ -20,7 +20,7 @@ public class SRSGoldenGate extends SRSGeneral {
     /**
      * Clotho part wrapper for Golden Gate assembly *
      */
-    public ArrayList<SRSGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
+    public ArrayList<SRSGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
         try {
 
             //Designate how many parts can be efficiently ligated in one step

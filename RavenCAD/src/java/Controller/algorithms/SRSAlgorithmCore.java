@@ -219,7 +219,7 @@ public class SRSAlgorithmCore {
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            SRSNode gp = new SRSNode(false, false, null, composition, type);
+            SRSNode gp = new SRSNode(false, false, null, composition, type, false);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
@@ -824,53 +824,7 @@ public class SRSAlgorithmCore {
         stageHash.put(parent.getStage() - 1, stageNodes);
         return stageHash;
     }
-
     
-    /**
-     * ************************************************************************
-     *
-     * PRIMER DESIGN
-     *
-     *************************************************************************
-     */
-    
-    public static String reverseComplement(String seq) {
-        String toReturn = "";
-        for (int i = 0; i < seq.length(); i++) {
-            if (seq.charAt(i) == 'A') {
-                toReturn = "T" + toReturn;
-            } else if (seq.charAt(i) == 'a') {
-                toReturn = "t" + toReturn;
-            } else if (seq.charAt(i) == 'G') {
-                toReturn = "C" + toReturn;
-            } else if (seq.charAt(i) == 'g') {
-                toReturn = "c" + toReturn;
-            } else if (seq.charAt(i) == 'C') {
-                toReturn = "G" + toReturn;
-            } else if (seq.charAt(i) == 'c') {
-                toReturn = "g" + toReturn;
-            } else if (seq.charAt(i) == 'T') {
-                toReturn = "A" + toReturn;
-            } else if (seq.charAt(i) == 't') {
-                toReturn = "a" + toReturn;
-            } else {
-                toReturn = "N" + toReturn;
-            }
-        }
-        return toReturn;
-    }
-    
-    //calculates the length of homology required for primers based on nearest neighbor calculations
-    public static int getPrimerHomologyLength(Double meltingTemp, String sequence) {
-        //TODO write actual code
-        return 20;
-    }
-    
-    //generates a random DNA sequence with input length
-    public static String generateRandomSequence(int length) {
-        //TODO write actual code
-        return "agac";
-    }
     //Fields
     private int _subsetScore;
 }

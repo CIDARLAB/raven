@@ -31,11 +31,12 @@ public class SRSNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public SRSNode(boolean recommended, boolean discouraged, ArrayList<SRSNode> neighbors, ArrayList<String> composition, ArrayList<String> type) {
+    public SRSNode(boolean recommended, boolean discouraged, ArrayList<SRSNode> neighbors, ArrayList<String> composition, ArrayList<String> type, boolean success) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
         _efficiency = 0;
+        _success = success;
         _neighbors = neighbors;
         if (_neighbors == null) {
             _neighbors = new ArrayList<SRSNode>();
@@ -66,6 +67,7 @@ public class SRSNode {
         clone._stage = this._stage;
         clone._vector = this._vector;
         clone._efficiency = this._efficiency;
+        clone._success = this._success;
         ArrayList<SRSNode> neighbors = this._neighbors;
         cloneHelper(clone, this, neighbors);
         
@@ -90,6 +92,7 @@ public class SRSNode {
             neighborClone._stage = neighbor._stage;
             neighborClone._vector = neighbor._vector;
             neighborClone._efficiency = neighbor._efficiency;
+            neighborClone._success = neighbor._success;
             
             parentClone.addNeighbor(neighborClone);
             neighborClone.addNeighbor(parentClone);
@@ -182,6 +185,11 @@ public class SRSNode {
         return _modularity;
     }
     
+    /** Return success or failure - for debugging **/
+    public boolean getSuccess() {
+        return _success;
+    }
+    
     /** Set part as recommended or not required **/
     public void setRecommended(boolean recommended) {
         _recommended = recommended;
@@ -260,7 +268,13 @@ public class SRSNode {
         _modularity = mod;
     }
     
+    /** Set success **/
+    public void setSuccess(boolean success) {
+        _success = success;
+    }
+    
     //FIELDS
+    private boolean _success;
     private double _efficiency;
     private double _modularity;
     private boolean _recommended;

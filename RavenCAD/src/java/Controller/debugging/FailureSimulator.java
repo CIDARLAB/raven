@@ -8,6 +8,6 @@ package Controller.debugging;
  *
  * @author evanappleton
  */
-public class failureSimulator {
+public class FailureSimulator {
     
 }

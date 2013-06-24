@@ -5,6 +5,7 @@
 package Controller.algorithms.modasm;
 
 import Controller.algorithms.SRSAlgorithmCore;
+import Controller.algorithms.PrimerDesign;
 import Controller.algorithms.SRSGeneral;
 import Controller.datastructures.*;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class SRSMoClo extends SRSGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<SRSGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies) {
+    public ArrayList<SRSGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
         try {
             _partLibrary = partLibrary;
             _vectorLibrary = vectorLibrary;
@@ -104,8 +105,8 @@ public class SRSMoClo extends SRSGeneral {
             return blank;
         }
     }
-    //assign overhangs ignoring the library of parts and vectors; overhangs are saved to graph nodes not part/vectors
-
+    
+    /** Assign overhangs ignoring the library of parts and vectors; overhangs are saved to graph nodes not part/vectors **/
     private void basicOverhangAssignment(ArrayList<SRSGraph> optimalGraphs) {
 
         encounteredCompositions = new HashSet();
@@ -142,7 +143,6 @@ public class SRSMoClo extends SRSGeneral {
                     if (neighbor.getStage() == 0) {
                         basic.add(neighbor);
                     }
-
 
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
@@ -920,8 +920,8 @@ public class SRSMoClo extends SRSGeneral {
                         if (designPrimers) {
                             String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
                             String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                            String forwardOligoSequence = forwardPrimerPrefix + forwardEnzymeCutSite + SRSAlgorithmCore.generateRandomSequence(forwardEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getLOverhang()) + currentPart.getSeq().substring(0, SRSAlgorithmCore.getPrimerHomologyLength(meltingTemp, currentPart.getSeq()));
-                            String reverseOligoSequence = SRSAlgorithmCore.reverseComplement(reversePrimerPrefix + reverseEnzymeCutSite + SRSAlgorithmCore.generateRandomSequence(reverseEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getROverhang()) + currentPart.getSeq().substring(currentPart.getSeq().length() - SRSAlgorithmCore.getPrimerHomologyLength(meltingTemp, SRSAlgorithmCore.reverseComplement(currentPart.getSeq()))));
+                            String forwardOligoSequence = forwardPrimerPrefix + forwardEnzymeCutSite + PrimerDesign.generateRandomSequence(forwardEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, currentPart.getSeq()));
+                            String reverseOligoSequence = PrimerDesign.reverseComplement(reversePrimerPrefix + reverseEnzymeCutSite + PrimerDesign.generateRandomSequence(reverseEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getROverhang()) + currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, PrimerDesign.reverseComplement(currentPart.getSeq()))));
                             oligoNames.add(forwardOligoName);
                             oligoNames.add(reverseOligoName);
                             oligoSequences.add(forwardOligoSequence);
