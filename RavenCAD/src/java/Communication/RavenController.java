@@ -615,12 +615,9 @@ public class RavenController {
                 targetRootNodes.add(result.getRootNode());
             }
         }
-        System.out.println("MERGING GRAPHS");
         _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
-        System.out.println("GRAPHS MERGED");
         SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
         solutionStats(method);
-        System.out.println("MAKING GRAPH AND ARCS FILES");
         if (!_assemblyGraphs.isEmpty()) {
             for (SRSGraph result : _assemblyGraphs) {
                 reader.nodesToClothoPartsVectors(_collector, result);

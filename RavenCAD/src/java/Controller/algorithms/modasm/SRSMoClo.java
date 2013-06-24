@@ -68,24 +68,24 @@ public class SRSMoClo extends SRSGeneral {
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
 
 
-            for (SRSGraph graph : optimalGraphs) {
-                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-                SRSNode root = graph.getRootNode();
-                queue.add(root);
-                while (!queue.isEmpty()) {
-                    SRSNode current = queue.get(0);
-                    queue.remove(0);
-                    seenNodes.add(current);
-
-                    ArrayList<SRSNode> neighbors = current.getNeighbors();
-                    for (SRSNode neighbor : neighbors) {
-                        if (!seenNodes.contains(neighbor)) {
-                            queue.add(neighbor);
-                        }
-                    }
-                }
-            }
+//            for (SRSGraph graph : optimalGraphs) {
+//                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+//                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+//                SRSNode root = graph.getRootNode();
+//                queue.add(root);
+//                while (!queue.isEmpty()) {
+//                    SRSNode current = queue.get(0);
+//                    queue.remove(0);
+//                    seenNodes.add(current);
+//
+//                    ArrayList<SRSNode> neighbors = current.getNeighbors();
+//                    for (SRSNode neighbor : neighbors) {
+//                        if (!seenNodes.contains(neighbor)) {
+//                            queue.add(neighbor);
+//                        }
+//                    }
+//                }
+//            }
 
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
@@ -264,7 +264,8 @@ public class SRSMoClo extends SRSGeneral {
 
         HashMap<String, String> numberToLetterOverhangHash = new HashMap(); //replaces the abstract numerical with abstract letter overhangs; key: abstract numerical overhang, value: abstract letter overhang
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A_,B_,C_,D_,E_,G_,H_,I_,J_,K_,L_,M_,N_,O_,P_,Q_,R_,S_,T_,U_,V_,W_,X_,Y_,Z_,a_,b_,c_,d_,e_,f_,g_,h_,i_,j_,k_,l_,m_,n_,o_,p_,q_,r_,s_,t_,u_,v_,w_,x_,y_,z_".split(","))); //overhangs that don't exist in part or vector library
-
+        //aa_,ba_,ca_,da_,ea_,fa_,ga_,ha_,ia_,ja_,ka_,la_,ma_,na_,oa_,pa_,qa_,ra_,sa_,ta_,ua_,va_,wa_,xa_,ya_,za_,ab_,bb_,cb_,db_,eb_,fb_,gb_,hb_,ib_,jb_,kb_,lb_,mb_,nb_,ob_,pb_,qb_,rb_,sb_,tb_,ub_,vb_,wb_,xb_,yb_,zb_
+        
         for (SRSGraph graph : optimalGraphs) {
             ArrayList<SRSNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
 
@@ -427,6 +428,7 @@ public class SRSMoClo extends SRSGeneral {
         HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
         finalOverhangHash = preAssignOverhangs(optimalGraphs);
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
+        //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
         HashMap<String, Integer> concreteOverhangFrequencyHash = new HashMap(); //key: concrete overhang pair, value: how often does that overhang pair appear
         allOverhangs.removeAll(finalOverhangHash.values());

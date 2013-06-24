@@ -22,7 +22,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
         table.find('tbody').append('<tr><td>' + (table.find('tr').length + 1) + '</td><td><input class="input-mini" placeholder="1.0"/></td></tr>');
     });
     $('.minusEfficiencyButton').click(function() {
-        $('#methodTabs div.active table tbody tr').last().remove();
+        if ($('#methodTabs div.active table tbody tr').length > 1) {
+            $('#methodTabs div.active table tbody tr').last().remove();
+        }        
     });
     //target part button event handlers
     $('#targetSelectAllButton').click(function() {
