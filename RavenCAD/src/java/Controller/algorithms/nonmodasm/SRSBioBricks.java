@@ -4,6 +4,7 @@
  */
 package Controller.algorithms.nonmodasm;
 
+import Controller.accessibility.ClothoReader;
 import Controller.algorithms.SRSGeneral;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,11 +27,11 @@ public class SRSBioBricks extends SRSGeneral {
             _maxNeighbors = 2;
             
             //Initialize part hash and vector set
-            HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended);
-            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
+            HashMap<String, SRSGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
+            ArrayList<SRSVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
-            ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
+            ArrayList<SRSNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();

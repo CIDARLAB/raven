@@ -4,7 +4,7 @@
  */
 package Communication;
 
-import Controller.accessibility.ClothoReader;
+import Controller.accessibility.ClothoWriter;
 import Controller.algorithms.modasm.*;
 import Controller.algorithms.nonmodasm.*;
 import Controller.datastructures.*;
@@ -583,7 +583,7 @@ public class RavenController {
 
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
-            _goalParts.put(current, ClothoReader.getComposition(current));
+            _goalParts.put(current, ClothoWriter.getComposition(current));
         }
 
         Statistics.start();
@@ -607,7 +607,7 @@ public class RavenController {
         }
 
         Statistics.stop();
-        ClothoReader reader = new ClothoReader();
+        ClothoWriter writer = new ClothoWriter();
         ArrayList<String> graphTextFiles = new ArrayList();
         ArrayList<String> arcTextFiles = new ArrayList<String>();
         ArrayList<SRSNode> targetRootNodes = new ArrayList();
@@ -621,8 +621,8 @@ public class RavenController {
         solutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (SRSGraph result : _assemblyGraphs) {
-                reader.nodesToClothoPartsVectors(_collector, result);
-                reader.fixCompositeUUIDs(_collector, result);
+                writer.nodesToClothoPartsVectors(_collector, result);
+                writer.fixCompositeUUIDs(_collector, result);
                 boolean canPigeon = result.canPigeon();
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges,method));

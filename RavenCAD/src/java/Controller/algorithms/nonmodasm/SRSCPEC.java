@@ -4,6 +4,7 @@
  */
 package Controller.algorithms.nonmodasm;
 
+import Controller.accessibility.ClothoReader;
 import Controller.algorithms.SRSGeneral;
 import Controller.datastructures.*;
 import java.util.ArrayList;
@@ -32,10 +33,10 @@ public class SRSCPEC extends SRSGeneral {
             _maxNeighbors = max;
 
             //Initialize part hash and vector set
-            HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended);
+            HashMap<String, SRSGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
 
             //Put all parts into hash for mgp algorithm            
-            ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
+            ArrayList<SRSNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();

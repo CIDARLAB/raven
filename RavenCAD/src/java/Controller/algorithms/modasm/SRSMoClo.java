@@ -4,6 +4,7 @@
  */
 package Controller.algorithms.modasm;
 
+import Controller.accessibility.ClothoReader;
 import Controller.algorithms.SRSAlgorithmCore;
 import Controller.algorithms.PrimerDesign;
 import Controller.algorithms.SRSGeneral;
@@ -46,11 +47,11 @@ public class SRSMoClo extends SRSGeneral {
             _maxNeighbors = max;
 
             //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
-            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
+            HashMap<String, SRSGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
+            ArrayList<SRSVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
-            ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
+            ArrayList<SRSNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
