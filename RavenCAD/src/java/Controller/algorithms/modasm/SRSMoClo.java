@@ -728,7 +728,7 @@ public class SRSMoClo extends SRSGeneral {
                     queue.remove(0);
                     seenNodes.add(current);
 
-                    if (current.getNeighbors().size() == 1) {
+                    if (current.getStage()==0) {
                         basicParts.add(current);
                     }
 
@@ -739,12 +739,13 @@ public class SRSMoClo extends SRSGeneral {
                     }
                 }
                 ArrayList<String> forcedOverhangs = forcedOverhangHash.get(root.getComposition().toString());
-
+                System.out.println("forcing for "+root.getComposition());
                 for (int i = 0; i < basicParts.size(); i++) {
                     String[] forcedTokens = forcedOverhangs.get(i).split("\\|");
                     String forcedLeft = forcedTokens[0].trim();
                     String forcedRight = forcedTokens[1].trim();
                     SRSNode basicNode = basicParts.get(i);
+                    System.out.println("forcing "+forcedLeft+forcedRight+" for "+basicNode.getComposition());
                     if (forcedLeft.length() > 0) {
                         toReturn.put(basicNode.getLOverhang(), forcedLeft);
                     }

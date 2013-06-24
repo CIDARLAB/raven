@@ -627,7 +627,7 @@ public class RavenController {
 //                reader.fixCompositeUUIDs(_collector, result);
                 boolean canPigeon = result.canPigeon();
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges));
+                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges,method));
                 graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
             }
         }

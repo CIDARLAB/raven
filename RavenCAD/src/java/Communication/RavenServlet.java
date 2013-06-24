@@ -158,8 +158,8 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "failed save data";
                 responseString = controller.save(partIDs, vectorIDs, writeSQL);
                 out.write(responseString);
-
-
+            } else if (command.equals("mail")) {
+                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             }
         } catch (Exception e) {
             e.printStackTrace();

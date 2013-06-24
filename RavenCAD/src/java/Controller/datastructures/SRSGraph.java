@@ -481,14 +481,14 @@ public class SRSGraph {
     /**
      * Print edges arc file *
      */
-    public String printArcsFile(Collector coll, ArrayList<String> edges) {
+    public String printArcsFile(Collector coll, ArrayList<String> edges, String method) {
 
         //Build String for export
         //Header
         StringBuilder arcsText = new StringBuilder();
         DateFormat dateFormat = new SimpleDateFormat("MMddyyyy@HHmm");
         Date date = new Date();
-        arcsText.append("# AssemblyMethod: BioBrick\n# ").append(" ").append(dateFormat.format(date)).append("\n");
+        arcsText.append("# AssemblyMethod: "+method+"\n# ").append(" ").append(dateFormat.format(date)).append("\n");
         arcsText.append("# ").append(coll.getPart(this._node.getUUID(), true)).append("\n");
         arcsText.append("# ").append(this._node.getUUID()).append("\n\n");
 
@@ -652,7 +652,7 @@ public class SRSGraph {
             header = header + firstFileLines[i] + "\n";
         }
         ArrayList<String> keyLines = new ArrayList<String>(); //stores the lines in all of the keys
-
+        HashSet<String> seenArcLines = new HashSet(); //stores arc lines
         //Iterate through each arc file; each one is represented by a string
         for (String inputFile : inputFiles) {
             String[] lines = inputFile.split("\n"); //should split file into separate lines
@@ -662,7 +662,6 @@ public class SRSGraph {
             for (int j = 2; j < 4; j++) {
                 header = header + lines[j] + "\n";
             }
-
             //Apend to the key section
             for (int k = 4; k < lines.length; k++) {//first 4 lines are the header
                 if (lines[k].contains("# Key")) {
@@ -679,8 +678,9 @@ public class SRSGraph {
                 } else {
 
                     //If the line isn't an empty line
-                    if (lines[k].length() > 0) {
+                    if (lines[k].length() > 0 && !seenArcLines.contains(lines[k])) {
                         outFile = outFile + lines[k] + "\n";
+                        seenArcLines.add(lines[k]);
                     }
                 }
             }
