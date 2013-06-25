@@ -672,7 +672,7 @@ public class RavenController {
 
         //post request to graphviz
         WeyekinPoster.setDotText(mergedGraphText);
-//        WeyekinPoster.postMyVision();
+        WeyekinPoster.postMyVision();
 
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
@@ -685,7 +685,7 @@ public class RavenController {
 
 
         String toReturn = "";
-//        toReturn = WeyekinPoster.getmGraphVizURI().toString();
+        toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }
 
