@@ -18,7 +18,7 @@ public class SRSAlgorithmCore extends Partitioning {
      /**
      * ************************************************************************
      *
-     * THIS CLASS HAS A LOT OF METHODS THAT ARE USED BY THE GENERAL ALGORITHM WITH NO REAL HOME
+     * THIS CLASS HAS MOSTLY SHARING AND HELPER METHODS FOR MAIN ALGORITHM
      *
      *************************************************************************
      */

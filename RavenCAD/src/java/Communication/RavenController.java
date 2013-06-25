@@ -563,6 +563,7 @@ public class RavenController {
         _assemblyGraphs = new ArrayList<SRSGraph>();
         _efficiency = efficiencyHash;
         method = method.toLowerCase().trim();
+        
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
                 Part current = _collector.getPart(partLibraryIDs[i], false);
@@ -647,6 +648,7 @@ public class RavenController {
         } else if (method.equals("slic")) {
             _instructions = SRSSLIC.generateInstructions(targetRootNodes, _collector);
         }
+        
         //write instructions file
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";

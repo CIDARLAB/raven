@@ -4,7 +4,9 @@
  */
 package Controller.accessibility;
 
+import Controller.algorithms.PrimerDesign;
 import Controller.datastructures.Part;
+import Controller.datastructures.RestrictionEnzyme;
 import Controller.datastructures.SRSGraph;
 import Controller.datastructures.SRSNode;
 import Controller.datastructures.SRSVector;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -223,5 +226,119 @@ public class ClothoReader {
         String[] tokens = typeTag.split(",");
         types.addAll(Arrays.asList(tokens));
         return types;
-    }    
+    }
+    
+    //THIS NEXT METHOD USES RESTRICTION ENZYMES WHICH ARE OUTSIDE THE CLOTHO DATA MODEL, UNCLEAR WHERE THIS METHOD SHOULD GO
+    
+    /** Scan a set of parts for restriction sites **/
+    public static HashMap<String, ArrayList<Integer>> reSeqScan(ArrayList<Part> parts, ArrayList<RestrictionEnzyme> enzymes) {
+        
+        HashMap<String, ArrayList<Integer>> detectedResSeqs = new HashMap<String, ArrayList<Integer>>();
+        
+        //For all parts
+        for (int i = 0; i < parts.size(); i++) {
+            Part part = parts.get(i);
+            String seq = part.getSeq();
+            
+            //Look at each enzyme's cut sites
+            for (int j = 0; j < enzymes.size(); j++) {
+                RestrictionEnzyme enzyme = enzymes.get(j);
+                Set<String> keySet = enzyme.getRecSeq().keySet();
+                ArrayList<Integer> sites = new ArrayList<Integer>();
+                
+                //For all of an enzyme's recognition sites (probably just one)                
+                for (String recSeq : keySet) {
+
+                    String revRecSeq = PrimerDesign.reverseComplement(recSeq);
+                    ArrayList<String> strandSeqs = new ArrayList<String>();
+                    strandSeqs.add(recSeq);
+                    strandSeqs.add(revRecSeq);
+                    ArrayList<HashMap<Integer, HashSet<String>>> strandRecognitions = new ArrayList<HashMap<Integer, HashSet<String>>>(2);
+                    
+                    //For each position in the recognition site, find all bases in the search sequence that satisfy the recognition site
+                    for (int l = 0; l < strandRecognitions.size(); l++) {
+                        HashMap<Integer, HashSet<String>> strand = new HashMap<Integer, HashSet<String>>();
+                        String aStrand = strandSeqs.get(i);
+                        
+                        //For both the forward and reverse strand, this matching must be done
+                        for (int k = 0; k < aStrand.length(); k++) {
+
+                            String nucl;
+                            if (k < aStrand.length() - 1) {
+                                nucl = aStrand.substring(k, k + 1);
+                            } else {
+                                nucl = aStrand.substring(k);
+                            }
+                            
+                            HashSet<String> nuclSet = new HashSet<String>();
+
+                            if (nucl.equalsIgnoreCase("a") || nucl.equalsIgnoreCase("c") || nucl.equalsIgnoreCase("g") || nucl.equalsIgnoreCase("t") || nucl.equalsIgnoreCase("u")) {
+                                nuclSet.add(nucl);
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("w")) {
+                                nuclSet.add("a");
+                                nuclSet.add("t");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("s")) {
+                                nuclSet.add("c");
+                                nuclSet.add("g");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("m")) {
+                                nuclSet.add("a");
+                                nuclSet.add("c");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("k")) {
+                                nuclSet.add("g");
+                                nuclSet.add("t");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("r")) {
+                                nuclSet.add("a");
+                                nuclSet.add("g");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("y")) {
+                                nuclSet.add("c");
+                                nuclSet.add("t");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("w")) {
+                                nuclSet.add("a");
+                                nuclSet.add("t");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("b")) {
+                                nuclSet.add("c");
+                                nuclSet.add("g");
+                                nuclSet.add("t");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("d")) {
+                                nuclSet.add("a");
+                                nuclSet.add("g");
+                                nuclSet.add("t");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("h")) {
+                                nuclSet.add("c");
+                                nuclSet.add("a");
+                                nuclSet.add("t");
+                                strand.put(k, nuclSet);
+                            } else if (nucl.equalsIgnoreCase("v")) {
+                                nuclSet.add("c");
+                                nuclSet.add("g");
+                                nuclSet.add("a");
+                                strand.put(k, nuclSet);
+                            }
+                        }
+                        strandRecognitions.add(strand);
+
+                    }
+
+                    //Scan the part sequence and look for matches that are equivalent to the length of the recognition sequence
+                    for (int start = 0; start < seq.length() - recSeq.length(); start++) {
+                        String fragment = seq.substring(start, start + recSeq.length());
+                        
+                    }
+
+                }
+            }
+        }
+        
+        return null;
+    }
 }
