@@ -490,24 +490,6 @@ public class RavenController {
      */
     private void solutionStats(String method) throws Exception {
 
-        //Initialize statistics
-        boolean overhangValid = false;
-        if (method.equals("biobricks")) {
-            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("cpec")) {
-            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("gibson")) {
-            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("goldengate")) {
-            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("moclo")) {
-            overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("slic")) {
-            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
-        }
-        boolean valid = validateGraphComposition();
-        valid = valid && overhangValid;
-
         int steps = 0;
         int stages = 0;
         int recCnt = 0;
@@ -547,8 +529,8 @@ public class RavenController {
         _statistics.setGoalParts(_goalParts.keySet().size());
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(rxn);
-        _statistics.setValid(valid);
-        System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + valid);
+        _statistics.setValid(_valid);
+        System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + _valid);
     }
 
     public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash) throws Exception {
@@ -562,6 +544,7 @@ public class RavenController {
         _partLibrary = new ArrayList();
         _assemblyGraphs = new ArrayList<SRSGraph>();
         _efficiency = efficiencyHash;
+        _valid = false;
         method = method.toLowerCase().trim();
         
         if (partLibraryIDs.length > 0) {
@@ -617,6 +600,29 @@ public class RavenController {
                 targetRootNodes.add(result.getRootNode());
             }
         }
+
+        //Initialize statistics
+        boolean overhangValid = false;
+        if (method.equals("biobricks")) {
+            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("cpec")) {
+            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("gibson")) {
+            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("goldengate")) {
+            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("moclo")) {
+            overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("slic")) {
+            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
+        }
+        boolean valid = validateGraphComposition();
+        _valid = valid && overhangValid;
+
+
+
+
+
         _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
         SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
         solutionStats(method);
@@ -626,7 +632,7 @@ public class RavenController {
                 writer.fixCompositeUUIDs(_collector, result);
                 boolean canPigeon = result.canPigeon();
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges,method));
+                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
                 graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges, canPigeon));
             }
         }
@@ -665,10 +671,10 @@ public class RavenController {
         out = new BufferedWriter(fw);
         out.write(mergedGraphText);
         out.close();
-        
+
         //post request to graphviz
         WeyekinPoster.setDotText(mergedGraphText);
-//        WeyekinPoster.postMyVision();
+        WeyekinPoster.postMyVision();
 
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
@@ -681,7 +687,7 @@ public class RavenController {
 
 
         String toReturn = "";
-//        toReturn = WeyekinPoster.getmGraphVizURI().toString();
+        toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }
 
@@ -755,5 +761,6 @@ public class RavenController {
     private String _path;
     private String _user;
     private String _error = "";
+    private boolean _valid = false;
     private ArrayList<String> _databaseConfig = new ArrayList(); //0:database url, 1:database schema, 2:user, 3:password
 }
