@@ -431,13 +431,11 @@ public class SRSMoClo extends SRSGeneral {
     private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
         HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
         finalOverhangHash = preAssignOverhangs(optimalGraphs);
-        System.out.println("finalOverhangHash: " + finalOverhangHash);
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
         HashMap<String, Integer> concreteOverhangFrequencyHash = new HashMap(); //key: concrete overhang pair, value: how often does that overhang pair appear
         allOverhangs.removeAll(finalOverhangHash.values());
-        System.out.println("allOverhangs: " + allOverhangs);
         HashSet<String> vectorOverhangPairs = new HashSet();
 
         //gather all overhangs for existing vectors
@@ -755,21 +753,15 @@ public class SRSMoClo extends SRSGeneral {
                     }
                 }
                 ArrayList<String> forcedOverhangs = forcedOverhangHash.get(root.getComposition().toString());
-                System.out.println("forcedOverhangs size: " + forcedOverhangs.size());
-                System.out.println("basic part size: " + basicParts.size());
-                System.out.println("forcing for " + root.getComposition());
                 for (int i = 0; i < basicParts.size(); i++) {
                     String[] forcedTokens = forcedOverhangs.get(i).split("\\|");
                     String forcedLeft = forcedTokens[0].trim();
                     String forcedRight = forcedTokens[1].trim();
                     SRSNode basicNode = basicParts.get(i);
-                    System.out.println("trying to force " + forcedLeft + forcedRight + " for " + basicNode.getComposition());
                     if (forcedLeft.length() > 0) {
-                        System.out.println("forcing left " + forcedLeft + " for " + basicNode.getComposition());
                         toReturn.put(basicNode.getLOverhang(), forcedLeft);
                     }
                     if (forcedRight.length() > 0) {
-                        System.out.println("forcing right " + forcedRight + " for " + basicNode.getComposition());
                         toReturn.put(basicNode.getROverhang(), forcedRight);
                     }
                 }
@@ -784,9 +776,6 @@ public class SRSMoClo extends SRSGeneral {
             forcedOverhangHash = new HashMap();
             for (String key : requiredOverhangs.keySet()) {
                 Part part = coll.getPartByName(key, false);
-//                System.out.println("forcedOverhangHash " + forcedOverhangHash);
-//                System.out.println("requiredOverhangs " + requiredOverhangs);
-//                System.out.println("part " + part);
                 if (part != null) {
                     forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
                 }
