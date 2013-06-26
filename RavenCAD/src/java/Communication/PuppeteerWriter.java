@@ -159,7 +159,7 @@ public class PuppeteerWriter {
                     compositeCount++;
                 }
             }
-            for(String stmt:toExecute) {
+            for (String stmt : toExecute) {
                 statement.executeUpdate(stmt);
 //                System.out.println(stmt);
             }
@@ -189,22 +189,45 @@ public class PuppeteerWriter {
             ResultSet result = statement.executeQuery("SELECT idPerson FROM " + schema + ".PersonTable");
             result.next();
             String authorId = result.getString("idPerson");
+            ArrayList<String> toExecute = new ArrayList();
             for (Vector v : vectors) {
+                //delete from collections
+                statement.executeUpdate("DELETE FROM " + schema + ".CollectionXref WHERE objectId='" + v.getUUID() + "'");
                 //remove from vectorTable
                 statement.executeUpdate("DELETE FROM " + schema + ".VectorTable WHERE idVector='" + v.getUUID() + "'");
                 //remove nucSeq
                 statement.executeUpdate("DELETE FROM " + schema + ".NucseqTable WHERE idNucseq='" + v.getUUID().replace("vector", "vector_seq") + "'");
 
-                //insert row for nucseq
-                statement.executeUpdate("INSERT INTO " + schema + ".NucseqTable (idNucSeq,sequence,isLocked,dateCreated,lastmodified) VALUES ("
+//                insert row for nucseq
+//                statement.executeUpdate("INSERT INTO " + schema + ".NucseqTable (idNucSeq,sequence,isLocked,dateCreated,lastmodified) VALUES ("
+//                        + "'" + v.getUUID().replace("vector", "vector_seq") + "',"
+//                        + "'" + v.getSeq() + "',"
+//                        + "0,"
+//                        + "'" + getDate() + "',"
+//                        + "'" + getDate() + "'"
+//                        + ")");
+                toExecute.add("INSERT INTO " + schema + ".NucseqTable (idNucSeq,sequence,isLocked,dateCreated,lastmodified) VALUES ("
                         + "'" + v.getUUID().replace("vector", "vector_seq") + "',"
                         + "'" + v.getSeq() + "',"
                         + "0,"
                         + "'" + getDate() + "',"
                         + "'" + getDate() + "'"
                         + ")");
-                //insert row for part
-                statement.executeUpdate("INSERT INTO " + schema + ".VectorTable (idVector,formatId,nucseqId,description,isCircular,isGenomic,authorId,name,riskGroup,dateCreated,lastModified) VALUES("
+                //insert row for vector
+//                statement.executeUpdate("INSERT INTO " + schema + ".VectorTable (idVector,formatId,nucseqId,description,isCircular,isGenomic,authorId,name,riskGroup,dateCreated,lastModified) VALUES("
+//                        + "'" + v.getUUID() + "',"
+//                        + "'org-clothocad-format-freeform-connect',"
+//                        + "'" + v.getUUID().replace("vector", "vector_seq") + "',"
+//                        + "'made by Raven',"
+//                        + "1,"
+//                        + "1,"
+//                        + "'" + authorId + "',"
+//                        + "'" + v.getName() + "',"
+//                        + "-1,"
+//                        + "'" + getDate() + "',"
+//                        + "'" + getDate() + "'"
+//                        + ")");
+                toExecute.add("INSERT INTO " + schema + ".VectorTable (idVector,formatId,nucseqId,description,isCircular,isGenomic,authorId,name,riskGroup,dateCreated,lastModified) VALUES("
                         + "'" + v.getUUID() + "',"
                         + "'org-clothocad-format-freeform-connect',"
                         + "'" + v.getUUID().replace("vector", "vector_seq") + "',"
@@ -217,6 +240,9 @@ public class PuppeteerWriter {
                         + "'" + getDate() + "',"
                         + "'" + getDate() + "'"
                         + ")");
+            }
+            for (String stmt : toExecute) {
+                statement.executeUpdate(stmt);
             }
 
 
