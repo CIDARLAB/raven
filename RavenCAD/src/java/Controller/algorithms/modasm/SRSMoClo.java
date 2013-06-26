@@ -5,7 +5,6 @@
 package Controller.algorithms.modasm;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.SRSAlgorithmCore;
 import Controller.algorithms.PrimerDesign;
 import Controller.algorithms.SRSGeneral;
 import Controller.datastructures.*;
@@ -856,6 +855,7 @@ public class SRSMoClo extends SRSGeneral {
     //primerParameters contains (in this order): 
     //[primerNameRoot, forwardPrimerPrefix, reversePrimerPrefix, forwardEnzymeCutSite, reverseEnzymeCutSite, forwardEnzymeCutDistance, reverseEnzymeCutDistance,meltingTemperature)
     public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll, ArrayList<String> primerParameters) {
+        
         //initialize primer parameters
         String oligoNameRoot = "";
         String forwardPrimerPrefix = "";
@@ -887,6 +887,7 @@ public class SRSMoClo extends SRSGeneral {
         ArrayList<String> oligoSequences = new ArrayList();
         HashSet<SRSNode> seenNodes = new HashSet();
         for (SRSNode root : roots) {
+            
             //append header for each goal part
             toReturn = toReturn + "**********************************************"
                     + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
@@ -914,6 +915,7 @@ public class SRSMoClo extends SRSGeneral {
                             }
                         }
                     } else {
+        
                         //design primers
                         if (designPrimers) {
                             String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
@@ -935,7 +937,9 @@ public class SRSMoClo extends SRSGeneral {
             }
             toReturn = toReturn + "\n\n";
         }
+
         if (designPrimers) {
+            
             //append primer designs
             toReturn = toReturn + "\n**********************************************\nOLIGOS";
             for (int i = 0; i < oligoNames.size(); i++) {
@@ -945,6 +949,8 @@ public class SRSMoClo extends SRSGeneral {
         }
         return toReturn;
     }
+    
+    //FIELDS
     private HashMap<String, ArrayList<String>> abstractOverhangCompositionHash; //key: overhangs delimited by "|", value: compositions with overhangs indicated by keys
     private HashMap<String, Integer> partOverhangFrequencyHash; //key: part composition concatenated with abstract overhang with "_" delimited with "|", value: number of occurences of part with given overhangs
     private HashSet<String> encounteredCompositions; //set of part compositions that appear in the set of all graphs
