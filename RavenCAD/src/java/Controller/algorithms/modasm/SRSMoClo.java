@@ -513,7 +513,6 @@ public class SRSMoClo extends SRSGeneral {
 
         //pick overhangs
         for (SRSGraph graph : optimalGraphs) {
-            System.out.println("************************************************\nassigning for: " + graph.getRootNode().getComposition());
             ArrayList<SRSNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
 
             for (SRSNode currentNode : compositionNodes) {
@@ -521,10 +520,6 @@ public class SRSMoClo extends SRSGeneral {
                 ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get(currentNode.getType().toString().toLowerCase());
                 ArrayList<String> reservedRightOverhangs = reservedRightFinalHash.get(currentNode.getType().toString().toLowerCase());
-                System.out.println("freeLeftOverhangs: " + freeLeftOverhangs);
-                System.out.println("freeRightOverhangs: " + freeRightOverhangs);
-                System.out.println("reservedLeftOverhangs: " + reservedLeftOverhangs);
-                System.out.println("reservedRightOverhangs: " + reservedRightOverhangs);
                 SRSNode parent = parentHash.get(currentNode);
 
                 if (reservedLeftOverhangs != null) {
@@ -566,7 +561,6 @@ public class SRSMoClo extends SRSGeneral {
                         }
                     }
                 }
-                System.out.println("for " + currentNode.getComposition() + " already picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
 
                 //assign left overhang
                 if (!finalOverhangHash.containsKey(currentNode.getLOverhang())) {
@@ -618,7 +612,6 @@ public class SRSMoClo extends SRSGeneral {
                         reservedRightFinalHash.get(type).remove(newOverhang);
                     }
                 }
-                System.out.println("for " + currentNode.getComposition() + " picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
             }
         }
 
@@ -668,7 +661,6 @@ public class SRSMoClo extends SRSGeneral {
 
         //traverse graphs and assign appropriate overhangs and vectors
         for (SRSGraph graph : optimalGraphs) {
-            System.out.println("finalizing: " + graph.getRootNode().getComposition());
             int reactions = 0;
             ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
             HashSet<SRSNode> seenNodes = new HashSet();
@@ -680,7 +672,6 @@ public class SRSMoClo extends SRSGeneral {
                 seenNodes.add(current);
                 current.setLOverhang(finalOverhangHash.get(current.getLOverhang()));
                 current.setROverhang(finalOverhangHash.get(current.getROverhang()));
-                System.out.println("for " + current.getComposition() + " picked " + current.getLOverhang() + "|" + current.getROverhang());
 
                 SRSVector newVector = new SRSVector();
                 newVector.setLOverhang(current.getLOverhang());
