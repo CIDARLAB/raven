@@ -4,12 +4,14 @@
  */
 package Controller.algorithms;
 
-import Controller.datastructures.SRSNode;
+import Controller.datastructures.rNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JOptionPane;
 
 /**
@@ -25,6 +27,24 @@ public class Partitioning {
      *
      *************************************************************************
      */
+    
+    
+    /** For n-way assembly, must find all ways to "break" a part i.e. all possible partition of size maxNeighbors and less **/
+    protected HashMap<Integer, ArrayList<int[]>> getPartitions(ArrayList<Integer> indexes, HashMap<Integer, ArrayList<int[]>> forbiddenPartitions) {
+
+        int[] newIndexes = buildIntArray(indexes);
+        HashMap<Integer, ArrayList<int[]>> partitions = new HashMap<Integer, ArrayList<int[]>>();
+        Set<Integer> keySet = forbiddenPartitions.keySet();
+        ArrayList<Integer> keys = new ArrayList<Integer>(keySet);
+        Collections.sort(keys);
+
+        for (Integer n : keys) {
+            ArrayList<int[]> subsets = getSubsets(newIndexes, n, forbiddenPartitions.get(n));
+            partitions.put(n, subsets);
+        }
+
+        return partitions;
+    }
     
     /** Get all subsets of a set for a specific sized subset **/
     protected ArrayList<int[]> getSubsets(int[] set, int k, ArrayList<int[]> forbiddenPartitions) {
@@ -212,7 +232,7 @@ public class Partitioning {
      */
     
     /** For all goal parts, search for conflicts with required parts **/
-    protected void conflictSearchRequired(SRSNode gp, HashSet<String> required) throws Exception {
+    protected void conflictSearchRequired(rNode gp, HashSet<String> required) throws Exception {
 
         //Initialize hash to keep track of potential intermediate conflicts
         ArrayList<String> gpComp = gp.getComposition();

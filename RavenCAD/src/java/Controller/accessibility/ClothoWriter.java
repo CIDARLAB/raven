@@ -22,17 +22,17 @@ public class ClothoWriter {
     }
 
     /** Generate Clotho parts with uuids from intermediates without uuids **/
-    public void nodesToClothoPartsVectors(Collector coll, SRSGraph graph) throws Exception {
+    public void nodesToClothoPartsVectors(Collector coll, rGraph graph) throws Exception {
         String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
-        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-        HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+        ArrayList<rNode> queue = new ArrayList<rNode>();
+        HashSet<rNode> seenNodes = new HashSet<rNode>();
         queue.add(graph.getRootNode());
         
         while (!queue.isEmpty()) {
-            SRSNode currentNode = queue.get(0);
+            rNode currentNode = queue.get(0);
             seenNodes.add(currentNode);
             queue.remove(0);
-            for (SRSNode neighbor : currentNode.getNeighbors()) {
+            for (rNode neighbor : currentNode.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -106,7 +106,7 @@ public class ClothoWriter {
 
 
             //Get the vector and save a new vector if it does not have a uuid
-            SRSVector vector = currentNode.getVector();
+            rVector vector = currentNode.getVector();
             if (vector != null) {
                 
                 //Get new intermediate name
@@ -293,22 +293,22 @@ public class ClothoWriter {
     }
 
     /** Correct composite part UUIDs for Clotho export **/
-    public void fixCompositeUUIDs(Collector coll, SRSGraph graph) throws Exception {
+    public void fixCompositeUUIDs(Collector coll, rGraph graph) throws Exception {
         
-        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-        HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-        SRSNode root = graph.getRootNode();
+        ArrayList<rNode> queue = new ArrayList<rNode>();
+        HashSet<rNode> seenNodes = new HashSet<rNode>();
+        rNode root = graph.getRootNode();
         queue.add(root);
-        ArrayList<SRSNode> sortedQueue = new ArrayList();
+        ArrayList<rNode> sortedQueue = new ArrayList();
         sortedQueue.add(root);
         
         while (!queue.isEmpty()) {
-            SRSNode current = queue.get(0);
+            rNode current = queue.get(0);
             queue.remove(0);
             seenNodes.add(current);
-            ArrayList<SRSNode> neighbors = current.getNeighbors();
+            ArrayList<rNode> neighbors = current.getNeighbors();
             sortedQueue.add(0, current);
-            for (SRSNode neighbor : neighbors) {
+            for (rNode neighbor : neighbors) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -317,16 +317,16 @@ public class ClothoWriter {
         seenNodes.clear();
         
         while (!sortedQueue.isEmpty()) {
-            SRSNode current = sortedQueue.get(0);
+            rNode current = sortedQueue.get(0);
             sortedQueue.remove(0);
             seenNodes.add(current);
             Part currentPart = coll.getPart(current.getUUID(), true);
-            ArrayList<SRSNode> neighbors = current.getNeighbors();
+            ArrayList<rNode> neighbors = current.getNeighbors();
             
             //second part of if statement is for library parts with large compositions but no child neighbors
             if (currentPart.isComposite() || current.getNeighbors().size()>=currentPart.getComposition().size()) {
                 ArrayList<Part> composition = new ArrayList();
-                for (SRSNode neighbor : neighbors) {
+                for (rNode neighbor : neighbors) {
                     if (current.getStage() > neighbor.getStage()) {
                         Part p= coll.getPart(neighbor.getUUID(),true);
                         composition.add(coll.getPart(neighbor.getUUID(), true));

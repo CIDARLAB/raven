@@ -4,8 +4,8 @@
  */
 package Controller.algorithms;
 
-import Controller.datastructures.SRSGraph;
-import Controller.datastructures.SRSNode;
+import Controller.datastructures.rGraph;
+import Controller.datastructures.rNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,26 +16,26 @@ import java.util.Set;
  *
  * @author jenhantao,evanappleton
  */
-public class SRSGeneral extends SRSAlgorithmCore {
+public class rGeneral extends Modularity {
 
     /** Find assembly graph for multiple goal parts **/
-    protected ArrayList<SRSGraph> createAsmGraph_mgp(ArrayList<SRSNode> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<String, SRSGraph> partHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, boolean sharing) {
+    protected ArrayList<rGraph> createAsmGraph_mgp(ArrayList<rNode> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<String, rGraph> partHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, boolean sharing) {
 
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
         for (int i = 0; i < gps.size(); i++) {
-            SRSNode gp = gps.get(i);
+            rNode gp = gps.get(i);
             try {
                 conflictSearchRequired(gp, required);
             } catch (Exception ex) {
 
                 //Return a new graph if there is an exception
-                ArrayList<SRSGraph> blank = new ArrayList<SRSGraph>();
+                ArrayList<rGraph> blank = new ArrayList<rGraph>();
                 return blank;
             }
         }
 
         //Run algorithm for all goal parts separately, find the max stages
-        HashMap<String, SRSGraph> slackLibrary = new HashMap<String, SRSGraph>();
+        HashMap<String, rGraph> slackLibrary = new HashMap<String, rGraph>();
         slackLibrary.putAll(partHash);
         int slack = determineSlack(gps, required, recommended, forbidden, slackLibrary);
         System.gc();
@@ -47,15 +47,15 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }        
 
         //First initiate results and pinned hash
-        ArrayList<SRSGraph> resultGraphs = new ArrayList<SRSGraph>();
-        HashMap<String, SRSGraph> pinnedPartHash = new HashMap<String, SRSGraph>();
+        ArrayList<rGraph> resultGraphs = new ArrayList<rGraph>();
+        HashMap<String, rGraph> pinnedPartHash = new HashMap<String, rGraph>();
 
         //Iterate across all goal parts until we have a result graph for each goal part
         //Start finding graphs for each goal part until all goal parts are formed  
         while (!gps.isEmpty()) {
 
             //Reinitialize memoization hash with part library and pinned graphs each with zero cost
-            HashMap<String, SRSGraph> hashMem = new HashMap<String, SRSGraph>();
+            HashMap<String, rGraph> hashMem = new HashMap<String, rGraph>();
             if (partHash != null) {
                 hashMem.putAll(partHash);
                 hashMem.putAll(pinnedPartHash);
@@ -63,10 +63,10 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
             //Call single-goal-part algorithm for each goal part and determine which of the graphs to pin
             int index = 0;
-            SRSGraph pinnedGraph = null;
+            rGraph pinnedGraph = null;
             for (int j = 0; j < gps.size(); j++) {
-                SRSNode gp = gps.get(j);
-                SRSGraph newGraph = createAsmGraph_sgp(gp, hashMem, partHash, required, recommended, forbidden, discouraged, slack, sharingHash, modularityHash, efficiencies);
+                rNode gp = gps.get(j);
+                rGraph newGraph = createAsmGraph_sgp(gp, hashMem, partHash, required, recommended, forbidden, discouraged, slack, sharingHash, modularityHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
 
                 //Pin graph if no existing pinned graph
@@ -92,7 +92,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
                 //If no recommended parts, pin the graph with the most sharing
                 } else {
-                    if (newGraph.getSharingFactor() > pinnedGraph.getSharingFactor()) {
+                    if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
                         pinnedGraph = newGraph;
                         index = j;
                     }
@@ -109,8 +109,8 @@ public class SRSGeneral extends SRSAlgorithmCore {
             }
 
             for (int k = 0; k < pinnedGraph.getSubGraphs().size(); k++) {
-                SRSGraph subGraph = pinnedGraph.getSubGraphs().get(k);
-                SRSGraph subGraphClone = subGraph.clone();
+                rGraph subGraph = pinnedGraph.getSubGraphs().get(k);
+                rGraph subGraphClone = subGraph.clone();
                 subGraphClone.pin();
                 pinnedPartHash.put(subGraph.getRootNode().getComposition().toString(), subGraphClone);
 
@@ -136,14 +136,14 @@ public class SRSGeneral extends SRSAlgorithmCore {
     }
 
     /** Find assembly graph for a single goal part factoring in slack and sharing **/
-    protected SRSGraph createAsmGraph_sgp(SRSNode goalPartNode, HashMap<String, SRSGraph> partsHash, HashMap<String, SRSGraph> libHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, int slack, HashMap<String, Integer> sharingHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies) {
+    protected rGraph createAsmGraph_sgp(rNode goalPartNode, HashMap<String, rGraph> partsHash, HashMap<String, rGraph> libHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, int slack, HashMap<String, Integer> sharingHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies) {
 
         //If any of the parameters is null, must be set to a new object to avoid null pointer issues
         if (partsHash == null) {
-            partsHash = new HashMap<String, SRSGraph>();
+            partsHash = new HashMap<String, rGraph>();
         }
         if (libHash == null) {
-            libHash = new HashMap<String, SRSGraph>();
+            libHash = new HashMap<String, rGraph>();
         }
         if (sharingHash == null) {
             sharingHash = new HashMap<String, Integer>();
@@ -177,7 +177,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
         
 //        System.out.println("THIS NODE DOES NOT YET EXIST, MUST SEARCH HOW TO BUILD IT");
         
-        SRSGraph bestGraph = new SRSGraph(goalPartNode);
+        rGraph bestGraph = new rGraph(goalPartNode);
 
         //Recursive Programing to find best graph
         int gpSize = goalPartNode.getComposition().size();
@@ -275,10 +275,10 @@ public class SRSGeneral extends SRSAlgorithmCore {
                 
                 int[] thisPartition = candidatePartitions.get(0);
                 candidatePartitions.remove(0);
-                ArrayList<SRSNode> allSubParts = new ArrayList<SRSNode>();
+                ArrayList<rNode> allSubParts = new ArrayList<rNode>();
                 boolean canPartitionThis = true;
 
-                //For each partition, create a new SRSNode and add it to the list
+                //For each partition, create a new rNode and add it to the list
                 for (int n = 0; n < (thisPartition.length + 1); n++) {
                     ArrayList<String> type = new ArrayList<String>();
                     ArrayList<String> comp = new ArrayList<String>();
@@ -300,10 +300,10 @@ public class SRSGeneral extends SRSAlgorithmCore {
                         continue;
                     }
 
-                    //If not, make the new SRSNode
+                    //If not, make the new rNode
                     boolean rec = recommended.contains(comp.toString());
                     boolean dis = discouraged.contains(comp.toString());
-                    SRSNode aSubPart = new SRSNode(rec, dis, null, comp, type, false);
+                    rNode aSubPart = new rNode(rec, dis, null, comp, type, 0, 0);
                     allSubParts.add(aSubPart);
                 }
 
@@ -311,13 +311,13 @@ public class SRSGeneral extends SRSAlgorithmCore {
                 //If there are no forbidden parts amongst subparts
                 if (canPartitionThis) {
                     canPartitionAny = true;
-                    ArrayList<SRSGraph> toCombine = new ArrayList<SRSGraph>();
+                    ArrayList<rGraph> toCombine = new ArrayList<rGraph>();
                     for (int o = 0; o < allSubParts.size(); o++) {
-                        SRSGraph solution = createAsmGraph_sgp(allSubParts.get(o), partsHash, null, required, recommended, forbidden, discouraged, slack - 1, sharingHash, modularityHash, efficiencies);
+                        rGraph solution = createAsmGraph_sgp(allSubParts.get(o), partsHash, null, required, recommended, forbidden, discouraged, slack - 1, sharingHash, modularityHash, efficiencies);
                         toCombine.add(solution);
                     }
 
-                    SRSGraph newGraph = combineGraphsModEff(toCombine, recommended, discouraged, sharingHash, modularityHash, efficiencies, partsHash);
+                    rGraph newGraph = combineGraphsModEff(toCombine, recommended, discouraged, sharingHash, modularityHash, efficiencies, partsHash);
 
                     //Edge case: best graph does not exist yet
                     if (bestGraph.getRootNode().getNeighbors().isEmpty()) {
@@ -348,11 +348,11 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
     /** Combine multiple graphs, including efficiency and modularity scoring **/
     //Currently, it is assumed that efficiencies are additive and not multiplicative
-    protected SRSGraph combineGraphsModEff(ArrayList<SRSGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharing, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, HashMap<String, SRSGraph> partsHash) {
+    protected rGraph combineGraphsModEff(ArrayList<rGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharing, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, HashMap<String, rGraph> partsHash) {
         
         //Call method without efficiency and modularity first
-        SRSGraph combineGraphsME = combineGraphsShareRecDis(graphs, recommended, discouraged, sharing);
-        SRSNode root = combineGraphsME.getRootNode();
+        rGraph combineGraphsME = combineGraphsShareRecDis(graphs, recommended, discouraged, sharing);
+        rNode root = combineGraphsME.getRootNode();
 
         //Get effiency of subgraphs
         double efficiency = 0;
@@ -374,28 +374,28 @@ public class SRSGeneral extends SRSAlgorithmCore {
     }
 
     /** Combine multiple graphs, including sharing and recommended **/
-    protected SRSGraph combineGraphsShareRecDis(ArrayList<SRSGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharing) {
+    protected rGraph combineGraphsShareRecDis(ArrayList<rGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> modularity) {
 
         //Call method without sharing first
-        SRSGraph combineGraphsSRD = combineGraphsStageStep(graphs);
-        SRSNode root = combineGraphsSRD.getRootNode();
+        rGraph combineGraphsSRD = combineGraphsStageStep(graphs);
+        rNode root = combineGraphsSRD.getRootNode();
 
         //Look in sharing and recommended hash to set sharing and recommended
         int graphSharing = 0;
         int recCount = 0;
         int disCount = 0;
         for (int i = 0; i < graphs.size(); i++) {
-            graphSharing = graphs.get(i).getSharingFactor() + graphSharing;
+            graphSharing = graphs.get(i).getModularityFactor() + graphSharing;
             recCount = graphs.get(i).getReccomendedCount() + recCount;
             disCount = graphs.get(i).getDiscouragedCount() + disCount;
         }
 
-        //If sharing hash contains the root's composition and sharing hash is not empty
-        if (!sharing.isEmpty()) {
-            if (sharing.containsKey(root.getComposition().toString())) {
-                combineGraphsSRD.setSharingFactor(graphSharing + sharing.get(root.getComposition().toString()));
+        //If modularity hash contains the root's composition and sharing hash is not empty
+        if (!modularity.isEmpty()) {
+            if (modularity.containsKey(root.getComposition().toString())) {
+                combineGraphsSRD.setModularityFactor(graphSharing + modularity.get(root.getComposition().toString()));
             } else {
-                combineGraphsSRD.setSharingFactor(graphSharing);
+                combineGraphsSRD.setModularityFactor(graphSharing);
             }
         }
 
@@ -416,12 +416,12 @@ public class SRSGeneral extends SRSAlgorithmCore {
     }
 
     /** Combine multiple graphs, ignoring sharing and recommended **/
-    protected SRSGraph combineGraphsStageStep(ArrayList<SRSGraph> graphs) {
-        SRSNode newRoot = new SRSNode();
+    protected rGraph combineGraphsStageStep(ArrayList<rGraph> graphs) {
+        rNode newRoot = new rNode();
         ArrayList<String> mergerComposition = new ArrayList<String>();
         ArrayList<String> mergerType = new ArrayList<String>();
         for (int i = 0; i < graphs.size(); i++) {
-            SRSNode currentNeighbor = graphs.get(i).getRootNode();
+            rNode currentNeighbor = graphs.get(i).getRootNode();
             mergerComposition.addAll(currentNeighbor.getComposition());
             mergerType.addAll(currentNeighbor.getType());
         }
@@ -430,11 +430,11 @@ public class SRSGeneral extends SRSAlgorithmCore {
 
         //Clone all the nodes from graphs being combined and then add to new root node
         for (int j = 0; j < graphs.size(); j++) {
-            SRSNode toAdd = graphs.get(j).getRootNode().clone();
+            rNode toAdd = graphs.get(j).getRootNode().clone();
             toAdd.addNeighbor(newRoot);
             newRoot.addNeighbor(toAdd);
         }
-        SRSGraph newGraph = new SRSGraph(newRoot);
+        rGraph newGraph = new rGraph(newRoot);
 
         //Determine stages, steps, adjusted steps for the new graph
         int steps = 0;
@@ -461,7 +461,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
     }
 
     /** Find which of two graphs has a lower cost, including slack. Supports multi-goal-part assembly **/
-    protected SRSGraph minCostSlack(SRSGraph g0, SRSGraph g1, int slack) {
+    protected rGraph minCostSlack(rGraph g0, rGraph g1, int slack) {
 
         //Return pinned graphs
         if (g0.getPinned()) {
@@ -504,9 +504,9 @@ public class SRSGeneral extends SRSAlgorithmCore {
         }
 
         //Sharing factor
-        if (g0.getSharingFactor() > g1.getSharingFactor()) {
+        if (g0.getModularityFactor() > g1.getModularityFactor()) {
             return g0;
-        } else if (g1.getSharingFactor() > g0.getSharingFactor()) {
+        } else if (g1.getModularityFactor() > g0.getModularityFactor()) {
             return g1;
         }
         
@@ -515,7 +515,7 @@ public class SRSGeneral extends SRSAlgorithmCore {
     }
 
     /** Find which of two graphs has a lower cost, ignoring slack **/
-    protected SRSGraph minCost(SRSGraph g0, SRSGraph g1) {
+    protected rGraph minCost(rGraph g0, rGraph g1) {
 
         //Stages
         if (g0.getStages() < g1.getStages()) {
@@ -550,34 +550,17 @@ public class SRSGeneral extends SRSAlgorithmCore {
     }
 
     /** Find the maximum amount of stages for a set of goal parts with a library. This determines a mgp assembly slack factor **/
-    protected int determineSlack(ArrayList<SRSNode> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashMap<String, SRSGraph> library) {
+    protected int determineSlack(ArrayList<rNode> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashMap<String, rGraph> library) {
         int slack = 0;
         for (int i = 0; i < gps.size(); i++) {
-            SRSNode gp = gps.get(i);
-            SRSGraph graph = createAsmGraph_sgp(gp, library, library, required, null, forbidden, null, 0, null, null, null);
+            rNode gp = gps.get(i);
+            rGraph graph = createAsmGraph_sgp(gp, library, library, required, null, forbidden, null, 0, null, null, null);
             if (graph.getStages() > slack) {
                 slack = graph.getStages();
             }
         }
 
         return slack;
-    }
-
-    /** For n-way assembly, must find all ways to "break" a part i.e. all possible partition of size maxNeighbors and less **/
-    protected HashMap<Integer, ArrayList<int[]>> getPartitions(ArrayList<Integer> indexes, HashMap<Integer, ArrayList<int[]>> forbiddenPartitions) {
-
-        int[] newIndexes = buildIntArray(indexes);
-        HashMap<Integer, ArrayList<int[]>> partitions = new HashMap<Integer, ArrayList<int[]>>();
-        Set<Integer> keySet = forbiddenPartitions.keySet();
-        ArrayList<Integer> keys = new ArrayList<Integer>(keySet);
-        Collections.sort(keys);
-
-        for (Integer n : keys) {
-            ArrayList<int[]> subsets = getSubsets(newIndexes, n, forbiddenPartitions.get(n));
-            partitions.put(n, subsets);
-        }
-
-        return partitions;
     }
     
     //Fields

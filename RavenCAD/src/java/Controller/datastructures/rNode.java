@@ -10,20 +10,22 @@ import java.util.ArrayList;
  *
  * @author jenhantao, evanappleton
  */
-public class SRSNode {
+public class rNode {
 
     /** SDSNode constructor, no neighbors, parent or children or meta-data specified **/
-    public SRSNode() {
+    public rNode() {
         _recommended = false;
         _discouraged = false;
         _efficiency = 0;
-        _neighbors = new ArrayList<SRSNode>();
+//        _successCnt = 0;
+//        _failureCnt = 0;
+        _neighbors = new ArrayList<rNode>();
         _composition = new ArrayList<String>();
         _uuid = null;
         _type = new ArrayList<String>();
         _lOverhang = "";
         _rOverhang = "";
-//        _vector = new SRSVector();
+//        _vector = new rVector();
         _name = "";
         _stage = 0;
         _nodeID = _nodeCount;
@@ -31,15 +33,16 @@ public class SRSNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public SRSNode(boolean recommended, boolean discouraged, ArrayList<SRSNode> neighbors, ArrayList<String> composition, ArrayList<String> type, boolean success) {
+    public rNode(boolean recommended, boolean discouraged, ArrayList<rNode> neighbors, ArrayList<String> composition, ArrayList<String> type, int successCnt, int failureCnt) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
         _efficiency = 0;
-        _success = success;
+        _successCnt = successCnt;
+        _failureCnt = failureCnt;
         _neighbors = neighbors;
         if (_neighbors == null) {
-            _neighbors = new ArrayList<SRSNode>();
+            _neighbors = new ArrayList<rNode>();
         }
         _composition = composition;
         _type = type;
@@ -53,9 +56,9 @@ public class SRSNode {
     
     /** Clone nodes of a graph by traversing and copying nodes **/
     @Override
-    public SRSNode clone() {
+    public rNode clone() {
         
-        SRSNode clone = new SRSNode();
+        rNode clone = new rNode();
         clone._recommended = this._recommended;
         clone._discouraged = this._discouraged;
         clone._uuid = this._uuid;
@@ -67,20 +70,21 @@ public class SRSNode {
         clone._stage = this._stage;
         clone._vector = this._vector;
         clone._efficiency = this._efficiency;
-        clone._success = this._success;
-        ArrayList<SRSNode> neighbors = this._neighbors;
+        clone._successCnt = this._successCnt;
+        clone._failureCnt = this._failureCnt;
+        ArrayList<rNode> neighbors = this._neighbors;
         cloneHelper(clone, this, neighbors);
         
         return clone;
     }
     
-    private void cloneHelper(SRSNode parentClone, SRSNode parent, ArrayList<SRSNode> neighbors) {
+    private void cloneHelper(rNode parentClone, rNode parent, ArrayList<rNode> neighbors) {
         
         for (int i = 0; i < neighbors.size(); i++) {
             
-            SRSNode neighbor = neighbors.get(i);
+            rNode neighbor = neighbors.get(i);
             
-            SRSNode neighborClone = new SRSNode();
+            rNode neighborClone = new rNode();
             neighborClone._recommended = neighbor._recommended;
             neighborClone._discouraged = neighbor._discouraged;
             neighborClone._uuid = neighbor._uuid;
@@ -92,13 +96,14 @@ public class SRSNode {
             neighborClone._stage = neighbor._stage;
             neighborClone._vector = neighbor._vector;
             neighborClone._efficiency = neighbor._efficiency;
-            neighborClone._success = neighbor._success;
+            neighborClone._successCnt = neighbor._successCnt;
+            neighborClone._failureCnt = neighbor._failureCnt;
             
             parentClone.addNeighbor(neighborClone);
             neighborClone.addNeighbor(parentClone);
             
             if (neighbor.getStage() > 0) {
-                ArrayList<SRSNode> orderedChildren = new ArrayList<SRSNode>();
+                ArrayList<rNode> orderedChildren = new ArrayList<rNode>();
                 orderedChildren.addAll(neighbor.getNeighbors());
 
                 //Remove the current parent from the list
@@ -151,7 +156,7 @@ public class SRSNode {
     }
     
     /** Get node neighbors **/
-    public ArrayList<SRSNode> getNeighbors() {
+    public ArrayList<rNode> getNeighbors() {
         return _neighbors;
     }
 
@@ -161,7 +166,7 @@ public class SRSNode {
     }
     
     /** Get vector **/
-    public SRSVector getVector() {
+    public rVector getVector() {
         return _vector;
     }
     
@@ -185,9 +190,14 @@ public class SRSNode {
         return _modularity;
     }
     
-    /** Return success or failure - for debugging **/
-    public boolean getSuccess() {
-        return _success;
+    /** Return success count - for debugging **/
+    public int getSuccessCnt() {
+        return _successCnt;
+    }
+    
+    /** Return failure count - for debugging **/
+    public int getFailureCnt() {
+        return _failureCnt;
     }
     
     /** Set part as recommended or not required **/
@@ -221,18 +231,18 @@ public class SRSNode {
     }
     
     /** Add neighbor node to end of the list **/
-    public void addNeighbor(SRSNode newNeighbor) {
+    public void addNeighbor(rNode newNeighbor) {
         _neighbors.add(newNeighbor);
     }
     
     /** Remove a node's neighbor **/
-    public void removeNeighbor(SRSNode neighbor) {
+    public void removeNeighbor(rNode neighbor) {
         _neighbors.remove(neighbor);
     }
 
     
     /** Replace a neighbor with the same composition at an exact point in the list to conserve order **/
-    public void replaceNeighbor(SRSNode oldNode, SRSNode newNode) {
+    public void replaceNeighbor(rNode oldNode, rNode newNode) {
         int indexOf = _neighbors.indexOf(oldNode);
         _neighbors.remove(indexOf);
         _neighbors.add(indexOf, newNode);
@@ -244,7 +254,7 @@ public class SRSNode {
     }
     
     /** Set vector **/
-    public void setVector(SRSVector vector) {
+    public void setVector(rVector vector) {
         _vector = vector;
     }
     
@@ -268,24 +278,30 @@ public class SRSNode {
         _modularity = mod;
     }
     
-    /** Set success **/
-    public void setSuccess(boolean success) {
-        _success = success;
+    /** Set success count **/
+    public void setSuccessCnt(int success) {
+        _successCnt = success;
+    }
+    
+    /** Set failure count **/
+    public void setFailureCnt(int failure) {
+        _failureCnt = failure;
     }
     
     //FIELDS
-    private boolean _success;
+    private int _successCnt;
+    private int _failureCnt;
     private double _efficiency;
     private double _modularity;
     private boolean _recommended;
     private boolean _discouraged;
-    private ArrayList<SRSNode> _neighbors;
+    private ArrayList<rNode> _neighbors;
     private String _uuid;
     private ArrayList<String> _composition;
     private ArrayList<String> _type;
     private String _lOverhang;
     private String _rOverhang;
-    private SRSVector _vector;
+    private rVector _vector;
     private String _name;
     private int _nodeID;
     private int _stage;

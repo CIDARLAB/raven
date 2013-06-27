@@ -34,64 +34,64 @@ public class RavenController {
         _databaseConfig.add("cidar");
     }
 
-    public ArrayList<SRSGraph> runBioBricks() throws Exception {
+    public ArrayList<rGraph> runBioBricks() throws Exception {
 
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
-        SRSBioBricks biobricks = new SRSBioBricks();
-        ArrayList<SRSGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, null);
+        rBioBricks biobricks = new rBioBricks();
+        ArrayList<rGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, null);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for Gibson *
      */
-    public ArrayList<SRSGraph> runGibson() throws Exception {
+    public ArrayList<rGraph> runGibson() throws Exception {
 
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
-        SRSGibson gibson = new SRSGibson();
-        ArrayList<SRSGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
+        rGibson gibson = new rGibson();
+        ArrayList<rGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for CPEC *
      */
-    public ArrayList<SRSGraph> runCPEC() throws Exception {
+    public ArrayList<rGraph> runCPEC() throws Exception {
 
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
-        SRSCPEC cpec = new SRSCPEC();
+        rCPEC cpec = new rCPEC();
 
-        ArrayList<SRSGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
+        ArrayList<rGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for SLIC *
      */
-    public ArrayList<SRSGraph> runSLIC() throws Exception {
+    public ArrayList<rGraph> runSLIC() throws Exception {
 
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
-        SRSSLIC slic = new SRSSLIC();
-        ArrayList<SRSGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
+        rSLIC slic = new rSLIC();
+        ArrayList<rGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for MoClo *
      */
-    public ArrayList<SRSGraph> runMoClo() throws Exception {
+    public ArrayList<rGraph> runMoClo() throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -99,9 +99,9 @@ public class RavenController {
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
-        SRSMoClo moclo = new SRSMoClo();
+        rMoClo moclo = new rMoClo();
         moclo.setForcedOverhangs(_collector, forcedOverhangHash);
-        ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
+        ArrayList<rGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
 
         return optimalGraphs;
 
@@ -111,15 +111,15 @@ public class RavenController {
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    public ArrayList<SRSGraph> runGoldenGate() throws Exception {
+    public ArrayList<rGraph> runGoldenGate() throws Exception {
 
         //  Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList();
         gps.addAll(_goalParts.keySet());
-        SRSGoldenGate gg = new SRSGoldenGate();
+        rGoldenGate gg = new rGoldenGate();
 
-        ArrayList<SRSGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, true, _efficiency, null);
+        ArrayList<rGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, true, _efficiency, null);
         return optimalGraphs;
 
     }
@@ -130,7 +130,7 @@ public class RavenController {
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
-        for (SRSGraph result : _assemblyGraphs) {
+        for (rGraph result : _assemblyGraphs) {
             for (Part p : result.getPartsInGraph(_collector)) {
                 if (!usedParts.contains(p)) {
                     usedParts.add(p);
@@ -226,7 +226,7 @@ public class RavenController {
         _discouraged = new HashSet();
         _forbidden = new HashSet();
         _statistics = new Statistics();
-        _assemblyGraphs = new ArrayList<SRSGraph>();
+        _assemblyGraphs = new ArrayList<rGraph>();
         forcedOverhangHash = new HashMap();
         _partLibrary = new ArrayList();
         _vectorLibrary = new ArrayList();
@@ -501,7 +501,7 @@ public class RavenController {
 
         if (!_assemblyGraphs.isEmpty()) {
 
-            for (SRSGraph graph : _assemblyGraphs) {
+            for (rGraph graph : _assemblyGraphs) {
                 if (graph.getStages() > stages) {
                     stages = graph.getStages();
                 }
@@ -542,7 +542,7 @@ public class RavenController {
         _statistics = new Statistics();
         _vectorLibrary = new ArrayList();
         _partLibrary = new ArrayList();
-        _assemblyGraphs = new ArrayList<SRSGraph>();
+        _assemblyGraphs = new ArrayList<rGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
         method = method.toLowerCase().trim();
@@ -594,9 +594,9 @@ public class RavenController {
         ClothoWriter writer = new ClothoWriter();
         ArrayList<String> graphTextFiles = new ArrayList();
         ArrayList<String> arcTextFiles = new ArrayList<String>();
-        ArrayList<SRSNode> targetRootNodes = new ArrayList();
+        ArrayList<rNode> targetRootNodes = new ArrayList();
         if (!_assemblyGraphs.isEmpty()) {
-            for (SRSGraph result : _assemblyGraphs) {
+            for (rGraph result : _assemblyGraphs) {
                 targetRootNodes.add(result.getRootNode());
             }
         }
@@ -604,30 +604,25 @@ public class RavenController {
         //Initialize statistics
         boolean overhangValid = false;
         if (method.equals("biobricks")) {
-            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
+            overhangValid = rBioBricks.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("cpec")) {
-            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
+            overhangValid = rCPEC.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("gibson")) {
-            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
+            overhangValid = rGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("goldengate")) {
-            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
+            overhangValid = rGoldenGate.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("moclo")) {
-            overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
+            overhangValid = rMoClo.validateOverhangs(_assemblyGraphs);
         } else if (method.equals("slic")) {
-            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
+            overhangValid = rSLIC.validateOverhangs(_assemblyGraphs);
         }
         boolean valid = validateGraphComposition();
         _valid = valid && overhangValid;
-
-
-
-
-
-        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
-        SRSGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless);
+        _assemblyGraphs = rGraph.mergeGraphs(_assemblyGraphs);
+        rGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
         solutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
-            for (SRSGraph result : _assemblyGraphs) {
+            for (rGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result);
                 writer.fixCompositeUUIDs(_collector, result);
                 boolean canPigeon = result.canPigeon();
@@ -637,22 +632,22 @@ public class RavenController {
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
-        String mergedArcText = SRSGraph.mergeArcFiles(arcTextFiles);
-        String mergedGraphText = SRSGraph.mergeWeyekinFiles(graphTextFiles);
+        String mergedArcText = rGraph.mergeArcFiles(arcTextFiles);
+        String mergedGraphText = rGraph.mergeWeyekinFiles(graphTextFiles);
 
         //generate instructions
         if (method.equals("biobrick")) {
-            _instructions = SRSBioBricks.generateInstructions(targetRootNodes, _collector);
+            _instructions = rBioBricks.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("cpec")) {
-            _instructions = SRSCPEC.generateInstructions(targetRootNodes, _collector);
+            _instructions = rCPEC.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("gibson")) {
-            _instructions = SRSGibson.generateInstructions(targetRootNodes, _collector);
+            _instructions = rGibson.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("golden gate")) {
-            _instructions = SRSGoldenGate.generateInstructions(targetRootNodes, _collector);
+            _instructions = rGoldenGate.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("moclo")) {
-            _instructions = SRSMoClo.generateInstructions(targetRootNodes, _collector, null);
+            _instructions = rMoClo.generateInstructions(targetRootNodes, _collector, null);
         } else if (method.equals("slic")) {
-            _instructions = SRSSLIC.generateInstructions(targetRootNodes, _collector);
+            _instructions = rSLIC.generateInstructions(targetRootNodes, _collector);
         }
         
         //write instructions file
@@ -683,9 +678,6 @@ public class RavenController {
         out.write(mergedArcText);
         out.close();
 
-
-
-
         String toReturn = "";
         toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
@@ -694,12 +686,12 @@ public class RavenController {
     private boolean validateGraphComposition() throws Exception {
         boolean toReturn = true;
         HashSet<String> seenRequired = new HashSet();
-        for (SRSGraph graph : _assemblyGraphs) {
-            ArrayList<SRSNode> queue = new ArrayList();
-            HashSet<SRSNode> seenNodes = new HashSet();
+        for (rGraph graph : _assemblyGraphs) {
+            ArrayList<rNode> queue = new ArrayList();
+            HashSet<rNode> seenNodes = new HashSet();
             queue.add(graph.getRootNode());
             while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
+                rNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
                 if (_forbidden.contains(current.getComposition().toString())) {
@@ -709,7 +701,7 @@ public class RavenController {
                 if (_required.contains(current.getComposition().toString())) {
                     seenRequired.add(current.getComposition().toString());
                 }
-                for (SRSNode neighbor : current.getNeighbors()) {
+                for (rNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                     }
@@ -752,7 +744,7 @@ public class RavenController {
     private HashSet<String> _discouraged = new HashSet();
     private HashSet<String> _forbidden = new HashSet();
     private Statistics _statistics = new Statistics();
-    private ArrayList<SRSGraph> _assemblyGraphs = new ArrayList<SRSGraph>();
+    private ArrayList<rGraph> _assemblyGraphs = new ArrayList<rGraph>();
     private HashMap<String, ArrayList<String>> forcedOverhangHash = new HashMap();
     private ArrayList<Part> _partLibrary = new ArrayList();
     private ArrayList<Vector> _vectorLibrary = new ArrayList();

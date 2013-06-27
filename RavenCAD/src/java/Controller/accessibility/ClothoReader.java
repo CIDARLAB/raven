@@ -6,9 +6,9 @@ package Controller.accessibility;
 
 import Controller.datastructures.Part;
 import Controller.datastructures.RestrictionEnzyme;
-import Controller.datastructures.SRSGraph;
-import Controller.datastructures.SRSNode;
-import Controller.datastructures.SRSVector;
+import Controller.datastructures.rGraph;
+import Controller.datastructures.rNode;
+import Controller.datastructures.rVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +31,10 @@ public class ClothoReader {
      */
     
     /** Given goal parts and library, create hashMem, key: composition with overhangs concatenated at the end, value: corresponding graph **/
-    public static HashMap<String, SRSGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
+    public static HashMap<String, rGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
 
         //Create library to initialize hashMem
-        HashMap<String, SRSGraph> library = new HashMap<String, SRSGraph>();
+        HashMap<String, rGraph> library = new HashMap<String, rGraph>();
 
         //Add goal parts to memoization hash, making new nodes with only type and composition from library
         for (Part goalPart : goalParts) {
@@ -43,7 +43,7 @@ public class ClothoReader {
                 for (int i = 0; i < basicParts.size(); i++) {
 
                     //Initialize new graph for a basic part
-                    SRSGraph newBasicGraph = new SRSGraph();
+                    rGraph newBasicGraph = new rGraph();
                     newBasicGraph.getRootNode().setUUID(basicParts.get(i).getUUID());
 
                     //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
@@ -61,7 +61,7 @@ public class ClothoReader {
                     }
 
                     //Set type and composition
-                    SRSNode root = newBasicGraph.getRootNode();
+                    rNode root = newBasicGraph.getRootNode();
                     root.setName(basicParts.get(i).getName());
                     root.setComposition(composition);
                     root.setType(type);
@@ -106,7 +106,7 @@ public class ClothoReader {
                     }
 
                     //Initialize new graph for library part
-                    SRSGraph libraryPartGraph = new SRSGraph();
+                    rGraph libraryPartGraph = new rGraph();
                     libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
                     libraryPartGraph.getRootNode().setComposition(composition);
                     libraryPartGraph.getRootNode().setType(type);
@@ -134,10 +134,10 @@ public class ClothoReader {
     }
 
     /** Given a vector library, create vectorHash **/
-    public static ArrayList<SRSVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
+    public static ArrayList<rVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
 
         //Initialize vector library
-        ArrayList<SRSVector> library = new ArrayList<SRSVector>();
+        ArrayList<rVector> library = new ArrayList<rVector>();
 
         //Provided there is an input vector library
         if (vectorLibrary != null) {
@@ -145,7 +145,7 @@ public class ClothoReader {
                 for (Vector aVector : vectorLibrary) {
 
                     //Initialize a new vector
-                    SRSVector vector = new SRSVector();
+                    rVector vector = new rVector();
 
                     //If there's search tags, find overhangs
                     if (aVector.getSearchTags() != null) {
@@ -183,8 +183,8 @@ public class ClothoReader {
     }
 
     /** Convert goal parts into SRS nodes for the algorithm **/
-    public static ArrayList<SRSNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
-        ArrayList<SRSNode> gpsNodes = new ArrayList<SRSNode>();
+    public static ArrayList<rNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
+        ArrayList<rNode> gpsNodes = new ArrayList<rNode>();
         for (int i = 0; i < goalParts.size(); i++) {
 
             //Get goal part's composition and type (part description type)
@@ -205,7 +205,7 @@ public class ClothoReader {
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            SRSNode gp = new SRSNode(false, false, null, composition, type, false);
+            rNode gp = new rNode(false, false, null, composition, type, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }

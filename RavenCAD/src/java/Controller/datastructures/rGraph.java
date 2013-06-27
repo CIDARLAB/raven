@@ -18,19 +18,19 @@ import java.util.Stack;
  *
  * @author jenhantao, evanappleton
  */
-public class SRSGraph {
+public class rGraph {
 
     /**
      * SDSGraph constructor, no specified root node *
      */
-    public SRSGraph() {
-        _node = new SRSNode();
-        _subGraphs = new ArrayList<SRSGraph>();
+    public rGraph() {
+        _node = new rNode();
+        _subGraphs = new ArrayList<rGraph>();
         _stages = 0;
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
-        _sharingFactor = 0;
+        _modularityFactor = 0;
         _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
@@ -38,14 +38,14 @@ public class SRSGraph {
     /**
      * SDSGraph constructor, specified root node *
      */
-    public SRSGraph(SRSNode node) {
+    public rGraph(rNode node) {
         _node = node;
-        _subGraphs = new ArrayList<SRSGraph>();
+        _subGraphs = new ArrayList<rGraph>();
         _stages = 0;
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
-        _sharingFactor = 0;
+        _modularityFactor = 0;
         _efficiencyArray = new ArrayList<Double>();
         _reactions = 0;
     }
@@ -54,14 +54,14 @@ public class SRSGraph {
      * Clone method for an SDSGraph *
      */
     @Override
-    public SRSGraph clone() {
-        SRSGraph clone = new SRSGraph();
+    public rGraph clone() {
+        rGraph clone = new rGraph();
         clone._node = this._node.clone();
         clone._recCnt = this._recCnt;
         clone._disCnt = this._disCnt;
         clone._stages = this._stages;
         clone._steps = this._steps;
-        clone._sharingFactor = this._sharingFactor;
+        clone._modularityFactor = this._modularityFactor;
         clone._efficiencyArray = this._efficiencyArray;
         clone._reactions = this._reactions;
         return clone;
@@ -77,18 +77,18 @@ public class SRSGraph {
 
     public ArrayList<Part> getPartsInGraph(Collector coll) {
         ArrayList<Part> toReturn = new ArrayList<Part>();
-        HashSet<SRSNode> seenNodes = new HashSet();
-        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+        HashSet<rNode> seenNodes = new HashSet();
+        ArrayList<rNode> queue = new ArrayList<rNode>();
         queue.add(this.getRootNode());
         while (!queue.isEmpty()) {
-            SRSNode current = queue.get(0);
+            rNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
             Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
                 toReturn.add(toAdd);
             }
-            for (SRSNode neighbor : current.getNeighbors()) {
+            for (rNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -99,11 +99,11 @@ public class SRSGraph {
 
     public ArrayList<Vector> getVectorsInGraph(Collector coll) {
         ArrayList<Vector> toReturn = new ArrayList<Vector>();
-        HashSet<SRSNode> seenNodes = new HashSet();
-        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+        HashSet<rNode> seenNodes = new HashSet();
+        ArrayList<rNode> queue = new ArrayList<rNode>();
         queue.add(this.getRootNode());
         while (!queue.isEmpty()) {
-            SRSNode current = queue.get(0);
+            rNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
             if (current.getVector() != null) {
@@ -112,7 +112,7 @@ public class SRSGraph {
                     toReturn.add(toAdd);
                 }
             }
-            for (SRSNode neighbor : current.getNeighbors()) {
+            for (rNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -121,23 +121,23 @@ public class SRSGraph {
         return toReturn;
     }
 
-    public static ArrayList<SRSGraph> mergeGraphs(ArrayList<SRSGraph> graphs) {
+    public static ArrayList<rGraph> mergeGraphs(ArrayList<rGraph> graphs) {
 
-        ArrayList<SRSGraph> mergedGraphs = new ArrayList<SRSGraph>();
-        HashMap<String, SRSNode> mergedNodesHash = new HashMap<String, SRSNode>();
+        ArrayList<rGraph> mergedGraphs = new ArrayList<rGraph>();
+        HashMap<String, rNode> mergedNodesHash = new HashMap<String, rNode>();
         
         //Traverse and merge graphs
         for (int i = 0; i < graphs.size(); i++) {
             
-            SRSGraph aGraph = graphs.get(i);
+            rGraph aGraph = graphs.get(i);
             boolean hasParent = true;
             
-            HashSet<SRSNode> seenNodes = new HashSet();
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+            HashSet<rNode> seenNodes = new HashSet();
+            ArrayList<rNode> queue = new ArrayList<rNode>();
             queue.add(aGraph.getRootNode());
             
             while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
+                rNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
                 
@@ -147,7 +147,7 @@ public class SRSGraph {
                 if (mergedNodesHash.containsKey(currentCompOHStage) == false) {
                     mergedNodesHash.put(currentCompOHStage, current);
                     
-                    for (SRSNode neighbor : current.getNeighbors()) {
+                    for (rNode neighbor : current.getNeighbors()) {
                         if (!seenNodes.contains(neighbor)) {
                             queue.add(neighbor);
                         }
@@ -156,18 +156,16 @@ public class SRSGraph {
                 //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
                  
-                    SRSNode finalNode = mergedNodesHash.get(currentCompOHStage);
-                    ArrayList<SRSNode> neighbors = current.getNeighbors();
+                    rNode finalNode = mergedNodesHash.get(currentCompOHStage);
+                    ArrayList<rNode> neighbors = current.getNeighbors();
                     
                     //Remove parent from current node's neighbors, add it to the hashed node's nieghbors
                     hasParent = false;
                     for (int j = 0; j < neighbors.size(); j++) {
                         if (neighbors.get(j).getStage() > current.getStage()) {
-                            SRSNode parent = neighbors.get(j);
+                            rNode parent = neighbors.get(j);
                             hasParent = true;                           
                             parent.replaceNeighbor(current, finalNode); 
-//                            System.out.println("replacing "+current.getComposition()+" stage: "+current.getStage()+" "+current.getLOverhang()+current.getROverhang());
-//                            System.out.println("with      "+finalNode.getComposition()+" stage: "+finalNode.getStage()+" "+finalNode.getLOverhang()+finalNode.getROverhang());
                             finalNode.addNeighbor(parent);
                             current.removeNeighbor(parent);
                         }
@@ -188,20 +186,20 @@ public class SRSGraph {
         }
         
         //Remove graphs that have identical nodes to ones already seen from returned set
-        HashSet<SRSNode> seenNodes = new HashSet();
-        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-        ArrayList<SRSGraph> remGraphs = new ArrayList<SRSGraph>();
+        HashSet<rNode> seenNodes = new HashSet();
+        ArrayList<rNode> queue = new ArrayList<rNode>();
+        ArrayList<rGraph> remGraphs = new ArrayList<rGraph>();
 
-        for (SRSGraph graph : mergedGraphs) {
+        for (rGraph graph : mergedGraphs) {
             queue.add(graph.getRootNode());
             boolean newNodes = seenNodes.add(graph.getRootNode());
 
             while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
+                rNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
 
-                for (SRSNode neighbor : current.getNeighbors()) {
+                for (rNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                         newNodes = true;
@@ -218,7 +216,8 @@ public class SRSGraph {
         return mergedGraphs;
     }
 
-    public static void getGraphStats(ArrayList<SRSGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless) {
+    /** Get graph statistics **/
+    public static void getGraphStats(ArrayList<rGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
         
         HashSet<String> startPartsLOcompRO = new HashSet<String>();
         HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
@@ -248,10 +247,7 @@ public class SRSGraph {
             }
 
             String aPartLOnameRO = leftOverhang + comp + rightOverhang;
-            startPartsLOcompRO.add(aPartLOnameRO);
-            
-//            System.out.println("aPartLOnameRO: " + aPartLOnameRO);
-            
+            startPartsLOcompRO.add(aPartLOnameRO);          
         }
 
         //Go through vectors library, put all compositions into hash of things that already exist
@@ -261,10 +257,7 @@ public class SRSGraph {
             int stage = aVec.getLevel();
 
             String aVecLOlevelRO = leftoverhang + stage + rightOverhang;
-            startVectorsLOlevelRO.add(aVecLOlevelRO);
-            
-//            System.out.println("aVecLOlevelRO: " + aVecLOlevelRO);
-            
+            startVectorsLOlevelRO.add(aVecLOlevelRO);          
         }
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
@@ -284,19 +277,19 @@ public class SRSGraph {
             int shared = 0;
             ArrayList<Double> efficiency = new ArrayList<Double>();
 
-            SRSGraph aGraph = mergedGraphs.get(i);
-            HashSet<SRSNode> seenNodes = new HashSet();
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+            rGraph aGraph = mergedGraphs.get(i);
+            HashSet<rNode> seenNodes = new HashSet();
+            ArrayList<rNode> queue = new ArrayList<rNode>();
             queue.add(aGraph.getRootNode());
 
             //Traverse the graph
             while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
+                rNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
                 int numParents = 0;
 
-                for (SRSNode neighbor : current.getNeighbors()) {
+                for (rNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         if (!queue.contains(neighbor)) {
                             queue.add(neighbor);
@@ -351,16 +344,12 @@ public class SRSGraph {
                 if (current.getStage() == 0) {
                     if (partsLOcompRO.add(aPartLOcompRO) != false) {
                         PCRs++;
-//                        System.out.println("aPartLOcompRO: " + aPartLOcompRO);
-//                        System.out.println("PCRS: " + PCRs);
                     }
                 } 
                 
                 //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
                 if (vectorsLOlevelRO.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
                     PCRs++;
-//                    System.out.println("aVecLOlevelRO: " + aVecLOlevelRO);
-//                    System.out.println("PCRS: " + PCRs);
                 }
                 
                 //If the node is grater than stage 0, it is a step and add to efficiency list
@@ -422,7 +411,7 @@ public class SRSGraph {
         seenUUIDs.add(this._node.getUUID());
         
         //Start at the root node and look at all children
-        for (SRSNode neighbor : this._node.getNeighbors()) {
+        for (rNode neighbor : this._node.getNeighbors()) {
             seenUUIDs.add(neighbor.getUUID());
             edges = getPostOrderEdgesHelper(neighbor, this._node, edges, seenUUIDs, true);
         }
@@ -432,14 +421,14 @@ public class SRSGraph {
     /**
      * Return graph edges in an order specified for puppetshow *
      */
-    private ArrayList<String> getPostOrderEdgesHelper(SRSNode current, SRSNode parent, ArrayList<String> edges, HashSet<String> seenUUIDs, boolean recurse) {
+    private ArrayList<String> getPostOrderEdgesHelper(rNode current, rNode parent, ArrayList<String> edges, HashSet<String> seenUUIDs, boolean recurse) {
         ArrayList<String> edgesToAdd = new ArrayList();
 
         //Do a recursive call if there are unseen neighbors
         if (recurse) {
 
             //For all of this node's neighbors
-            for (SRSNode neighbor : current.getNeighbors()) {
+            for (rNode neighbor : current.getNeighbors()) {
 
                 //If the neighbor's composition is not that of the parent
                 if (!parent.getUUID().equals(neighbor.getUUID())) {
@@ -458,7 +447,7 @@ public class SRSGraph {
         }
 
         //For all current neighbors... this is always done on any call
-        for (SRSNode neighbor : current.getNeighbors()) {
+        for (rNode neighbor : current.getNeighbors()) {
 
             //Write arc connecting to the parent
             if (neighbor.getComposition().toString().equals(parent.getComposition().toString())) {
@@ -505,15 +494,15 @@ public class SRSGraph {
         }
 
         //Build key
-        Stack<SRSNode> stack = new Stack<SRSNode>();
-        HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+        Stack<rNode> stack = new Stack<rNode>();
+        HashSet<rNode> seenNodes = new HashSet<rNode>();
         HashMap<String, String> compositionHash = new HashMap<String, String>();
         stack.add(this._node);
         while (!stack.isEmpty()) {
-            SRSNode current = stack.pop();
+            rNode current = stack.pop();
             seenNodes.add(current);
             compositionHash.put(current.getUUID(), current.getComposition().toString());
-            for (SRSNode neighbor : current.getNeighbors()) {
+            for (rNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     stack.add(neighbor);
                 }
@@ -806,7 +795,7 @@ public class SRSGraph {
      */
     public boolean canPigeon() {
         boolean canPigeon = true;
-        SRSNode root = this.getRootNode();
+        rNode root = this.getRootNode();
         ArrayList<String> types = root.getType();
         for (int i = 0; i < types.size(); i++) {
             if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("origin") || types.get(i).equalsIgnoreCase("o") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
@@ -826,14 +815,14 @@ public class SRSGraph {
     /**
      * Add a subgraph to a graph *
      */
-    public void addSubgraph(SRSGraph graph) {
+    public void addSubgraph(rGraph graph) {
         _subGraphs.add(graph);
     }
 
     /**
      * Get graph root node *
      */
-    public SRSNode getRootNode() {
+    public rNode getRootNode() {
         return _node;
     }
 
@@ -875,8 +864,8 @@ public class SRSGraph {
     /**
      * Find sharing score for a given SDSGraph *
      */
-    public int getSharingFactor() {
-        return _sharingFactor;
+    public int getModularityFactor() {
+        return _modularityFactor;
     }
     
     /**
@@ -889,7 +878,7 @@ public class SRSGraph {
     /**
      * Get all subgraphs of this graph *
      */
-    public ArrayList<SRSGraph> getSubGraphs() {
+    public ArrayList<rGraph> getSubGraphs() {
         return _subGraphs;
     }
 
@@ -920,6 +909,20 @@ public class SRSGraph {
      */
     public int getReaction() {
         return _reactions;
+    }
+    
+    /**
+     * Get the estimated graph time *
+     */
+    public double getEstTime() {
+        return _estTime;
+    }
+    
+    /**
+     * Get the estimated graph cost *
+     */
+    public double getEstCost() {
+        return _estCost;
     }
 
     /**
@@ -953,15 +956,15 @@ public class SRSGraph {
     /**
      * Set graph root node *
      */
-    public void setRootNode(SRSNode newRoot) {
+    public void setRootNode(rNode newRoot) {
         _node = newRoot;
     }
 
     /**
      * Find sharing score for a given SDSGraph *
      */
-    public void setSharingFactor(int sharing) {
-        _sharingFactor = sharing;
+    public void setModularityFactor(int modularity) {
+        _modularityFactor = modularity;
     }
     
     /**
@@ -974,7 +977,7 @@ public class SRSGraph {
     /**
      * Get all subgraphs of this graph *
      */
-    public void setSubGraphs(ArrayList<SRSGraph> subGraphs) {
+    public void setSubGraphs(ArrayList<rGraph> subGraphs) {
         _subGraphs = subGraphs;
     }
 
@@ -992,16 +995,32 @@ public class SRSGraph {
         _reactions = numReactions;
     }
     
+    /**
+     * Set the estimated graph time *
+     */
+    public void setEstTime(Double estTime) {
+        _estTime = estTime;
+    }
+    
+    /**
+     * Set the estimated graph time *
+     */
+    public void setEstCost(Double estCost) {
+        _estCost = estCost;
+    }
+    
     //FIELDS
-    private ArrayList<SRSGraph> _subGraphs;
-    private SRSNode _node;
+    private ArrayList<rGraph> _subGraphs;
+    private rNode _node;
     private int _stages;
     private int _steps;
     private int _sharedSteps;
     private ArrayList<Double> _efficiencyArray;
     private int _recCnt;
     private int _disCnt;
-    private int _sharingFactor;
+    private int _modularityFactor;
     private int _reactions;
+    private double _estCost;
+    private double _estTime;
     private boolean _pinned;
 }

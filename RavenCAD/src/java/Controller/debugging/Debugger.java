@@ -4,8 +4,8 @@
  */
 package Controller.debugging;
 
-import Controller.datastructures.SRSGraph;
-import Controller.datastructures.SRSNode;
+import Controller.datastructures.rGraph;
+import Controller.datastructures.rNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,34 +17,34 @@ import java.util.HashSet;
 public class Debugger {
     
     /** Wrapper for the Raven debugging algorithm **/
-    public ArrayList<SRSGraph> debuggingWrapper (ArrayList<SRSGraph> annotatedGraphs, ArrayList<SRSNode> gps, HashMap<String, SRSGraph> partHash, ArrayList<Double> costs) {
+    public ArrayList<rGraph> debuggingWrapper (ArrayList<rGraph> annotatedGraphs, ArrayList<rNode> gps, HashMap<String, rGraph> partHash, ArrayList<Double> costs) {
 
-        ArrayList<SRSNode> completedSteps = new ArrayList<SRSNode>();
-        ArrayList<SRSNode> failedSteps = new ArrayList<SRSNode>();
+        ArrayList<rNode> completedSteps = new ArrayList<rNode>();
+        ArrayList<rNode> failedSteps = new ArrayList<rNode>();
         
         //Traverse annotated graphs to 
-        for (SRSGraph graph : annotatedGraphs) {
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-            HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-            SRSNode root = graph.getRootNode();
+        for (rGraph graph : annotatedGraphs) {
+            ArrayList<rNode> queue = new ArrayList<rNode>();
+            HashSet<rNode> seenNodes = new HashSet<rNode>();
+            rNode root = graph.getRootNode();
             queue.add(root);
             while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
+                rNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
                 
                 //Tabulate failed and successful steps
-                if (current.getSuccess() == true) {
+                if (current.getSuccessCnt() > 0) {
                     completedSteps.add(current);
-                    SRSGraph newLibPart = new SRSGraph(current);
+                    rGraph newLibPart = new rGraph(current);
                     partHash.put(current.getComposition().toString(), newLibPart);
-                } else if (current.getSuccess() == false) {
+                } else {
                     failedSteps.add(current);
                 }
                 
                 //Add unseen nodes to the queue
-                ArrayList<SRSNode> neighbors = current.getNeighbors();
-                for (SRSNode neighbor : neighbors) {
+                ArrayList<rNode> neighbors = current.getNeighbors();
+                for (rNode neighbor : neighbors) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                     }
@@ -53,13 +53,13 @@ public class Debugger {
         }
         
         gps.removeAll(completedSteps);
-        ArrayList<SRSGraph> newGraphs = debug(gps, partHash, completedSteps, failedSteps, costs);
+        ArrayList<rGraph> newGraphs = debug(gps, partHash, completedSteps, failedSteps, costs);
         
         return newGraphs;        
     }
  
     /** Debugging algorithm **/
-    private ArrayList<SRSGraph> debug(ArrayList<SRSNode> gps, HashMap<String, SRSGraph> partHash, ArrayList<SRSNode> completedSteps, ArrayList<SRSNode> failedSteps, ArrayList<Double> costs) {
+    private ArrayList<rGraph> debug(ArrayList<rNode> gps, HashMap<String, rGraph> partHash, ArrayList<rNode> completedSteps, ArrayList<rNode> failedSteps, ArrayList<Double> costs) {
         
         analyze();
         
