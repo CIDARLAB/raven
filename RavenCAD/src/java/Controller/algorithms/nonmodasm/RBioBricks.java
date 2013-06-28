@@ -5,7 +5,7 @@
 package Controller.algorithms.nonmodasm;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.rGeneral;
+import Controller.algorithms.RGeneral;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,11 +15,11 @@ import Controller.datastructures.*;
  *
  * @author evanappleton
  */
-public class rBioBricks extends rGeneral {
+public class RBioBricks extends RGeneral {
 
 /** This is the only entry point for this class. A list of goal parts is passed and a list of optimal graphs is output. 
      * PASS THE FOLLOWING ARGUMENTS: ArrayList(Goal_Parts), HashMap(A_Goal_Part, HashSet(Required_Part_Compositions)), HashMap(A_Goal_Part, HashSet(Recommended_Part_Compositions)), HashMap(Part_Compositions, Optimal_Assembly_Graphs) **/
-    public ArrayList<rGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, ArrayList<Double> costs) {
+    public ArrayList<RGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, ArrayList<Double> costs) {
 
         //Try-Catch block around wrapper method
         try {
@@ -27,11 +27,11 @@ public class rBioBricks extends rGeneral {
             _maxNeighbors = 2;
             
             //Initialize part hash and vector set
-            HashMap<String, rGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
-            ArrayList<rVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
+            ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
-            ArrayList<rNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
@@ -41,18 +41,18 @@ public class rBioBricks extends rGeneral {
             }   
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<rGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, null, true);
+            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, null, true);
             optimalGraphs = assignVectors(optimalGraphs, vectorSet);
            
 //            System.out.println("optimalGraphs: " + optimalGraphs);
 
-            for (rGraph graph : optimalGraphs) {
-                ArrayList<rNode> queue = new ArrayList<rNode>();
-                HashSet<rNode> seenNodes = new HashSet<rNode>();
-                rNode root = graph.getRootNode();
+            for (RGraph graph : optimalGraphs) {
+                ArrayList<RNode> queue = new ArrayList<RNode>();
+                HashSet<RNode> seenNodes = new HashSet<RNode>();
+                RNode root = graph.getRootNode();
                 queue.add(root);
                 while (!queue.isEmpty()) {
-                    rNode current = queue.get(0);
+                    RNode current = queue.get(0);
                     queue.remove(0);
                     seenNodes.add(current);
 //
@@ -64,7 +64,7 @@ public class rBioBricks extends rGeneral {
 //                    System.out.println("uuid: " + current.getUUID());
 //
 //                    ArrayList<SRSNode> neighbors = current.getNeighbors();
-//                    for (rNode neighbor : neighbors) {
+//                    for (RNode neighbor : neighbors) {
 //                        System.out.println("neighbor: " + neighbor.getComposition());
 //                        if (!seenNodes.contains(neighbor)) {
 //                            queue.add(neighbor);
@@ -79,16 +79,16 @@ public class rBioBricks extends rGeneral {
             E.printStackTrace();
             
             //Return a new graph if there is an exception
-            ArrayList<rGraph> blank = new ArrayList<rGraph>();
+            ArrayList<RGraph> blank = new ArrayList<RGraph>();
             return blank;
         }
     }
     
     /** Optimize overhang assignments based on available parts and vectors with overhangs **/
-    private ArrayList<rGraph> assignVectors (ArrayList<rGraph> optimalGraphs, ArrayList<rVector> vectorSet) {
+    private ArrayList<RGraph> assignVectors (ArrayList<RGraph> optimalGraphs, ArrayList<RVector> vectorSet) {
         
         //If the vector set is of size one, use that vector everywhere applicable 
-        rVector theVector = new rVector();
+        RVector theVector = new RVector();
         if (vectorSet.size() == 1) {
             theVector = vectorSet.get(0);
         }
@@ -97,17 +97,17 @@ public class rBioBricks extends rGeneral {
         
         //For all graphs traverse nodes of the graph and assign all nodes the biobricks vector
         for (int i = 0; i < optimalGraphs.size(); i++) {
-            rGraph graph = optimalGraphs.get(i);
+            RGraph graph = optimalGraphs.get(i);
             
             //Traverse nodes of a graph and assign all the selected vector
-            ArrayList<rNode> queue = new ArrayList<rNode>();
-            HashSet<rNode> seenNodes = new HashSet<rNode>();
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
             queue.add(graph.getRootNode());
             while (!queue.isEmpty()) {
-                rNode current = queue.get(0);
+                RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
-                for (rNode neighbor : current.getNeighbors()) {
+                for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                     }
@@ -129,11 +129,11 @@ public class rBioBricks extends rGeneral {
     }  
        
     
-    public static boolean validateOverhangs(ArrayList<rGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<rNode> roots, Collector coll) {
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
         return null;
     }
 }

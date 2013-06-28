@@ -10,22 +10,22 @@ import java.util.ArrayList;
  *
  * @author jenhantao, evanappleton
  */
-public class rNode {
+public class RNode {
 
     /** SDSNode constructor, no neighbors, parent or children or meta-data specified **/
-    public rNode() {
+    public RNode() {
         _recommended = false;
         _discouraged = false;
         _efficiency = 0;
 //        _successCnt = 0;
 //        _failureCnt = 0;
-        _neighbors = new ArrayList<rNode>();
+        _neighbors = new ArrayList<RNode>();
         _composition = new ArrayList<String>();
         _uuid = null;
         _type = new ArrayList<String>();
         _lOverhang = "";
         _rOverhang = "";
-//        _vector = new rVector();
+//        _vector = new RVector();
         _name = "";
         _stage = 0;
         _nodeID = _nodeCount;
@@ -33,7 +33,7 @@ public class rNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public rNode(boolean recommended, boolean discouraged, ArrayList<rNode> neighbors, ArrayList<String> composition, ArrayList<String> type, int successCnt, int failureCnt) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> type, int successCnt, int failureCnt) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
@@ -42,7 +42,7 @@ public class rNode {
         _failureCnt = failureCnt;
         _neighbors = neighbors;
         if (_neighbors == null) {
-            _neighbors = new ArrayList<rNode>();
+            _neighbors = new ArrayList<RNode>();
         }
         _composition = composition;
         _type = type;
@@ -56,9 +56,9 @@ public class rNode {
     
     /** Clone nodes of a graph by traversing and copying nodes **/
     @Override
-    public rNode clone() {
+    public RNode clone() {
         
-        rNode clone = new rNode();
+        RNode clone = new RNode();
         clone._recommended = this._recommended;
         clone._discouraged = this._discouraged;
         clone._uuid = this._uuid;
@@ -72,19 +72,19 @@ public class rNode {
         clone._efficiency = this._efficiency;
         clone._successCnt = this._successCnt;
         clone._failureCnt = this._failureCnt;
-        ArrayList<rNode> neighbors = this._neighbors;
+        ArrayList<RNode> neighbors = this._neighbors;
         cloneHelper(clone, this, neighbors);
         
         return clone;
     }
     
-    private void cloneHelper(rNode parentClone, rNode parent, ArrayList<rNode> neighbors) {
+    private void cloneHelper(RNode parentClone, RNode parent, ArrayList<RNode> neighbors) {
         
         for (int i = 0; i < neighbors.size(); i++) {
             
-            rNode neighbor = neighbors.get(i);
+            RNode neighbor = neighbors.get(i);
             
-            rNode neighborClone = new rNode();
+            RNode neighborClone = new RNode();
             neighborClone._recommended = neighbor._recommended;
             neighborClone._discouraged = neighbor._discouraged;
             neighborClone._uuid = neighbor._uuid;
@@ -103,7 +103,7 @@ public class rNode {
             neighborClone.addNeighbor(parentClone);
             
             if (neighbor.getStage() > 0) {
-                ArrayList<rNode> orderedChildren = new ArrayList<rNode>();
+                ArrayList<RNode> orderedChildren = new ArrayList<RNode>();
                 orderedChildren.addAll(neighbor.getNeighbors());
 
                 //Remove the current parent from the list
@@ -156,7 +156,7 @@ public class rNode {
     }
     
     /** Get node neighbors **/
-    public ArrayList<rNode> getNeighbors() {
+    public ArrayList<RNode> getNeighbors() {
         return _neighbors;
     }
 
@@ -166,7 +166,7 @@ public class rNode {
     }
     
     /** Get vector **/
-    public rVector getVector() {
+    public RVector getVector() {
         return _vector;
     }
     
@@ -231,18 +231,18 @@ public class rNode {
     }
     
     /** Add neighbor node to end of the list **/
-    public void addNeighbor(rNode newNeighbor) {
+    public void addNeighbor(RNode newNeighbor) {
         _neighbors.add(newNeighbor);
     }
     
     /** Remove a node's neighbor **/
-    public void removeNeighbor(rNode neighbor) {
+    public void removeNeighbor(RNode neighbor) {
         _neighbors.remove(neighbor);
     }
 
     
     /** Replace a neighbor with the same composition at an exact point in the list to conserve order **/
-    public void replaceNeighbor(rNode oldNode, rNode newNode) {
+    public void replaceNeighbor(RNode oldNode, RNode newNode) {
         int indexOf = _neighbors.indexOf(oldNode);
         _neighbors.remove(indexOf);
         _neighbors.add(indexOf, newNode);
@@ -254,7 +254,7 @@ public class rNode {
     }
     
     /** Set vector **/
-    public void setVector(rVector vector) {
+    public void setVector(RVector vector) {
         _vector = vector;
     }
     
@@ -295,13 +295,13 @@ public class rNode {
     private double _modularity;
     private boolean _recommended;
     private boolean _discouraged;
-    private ArrayList<rNode> _neighbors;
+    private ArrayList<RNode> _neighbors;
     private String _uuid;
     private ArrayList<String> _composition;
     private ArrayList<String> _type;
     private String _lOverhang;
     private String _rOverhang;
-    private rVector _vector;
+    private RVector _vector;
     private String _name;
     private int _nodeID;
     private int _stage;

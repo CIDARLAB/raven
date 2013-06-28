@@ -24,12 +24,12 @@ public class Modularity extends Partitioning {
      */
     
     /** Find sharing score for all possible intermediates for a set of goal parts **/
-    protected HashMap<String, Integer> computeIntermediateSharing(ArrayList<rNode> goalParts) {
+    protected HashMap<String, Integer> computeIntermediateSharing(ArrayList<RNode> goalParts) {
         HashMap<String, Integer> sharing = new HashMap<String, Integer>();
 
         //For each goal part
         for (int i = 0; i < goalParts.size(); i++) {
-            rNode gp = goalParts.get(i);
+            RNode gp = goalParts.get(i);
             ArrayList<String> gpComposition = gp.getComposition();
             int gpSize = gp.getComposition().size();
 
@@ -69,13 +69,13 @@ public class Modularity extends Partitioning {
      * ends with a terminator >> *
      */
     // type- 1 for name 2 for composition
-    protected ArrayList<ArrayList<String>> getTranscriptionalUnits(ArrayList<rNode> goalParts, int type) {
+    protected ArrayList<ArrayList<String>> getTranscriptionalUnits(ArrayList<RNode> goalParts, int type) {
 
         ArrayList<ArrayList<String>> TUs = new ArrayList<ArrayList<String>>();
 
         //For each goal part get TUs
         for (int i = 0; i < goalParts.size(); i++) {
-            rNode gp = goalParts.get(i);
+            RNode gp = goalParts.get(i);
 
             ArrayList<String> types = gp.getType();
             ArrayList<String> comps = gp.getComposition();
@@ -126,13 +126,13 @@ public class Modularity extends Partitioning {
         return TUs;
     }
 
-    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<rNode> goalParts, int type) {
+    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<RNode> goalParts, int type) {
 
         ArrayList<ArrayList<String>> TUs = new ArrayList<ArrayList<String>>();
 
         //For each goal part get TUs
         for (int i = 0; i < goalParts.size(); i++) {
-            rNode gp = goalParts.get(i);
+            RNode gp = goalParts.get(i);
 
             ArrayList<String> types = gp.getType();
             ArrayList<String> comps = gp.getComposition();
@@ -237,16 +237,16 @@ public class Modularity extends Partitioning {
     /**
      * Get the stage hash for a set of optimal graphs *
      */
-    public static HashMap<Integer, ArrayList<rNode>> getStageHash(ArrayList<rGraph> optimalGraphs) {
+    public static HashMap<Integer, ArrayList<RNode>> getStageHash(ArrayList<RGraph> optimalGraphs) {
 
-        HashMap<Integer, ArrayList<rNode>> stageHash = new HashMap<Integer, ArrayList<rNode>>();
-        ArrayList<rNode> stageNodes = new ArrayList<rNode>();
+        HashMap<Integer, ArrayList<RNode>> stageHash = new HashMap<Integer, ArrayList<RNode>>();
+        ArrayList<RNode> stageNodes = new ArrayList<RNode>();
 
         for (int i = 0; i < optimalGraphs.size(); i++) {
 
             //Traverse one graph and store the nodes
-            rGraph graph = optimalGraphs.get(i);
-            rNode rootNode = graph.getRootNode();
+            RGraph graph = optimalGraphs.get(i);
+            RNode rootNode = graph.getRootNode();
             if (stageHash.containsKey(rootNode.getStage())) {
                 stageNodes = stageHash.get(rootNode.getStage());
             }
@@ -258,9 +258,9 @@ public class Modularity extends Partitioning {
             if (i != (optimalGraphs.size() - 1)) {
                 Set<Integer> keySet = stageHash.keySet();
                 for (Integer stage : keySet) {
-                    ArrayList<rNode> finalStageNodes = new ArrayList<rNode>();
+                    ArrayList<RNode> finalStageNodes = new ArrayList<RNode>();
                     finalStageNodes.addAll(stageHash.get(stage));
-                    rNode spacer = new rNode();
+                    RNode spacer = new RNode();
                     finalStageNodes.add(spacer);
                     stageHash.put(stage, finalStageNodes);
                 }
@@ -270,19 +270,19 @@ public class Modularity extends Partitioning {
         return stageHash;
     }
 
-    private static HashMap<Integer, ArrayList<rNode>> getStageHashHelper(rNode parent, ArrayList<rNode> neighbors, HashMap<Integer, ArrayList<rNode>> stageHash) {
+    private static HashMap<Integer, ArrayList<RNode>> getStageHashHelper(RNode parent, ArrayList<RNode> neighbors, HashMap<Integer, ArrayList<RNode>> stageHash) {
 
         //Check the current stageHash to get nodes that are already in there
-        ArrayList<rNode> stageNodes = new ArrayList<rNode>();
+        ArrayList<RNode> stageNodes = new ArrayList<RNode>();
         if (stageHash.containsKey(parent.getStage() - 1)) {
             stageNodes = stageHash.get(parent.getStage() - 1);
         }
 
         for (int i = 0; i < neighbors.size(); i++) {
-            rNode neighbor = neighbors.get(i);
+            RNode neighbor = neighbors.get(i);
             stageNodes.add(neighbor);
             if (neighbor.getStage() > 0) {
-                ArrayList<rNode> orderedChildren = new ArrayList<rNode>();
+                ArrayList<RNode> orderedChildren = new ArrayList<RNode>();
                 orderedChildren.addAll(neighbor.getNeighbors());
 
                 //Remove the current parent from the list

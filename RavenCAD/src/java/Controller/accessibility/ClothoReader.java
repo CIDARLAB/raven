@@ -6,9 +6,9 @@ package Controller.accessibility;
 
 import Controller.datastructures.Part;
 import Controller.datastructures.RestrictionEnzyme;
-import Controller.datastructures.rGraph;
-import Controller.datastructures.rNode;
-import Controller.datastructures.rVector;
+import Controller.datastructures.RGraph;
+import Controller.datastructures.RNode;
+import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +31,10 @@ public class ClothoReader {
      */
     
     /** Given goal parts and library, create hashMem, key: composition with overhangs concatenated at the end, value: corresponding graph **/
-    public static HashMap<String, rGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
+    public static HashMap<String, RGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
 
         //Create library to initialize hashMem
-        HashMap<String, rGraph> library = new HashMap<String, rGraph>();
+        HashMap<String, RGraph> library = new HashMap<String, RGraph>();
 
         //Add goal parts to memoization hash, making new nodes with only type and composition from library
         for (Part goalPart : goalParts) {
@@ -43,7 +43,7 @@ public class ClothoReader {
                 for (int i = 0; i < basicParts.size(); i++) {
 
                     //Initialize new graph for a basic part
-                    rGraph newBasicGraph = new rGraph();
+                    RGraph newBasicGraph = new RGraph();
                     newBasicGraph.getRootNode().setUUID(basicParts.get(i).getUUID());
 
                     //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
@@ -61,7 +61,7 @@ public class ClothoReader {
                     }
 
                     //Set type and composition
-                    rNode root = newBasicGraph.getRootNode();
+                    RNode root = newBasicGraph.getRootNode();
                     root.setName(basicParts.get(i).getName());
                     root.setComposition(composition);
                     root.setType(type);
@@ -106,7 +106,7 @@ public class ClothoReader {
                     }
 
                     //Initialize new graph for library part
-                    rGraph libraryPartGraph = new rGraph();
+                    RGraph libraryPartGraph = new RGraph();
                     libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
                     libraryPartGraph.getRootNode().setComposition(composition);
                     libraryPartGraph.getRootNode().setType(type);
@@ -134,10 +134,10 @@ public class ClothoReader {
     }
 
     /** Given a vector library, create vectorHash **/
-    public static ArrayList<rVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
+    public static ArrayList<RVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
 
         //Initialize vector library
-        ArrayList<rVector> library = new ArrayList<rVector>();
+        ArrayList<RVector> library = new ArrayList<RVector>();
 
         //Provided there is an input vector library
         if (vectorLibrary != null) {
@@ -145,7 +145,7 @@ public class ClothoReader {
                 for (Vector aVector : vectorLibrary) {
 
                     //Initialize a new vector
-                    rVector vector = new rVector();
+                    RVector vector = new RVector();
 
                     //If there's search tags, find overhangs
                     if (aVector.getSearchTags() != null) {
@@ -183,8 +183,8 @@ public class ClothoReader {
     }
 
     /** Convert goal parts into SRS nodes for the algorithm **/
-    public static ArrayList<rNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
-        ArrayList<rNode> gpsNodes = new ArrayList<rNode>();
+    public static ArrayList<RNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
+        ArrayList<RNode> gpsNodes = new ArrayList<RNode>();
         for (int i = 0; i < goalParts.size(); i++) {
 
             //Get goal part's composition and type (part description type)
@@ -205,7 +205,7 @@ public class ClothoReader {
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            rNode gp = new rNode(false, false, null, composition, type, 0, 0);
+            RNode gp = new RNode(false, false, null, composition, type, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }

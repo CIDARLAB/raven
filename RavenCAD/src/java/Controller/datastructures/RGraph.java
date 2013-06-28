@@ -18,14 +18,14 @@ import java.util.Stack;
  *
  * @author jenhantao, evanappleton
  */
-public class rGraph {
+public class RGraph {
 
     /**
      * SDSGraph constructor, no specified root node *
      */
-    public rGraph() {
-        _node = new rNode();
-        _subGraphs = new ArrayList<rGraph>();
+    public RGraph() {
+        _node = new RNode();
+        _subGraphs = new ArrayList<RGraph>();
         _stages = 0;
         _steps = 0;
         _recCnt = 0;
@@ -38,9 +38,9 @@ public class rGraph {
     /**
      * SDSGraph constructor, specified root node *
      */
-    public rGraph(rNode node) {
+    public RGraph(RNode node) {
         _node = node;
-        _subGraphs = new ArrayList<rGraph>();
+        _subGraphs = new ArrayList<RGraph>();
         _stages = 0;
         _steps = 0;
         _recCnt = 0;
@@ -54,8 +54,8 @@ public class rGraph {
      * Clone method for an SDSGraph *
      */
     @Override
-    public rGraph clone() {
-        rGraph clone = new rGraph();
+    public RGraph clone() {
+        RGraph clone = new RGraph();
         clone._node = this._node.clone();
         clone._recCnt = this._recCnt;
         clone._disCnt = this._disCnt;
@@ -77,18 +77,18 @@ public class rGraph {
 
     public ArrayList<Part> getPartsInGraph(Collector coll) {
         ArrayList<Part> toReturn = new ArrayList<Part>();
-        HashSet<rNode> seenNodes = new HashSet();
-        ArrayList<rNode> queue = new ArrayList<rNode>();
+        HashSet<RNode> seenNodes = new HashSet();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
         while (!queue.isEmpty()) {
-            rNode current = queue.get(0);
+            RNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
             Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
                 toReturn.add(toAdd);
             }
-            for (rNode neighbor : current.getNeighbors()) {
+            for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -99,11 +99,11 @@ public class rGraph {
 
     public ArrayList<Vector> getVectorsInGraph(Collector coll) {
         ArrayList<Vector> toReturn = new ArrayList<Vector>();
-        HashSet<rNode> seenNodes = new HashSet();
-        ArrayList<rNode> queue = new ArrayList<rNode>();
+        HashSet<RNode> seenNodes = new HashSet();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
         while (!queue.isEmpty()) {
-            rNode current = queue.get(0);
+            RNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
             if (current.getVector() != null) {
@@ -112,7 +112,7 @@ public class rGraph {
                     toReturn.add(toAdd);
                 }
             }
-            for (rNode neighbor : current.getNeighbors()) {
+            for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -121,23 +121,23 @@ public class rGraph {
         return toReturn;
     }
 
-    public static ArrayList<rGraph> mergeGraphs(ArrayList<rGraph> graphs) {
+    public static ArrayList<RGraph> mergeGraphs(ArrayList<RGraph> graphs) {
 
-        ArrayList<rGraph> mergedGraphs = new ArrayList<rGraph>();
-        HashMap<String, rNode> mergedNodesHash = new HashMap<String, rNode>();
+        ArrayList<RGraph> mergedGraphs = new ArrayList<RGraph>();
+        HashMap<String, RNode> mergedNodesHash = new HashMap<String, RNode>();
         
         //Traverse and merge graphs
         for (int i = 0; i < graphs.size(); i++) {
             
-            rGraph aGraph = graphs.get(i);
+            RGraph aGraph = graphs.get(i);
             boolean hasParent = true;
             
-            HashSet<rNode> seenNodes = new HashSet();
-            ArrayList<rNode> queue = new ArrayList<rNode>();
+            HashSet<RNode> seenNodes = new HashSet();
+            ArrayList<RNode> queue = new ArrayList<RNode>();
             queue.add(aGraph.getRootNode());
             
             while (!queue.isEmpty()) {
-                rNode current = queue.get(0);
+                RNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
                 
@@ -147,7 +147,7 @@ public class rGraph {
                 if (mergedNodesHash.containsKey(currentCompOHStage) == false) {
                     mergedNodesHash.put(currentCompOHStage, current);
                     
-                    for (rNode neighbor : current.getNeighbors()) {
+                    for (RNode neighbor : current.getNeighbors()) {
                         if (!seenNodes.contains(neighbor)) {
                             queue.add(neighbor);
                         }
@@ -156,14 +156,14 @@ public class rGraph {
                 //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
                  
-                    rNode finalNode = mergedNodesHash.get(currentCompOHStage);
-                    ArrayList<rNode> neighbors = current.getNeighbors();
+                    RNode finalNode = mergedNodesHash.get(currentCompOHStage);
+                    ArrayList<RNode> neighbors = current.getNeighbors();
                     
                     //Remove parent from current node's neighbors, add it to the hashed node's nieghbors
                     hasParent = false;
                     for (int j = 0; j < neighbors.size(); j++) {
                         if (neighbors.get(j).getStage() > current.getStage()) {
-                            rNode parent = neighbors.get(j);
+                            RNode parent = neighbors.get(j);
                             hasParent = true;                           
                             parent.replaceNeighbor(current, finalNode); 
                             finalNode.addNeighbor(parent);
@@ -186,20 +186,20 @@ public class rGraph {
         }
         
         //Remove graphs that have identical nodes to ones already seen from returned set
-        HashSet<rNode> seenNodes = new HashSet();
-        ArrayList<rNode> queue = new ArrayList<rNode>();
-        ArrayList<rGraph> remGraphs = new ArrayList<rGraph>();
+        HashSet<RNode> seenNodes = new HashSet();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
+        ArrayList<RGraph> remGraphs = new ArrayList<RGraph>();
 
-        for (rGraph graph : mergedGraphs) {
+        for (RGraph graph : mergedGraphs) {
             queue.add(graph.getRootNode());
             boolean newNodes = seenNodes.add(graph.getRootNode());
 
             while (!queue.isEmpty()) {
-                rNode current = queue.get(0);
+                RNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
 
-                for (rNode neighbor : current.getNeighbors()) {
+                for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                         newNodes = true;
@@ -217,7 +217,7 @@ public class rGraph {
     }
 
     /** Get graph statistics **/
-    public static void getGraphStats(ArrayList<rGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+    public static void getGraphStats(ArrayList<RGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
         
         HashSet<String> startPartsLOcompRO = new HashSet<String>();
         HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
@@ -273,23 +273,23 @@ public class rGraph {
             int steps = 0;
             int recCount = 0;
             int disCount = 0;
-            int stage = 0;
+            int stages = 0;
             int shared = 0;
             ArrayList<Double> efficiency = new ArrayList<Double>();
 
-            rGraph aGraph = mergedGraphs.get(i);
-            HashSet<rNode> seenNodes = new HashSet();
-            ArrayList<rNode> queue = new ArrayList<rNode>();
+            RGraph aGraph = mergedGraphs.get(i);
+            HashSet<RNode> seenNodes = new HashSet();
+            ArrayList<RNode> queue = new ArrayList<RNode>();
             queue.add(aGraph.getRootNode());
 
             //Traverse the graph
             while (!queue.isEmpty()) {
-                rNode current = queue.get(0);
+                RNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
                 int numParents = 0;
 
-                for (rNode neighbor : current.getNeighbors()) {
+                for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         if (!queue.contains(neighbor)) {
                             queue.add(neighbor);
@@ -364,8 +364,8 @@ public class rGraph {
                 }
 
                 //Save max stage
-                if (current.getStage() > stage) {
-                    stage = current.getStage();
+                if (current.getStage() > stages) {
+                    stages = current.getStage();
                 } 
                 
                 //Add it to recommended count if it's recommended
@@ -385,12 +385,18 @@ public class rGraph {
                 aGraph.setReactions(neighborHash.size());
             }
 
+            //Estimated time and cost
+            double estCost = (steps*stepCost) + (pcrCost*PCRs);
+            double estTime = (stages*stepTime) + pcrTime;
+            
             aGraph.setSteps(steps);
             aGraph.setDiscouragedCount(disCount);
             aGraph.setReccomendedCount(recCount);
-            aGraph.setStages(stage);
+            aGraph.setStages(stages);
             aGraph.setEfficiencyArray(efficiency);
             aGraph.setSharing(shared);
+            aGraph.setEstCost(estCost);
+            aGraph.setEstTime(estTime);
         }
     }
     
@@ -411,7 +417,7 @@ public class rGraph {
         seenUUIDs.add(this._node.getUUID());
         
         //Start at the root node and look at all children
-        for (rNode neighbor : this._node.getNeighbors()) {
+        for (RNode neighbor : this._node.getNeighbors()) {
             seenUUIDs.add(neighbor.getUUID());
             edges = getPostOrderEdgesHelper(neighbor, this._node, edges, seenUUIDs, true);
         }
@@ -421,14 +427,14 @@ public class rGraph {
     /**
      * Return graph edges in an order specified for puppetshow *
      */
-    private ArrayList<String> getPostOrderEdgesHelper(rNode current, rNode parent, ArrayList<String> edges, HashSet<String> seenUUIDs, boolean recurse) {
+    private ArrayList<String> getPostOrderEdgesHelper(RNode current, RNode parent, ArrayList<String> edges, HashSet<String> seenUUIDs, boolean recurse) {
         ArrayList<String> edgesToAdd = new ArrayList();
 
         //Do a recursive call if there are unseen neighbors
         if (recurse) {
 
             //For all of this node's neighbors
-            for (rNode neighbor : current.getNeighbors()) {
+            for (RNode neighbor : current.getNeighbors()) {
 
                 //If the neighbor's composition is not that of the parent
                 if (!parent.getUUID().equals(neighbor.getUUID())) {
@@ -447,7 +453,7 @@ public class rGraph {
         }
 
         //For all current neighbors... this is always done on any call
-        for (rNode neighbor : current.getNeighbors()) {
+        for (RNode neighbor : current.getNeighbors()) {
 
             //Write arc connecting to the parent
             if (neighbor.getComposition().toString().equals(parent.getComposition().toString())) {
@@ -494,15 +500,15 @@ public class rGraph {
         }
 
         //Build key
-        Stack<rNode> stack = new Stack<rNode>();
-        HashSet<rNode> seenNodes = new HashSet<rNode>();
+        Stack<RNode> stack = new Stack<RNode>();
+        HashSet<RNode> seenNodes = new HashSet<RNode>();
         HashMap<String, String> compositionHash = new HashMap<String, String>();
         stack.add(this._node);
         while (!stack.isEmpty()) {
-            rNode current = stack.pop();
+            RNode current = stack.pop();
             seenNodes.add(current);
             compositionHash.put(current.getUUID(), current.getComposition().toString());
-            for (rNode neighbor : current.getNeighbors()) {
+            for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     stack.add(neighbor);
                 }
@@ -795,7 +801,7 @@ public class rGraph {
      */
     public boolean canPigeon() {
         boolean canPigeon = true;
-        rNode root = this.getRootNode();
+        RNode root = this.getRootNode();
         ArrayList<String> types = root.getType();
         for (int i = 0; i < types.size(); i++) {
             if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("origin") || types.get(i).equalsIgnoreCase("o") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
@@ -815,14 +821,14 @@ public class rGraph {
     /**
      * Add a subgraph to a graph *
      */
-    public void addSubgraph(rGraph graph) {
+    public void addSubgraph(RGraph graph) {
         _subGraphs.add(graph);
     }
 
     /**
      * Get graph root node *
      */
-    public rNode getRootNode() {
+    public RNode getRootNode() {
         return _node;
     }
 
@@ -878,7 +884,7 @@ public class rGraph {
     /**
      * Get all subgraphs of this graph *
      */
-    public ArrayList<rGraph> getSubGraphs() {
+    public ArrayList<RGraph> getSubGraphs() {
         return _subGraphs;
     }
 
@@ -956,7 +962,7 @@ public class rGraph {
     /**
      * Set graph root node *
      */
-    public void setRootNode(rNode newRoot) {
+    public void setRootNode(RNode newRoot) {
         _node = newRoot;
     }
 
@@ -977,7 +983,7 @@ public class rGraph {
     /**
      * Get all subgraphs of this graph *
      */
-    public void setSubGraphs(ArrayList<rGraph> subGraphs) {
+    public void setSubGraphs(ArrayList<RGraph> subGraphs) {
         _subGraphs = subGraphs;
     }
 
@@ -1010,8 +1016,8 @@ public class rGraph {
     }
     
     //FIELDS
-    private ArrayList<rGraph> _subGraphs;
-    private rNode _node;
+    private ArrayList<RGraph> _subGraphs;
+    private RNode _node;
     private int _stages;
     private int _steps;
     private int _sharedSteps;

@@ -4,9 +4,9 @@
  */
 package Controller.debugging;
 
-import Controller.datastructures.rGraph;
+import Controller.datastructures.RGraph;
 import Controller.algorithms.Modularity;
-import Controller.datastructures.rNode;
+import Controller.datastructures.RNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,9 +20,9 @@ import java.util.Set;
 public class FailureSimulator {
     
     /** Simulate experimental assembly results **/
-    public void simulateResults(ArrayList<rGraph> solutionGraphs, Integer allowedAttempts) {
+    public void simulateResults(ArrayList<RGraph> solutionGraphs, Integer allowedAttempts) {
         
-        HashMap<Integer, ArrayList<rNode>> stageHash = Modularity.getStageHash(solutionGraphs);
+        HashMap<Integer, ArrayList<RNode>> stageHash = Modularity.getStageHash(solutionGraphs);
         Set<Integer> keySet = stageHash.keySet();
         ArrayList<Integer> stages = new ArrayList<Integer>(keySet);
         Collections.sort(stages);
@@ -31,19 +31,19 @@ public class FailureSimulator {
         if (stages.size() > 1) {
             for (int i = 1; i < stages.size(); i++) {
 
-                ArrayList<rNode> stageNodes = stageHash.get(i);
+                ArrayList<RNode> stageNodes = stageHash.get(i);
 
                 //For each node in this stage, 
                 for (int j = 0; j < stageNodes.size(); j++) {
-                    rNode node = stageNodes.get(j);
+                    RNode node = stageNodes.get(j);
                     int successCnt = node.getSuccessCnt();
                     int failureCnt = node.getFailureCnt();
-                    ArrayList<rNode> neighbors = node.getNeighbors();
+                    ArrayList<RNode> neighbors = node.getNeighbors();
                     boolean canAttempt = true;
                     
                     //Determine if all of the children have been successfully constructed... assumed to be true if stage == 0
                     for (int k = 0; k < neighbors.size(); k++) {
-                        rNode neighbor = neighbors.get(k);
+                        RNode neighbor = neighbors.get(k);
                         if (neighbor.getStage() < node.getStage()) {
                             if (neighbor.getStage() > 0 && neighbor.getSuccessCnt() < 1) {
                                 canAttempt = false;

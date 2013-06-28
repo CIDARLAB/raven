@@ -22,17 +22,17 @@ public class ClothoWriter {
     }
 
     /** Generate Clotho parts with uuids from intermediates without uuids **/
-    public void nodesToClothoPartsVectors(Collector coll, rGraph graph) throws Exception {
+    public void nodesToClothoPartsVectors(Collector coll, RGraph graph) throws Exception {
         String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
-        ArrayList<rNode> queue = new ArrayList<rNode>();
-        HashSet<rNode> seenNodes = new HashSet<rNode>();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
+        HashSet<RNode> seenNodes = new HashSet<RNode>();
         queue.add(graph.getRootNode());
         
         while (!queue.isEmpty()) {
-            rNode currentNode = queue.get(0);
+            RNode currentNode = queue.get(0);
             seenNodes.add(currentNode);
             queue.remove(0);
-            for (rNode neighbor : currentNode.getNeighbors()) {
+            for (RNode neighbor : currentNode.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -106,7 +106,7 @@ public class ClothoWriter {
 
 
             //Get the vector and save a new vector if it does not have a uuid
-            rVector vector = currentNode.getVector();
+            RVector vector = currentNode.getVector();
             if (vector != null) {
                 
                 //Get new intermediate name
@@ -293,22 +293,22 @@ public class ClothoWriter {
     }
 
     /** Correct composite part UUIDs for Clotho export **/
-    public void fixCompositeUUIDs(Collector coll, rGraph graph) throws Exception {
+    public void fixCompositeUUIDs(Collector coll, RGraph graph) throws Exception {
         
-        ArrayList<rNode> queue = new ArrayList<rNode>();
-        HashSet<rNode> seenNodes = new HashSet<rNode>();
-        rNode root = graph.getRootNode();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
+        HashSet<RNode> seenNodes = new HashSet<RNode>();
+        RNode root = graph.getRootNode();
         queue.add(root);
-        ArrayList<rNode> sortedQueue = new ArrayList();
+        ArrayList<RNode> sortedQueue = new ArrayList();
         sortedQueue.add(root);
         
         while (!queue.isEmpty()) {
-            rNode current = queue.get(0);
+            RNode current = queue.get(0);
             queue.remove(0);
             seenNodes.add(current);
-            ArrayList<rNode> neighbors = current.getNeighbors();
+            ArrayList<RNode> neighbors = current.getNeighbors();
             sortedQueue.add(0, current);
-            for (rNode neighbor : neighbors) {
+            for (RNode neighbor : neighbors) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -317,16 +317,16 @@ public class ClothoWriter {
         seenNodes.clear();
         
         while (!sortedQueue.isEmpty()) {
-            rNode current = sortedQueue.get(0);
+            RNode current = sortedQueue.get(0);
             sortedQueue.remove(0);
             seenNodes.add(current);
             Part currentPart = coll.getPart(current.getUUID(), true);
-            ArrayList<rNode> neighbors = current.getNeighbors();
+            ArrayList<RNode> neighbors = current.getNeighbors();
             
             //second part of if statement is for library parts with large compositions but no child neighbors
             if (currentPart.isComposite() || current.getNeighbors().size()>=currentPart.getComposition().size()) {
                 ArrayList<Part> composition = new ArrayList();
-                for (rNode neighbor : neighbors) {
+                for (RNode neighbor : neighbors) {
                     if (current.getStage() > neighbor.getStage()) {
                         Part p= coll.getPart(neighbor.getUUID(),true);
                         composition.add(coll.getPart(neighbor.getUUID(), true));

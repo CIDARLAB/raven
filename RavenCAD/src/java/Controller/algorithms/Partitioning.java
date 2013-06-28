@@ -4,7 +4,7 @@
  */
 package Controller.algorithms;
 
-import Controller.datastructures.rNode;
+import Controller.datastructures.RNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -232,7 +232,7 @@ public class Partitioning {
      */
     
     /** For all goal parts, search for conflicts with required parts **/
-    protected void conflictSearchRequired(rNode gp, HashSet<String> required) throws Exception {
+    protected void conflictSearchRequired(RNode gp, HashSet<String> required) throws Exception {
 
         //Initialize hash to keep track of potential intermediate conflicts
         ArrayList<String> gpComp = gp.getComposition();

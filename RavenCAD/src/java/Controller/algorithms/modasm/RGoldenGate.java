@@ -5,7 +5,7 @@
 package Controller.algorithms.modasm;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.rGeneral;
+import Controller.algorithms.RGeneral;
 import Controller.datastructures.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,12 +16,12 @@ import java.util.Set;
  *
  * @author jenhantao,evanappleton
  */
-public class rGoldenGate extends rGeneral {
+public class RGoldenGate extends RGeneral {
 
     /**
      * Clotho part wrapper for Golden Gate assembly *
      */
-    public ArrayList<rGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
+    public ArrayList<RGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
         try {
 
             //Designate how many parts can be efficiently ligated in one step
@@ -35,11 +35,11 @@ public class rGoldenGate extends rGeneral {
             _maxNeighbors = max;
 
             //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, rGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
-            ArrayList<rVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
+            ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
-            ArrayList<rNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
@@ -49,12 +49,12 @@ public class rGoldenGate extends rGeneral {
             }
 
             //Run SDS Algorithm for multiple parts
-            ArrayList<rGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
+            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
             optimalGraphs = assignOverhangs(optimalGraphs, partHash, vectorSet);
 
             return optimalGraphs;
         } catch (Exception E) {
-            ArrayList<rGraph> blank = new ArrayList<rGraph>();
+            ArrayList<RGraph> blank = new ArrayList<RGraph>();
 //            E.printStackTrace();
             return blank;
         }
@@ -64,15 +64,15 @@ public class rGoldenGate extends rGeneral {
      * Optimize overhang assignments based on available parts and vectors with
      * overhangs *
      */
-    private ArrayList<rGraph> assignOverhangs(ArrayList<rGraph> optimalGraphs, HashMap<String, rGraph> partHash, ArrayList<rVector> vectorSet) {
+    private ArrayList<RGraph> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet) {
         return optimalGraphs;
     }
 
-    public static boolean validateOverhangs(ArrayList<rGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<rNode> roots, Collector coll) {
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
         return null;
     }
 }

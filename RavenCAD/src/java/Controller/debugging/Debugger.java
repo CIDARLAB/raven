@@ -4,8 +4,8 @@
  */
 package Controller.debugging;
 
-import Controller.datastructures.rGraph;
-import Controller.datastructures.rNode;
+import Controller.datastructures.RGraph;
+import Controller.datastructures.RNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,34 +17,34 @@ import java.util.HashSet;
 public class Debugger {
     
     /** Wrapper for the Raven debugging algorithm **/
-    public ArrayList<rGraph> debuggingWrapper (ArrayList<rGraph> annotatedGraphs, ArrayList<rNode> gps, HashMap<String, rGraph> partHash, ArrayList<Double> costs) {
+    public ArrayList<RGraph> debuggingWrapper (ArrayList<RGraph> annotatedGraphs, ArrayList<RNode> gps, HashMap<String, RGraph> partHash, ArrayList<Double> costs) {
 
-        ArrayList<rNode> completedSteps = new ArrayList<rNode>();
-        ArrayList<rNode> failedSteps = new ArrayList<rNode>();
+        ArrayList<RNode> completedSteps = new ArrayList<RNode>();
+        ArrayList<RNode> failedSteps = new ArrayList<RNode>();
         
         //Traverse annotated graphs to 
-        for (rGraph graph : annotatedGraphs) {
-            ArrayList<rNode> queue = new ArrayList<rNode>();
-            HashSet<rNode> seenNodes = new HashSet<rNode>();
-            rNode root = graph.getRootNode();
+        for (RGraph graph : annotatedGraphs) {
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
+            RNode root = graph.getRootNode();
             queue.add(root);
             while (!queue.isEmpty()) {
-                rNode current = queue.get(0);
+                RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
                 
                 //Tabulate failed and successful steps
                 if (current.getSuccessCnt() > 0) {
                     completedSteps.add(current);
-                    rGraph newLibPart = new rGraph(current);
+                    RGraph newLibPart = new RGraph(current);
                     partHash.put(current.getComposition().toString(), newLibPart);
                 } else {
                     failedSteps.add(current);
                 }
                 
                 //Add unseen nodes to the queue
-                ArrayList<rNode> neighbors = current.getNeighbors();
-                for (rNode neighbor : neighbors) {
+                ArrayList<RNode> neighbors = current.getNeighbors();
+                for (RNode neighbor : neighbors) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                     }
@@ -53,13 +53,13 @@ public class Debugger {
         }
         
         gps.removeAll(completedSteps);
-        ArrayList<rGraph> newGraphs = debug(gps, partHash, completedSteps, failedSteps, costs);
+        ArrayList<RGraph> newGraphs = debug(gps, partHash, completedSteps, failedSteps, costs);
         
         return newGraphs;        
     }
  
     /** Debugging algorithm **/
-    private ArrayList<rGraph> debug(ArrayList<rNode> gps, HashMap<String, rGraph> partHash, ArrayList<rNode> completedSteps, ArrayList<rNode> failedSteps, ArrayList<Double> costs) {
+    private ArrayList<RGraph> debug(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, ArrayList<RNode> completedSteps, ArrayList<RNode> failedSteps, ArrayList<Double> costs) {
         
         analyze();
         
@@ -68,6 +68,11 @@ public class Debugger {
     
     /** Analysis algorithm to produce sets of special intermediates and overhangs **/
     private void analyze() {
+        
+        //FAIL - one overhang (generally speaking) is bad, change one overhang
+        //FAIL - combination of parts is bad, change intermediates
+        //FAIL - combination of overhangs is bad, change multiple overhangs
+        //FAIL - combination of parts and overhangs is bad, change everything
         
     }
     
