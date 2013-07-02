@@ -734,7 +734,7 @@ public class SRSMoClo extends SRSGeneral {
                     seenNodes.add(current);
 
                     if (current.getStage() == 0) {
-                        basicParts.add(current);
+                        basicParts.add(0,current);
                     }
 
                     for (SRSNode neighbor : current.getNeighbors()) {
