@@ -248,7 +248,7 @@ public class Collector {
         partUUIDHash = new HashMap();
         partNameRootHash = new HashMap();
         vectorNameRootHash = new HashMap();
-
+        
 
     }
 }

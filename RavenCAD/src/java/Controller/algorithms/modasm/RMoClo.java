@@ -511,6 +511,7 @@ public class RMoClo extends RGeneral {
         }
 
         //pick overhangs
+
         for (RGraph graph : optimalGraphs) {
             System.out.println("************************************************\nassigning for: " + graph.getRootNode().getComposition());
             ArrayList<RNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
@@ -525,7 +526,6 @@ public class RMoClo extends RGeneral {
                 System.out.println("reservedLeftOverhangs: " + reservedLeftOverhangs);
                 System.out.println("reservedRightOverhangs: " + reservedRightOverhangs);
                 RNode parent = parentHash.get(currentNode);
-
                 if (reservedLeftOverhangs != null) {
                     freeLeftOverhangs.addAll(reservedLeftOverhangs);
                     Collections.sort(freeLeftOverhangs);
@@ -565,7 +565,6 @@ public class RMoClo extends RGeneral {
                         }
                     }
                 }
-                System.out.println("for " + currentNode.getComposition() + " already picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
 
                 //assign left overhang
                 if (!finalOverhangHash.containsKey(currentNode.getLOverhang())) {
@@ -617,7 +616,6 @@ public class RMoClo extends RGeneral {
                         reservedRightFinalHash.get(type).remove(newOverhang);
                     }
                 }
-                System.out.println("for " + currentNode.getComposition() + " picked " + finalOverhangHash.get(currentNode.getLOverhang()) + "|" + finalOverhangHash.get(currentNode.getROverhang()));
             }
         }
 
@@ -679,7 +677,6 @@ public class RMoClo extends RGeneral {
                 seenNodes.add(current);
                 current.setLOverhang(finalOverhangHash.get(current.getLOverhang()));
                 current.setROverhang(finalOverhangHash.get(current.getROverhang()));
-                System.out.println("for " + current.getComposition() + " picked " + current.getLOverhang() + "|" + current.getROverhang());
 
                 RVector newVector = new RVector();
                 newVector.setLOverhang(current.getLOverhang());
