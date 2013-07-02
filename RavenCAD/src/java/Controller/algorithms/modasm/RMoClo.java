@@ -5,9 +5,8 @@
 package Controller.algorithms.modasm;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.SRSAlgorithmCore;
 import Controller.algorithms.PrimerDesign;
-import Controller.algorithms.SRSGeneral;
+import Controller.algorithms.RGeneral;
 import Controller.datastructures.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,12 +19,12 @@ import java.util.Set;
  *
  * @author jenhantao
  */
-public class SRSMoClo extends SRSGeneral {
+public class RMoClo extends RGeneral {
 
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<SRSGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
+    public ArrayList<RGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
         try {
             _partLibrary = partLibrary;
             _vectorLibrary = vectorLibrary;
@@ -47,11 +46,11 @@ public class SRSMoClo extends SRSGeneral {
             _maxNeighbors = max;
 
             //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, SRSGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
-            ArrayList<SRSVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
+            ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
-            ArrayList<SRSNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
@@ -67,21 +66,21 @@ public class SRSMoClo extends SRSGeneral {
 //            }
 
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
+            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
 
 
-//            for (SRSGraph graph : optimalGraphs) {
+//            for (RGraph graph : optimalGraphs) {
 //                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
 //                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-//                SRSNode root = graph.getRootNode();
+//                RNode root = graph.getRootNode();
 //                queue.add(root);
 //                while (!queue.isEmpty()) {
-//                    SRSNode current = queue.get(0);
+//                    RNode current = queue.get(0);
 //                    queue.remove(0);
 //                    seenNodes.add(current);
 //
 //                    ArrayList<SRSNode> neighbors = current.getNeighbors();
-//                    for (SRSNode neighbor : neighbors) {
+//                    for (RNode neighbor : neighbors) {
 //                        if (!seenNodes.contains(neighbor)) {
 //                            queue.add(neighbor);
 //                        }
@@ -101,7 +100,7 @@ public class SRSMoClo extends SRSGeneral {
 
             return optimalGraphs;
         } catch (Exception E) {
-            ArrayList<SRSGraph> blank = new ArrayList<SRSGraph>();
+            ArrayList<RGraph> blank = new ArrayList<RGraph>();
             E.printStackTrace();
             return blank;
         }
@@ -111,38 +110,38 @@ public class SRSMoClo extends SRSGeneral {
      * Assign overhangs ignoring the library of parts and vectors; overhangs are
      * saved to graph nodes not part/vectors *
      */
-    private void basicOverhangAssignment(ArrayList<SRSGraph> optimalGraphs) {
+    private void basicOverhangAssignment(ArrayList<RGraph> optimalGraphs) {
 
         encounteredCompositions = new HashSet();
         parentHash = new HashMap(); //key: node, value: parent node
-        HashMap<SRSNode, SRSNode> previousHash = new HashMap(); //key: node, value: sibling node on the "left"
-        HashMap<SRSNode, SRSNode> nextHash = new HashMap(); //key: node, value: sibling node on the "right"
+        HashMap<RNode, RNode> previousHash = new HashMap(); //key: node, value: sibling node on the "left"
+        HashMap<RNode, RNode> nextHash = new HashMap(); //key: node, value: sibling node on the "right"
         compositionLevelHash = new HashMap();
         rootBasicNodeHash = new HashMap();
 
-        for (SRSGraph graph : optimalGraphs) {
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-            HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-            SRSNode root = graph.getRootNode();
+        for (RGraph graph : optimalGraphs) {
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
+            RNode root = graph.getRootNode();
             queue.add(root);
             parentHash.put(root, null);
             previousHash.put(root, null);
             nextHash.put(root, null);
-            ArrayList<SRSNode> basic = new ArrayList();
+            ArrayList<RNode> basic = new ArrayList();
             rootBasicNodeHash.put(root, basic);
 
             //Traverse the graph
             while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
+                RNode current = queue.get(0);
                 queue.remove(0);
                 current.setLOverhang("");
                 current.setROverhang("");
                 seenNodes.add(current);
-                ArrayList<SRSNode> neighbors = current.getNeighbors();
-                SRSNode previous = null;
+                ArrayList<RNode> neighbors = current.getNeighbors();
+                RNode previous = null;
                 encounteredCompositions.add(current.getComposition().toString());
 
-                for (SRSNode neighbor : neighbors) {
+                for (RNode neighbor : neighbors) {
 
                     if (neighbor.getStage() == 0) {
                         basic.add(neighbor);
@@ -163,13 +162,13 @@ public class SRSMoClo extends SRSGeneral {
 
         }
 
-        for (SRSGraph graph : optimalGraphs) {
+        for (RGraph graph : optimalGraphs) {
 
-            HashMap<SRSNode, HashSet<String>> neighborConflictHash = new HashMap();
-            SRSNode root = graph.getRootNode();
+            HashMap<RNode, HashSet<String>> neighborConflictHash = new HashMap();
+            RNode root = graph.getRootNode();
             neighborConflictHash.put(root, new HashSet());
-            HashSet<SRSNode> seenNodes = new HashSet();
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
+            HashSet<RNode> seenNodes = new HashSet();
+            ArrayList<RNode> queue = new ArrayList<RNode>();
             queue.add(root);
 
             String randIndex = String.valueOf((int) (Math.random() * ((1000000000 - 1) + 1)));
@@ -181,18 +180,18 @@ public class SRSMoClo extends SRSGeneral {
 
             //Travere the graph
             while (!queue.isEmpty()) {
-                SRSNode parent = queue.get(0);
+                RNode parent = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(parent);
 
                 if (parent.getNeighbors().size() > 0) {
-                    SRSNode previousNode;
-                    SRSNode nextNode;
+                    RNode previousNode;
+                    RNode nextNode;
                     HashSet<String> neighborConflictSet = neighborConflictHash.get(parent);
                     neighborConflictSet.add(parent.getLOverhang());
                     neighborConflictSet.add(parent.getROverhang());
 
-                    for (SRSNode currentNode : parent.getNeighbors()) {
+                    for (RNode currentNode : parent.getNeighbors()) {
                         if (!seenNodes.contains(currentNode)) {
                             previousNode = previousHash.get(currentNode);
                             nextNode = nextHash.get(currentNode);
@@ -260,7 +259,7 @@ public class SRSMoClo extends SRSGeneral {
         }
     }
 
-    private void minimizeOverhangs(ArrayList<SRSGraph> optimalGraphs) {
+    private void minimizeOverhangs(ArrayList<RGraph> optimalGraphs) {
         abstractOverhangCompositionHash = new HashMap();
         partOverhangFrequencyHash = new HashMap();
         HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
@@ -270,15 +269,15 @@ public class SRSMoClo extends SRSGeneral {
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A_,B_,C_,D_,E_,G_,H_,I_,J_,K_,L_,M_,N_,O_,P_,Q_,R_,S_,T_,U_,V_,W_,X_,Y_,Z_,a_,b_,c_,d_,e_,f_,g_,h_,i_,j_,k_,l_,m_,n_,o_,p_,q_,r_,s_,t_,u_,v_,w_,x_,y_,z_".split(","))); //overhangs that don't exist in part or vector library
         //aa_,ba_,ca_,da_,ea_,fa_,ga_,ha_,ia_,ja_,ka_,la_,ma_,na_,oa_,pa_,qa_,ra_,sa_,ta_,ua_,va_,wa_,xa_,ya_,za_,ab_,bb_,cb_,db_,eb_,fb_,gb_,hb_,ib_,jb_,kb_,lb_,mb_,nb_,ob_,pb_,qb_,rb_,sb_,tb_,ub_,vb_,wb_,xb_,yb_,zb_
 
-        for (SRSGraph graph : optimalGraphs) {
-            ArrayList<SRSNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
+        for (RGraph graph : optimalGraphs) {
+            ArrayList<RNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
 
-            for (SRSNode currentNode : compositionNodes) {
+            for (RNode currentNode : compositionNodes) {
                 ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get(currentNode.getType().toString().toLowerCase());
                 ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get(currentNode.getType().toString().toLowerCase());
-                SRSNode parent = parentHash.get(currentNode);
+                RNode parent = parentHash.get(currentNode);
 
                 if (reservedLeftOverhangs != null) {
                     freeLeftOverhangs.addAll(reservedLeftOverhangs);
@@ -296,7 +295,7 @@ public class SRSMoClo extends SRSGeneral {
                     reservedRightAbstractHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
                 }
 
-                for (SRSNode node : parent.getNeighbors()) {
+                for (RNode node : parent.getNeighbors()) {
                     if (node.getComposition().toString().length() < parent.getComposition().toString().length()) {
                         freeLeftOverhangs.remove(numberToLetterOverhangHash.get(node.getLOverhang()));
                         freeLeftOverhangs.remove(numberToLetterOverhangHash.get(node.getROverhang()));
@@ -318,9 +317,9 @@ public class SRSMoClo extends SRSGeneral {
                 }
 
                 if (partIndex == 0 || partIndex == parentNeighbors.size() - 1) {
-                    SRSNode grandParent = parentHash.get(parent);
+                    RNode grandParent = parentHash.get(parent);
                     if (grandParent != null) {
-                        for (SRSNode uncle : grandParent.getNeighbors()) {
+                        for (RNode uncle : grandParent.getNeighbors()) {
                             freeLeftOverhangs.remove(numberToLetterOverhangHash.get(uncle.getLOverhang()));
                             freeLeftOverhangs.remove(numberToLetterOverhangHash.get(uncle.getROverhang()));
                             freeRightOverhangs.remove(numberToLetterOverhangHash.get(uncle.getLOverhang()));
@@ -372,22 +371,22 @@ public class SRSMoClo extends SRSGeneral {
             }
         }
 
-        for (SRSGraph graph : optimalGraphs) {
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-            HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+        for (RGraph graph : optimalGraphs) {
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
             queue.add(graph.getRootNode());
 
             //traverse graph and assign abstract letter overhangs
             while (!queue.isEmpty()) {
-                SRSNode currentNode = queue.get(0);
+                RNode currentNode = queue.get(0);
                 queue.remove(0);
                 currentNode.setLOverhang(numberToLetterOverhangHash.get(currentNode.getLOverhang()));
                 currentNode.setROverhang(numberToLetterOverhangHash.get(currentNode.getROverhang()));
                 compositionLevelHash.put(currentNode.getComposition() + "|" + currentNode.getROverhang() + "|" + currentNode.getLOverhang(), currentNode.getStage());
                 seenNodes.add(currentNode);
-                ArrayList<SRSNode> neighbors = currentNode.getNeighbors();
+                ArrayList<RNode> neighbors = currentNode.getNeighbors();
 
-                for (SRSNode neighbor : neighbors) {
+                for (RNode neighbor : neighbors) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                         seenNodes.add(neighbor);
@@ -428,7 +427,7 @@ public class SRSMoClo extends SRSGeneral {
 //concurrent optimizes vector assignment based on vector assignment
 //prioritize existing parts with correct overhangs
 //next priority is overhangs that vectors already have
-    private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
+    private void optimizeOverhangVectors(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet) {
         HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
         finalOverhangHash = preAssignOverhangs(optimalGraphs);
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
@@ -512,16 +511,21 @@ public class SRSMoClo extends SRSGeneral {
         }
 
         //pick overhangs
-        for (SRSGraph graph : optimalGraphs) {
-            ArrayList<SRSNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
 
-            for (SRSNode currentNode : compositionNodes) {
+        for (RGraph graph : optimalGraphs) {
+            System.out.println("************************************************\nassigning for: " + graph.getRootNode().getComposition());
+            ArrayList<RNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
+
+            for (RNode currentNode : compositionNodes) {
                 ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get(currentNode.getType().toString().toLowerCase());
                 ArrayList<String> reservedRightOverhangs = reservedRightFinalHash.get(currentNode.getType().toString().toLowerCase());
-                SRSNode parent = parentHash.get(currentNode);
-
+                System.out.println("freeLeftOverhangs: " + freeLeftOverhangs);
+                System.out.println("freeRightOverhangs: " + freeRightOverhangs);
+                System.out.println("reservedLeftOverhangs: " + reservedLeftOverhangs);
+                System.out.println("reservedRightOverhangs: " + reservedRightOverhangs);
+                RNode parent = parentHash.get(currentNode);
                 if (reservedLeftOverhangs != null) {
                     freeLeftOverhangs.addAll(reservedLeftOverhangs);
                     Collections.sort(freeLeftOverhangs);
@@ -549,11 +553,11 @@ public class SRSMoClo extends SRSGeneral {
                 }
 
                 if (partIndex == 0 || partIndex == parentNeighbors.size() - 1) {
-                    SRSNode grandParent = parentHash.get(parent);
+                    RNode grandParent = parentHash.get(parent);
 
                     if (grandParent != null) {
 
-                        for (SRSNode uncle : grandParent.getNeighbors()) {
+                        for (RNode uncle : grandParent.getNeighbors()) {
                             freeLeftOverhangs.remove(finalOverhangHash.get(uncle.getLOverhang()));
                             freeLeftOverhangs.remove(finalOverhangHash.get(uncle.getROverhang()));
                             freeRightOverhangs.remove(finalOverhangHash.get(uncle.getLOverhang()));
@@ -637,7 +641,7 @@ public class SRSMoClo extends SRSGeneral {
         }
         int maxStage = 0;
 
-        for (SRSGraph graph : optimalGraphs) {
+        for (RGraph graph : optimalGraphs) {
             if (graph.getStages() > maxStage) {
                 maxStage = graph.getStages();
             }
@@ -660,27 +664,28 @@ public class SRSMoClo extends SRSGeneral {
         }
 
         //traverse graphs and assign appropriate overhangs and vectors
-        for (SRSGraph graph : optimalGraphs) {
+        for (RGraph graph : optimalGraphs) {
+            System.out.println("finalizing: " + graph.getRootNode().getComposition());
             int reactions = 0;
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-            HashSet<SRSNode> seenNodes = new HashSet();
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet();
             queue.add(graph.getRootNode());
 
             while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
+                RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
                 current.setLOverhang(finalOverhangHash.get(current.getLOverhang()));
                 current.setROverhang(finalOverhangHash.get(current.getROverhang()));
 
-                SRSVector newVector = new SRSVector();
+                RVector newVector = new RVector();
                 newVector.setLOverhang(current.getLOverhang());
                 newVector.setROverhang(current.getROverhang());
                 newVector.setLevel(current.getStage());
                 newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
                 current.setVector(newVector);
 
-                for (SRSNode neighbor : current.getNeighbors()) {
+                for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                     }
@@ -717,19 +722,19 @@ public class SRSMoClo extends SRSGeneral {
     }
 
     //sets user specified overhangs before algorithm computes the rest
-    private HashMap<String, String> preAssignOverhangs(ArrayList<SRSGraph> optimalGraphs) {
+    private HashMap<String, String> preAssignOverhangs(ArrayList<RGraph> optimalGraphs) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
-        for (SRSGraph graph : optimalGraphs) {
-            SRSNode root = graph.getRootNode();
+        for (RGraph graph : optimalGraphs) {
+            RNode root = graph.getRootNode();
             if (forcedOverhangHash.containsKey(root.getComposition().toString())) {
                 //traverse the graph and find all of the basic parts and then put them in order
-                ArrayList<SRSNode> stack = new ArrayList();
-                HashSet<SRSNode> seenNodes = new HashSet();
-                ArrayList<SRSNode> basicParts = new ArrayList();
+                ArrayList<RNode> stack = new ArrayList();
+                HashSet<RNode> seenNodes = new HashSet();
+                ArrayList<RNode> basicParts = new ArrayList();
                 stack.add(root);
 
                 while (!stack.isEmpty()) {
-                    SRSNode current = stack.get(0);
+                    RNode current = stack.get(0);
                     stack.remove(0);
                     seenNodes.add(current);
 
@@ -737,7 +742,7 @@ public class SRSMoClo extends SRSGeneral {
                         basicParts.add(current);
                     }
 
-                    for (SRSNode neighbor : current.getNeighbors()) {
+                    for (RNode neighbor : current.getNeighbors()) {
                         if (!seenNodes.contains(neighbor)) {
                             stack.add(0, neighbor);
                         }
@@ -748,7 +753,7 @@ public class SRSMoClo extends SRSGeneral {
                     String[] forcedTokens = forcedOverhangs.get(i).split("\\|");
                     String forcedLeft = forcedTokens[0].trim();
                     String forcedRight = forcedTokens[1].trim();
-                    SRSNode basicNode = basicParts.get(i);
+                    RNode basicNode = basicParts.get(i);
                     if (forcedLeft.length() > 0) {
                         toReturn.put(basicNode.getLOverhang(), forcedLeft);
                     }
@@ -774,15 +779,15 @@ public class SRSMoClo extends SRSGeneral {
         }
     }
 
-    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         boolean toReturn = true;
-        for (SRSGraph graph : graphs) {
-            SRSNode root = graph.getRootNode();
-            HashSet<SRSNode> seenNodes = new HashSet();
-            ArrayList<SRSNode> queue = new ArrayList();
+        for (RGraph graph : graphs) {
+            RNode root = graph.getRootNode();
+            HashSet<RNode> seenNodes = new HashSet();
+            ArrayList<RNode> queue = new ArrayList();
             queue.add(root);
             while (!queue.isEmpty()) {
-                SRSNode parent = queue.get(0);
+                RNode parent = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(parent);
                 if (parent.getLOverhang().equals(parent.getROverhang())) {
@@ -790,11 +795,11 @@ public class SRSMoClo extends SRSGeneral {
                     toReturn = false;
                 }
                 if (parent.getNeighbors().size() > 1) {
-                    SRSNode previous = null;
+                    RNode previous = null;
                     HashMap<String, Integer> leftFrequencyHash = new HashMap();
                     HashMap<String, Integer> rightFrequencyHash = new HashMap();
                     for (int i = 0; i < parent.getNeighbors().size(); i++) {
-                        SRSNode child = parent.getNeighbors().get(i);
+                        RNode child = parent.getNeighbors().get(i);
                         if (!seenNodes.contains(child)) {
                             if (leftFrequencyHash.get(child.getLOverhang()) != null) {
                                 leftFrequencyHash.put(child.getLOverhang(), leftFrequencyHash.get(child.getLOverhang()) + 1);
@@ -846,7 +851,8 @@ public class SRSMoClo extends SRSGeneral {
     //generates human readable instructions as well as primer sequences
     //primerParameters contains (in this order): 
     //[primerNameRoot, forwardPrimerPrefix, reversePrimerPrefix, forwardEnzymeCutSite, reverseEnzymeCutSite, forwardEnzymeCutDistance, reverseEnzymeCutDistance,meltingTemperature)
-    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll, ArrayList<String> primerParameters) {
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<String> primerParameters) {
+        
         //initialize primer parameters
         String oligoNameRoot = "";
         String forwardPrimerPrefix = "";
@@ -876,16 +882,17 @@ public class SRSMoClo extends SRSGeneral {
 
         ArrayList<String> oligoNames = new ArrayList();
         ArrayList<String> oligoSequences = new ArrayList();
-        HashSet<SRSNode> seenNodes = new HashSet();
-        for (SRSNode root : roots) {
+        HashSet<RNode> seenNodes = new HashSet();
+        for (RNode root : roots) {
+            
             //append header for each goal part
             toReturn = toReturn + "**********************************************"
                     + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
                     + "\n**********************************************";
-            ArrayList<SRSNode> queue = new ArrayList();
+            ArrayList<RNode> queue = new ArrayList();
             queue.add(root);
             while (!queue.isEmpty()) {
-                SRSNode currentNode = queue.get(0);
+                RNode currentNode = queue.get(0);
                 queue.remove(0); //queue for traversing graphs (bfs)
 
                 if (!seenNodes.contains(currentNode)) {
@@ -896,7 +903,7 @@ public class SRSMoClo extends SRSGeneral {
                     if (currentPart.getComposition().size() > 1) {
                         //append which parts to use for a moclo reaction
                         toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
-                        for (SRSNode neighbor : currentNode.getNeighbors()) {
+                        for (RNode neighbor : currentNode.getNeighbors()) {
                             if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
                                 toReturn = toReturn + coll.getPart(neighbor.getUUID(), true).getName() + ", ";
                                 if (!seenNodes.contains(neighbor)) {
@@ -905,6 +912,7 @@ public class SRSMoClo extends SRSGeneral {
                             }
                         }
                     } else {
+        
                         //design primers
                         if (designPrimers) {
                             String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
@@ -926,7 +934,9 @@ public class SRSMoClo extends SRSGeneral {
             }
             toReturn = toReturn + "\n\n";
         }
+
         if (designPrimers) {
+            
             //append primer designs
             toReturn = toReturn + "\n**********************************************\nOLIGOS";
             for (int i = 0; i < oligoNames.size(); i++) {
@@ -936,13 +946,15 @@ public class SRSMoClo extends SRSGeneral {
         }
         return toReturn;
     }
+    
+    //FIELDS
     private HashMap<String, ArrayList<String>> abstractOverhangCompositionHash; //key: overhangs delimited by "|", value: compositions with overhangs indicated by keys
     private HashMap<String, Integer> partOverhangFrequencyHash; //key: part composition concatenated with abstract overhang with "_" delimited with "|", value: number of occurences of part with given overhangs
     private HashSet<String> encounteredCompositions; //set of part compositions that appear in the set of all graphs
-    private HashMap<SRSNode, SRSNode> parentHash; //key: node, value: parent node
+    private HashMap<RNode, RNode> parentHash; //key: node, value: parent node
     private HashMap<String, Integer> compositionLevelHash; //key: string composition with overhangs, value; arrayList of nodes with the given composition
     private HashMap<String, ArrayList<String>> forcedOverhangHash = new HashMap(); //key: composite part composition
-    private HashMap<SRSNode, ArrayList<SRSNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
+    private HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
     private ArrayList<Part> _partLibrary = new ArrayList();
     private ArrayList<Vector> _vectorLibrary = new ArrayList();
     private static HashMap<String, String> _overhangVariableSequenceHash = new HashMap(); //key:variable name, value: sequence associated with that variable
