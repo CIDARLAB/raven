@@ -61,7 +61,7 @@ public class RavenServlet extends HttpServlet {
             } else if (command.equals("load")) {
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "loaded data";
-                controller.loadDesign(request.getParameter("designCount"));
+                controller.saveNewDesign(request.getParameter("designCount"));
                 out.write(responseString);
             
             } else if (command.equals("logout")) {

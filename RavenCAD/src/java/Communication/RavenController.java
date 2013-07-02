@@ -125,6 +125,7 @@ public class RavenController {
     }
 
     //returns json array containing all objects in parts list; generates parts list file
+    //input: design number refers to the design number on the client
     public String generatePartsList(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
         //traverse graphs to get uuids
@@ -217,6 +218,7 @@ public class RavenController {
         return toReturn;
     }
 
+    //reset collector, all field variales, deletes all files in user's directory
     public void clearData() throws Exception {
         _collector.purge();
         _goalParts = new HashMap();//key: target part, value: composition
@@ -240,6 +242,7 @@ public class RavenController {
         }
     }
 
+    //returns all saved parts in the collector as a json array
     public String fetchData() throws Exception {
         String toReturn = "[";
         ArrayList<Part> allParts = _collector.getAllParts(false);
@@ -277,6 +280,8 @@ public class RavenController {
         return toReturn;
     }
 
+    //handles multiple file upload from the client
+    //parses each file for parts and saves them
     public void loadUploadedFiles(ArrayList<File> filesToRead) {
         _error = "";
 //        String uploadFilePath = _path + _user + "/";
@@ -297,14 +302,17 @@ public class RavenController {
         }
     }
 
-    public void loadDesign(String designCount) throws Exception {
+    //parses a newly generated parts list from a new design and saves the parts in that parts list
+    public void saveNewDesign(String designCount) throws Exception {
         _error = "";
         String filePath = _path + _user + "/partsList" + designCount + ".csv";
         File toLoad = new File(filePath);
         parseRavenFile(toLoad);
     }
 
-    /** Parse an input Raven file **/
+    /**
+     * Parse an input Raven file *
+     */
     private void parseRavenFile(File input) throws Exception {
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
@@ -314,7 +322,7 @@ public class RavenController {
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
         String line = reader.readLine();
         line = reader.readLine(); //skip first line
-        
+
         //Read each line of the input file to parse parts
         while (line != null) {
             while (line.matches("^[\\s,]+")) {
@@ -329,10 +337,10 @@ public class RavenController {
                     break;
                 }
             }
-            
+
             //Composite parts - read, but do not generate
             if (tokenCount > 7) {
-                
+
                 try {
                     String[] trimmedTokens = new String[tokenCount];
                     System.arraycopy(tokens, 0, trimmedTokens, 0, tokenCount);
@@ -340,10 +348,10 @@ public class RavenController {
                 } catch (Exception e) {
                     badLines.add(line);
                 }
-            
-            //Vectors - read and generate new vector
+
+                //Vectors - read and generate new vector
             } else if (tokenCount == 7) {
-                
+
                 try {
                     String name = tokens[0].trim();
                     String sequence = tokens[1].trim();
@@ -369,11 +377,11 @@ public class RavenController {
                 } catch (Exception e) {
                     badLines.add(line);
                 }
-            
-            //Basic part - read and generate new part
+
+                //Basic part - read and generate new part
             } else if (tokenCount == 5) {
-                
-                try { 
+
+                try {
                     String name = tokens[0].trim();
                     String sequence = tokens[1].trim();
                     String leftOverhang = tokens[2].trim();
@@ -391,7 +399,7 @@ public class RavenController {
                 } catch (Exception e) {
                     badLines.add(line);
                 }
-            
+
             } else {
                 //poorly formed line
                 badLines.add(line);
@@ -400,18 +408,18 @@ public class RavenController {
             line = reader.readLine();
         }
         reader.close();
-        
+
         //Create the composite parts
         for (String[] tokens : compositePartTokens) {
             try {
                 ArrayList<Part> composition = new ArrayList<Part>();
-                
+
                 //For all of the basic parts in the composite part composition
                 String name = tokens[0].trim();
                 String leftOverhang = tokens[2].trim();
                 String rightOverhang = tokens[3].trim();
                 ArrayList<String> directions = new ArrayList<String>();
-                
+
                 for (int i = 7; i < tokens.length; i++) {
                     String basicPartString = tokens[i].trim();
                     String[] partNameTokens = basicPartString.split("\\|");
@@ -419,7 +427,7 @@ public class RavenController {
                     String bpForcedRight = "";
                     String bpDirection = "+";
                     String basicPartName = partNameTokens[0];
-                    
+
                     //Check for forced overhangs and direction
                     if (partNameTokens.length > 1) {
                         if (partNameTokens.length == 2) {
@@ -438,7 +446,7 @@ public class RavenController {
 
                     //If either overhang is forced
                     if (!bpForcedLeft.isEmpty() || !bpForcedRight.isEmpty()) {
-                        
+
                         //If the forced overhang hash already has this basic part, add a new pair of forced overhangs, otherwise enter new name to hash 
                         if (forcedOverhangHash.get(name) != null) {
                             forcedOverhangHash.get(name).add(bpForcedLeft + "|" + bpForcedRight);
@@ -449,7 +457,7 @@ public class RavenController {
 
                         }
                     }
-                    
+
                     directions.add(bpDirection);
                     composition.add(_collector.getPartByName(basicPartName, true));
                 }
@@ -463,19 +471,19 @@ public class RavenController {
                 newComposite.setTransientStatus(false);
             } catch (NullPointerException e) {
                 String badLine = "";
-                
+
                 for (int j = 0; j < tokens.length; j++) {
                     badLine = badLine + tokens[j] + ",";
                 }
                 badLines.add(badLine.substring(0, badLine.length() - 1));//trim the last comma
             }
         }
-        
+
         //Print warning about bad line
         if (badLines.size() > 0) {
-            
+
             String badLineMessage = "The following lines in your csv input was malformed. \nPlease check you input spreadsheet.";
-            
+
             for (String bl : badLines) {
                 badLineMessage = badLineMessage + "\n" + bl;
             }
@@ -483,6 +491,9 @@ public class RavenController {
         }
     }
 
+    //given an array of part and vector uuids, save each of them and set their transient status to false
+    //saved parts and vectors are typically associated with a new design on the client
+    //writeSQL indicates whether or not parts will be saved in an sql database; url hardcoded for puppeteer team testing
     public String save(String[] partIDs, String[] vectorIDs, boolean writeSQL) {
         ArrayList<Part> toSaveParts = new ArrayList();
         ArrayList<Vector> toSaveVectors = new ArrayList();
@@ -565,6 +576,7 @@ public class RavenController {
         System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + _valid);
     }
 
+    //using parameters from the client, run the algorithm
     public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash) throws Exception {
         _goalParts = new HashMap();
         _required = required;
@@ -578,7 +590,7 @@ public class RavenController {
         _efficiency = efficiencyHash;
         _valid = false;
         method = method.toLowerCase().trim();
-        
+
         if (partLibraryIDs.length > 0) {
             for (int i = 0; i < partLibraryIDs.length; i++) {
                 Part current = _collector.getPart(partLibraryIDs[i], false);
@@ -681,7 +693,7 @@ public class RavenController {
         } else if (method.equals("slic")) {
             _instructions = RSLIC.generateInstructions(targetRootNodes, _collector);
         }
-        
+
         //write instructions file
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
@@ -714,7 +726,8 @@ public class RavenController {
         toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }
-
+    
+    //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition
     private boolean validateGraphComposition() throws Exception {
         boolean toReturn = true;
         HashSet<String> seenRequired = new HashSet();
@@ -751,11 +764,13 @@ public class RavenController {
         }
 
     }
-
+    
+    //getter for accessing the instructions from RavenServlet
     public String getInstructions() {
         return _instructions;
     }
 
+    //getter for accessing stats from RavenServlet
     public String generateStats() throws Exception {
         String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
                 + "\",\"steps\":\"" + _statistics.getSteps()
