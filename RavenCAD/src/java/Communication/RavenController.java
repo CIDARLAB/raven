@@ -219,17 +219,17 @@ public class RavenController {
 
     public void clearData() throws Exception {
         _collector.purge();
-        _goalParts = new HashMap();//key: target part, value: composition
-        _efficiency = new HashMap();
-        _required = new HashSet();
-        _recommended = new HashSet();
-        _discouraged = new HashSet();
-        _forbidden = new HashSet();
+        _goalParts = new HashMap<Part, ArrayList<Part>>();//key: target part, value: composition
+        _efficiency = new HashMap<Integer, Double>();
+        _required = new HashSet<String>();
+        _recommended = new HashSet<String>();
+        _discouraged = new HashSet<String>();
+        _forbidden = new HashSet<String>();
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
         forcedOverhangHash = new HashMap<String, ArrayList<String>>();
-        _partLibrary = new ArrayList();
-        _vectorLibrary = new ArrayList();
+        _partLibrary = new ArrayList<Part>();
+        _vectorLibrary = new ArrayList<Vector>();
         _instructions = "";
         _error = "";
 
@@ -572,8 +572,8 @@ public class RavenController {
         _forbidden = forbidden;
         _discouraged = discouraged;
         _statistics = new Statistics();
-        _vectorLibrary = new ArrayList();
-        _partLibrary = new ArrayList();
+        _vectorLibrary = new ArrayList<Vector>();
+        _partLibrary = new ArrayList<Part>();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
