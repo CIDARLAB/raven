@@ -21,6 +21,7 @@ public class RNode {
 //        _failureCnt = 0;
         _neighbors = new ArrayList<RNode>();
         _composition = new ArrayList<String>();
+        _direction = new ArrayList<String>();
         _uuid = null;
         _type = new ArrayList<String>();
         _lOverhang = "";
@@ -33,7 +34,7 @@ public class RNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> type, int successCnt, int failureCnt) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, int successCnt, int failureCnt) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
@@ -45,6 +46,7 @@ public class RNode {
             _neighbors = new ArrayList<RNode>();
         }
         _composition = composition;
+        _direction = direction;
         _type = type;
         _lOverhang = "";
         _rOverhang = "";
@@ -66,6 +68,7 @@ public class RNode {
         clone._lOverhang = this._lOverhang;
         clone._rOverhang = this._rOverhang;
         clone._composition = this._composition;
+        clone._direction = this._direction;
         clone._name = this._name;
         clone._stage = this._stage;
         clone._vector = this._vector;
@@ -92,6 +95,7 @@ public class RNode {
             neighborClone._lOverhang = neighbor._lOverhang;
             neighborClone._rOverhang = neighbor._rOverhang;
             neighborClone._composition = neighbor._composition;
+            neighborClone._direction = neighbor._direction;
             neighborClone._name = neighbor._name;
             neighborClone._stage = neighbor._stage;
             neighborClone._vector = neighbor._vector;
@@ -200,6 +204,11 @@ public class RNode {
         return _failureCnt;
     }
     
+    /** Get the direction of the node's composition **/
+    public ArrayList<String> getDirection() {
+        return _direction;
+    }
+    
     /** Set part as recommended or not required **/
     public void setRecommended(boolean recommended) {
         _recommended = recommended;
@@ -288,6 +297,11 @@ public class RNode {
         _failureCnt = failure;
     }
     
+    /** Set the direction of the node composition **/
+    public void setDirection(ArrayList<String> direction) {
+        _direction = direction;
+    }
+    
     //FIELDS
     private int _successCnt;
     private int _failureCnt;
@@ -296,6 +310,7 @@ public class RNode {
     private boolean _recommended;
     private boolean _discouraged;
     private ArrayList<RNode> _neighbors;
+    private ArrayList<String> _direction;
     private String _uuid;
     private ArrayList<String> _composition;
     private ArrayList<String> _type;

@@ -55,7 +55,7 @@ public class ClothoReader {
                     for (int k = 0; k < sTags.size(); k++) {
                         if (sTags.get(k).startsWith("Type:")) {
                             String typeTag = sTags.get(k);
-                            ArrayList<String> types = parseTypeTags(typeTag);
+                            ArrayList<String> types = parseTags(typeTag);
                             type.addAll(types);
                         }
                     }
@@ -98,7 +98,7 @@ public class ClothoReader {
                             for (int j = 0; j < sTags.size(); j++) {
                                 if (sTags.get(j).startsWith("Type:")) {
                                     String typeTag = sTags.get(j);
-                                    ArrayList<String> types = parseTypeTags(typeTag);
+                                    ArrayList<String> types = parseTags(typeTag);
                                     type.addAll(types);
                                 }
                             }
@@ -191,21 +191,24 @@ public class ClothoReader {
             ArrayList<Part> basicParts = ClothoWriter.getComposition(goalParts.get(i));
             ArrayList<String> composition = new ArrayList<String>();
             ArrayList<String> type = new ArrayList<String>();
+            ArrayList<String> direction = new ArrayList<String>();
             for (int j = 0; j < basicParts.size(); j++) {
                 composition.add(basicParts.get(j).getName());
                 ArrayList<String> sTags = basicParts.get(j).getSearchTags();
                 for (int k = 0; k < sTags.size(); k++) {
-                    if (sTags.get(k).startsWith("Type:")) {
-                        String typeTag = sTags.get(k);
-                        ArrayList<String> types = parseTypeTags(typeTag);
-                        type.addAll(types);
-
+                    String tag = sTags.get(k);
+                    if (tag.startsWith("Type:")) {
+                        ArrayList<String> list = parseTags(tag);
+                        type.addAll(list);
+                    } else if (tag.startsWith("Direction:")) {
+                        ArrayList<String> list = parseTags(tag);
+                        direction.addAll(list);
                     }
                 }
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            RNode gp = new RNode(false, false, null, composition, type, 0, 0);
+            RNode gp = new RNode(false, false, null, composition, direction, type, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
@@ -213,18 +216,14 @@ public class ClothoReader {
     }
 
     /** Parse type search tags from a string into an ArrayList **/
-    public static ArrayList<String> parseTypeTags(String typeTag) {
-        ArrayList<String> types = new ArrayList<String>();
-        int length = typeTag.length();
-        if (typeTag.startsWith("Type:")) {
-            typeTag = typeTag.substring(6, length);
-        }
-        if (typeTag.startsWith("[")) {
-            typeTag = typeTag.substring(1, (length - 1));
-        }
-        String[] tokens = typeTag.split(",");
-        types.addAll(Arrays.asList(tokens));
-        return types;
+    public static ArrayList<String> parseTags(String tag) {
+        ArrayList<String> list = new ArrayList<String>();
+        tag = tag.substring(tag.length(),tag.length()-1);
+        String[] tokens1 = tag.split("[");
+        String splitTag = tokens1[1];
+        String[] tokens = splitTag.split(",");
+        list.addAll(Arrays.asList(tokens));
+        return list;
     }
     
     //THIS NEXT METHOD USES RESTRICTION ENZYMES WHICH ARE OUTSIDE THE CLOTHO DATA MODEL, UNCLEAR WHERE THIS METHOD SHOULD GO

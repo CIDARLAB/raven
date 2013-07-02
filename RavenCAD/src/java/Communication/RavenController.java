@@ -227,7 +227,7 @@ public class RavenController {
         _forbidden = new HashSet();
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
-        forcedOverhangHash = new HashMap();
+        forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         _partLibrary = new ArrayList();
         _vectorLibrary = new ArrayList();
         _instructions = "";
@@ -287,7 +287,7 @@ public class RavenController {
                     String filePath = currentFile.getAbsolutePath();
                     String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
                     if ("csv".equals(fileExtension)) {
-                        parseInputFile(currentFile);
+                        parseRavenFile(currentFile);
                     }
                 }
             }
@@ -301,18 +301,21 @@ public class RavenController {
         _error = "";
         String filePath = _path + _user + "/partsList" + designCount + ".csv";
         File toLoad = new File(filePath);
-        parseInputFile(toLoad);
+        parseRavenFile(toLoad);
     }
 
-    private void parseInputFile(File input) throws Exception {
+    /** Parse an input Raven file **/
+    private void parseRavenFile(File input) throws Exception {
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
         if (forcedOverhangHash == null) {
-            forcedOverhangHash = new HashMap();
+            forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         }
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
         String line = reader.readLine();
         line = reader.readLine(); //skip first line
+        
+        //Read each line of the input file to parse parts
         while (line != null) {
             while (line.matches("^[\\s,]+")) {
                 line = reader.readLine();
@@ -326,8 +329,10 @@ public class RavenController {
                     break;
                 }
             }
+            
+            //Composite parts - read, but do not generate
             if (tokenCount > 7) {
-                // store line for making composite part
+                
                 try {
                     String[] trimmedTokens = new String[tokenCount];
                     System.arraycopy(tokens, 0, trimmedTokens, 0, tokenCount);
@@ -335,8 +340,10 @@ public class RavenController {
                 } catch (Exception e) {
                     badLines.add(line);
                 }
+            
+            //Vectors - read and generate new vector
             } else if (tokenCount == 7) {
-                //create vector
+                
                 try {
                     String name = tokens[0].trim();
                     String sequence = tokens[1].trim();
@@ -362,9 +369,11 @@ public class RavenController {
                 } catch (Exception e) {
                     badLines.add(line);
                 }
+            
+            //Basic part - read and generate new part
             } else if (tokenCount == 5) {
-                try {
-                    //create basic part 
+                
+                try { 
                     String name = tokens[0].trim();
                     String sequence = tokens[1].trim();
                     String leftOverhang = tokens[2].trim();
@@ -382,6 +391,7 @@ public class RavenController {
                 } catch (Exception e) {
                     badLines.add(line);
                 }
+            
             } else {
                 //poorly formed line
                 badLines.add(line);
@@ -390,42 +400,62 @@ public class RavenController {
             line = reader.readLine();
         }
         reader.close();
-        //create the composite parts
+        
+        //Create the composite parts
         for (String[] tokens : compositePartTokens) {
             try {
                 ArrayList<Part> composition = new ArrayList<Part>();
-                for (int i = 7; i < tokens.length; i++) {
-                    String basicPartString = tokens[i].trim();
-                    String[] partNameTokens = basicPartString.split("\\|");
-                    String forcedLeft = " ";
-                    String forcedRight = " ";
-                    String compositePartName = tokens[0];
-                    String basicPartName = partNameTokens[0];
-                    if (partNameTokens.length > 1) {
-                        if (partNameTokens.length == 2) {
-                            forcedLeft = partNameTokens[1];
-                        } else {
-                            forcedLeft = partNameTokens[1];
-                            forcedRight = partNameTokens[2];
-                        }
-                    }
-                    if (forcedOverhangHash.get(compositePartName) != null) {
-                        forcedOverhangHash.get(compositePartName).add(forcedLeft + "|" + forcedRight);
-                    } else {
-                        ArrayList<String> toAdd = new ArrayList();
-                        toAdd.add(forcedLeft + "|" + forcedRight);
-                        if (!forcedLeft.equals(" ") || !forcedRight.equals(" ")) {
-                            forcedOverhangHash.put(compositePartName, toAdd);
-                        }
-                    }
-
-                    composition.add(_collector.getPartByName(basicPartName, true));
-                }
+                
+                //For all of the basic parts in the composite part composition
                 String name = tokens[0].trim();
                 String leftOverhang = tokens[2].trim();
                 String rightOverhang = tokens[3].trim();
+                ArrayList<String> directions = new ArrayList<String>();
+                
+                for (int i = 7; i < tokens.length; i++) {
+                    String basicPartString = tokens[i].trim();
+                    String[] partNameTokens = basicPartString.split("\\|");
+                    String bpForcedLeft = "";
+                    String bpForcedRight = "";
+                    String bpDirection = "+";
+                    String basicPartName = partNameTokens[0];
+                    
+                    //Check for forced overhangs and direction
+                    if (partNameTokens.length > 1) {
+                        if (partNameTokens.length == 2) {
+                            if ("+".equals(partNameTokens[1]) || "-".equals(partNameTokens[1])) {
+                                bpDirection = partNameTokens[1];
+                            }
+                        } else if (partNameTokens.length == 3) {
+                            bpForcedLeft = partNameTokens[1];
+                            bpForcedRight = partNameTokens[2];
+                        } else if (partNameTokens.length == 4) {
+                            bpDirection = partNameTokens[1];
+                            bpForcedLeft = partNameTokens[2];
+                            bpForcedRight = partNameTokens[3];
+                        }
+                    }
+
+                    //If either overhang is forced
+                    if (!bpForcedLeft.isEmpty() || !bpForcedRight.isEmpty()) {
+                        
+                        //If the forced overhang hash already has this basic part, add a new pair of forced overhangs, otherwise enter new name to hash 
+                        if (forcedOverhangHash.get(name) != null) {
+                            forcedOverhangHash.get(name).add(bpForcedLeft + "|" + bpForcedRight);
+                        } else {
+                            ArrayList<String> overhangPair = new ArrayList<String>();
+                            overhangPair.add(bpForcedLeft + "|" + bpForcedRight);
+                            forcedOverhangHash.put(name, overhangPair);
+
+                        }
+                    }
+                    
+                    directions.add(bpDirection);
+                    composition.add(_collector.getPartByName(basicPartName, true));
+                }
 
                 Part newComposite = Part.generateComposite(composition, name);
+                newComposite.addSearchTag("Direction: " + directions);
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
                 newComposite.addSearchTag("Type: composite");
@@ -433,22 +463,24 @@ public class RavenController {
                 newComposite.setTransientStatus(false);
             } catch (NullPointerException e) {
                 String badLine = "";
+                
                 for (int j = 0; j < tokens.length; j++) {
                     badLine = badLine + tokens[j] + ",";
                 }
                 badLines.add(badLine.substring(0, badLine.length() - 1));//trim the last comma
             }
         }
+        
+        //Print warning about bad line
         if (badLines.size() > 0) {
-            //print warning about bad line
+            
             String badLineMessage = "The following lines in your csv input was malformed. \nPlease check you input spreadsheet.";
+            
             for (String bl : badLines) {
                 badLineMessage = badLineMessage + "\n" + bl;
             }
             throw new Exception(badLineMessage);
-
         }
-
     }
 
     public String save(String[] partIDs, String[] vectorIDs, boolean writeSQL) {
@@ -488,7 +520,7 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    private void solutionStats(String method) throws Exception {
+    private void getSolutionStats(String method) throws Exception {
 
         int steps = 0;
         int stages = 0;
@@ -620,7 +652,7 @@ public class RavenController {
         _valid = valid && overhangValid;
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
-        solutionStats(method);
+        getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result);
