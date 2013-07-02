@@ -5,7 +5,7 @@
 package Controller.algorithms.nonmodasm;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.SRSGeneral;
+import Controller.algorithms.RGeneral;
 import Controller.datastructures.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,10 +16,10 @@ import java.util.Set;
  *
  * @author evanappleton
  */
-public class SRSSLIC extends SRSGeneral {
+public class RSLIC extends RGeneral {
 
      /** Clotho part wrapper for SLIC assembly **/
-    public ArrayList<SRSGraph> slicClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
+    public ArrayList<RGraph> slicClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
         try {
             
             //Designate how many parts can be efficiently ligated in one step
@@ -33,10 +33,10 @@ public class SRSSLIC extends SRSGeneral {
             _maxNeighbors = max;
 
             //Initialize part hash and vector set
-            HashMap<String, SRSGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
+            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
 
             //Put all parts into hash for mgp algorithm            
-            ArrayList<SRSNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
             //Positional scoring of transcriptional units
             HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
@@ -46,38 +46,38 @@ public class SRSSLIC extends SRSGeneral {
             }
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, false);
+            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, false);
             assignOverhangs(optimalGraphs);
             
             return optimalGraphs;
         } catch (Exception E) {
-            ArrayList<SRSGraph> blank = new ArrayList<SRSGraph>();
+            ArrayList<RGraph> blank = new ArrayList<RGraph>();
 //            E.printStackTrace();
             return blank;
         }
     }
     
     /** Assign overhangs for scarless assembly **/
-    private void assignOverhangs(ArrayList<SRSGraph> asmGraphs) {
+    private void assignOverhangs(ArrayList<RGraph> asmGraphs) {
         
         for (int i = 0; i < asmGraphs.size(); i++) {
             
-            SRSGraph graph = asmGraphs.get(i);
-            SRSNode root = graph.getRootNode();
-            ArrayList<SRSNode> neighbors = root.getNeighbors();
+            RGraph graph = asmGraphs.get(i);
+            RNode root = graph.getRootNode();
+            ArrayList<RNode> neighbors = root.getNeighbors();
             assignOverhangsHelper(root, neighbors);
         }
         
     }
     
     /** Overhang assignment helper **/
-    private void assignOverhangsHelper(SRSNode parent, ArrayList<SRSNode> neighbors) {
+    private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors) {
 
-        ArrayList<SRSNode> children = new ArrayList<SRSNode>();
+        ArrayList<RNode> children = new ArrayList<RNode>();
         
         //Get children
         for (int i = 0; i < neighbors.size(); i++) {
-            SRSNode current = neighbors.get(i);
+            RNode current = neighbors.get(i);
             if (current.getStage() < parent.getStage()) {
                 children.add(current);
             }            
@@ -85,7 +85,7 @@ public class SRSSLIC extends SRSGeneral {
         
         //For each of the children, assign overhangs based on neighbors
         for (int j = 0; j < children.size(); j++) {
-            SRSNode child = children.get(j);
+            RNode child = children.get(j);
             
             if (j == 0) {
                 ArrayList<String> nextComp = children.get(j+1).getComposition();
@@ -102,17 +102,17 @@ public class SRSSLIC extends SRSGeneral {
                 child.setROverhang(nextComp.get(0));
             }
             
-            ArrayList<SRSNode> grandChildren = child.getNeighbors();
+            ArrayList<RNode> grandChildren = child.getNeighbors();
             
             assignOverhangsHelper(child, grandChildren);
         }
     }
     
-    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<SRSNode> roots, Collector coll) {
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
         return null;
     }
 }

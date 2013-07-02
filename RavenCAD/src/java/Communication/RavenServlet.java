@@ -38,13 +38,14 @@ public class RavenServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        
         RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
         String user = getUser(request).toLowerCase();
         RavenController controller = _controllerHash.get(user);
+        
         try {
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
@@ -60,8 +61,9 @@ public class RavenServlet extends HttpServlet {
             } else if (command.equals("load")) {
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "loaded data";
-                controller.loadDesign(request.getParameter("designCount"));
+                controller.saveNewDesign(request.getParameter("designCount"));
                 out.write(responseString);
+            
             } else if (command.equals("logout")) {
                 response.setContentType("text/html;charset=UTF-8");
                 RavenLogger.logSessionOut(user, request.getRemoteAddr());
@@ -69,16 +71,19 @@ public class RavenServlet extends HttpServlet {
                 _controllerHash.remove(user);
                 controller.clearData();
                 out.write(responseString);
+            
             } else if (command.equals("fetch")) {
                 response.setContentType("application/json");
                 String responseString = "";
                 responseString = controller.fetchData();
                 out.write(responseString);
+            
             } else if (command.equals("purge")) {
                 response.setContentType("test/plain");
                 String responseString = "purged";
                 controller.clearData();
                 out.write(responseString);
+            
             } else if (command.equals("delete")) {
                 String[] partIDs = request.getParameter("parts").split(",");
                 String[] vectorIDs = request.getParameter("vectors").split(",");
@@ -88,6 +93,7 @@ public class RavenServlet extends HttpServlet {
                 for (int i = 0; i < vectorIDs.length; i++) {
                     controller._collector.removeVector(partIDs[i]);
                 }
+            
             } else if (command.equals("run")) {
                 response.setContentType("application/json");
                 String[] targetIDs = request.getParameter("targets").split(",");
@@ -150,6 +156,7 @@ public class RavenServlet extends HttpServlet {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
                 out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":" + partsList + "}");
+            
             } else if (command.equals("save")) {
                 String[] partIDs = request.getParameter("partIDs").split(",");
                 String[] vectorIDs = request.getParameter("vectorIDs").split(",");
@@ -159,6 +166,7 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "failed save data";
                 responseString = controller.save(partIDs, vectorIDs, writeSQL);
                 out.write(responseString);
+            
             } else if (command.equals("mail")) {
                 GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             }
@@ -281,7 +289,7 @@ public class RavenServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
-//private String run() {
+    /** Get session user **/
     private String getUser(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String user = "default";
@@ -294,5 +302,7 @@ public class RavenServlet extends HttpServlet {
         }
         return user;
     }
+    
+    //FIELDS
     private HashMap<String, RavenController> _controllerHash = new HashMap(); //key:user, value: collector assocaited with that user
 }
