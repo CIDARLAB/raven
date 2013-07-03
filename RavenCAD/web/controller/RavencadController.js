@@ -14,11 +14,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         if (compositionRegExp.test(toRequire)) {
             //TODO do more validation on toRequire to make sure it's valid
             //remove toRequire from other intermediates lists
-            $('#selectedIntermediates ul#forbiddenList li:contains("' + toRequire + '")').remove();
-            $('#selectedIntermediates ul#discouragedList li:contains("' + toRequire + '")').remove();
-            $('#selectedIntermediates ul#recommendedList li:contains("' + toRequire + '")').remove();
-            if ($('#selectedIntermediates ul#requiredList li:contains("' + toRequire + '")').length === 0) {
-                $('#selectedIntermediates ul#requiredList').append('<li><span class="label">' + toRequire + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+            $('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toRequire + '")').remove();
+            $('#selectedIntermediates div div div ul#discouragedList li:contains("' + toRequire + '")').remove();
+            $('#selectedIntermediates div div div ul#recommendedList li:contains("' + toRequire + '")').remove();
+            if ($('#selectedIntermediates div div div ul#requiredList li:contains("' + toRequire + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#requiredList').append('<li><span class="label">' + toRequire + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
                 $('a.close').on("click", function() {
                     $(this).parent().remove();
                 });
@@ -32,11 +32,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         if (compositionRegExp.test(toForbid)) {
             //TODO do more validation on toRequire to make sure it's valid
             //remove toRequire from other intermediates lists
-            $('#selectedIntermediates ul#requiredList li:contains("' + toForbid + '")').remove();
-            $('#selectedIntermediates ul#discouragedList li:contains("' + toForbid + '")').remove();
-            $('#selectedIntermediates ul#recommendedList li:contains("' + toForbid + '")').remove();
-            if ($('#selectedIntermediates ul#forbiddenList li:contains("' + toForbid + '")').length === 0) {
-                $('#selectedIntermediates ul#forbiddenList').append('<li><span class="label">' + toForbid + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+            $('#selectedIntermediates div div div ul#requiredList li:contains("' + toForbid + '")').remove();
+            $('#selectedIntermediates div div div ul#discouragedList li:contains("' + toForbid + '")').remove();
+            $('#selectedIntermediates div div div ul#recommendedList li:contains("' + toForbid + '")').remove();
+            if ($('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toForbid + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#forbiddenList').append('<li><span class="label">' + toForbid + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
                 $('a.close').on("click", function() {
                     $(this).parent().remove();
                 });
@@ -50,11 +50,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         if (compositionRegExp.test(toRecommend)) {
             //TODO do more validation on toRequire to make sure it's valid
             //remove toRequire from other intermediates lists
-            $('#selectedIntermediates ul#forbiddenList li:contains("' + toRecommend + '")').remove();
-            $('#selectedIntermediates ul#discouragedList li:contains("' + toRecommend + '")').remove();
-            $('#selectedIntermediates ul#requiredList li:contains("' + toRecommend + '")').remove();
-            if ($('#selectedIntermediates ul#recommendedList li:contains("' + toRecommend + '")').length === 0) {
-                $('#selectedIntermediates ul#recommendedList').append('<li><span class="label">' + toRecommend + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+            $('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toRecommend + '")').remove();
+            $('#selectedIntermediates div div div ul#discouragedList li:contains("' + toRecommend + '")').remove();
+            $('#selectedIntermediates div div div ul#requiredList li:contains("' + toRecommend + '")').remove();
+            if ($('#selectedIntermediates div div div ul#recommendedList li:contains("' + toRecommend + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#recommendedList').append('<li><span class="label">' + toRecommend + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
                 $('a.close').on("click", function() {
                     $(this).parent().remove();
                 });
@@ -68,11 +68,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         if (compositionRegExp.test(toDiscourage)) {
             //TODO do more validation on toRequire to make sure it's valid
             //remove toRequire from other intermediates lists
-            $('#selectedIntermediates ul#forbiddenList li:contains("' + toDiscourage + '")').remove();
-            $('#selectedIntermediates ul#requiredList li:contains("' + toDiscourage + '")').remove();
-            $('#selectedIntermediates ul#recommendedList li:contains("' + toDiscourage + '")').remove();
-            if ($('#selectedIntermediates ul#discouragedList li:contains("' + toDiscourage + '")').length === 0) {
-                $('#selectedIntermediates ul#discouragedList').append('<li><span class="label">' + toDiscourage + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+            $('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toDiscourage + '")').remove();
+            $('#selectedIntermediates div div div ul#requiredList li:contains("' + toDiscourage + '")').remove();
+            $('#selectedIntermediates div div div ul#recommendedList li:contains("' + toDiscourage + '")').remove();
+            if ($('#selectedIntermediates div div div ul#discouragedList li:contains("' + toDiscourage + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#discouragedList').append('<li><span class="label">' + toDiscourage + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
                 $('a.close').on("click", function() {
                     $(this).parent().remove();
                 });
@@ -665,7 +665,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
         });
         summary = summary + '<p>This is the efficiency matrix that you are using for your assembly</p>';
-        var recommended = $('#selectedIntermediates ul#recommendedList li');
+        var recommended = $('#selectedIntermediates div div div ul#recommendedList li');
         if (recommended.length > 0) {
             summary = summary + '<p>The following intermediates are recommended:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
@@ -676,7 +676,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         } else {
             summary = summary + '<p>No intermediates are recommended</p>';
         }
-        var required = $('#selectedIntermediates ul#requiredList li');
+        var required = $('#selectedIntermediates div div div ul#requiredList li');
         if (required.length > 0) {
             summary = summary + '<p>The following intermediates are required:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
@@ -687,7 +687,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         } else {
             summary = summary + '<p>No intermediates are required</p>';
         }
-        var forbidden = $('#selectedIntermediates ul#forbiddenList li');
+        var forbidden = $('#selectedIntermediates div div div ul#forbiddenList li');
         if (forbidden.length > 0) {
             summary = summary + '<p>The following intermediates are forbidden:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
@@ -698,7 +698,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         } else {
             summary = summary + '<p>No intermediates are forbidden</p>';
         }
-        var discouraged = $('#selectedIntermediates ul#discouragedList li');
+        var discouraged = $('#selectedIntermediates div div div ul#discouragedList li');
         if (discouraged.length > 0) {
             summary = summary + '<p>The following intermediates are discouraged:</p>';
             summary = summary + '<ul>';
