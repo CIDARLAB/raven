@@ -16,6 +16,11 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -728,6 +733,40 @@ public class RavenController {
 
     public String getInstructions() {
         return _instructions;
+    }
+
+    public String importClotho(JSONArray devices) {
+        String toReturn = "";
+        try {
+            for (int i = 0; i < devices.length(); i++) {
+                JSONObject device = devices.getJSONObject(i);
+                JSONArray components = device.getJSONArray("components");
+//                toReturn = toReturn + device.getString("name") + "|";
+                ArrayList<Part> compositeComposition = new ArrayList();
+                for (int j = 0; j < components.length(); j++) {
+                    JSONObject basicPart = components.getJSONObject(j);
+                    Part newBasicPart = Part.generateBasic(basicPart.getString("name"), basicPart.getString("sequence"));
+                    String type = basicPart.getString("type");
+                    if (type.equals("ConstPr") || type.equals("RepPr") || type.equals("Repressor")) {
+                        type = "promoter";
+                    }
+                    newBasicPart.addSearchTag("Type: " + type);
+                    newBasicPart.saveDefault(_collector);
+                    newBasicPart.setTransientStatus(false);
+                    compositeComposition.add(newBasicPart);
+                }
+                Part newComposite = Part.generateComposite(compositeComposition, device.getString("name"));
+                newComposite.addSearchTag("Type: composite");
+                newComposite.saveDefault(_collector);
+                newComposite.setTransientStatus(false);
+
+            }
+        } catch (JSONException ex) {
+            Logger.getLogger(RavenController.class.getName()).log(Level.SEVERE, null, ex);
+            return "bad";
+        }
+
+        return "good";
     }
 
     public String generateStats() throws Exception {

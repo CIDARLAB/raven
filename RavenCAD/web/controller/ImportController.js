@@ -91,7 +91,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     + this["Resistance"] + "</td><td>"
                     + this["Level"] + "</td></tr>";
             if (this["Type"] === "vector") {
-                sequenceHash["vector_"+this["uuid"]] = this["sequence"];
+                sequenceHash["vector_" + this["uuid"]] = this["sequence"];
                 vectorTableBody = vectorTableBody + "<tr><td>"
                         + this["uuid"] + "</td><td>"
                         + this["Name"] + "</td><td>"
@@ -101,7 +101,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         + this["Resistance"] + "</td><td>"
                         + this["Level"] + "</td></tr>";
             } else {
-                sequenceHash["part_"+this["uuid"]] = this["sequence"];                
+                sequenceHash["part_" + this["uuid"]] = this["sequence"];
                 partTableBody = partTableBody + "<tr><td>"
                         + this["uuid"] + "</td><td>"
                         + this["Name"] + "</td><td>"
@@ -140,10 +140,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 type = "Vector";
             }
             $('#editorArea').html('<form class="form-horizontal"><legend>Edit ' + type + '</legend><p>' + 'Name: ' + $(this).children('td:eq(0)').text() + '</p><p>Type: ' + $(this).children('td:eq(1)').text() + '</p></form>');
-        $('#errorArea').addClass("hidden");
+            $('#errorArea').addClass("hidden");
         });
-        
-        if(data["status"]==="bad") {
+
+        if (data["status"] === "bad") {
             $('#error').html(data["message"]);
             $('#error').append('<hr/><p>We have uploaded the rest of your parts and vectors</p>');
             $('#errorArea').removeClass("hidden");
@@ -161,8 +161,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
     $('.tablink').click(function() {
         tabResized = false;
     });
-    $('#dismissButton').click(function(){
-       $('#errorArea').addClass("hidden"); 
+    $('#dismissButton').click(function() {
+        $('#errorArea').addClass("hidden");
     });
     $('#resetButton').click(function() {
         $.get("RavenServlet", {"command": "purge"}, function() {
@@ -237,6 +237,70 @@ $(document).ready(function() { //don't run javascript until page is loaded
         document.cookie = escape(key) + '=;expires=' + date;
     }
 
+
+    /********Clotho Functions and Variables********/
+    var _connection = new WebSocket('ws://localhost:8080/websocket');
+
+    var _requestCommand = {}; //key request id, value: callback function
+    var _requestID = 0;
+
+
+    _connection.onmessage = function(e) {
+        //parase message into JSON
+        var dataJSON = $.parseJSON(e.data);
+        //ignore say messages which have not requestId
+        var requestId = dataJSON["requestId"];
+        if (requestId !== null) {
+            //if callback function exists, run it
+            var callback = _requestCommand[requestId];
+            if (callback !== undefined) {
+                callback(dataJSON["data"]);
+                delete _requestCommand[requestId];
+            }
+        }
+    };
+
+    _connection.onerror = function(e) {
+        alert("F**K");
+    };
+
+    _connection.onclose = function() {
+//        alert('closing connection');
+    };
+    _connection.onopen = function(e) {
+        send("query", '{"className":"CompositePart"}', function(data) {
+            var newParts = {};
+            var newPartsArray =[];
+            $.each(data, function() {
+                if (newParts[this["name"]] === undefined) {
+                    newParts[this["name"]] = "added";
+                    newPartsArray.push(this);
+                }
+            });
+            $.get("RavenServlet", {command: "importClotho", "data":JSON.stringify(newPartsArray)}, function(response) {
+                refreshData();
+            });
+        });
+
+    };
+
+
+    var send = function(channel, data, callback) {
+        if (_connection.readyState === 1) {
+            var message = '{"channel":"' + channel + '", "data":' + data + ',"requestId":"' + _requestID + '"}';
+//            alert("sending:\n" + message);
+            _requestCommand[_requestID] = callback;
+            _connection.send(message);
+            _requestID++;
+        } else {
+            _connection = new WebSocket('ws://localhost:8080/websocket');
+        }
+    };
+
+
+
+
+    //functions to run
     if (getCookie("authenticate") !== "authenticated") {
         deleteCookie("user");
     }
