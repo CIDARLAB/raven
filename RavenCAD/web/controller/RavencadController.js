@@ -197,7 +197,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
         sortVectorLists();
     });
     $('#resetIntermediatesButton').click(function() {
-        $(':checked').attr("checked", false);
         refreshIntermediatesTypeAhead();
     });
     $('.btn').click(function() {
@@ -343,18 +342,19 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $('#libraryVectorList option').each(function() {
                     vectorLibrary = vectorLibrary + $(this).attr("id") + ",";
                 });
-                $('.required:checked').each(function() {
-                    req = req + $(this).val() + ";";
+                $('#selectedIntermediates div div div ul#requiredList li').each(function() {
+                    req = req + $(this).text() + ";";
                 });
-                $('.recommended:checked').each(function() {
-                    rec = rec + $(this).val() + ";";
+                $('#selectedIntermediates div div div ul#recommendedList li').each(function() {
+                    rec = rec + $(this).text() + ";";
                 });
-                $('.forbidden:checked').each(function() {
-                    forbid = forbid + $(this).val() + ";";
+                $('#selectedIntermediates div div div ul#forbidden li').each(function() {
+                    forbid = forbid + $(this).text() + ";";
                 });
-                $('.discouraged:checked').each(function() {
-                    discourage = discourage + $(this).val() + ";";
+                $('#selectedIntermediates div div div ul#discouragedList li').each(function() {
+                    discourage = discourage + $(this).text() + ";";
                 });
+                $('#selectedIntermediates div div div ul').html("");
                 discourage = discourage.substring(0, discourage.length - 1);
                 forbid = forbid.substring(0, forbid.length - 1);
                 req = req.substring(0, req.length - 1);
@@ -635,9 +635,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             "bPaginate": false,
             "bScrollCollapse": true
         });
-        $(':checkbox').change(function() {
-            updateSummary();
-        });
+   
     };
     var updateSummary = function() {
         var pattern = /^[\d]+\.[\d]+/;
