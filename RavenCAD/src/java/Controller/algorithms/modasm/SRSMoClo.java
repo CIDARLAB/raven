@@ -68,37 +68,46 @@ public class SRSMoClo extends SRSGeneral {
 
             //Run SDS Algorithm for multiple parts
             ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
-
-
-//            for (SRSGraph graph : optimalGraphs) {
-//                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-//                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-//                SRSNode root = graph.getRootNode();
-//                queue.add(root);
-//                while (!queue.isEmpty()) {
-//                    SRSNode current = queue.get(0);
-//                    queue.remove(0);
-//                    seenNodes.add(current);
-//
-//                    ArrayList<SRSNode> neighbors = current.getNeighbors();
-//                    for (SRSNode neighbor : neighbors) {
-//                        if (!seenNodes.contains(neighbor)) {
-//                            queue.add(neighbor);
-//                        }
-//                    }
-//                }
-//            }
-
+            boolean tryCartesian = true;
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
-            minimizeOverhangs(optimalGraphs);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nsecond pass: " + valid);
-            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nfinal pass: " + valid);
+            if (tryCartesian) {
+                //gather some info
+                HashMap<String, ArrayList<String>> overhangHash = new HashMap();
+                for (Part p : _partLibrary) {
+                    if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
+                        String composition = p.getStringComposition().toString();
+                        if (encounteredCompositions.contains(composition)) {
+                            ArrayList<String> existingOverhangs = overhangHash.get(p.getName());
+                            if(existingOverhangs !=null) {
+                                existingOverhangs.add(p.getLeftOverhang()+"|"+p.getRightOverhang());
+                            } else {
+                                overhangHash.put(p.getName(), null); //create new array list
+                                //TODO how to handle non basic parts
+                            }
+                        }
+                    }
+                }
+                for(SRSGraph graph: optimalGraphs) {
+                    
+                }
 
+                //use cartesian product methods
+
+
+
+                valid = validateOverhangs(optimalGraphs);
+            }
+            //if we're not doing the cartesian product or the cartesian products are wrong
+            if (!tryCartesian || !valid) {
+                minimizeOverhangs(optimalGraphs);
+                valid = validateOverhangs(optimalGraphs);
+                System.out.println("##############################\nsecond pass: " + valid);
+                optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
+                valid = validateOverhangs(optimalGraphs);
+                System.out.println("##############################\nfinal pass: " + valid);
+            }
             return optimalGraphs;
         } catch (Exception E) {
             ArrayList<SRSGraph> blank = new ArrayList<SRSGraph>();
@@ -734,7 +743,7 @@ public class SRSMoClo extends SRSGeneral {
                     seenNodes.add(current);
 
                     if (current.getStage() == 0) {
-                        basicParts.add(0,current);
+                        basicParts.add(0, current);
                     }
 
                     for (SRSNode neighbor : current.getNeighbors()) {
@@ -932,6 +941,102 @@ public class SRSMoClo extends SRSGeneral {
             for (int i = 0; i < oligoNames.size(); i++) {
                 toReturn = toReturn + "\n>" + oligoNames.get(i);
                 toReturn = toReturn + "\n" + oligoSequences.get(i);
+            }
+        }
+        return toReturn;
+    }
+
+    //given a part composition and an hashmap containing existing overhangs, build a directed graph representing all overhang assignment choices
+    private ArrayList<SRSGraph> buildCartesianGraph(ArrayList<String> composition, HashMap<String, ArrayList<String>> compositionOverhangHash) {
+        ArrayList<SRSNode> previousNodes = null;
+        ArrayList<SRSGraph> toReturn = new ArrayList();
+        int stage = 0;
+        for (String part : composition) {
+            ArrayList<SRSNode> currentNodes = new ArrayList();
+            ArrayList<String> existingOverhangs = compositionOverhangHash.get(part);
+            for (String overhangPair : existingOverhangs) {
+                String[] tokens = overhangPair.split("\\|");
+                String leftOverhang = tokens[0];
+                String rightOverhang = tokens[1];
+                SRSNode newNode = new SRSNode();
+                newNode.setName(part);
+                newNode.setLOverhang(leftOverhang);
+                newNode.setROverhang(rightOverhang);
+                newNode.setStage(stage);
+                currentNodes.add(newNode);
+            }
+            if (previousNodes != null) {
+                for (SRSNode prev : previousNodes) {
+                    for (SRSNode curr : currentNodes) {
+                        if (prev.getROverhang().equals(curr.getLOverhang())) {
+                            prev.addNeighbor(curr);
+                        }
+                    }
+                }
+            } else {
+                for (SRSNode root : currentNodes) {
+                    toReturn.add(new SRSGraph(root));
+                }
+            }
+            previousNodes = currentNodes;
+            stage++;
+
+        }
+        return toReturn;
+    }
+
+    //given a cartesian product graph, traverse a graph to see if a complete assignment exists
+    //returns null if no such assignment exists
+    private ArrayList<ArrayList<String>> findOptimalAssignment(ArrayList<SRSGraph> graphs, int targetLength) {
+        ArrayList<ArrayList<String>> toReturn = new ArrayList();
+        ArrayList<String> currentSolution;
+        HashMap<SRSNode, SRSNode> parentHash = new HashMap(); //key: node, value: parent node
+        for (SRSGraph graph : graphs) {
+            currentSolution = new ArrayList();
+            SRSNode root = graph.getRootNode();
+            ArrayList<SRSNode> stack = new ArrayList();
+            stack.add(root);
+            boolean toParent = false; // am i returning to a parent node?
+            HashSet<SRSNode> seenNodes = new HashSet();
+            while (!stack.isEmpty()) {
+                SRSNode currentNode = stack.get(0);
+                stack.remove(0);
+                seenNodes.add(currentNode);
+                if (!toParent) {
+                    currentSolution.add(currentNode.getLOverhang() + "|" + currentNode.getROverhang());
+                } else {
+                    toParent = false;
+                }
+                SRSNode parent = parentHash.get(currentNode);
+
+                int childrenCount = 0;
+                for (SRSNode neighbor : currentNode.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        if (neighbor.getStage() > currentNode.getStage()) {
+                            stack.add(0, neighbor);
+                            parentHash.put(neighbor, currentNode);
+                            childrenCount++;
+                        }
+                    }
+                }
+                if (childrenCount == 0) {
+                    //no children means we've reached the end of a branch
+                    if (currentSolution.size() == targetLength) {
+                        //yay complete assignment
+                        toReturn.add(currentSolution);
+                        currentSolution = new ArrayList();
+                    } else {
+                        //incomplete assignment
+                        if (currentSolution.size() > 0) {
+                            currentSolution.remove(currentSolution.size() - 1);
+                        }
+                        if (parent != null) {
+                            parent.getNeighbors().remove(currentNode);
+                            toParent = true;
+                            stack.add(0, parent);
+                        }
+                    }
+                }
             }
         }
         return toReturn;
