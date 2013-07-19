@@ -8,10 +8,10 @@ package Controller.datastructures;
  *
  * @author evanappleton
  */
-public class SRSVector {
+public class RVector {
 
-    /** SRSVector constructor, no explicit parameters **/
-    public SRSVector() {
+    /** RVector constructor, no explicit parameters **/
+    public RVector() {
         _uuid = null;
         _lOverhang = new String();
         _rOverhang = new String();
@@ -21,8 +21,8 @@ public class SRSVector {
         _vectorCount++;
     }
 
-//    /** SRSVector constructor with explicit parameters **/
-//    public SRSVector(String lOverhang, String rOverhang, boolean recommended, int level) {
+//    /** RVector constructor with explicit parameters **/
+//    public RVector(String lOverhang, String rOverhang, boolean recommended, int level) {
 //        _uuid = null;
 //        _lOverhang = lOverhang;
 //        _rOverhang = rOverhang;

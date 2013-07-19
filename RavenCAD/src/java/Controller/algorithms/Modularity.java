@@ -13,23 +13,23 @@ import java.util.Set;
  *
  * @author jenhantao, evanappleton
  */
-public class SRSAlgorithmCore extends Partitioning {
+public class Modularity extends Partitioning {
 
      /**
      * ************************************************************************
      *
-     * THIS CLASS HAS A LOT OF METHODS THAT ARE USED BY THE GENERAL ALGORITHM WITH NO REAL HOME
+     * THIS CLASS HAS MOSTLY SHARING AND HELPER METHODS FOR MAIN ALGORITHM
      *
      *************************************************************************
      */
     
     /** Find sharing score for all possible intermediates for a set of goal parts **/
-    protected HashMap<String, Integer> computeIntermediateSharing(ArrayList<SRSNode> goalParts) {
+    protected HashMap<String, Integer> computeIntermediateSharing(ArrayList<RNode> goalParts) {
         HashMap<String, Integer> sharing = new HashMap<String, Integer>();
 
         //For each goal part
         for (int i = 0; i < goalParts.size(); i++) {
-            SRSNode gp = goalParts.get(i);
+            RNode gp = goalParts.get(i);
             ArrayList<String> gpComposition = gp.getComposition();
             int gpSize = gp.getComposition().size();
 
@@ -69,13 +69,13 @@ public class SRSAlgorithmCore extends Partitioning {
      * ends with a terminator >> *
      */
     // type- 1 for name 2 for composition
-    protected ArrayList<ArrayList<String>> getTranscriptionalUnits(ArrayList<SRSNode> goalParts, int type) {
+    protected ArrayList<ArrayList<String>> getTranscriptionalUnits(ArrayList<RNode> goalParts, int type) {
 
         ArrayList<ArrayList<String>> TUs = new ArrayList<ArrayList<String>>();
 
         //For each goal part get TUs
         for (int i = 0; i < goalParts.size(); i++) {
-            SRSNode gp = goalParts.get(i);
+            RNode gp = goalParts.get(i);
 
             ArrayList<String> types = gp.getType();
             ArrayList<String> comps = gp.getComposition();
@@ -126,13 +126,13 @@ public class SRSAlgorithmCore extends Partitioning {
         return TUs;
     }
 
-    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<SRSNode> goalParts, int type) {
+    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<RNode> goalParts, int type) {
 
         ArrayList<ArrayList<String>> TUs = new ArrayList<ArrayList<String>>();
 
         //For each goal part get TUs
         for (int i = 0; i < goalParts.size(); i++) {
-            SRSNode gp = goalParts.get(i);
+            RNode gp = goalParts.get(i);
 
             ArrayList<String> types = gp.getType();
             ArrayList<String> comps = gp.getComposition();
@@ -237,16 +237,16 @@ public class SRSAlgorithmCore extends Partitioning {
     /**
      * Get the stage hash for a set of optimal graphs *
      */
-    protected HashMap<Integer, ArrayList<SRSNode>> getStageStepHash(ArrayList<SRSGraph> optimalGraphs) {
+    public static HashMap<Integer, ArrayList<RNode>> getStageHash(ArrayList<RGraph> optimalGraphs) {
 
-        HashMap<Integer, ArrayList<SRSNode>> stageHash = new HashMap<Integer, ArrayList<SRSNode>>();
-        ArrayList<SRSNode> stageNodes = new ArrayList<SRSNode>();
+        HashMap<Integer, ArrayList<RNode>> stageHash = new HashMap<Integer, ArrayList<RNode>>();
+        ArrayList<RNode> stageNodes = new ArrayList<RNode>();
 
         for (int i = 0; i < optimalGraphs.size(); i++) {
 
             //Traverse one graph and store the nodes
-            SRSGraph graph = optimalGraphs.get(i);
-            SRSNode rootNode = graph.getRootNode();
+            RGraph graph = optimalGraphs.get(i);
+            RNode rootNode = graph.getRootNode();
             if (stageHash.containsKey(rootNode.getStage())) {
                 stageNodes = stageHash.get(rootNode.getStage());
             }
@@ -258,9 +258,9 @@ public class SRSAlgorithmCore extends Partitioning {
             if (i != (optimalGraphs.size() - 1)) {
                 Set<Integer> keySet = stageHash.keySet();
                 for (Integer stage : keySet) {
-                    ArrayList<SRSNode> finalStageNodes = new ArrayList<SRSNode>();
+                    ArrayList<RNode> finalStageNodes = new ArrayList<RNode>();
                     finalStageNodes.addAll(stageHash.get(stage));
-                    SRSNode spacer = new SRSNode();
+                    RNode spacer = new RNode();
                     finalStageNodes.add(spacer);
                     stageHash.put(stage, finalStageNodes);
                 }
@@ -270,19 +270,19 @@ public class SRSAlgorithmCore extends Partitioning {
         return stageHash;
     }
 
-    private HashMap<Integer, ArrayList<SRSNode>> getStageHashHelper(SRSNode parent, ArrayList<SRSNode> neighbors, HashMap<Integer, ArrayList<SRSNode>> stageHash) {
+    private static HashMap<Integer, ArrayList<RNode>> getStageHashHelper(RNode parent, ArrayList<RNode> neighbors, HashMap<Integer, ArrayList<RNode>> stageHash) {
 
         //Check the current stageHash to get nodes that are already in there
-        ArrayList<SRSNode> stageNodes = new ArrayList<SRSNode>();
+        ArrayList<RNode> stageNodes = new ArrayList<RNode>();
         if (stageHash.containsKey(parent.getStage() - 1)) {
             stageNodes = stageHash.get(parent.getStage() - 1);
         }
 
         for (int i = 0; i < neighbors.size(); i++) {
-            SRSNode neighbor = neighbors.get(i);
+            RNode neighbor = neighbors.get(i);
             stageNodes.add(neighbor);
             if (neighbor.getStage() > 0) {
-                ArrayList<SRSNode> orderedChildren = new ArrayList<SRSNode>();
+                ArrayList<RNode> orderedChildren = new ArrayList<RNode>();
                 orderedChildren.addAll(neighbor.getNeighbors());
 
                 //Remove the current parent from the list
