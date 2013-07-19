@@ -79,18 +79,22 @@ public class SRSMoClo extends SRSGeneral {
                     if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
                         String composition = p.getStringComposition().toString();
                         if (encounteredCompositions.contains(composition)) {
-                            ArrayList<String> existingOverhangs = overhangHash.get(p.getName());
+                            ArrayList<String> existingOverhangs = overhangHash.get(composition);
                             if(existingOverhangs !=null) {
                                 existingOverhangs.add(p.getLeftOverhang()+"|"+p.getRightOverhang());
                             } else {
-                                overhangHash.put(p.getName(), null); //create new array list
-                                //TODO how to handle non basic parts
+                                overhangHash.put(composition, new ArrayList(Arrays.asList(new String[]{p.getLeftOverhang()+"|"+p.getRightOverhang()}))); //create new array list
                             }
                         }
                     }
                 }
                 for(SRSGraph graph: optimalGraphs) {
-                    
+                    SRSNode root = graph.getRootNode();
+                    ArrayList<SRSNode> composition = rootBasicNodeHash.get(root);
+                    ArrayList<ArrayList<String>> optimalAssignments = findOptimalAssignment(buildCartesianGraph(composition, overhangHash), composition.size());
+                    for(ArrayList<String> cartesianAssignment:optimalAssignments) {
+                        
+                    }
                 }
 
                 //use cartesian product methods
@@ -947,11 +951,12 @@ public class SRSMoClo extends SRSGeneral {
     }
 
     //given a part composition and an hashmap containing existing overhangs, build a directed graph representing all overhang assignment choices
-    private ArrayList<SRSGraph> buildCartesianGraph(ArrayList<String> composition, HashMap<String, ArrayList<String>> compositionOverhangHash) {
+    private ArrayList<SRSGraph> buildCartesianGraph(ArrayList<SRSNode> composition, HashMap<String, ArrayList<String>> compositionOverhangHash) {
         ArrayList<SRSNode> previousNodes = null;
         ArrayList<SRSGraph> toReturn = new ArrayList();
         int stage = 0;
-        for (String part : composition) {
+        for (SRSNode node : composition) {
+            String part = node.getComposition().toString();
             ArrayList<SRSNode> currentNodes = new ArrayList();
             ArrayList<String> existingOverhangs = compositionOverhangHash.get(part);
             for (String overhangPair : existingOverhangs) {
@@ -1007,6 +1012,7 @@ public class SRSMoClo extends SRSGeneral {
                 } else {
                     toParent = false;
                 }
+                System.out.println(currentSolution);
                 SRSNode parent = parentHash.get(currentNode);
 
                 int childrenCount = 0;
@@ -1023,21 +1029,24 @@ public class SRSMoClo extends SRSGeneral {
                     //no children means we've reached the end of a branch
                     if (currentSolution.size() == targetLength) {
                         //yay complete assignment
-                        toReturn.add(currentSolution);
-                        currentSolution = new ArrayList();
+                        toReturn.add((ArrayList<String>) currentSolution.clone());
+
                     } else {
                         //incomplete assignment
-                        if (currentSolution.size() > 0) {
-                            currentSolution.remove(currentSolution.size() - 1);
-                        }
-                        if (parent != null) {
-                            parent.getNeighbors().remove(currentNode);
-                            toParent = true;
-                            stack.add(0, parent);
-                        }
+                    }
+                    if (currentSolution.size() > 0) {
+                        currentSolution.remove(currentSolution.size() - 1);
+                    }
+                    if (parent != null) {
+//                        parent.getNeighbors().remove(currentNode);
+//                        System.out.println("removing: " +currentNode.getName()+"|"+currentNode.getLOverhang()+"|"+currentNode.getROverhang()+" from "+ parent.getName() + "|" + parent.getLOverhang() + "|" + parent.getROverhang());
+                        toParent = true;
+                        stack.add(0, parent);
                     }
                 }
+
             }
+
         }
         return toReturn;
     }
@@ -1047,7 +1056,7 @@ public class SRSMoClo extends SRSGeneral {
     private HashMap<SRSNode, SRSNode> parentHash; //key: node, value: parent node
     private HashMap<String, Integer> compositionLevelHash; //key: string composition with overhangs, value; arrayList of nodes with the given composition
     private HashMap<String, ArrayList<String>> forcedOverhangHash = new HashMap(); //key: composite part composition
-    private HashMap<SRSNode, ArrayList<SRSNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
+    private HashMap<SRSNode, ArrayList<SRSNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
     private ArrayList<Part> _partLibrary = new ArrayList();
     private ArrayList<Vector> _vectorLibrary = new ArrayList();
     private static HashMap<String, String> _overhangVariableSequenceHash = new HashMap(); //key:variable name, value: sequence associated with that variable
