@@ -419,9 +419,7 @@ public class RavenController {
                     } else {
                         ArrayList<String> toAdd = new ArrayList();
                         toAdd.add(forcedLeft + "|" + forcedRight);
-                        if (!forcedLeft.equals(" ") || !forcedRight.equals(" ")) {
                             forcedOverhangHash.put(compositePartName, toAdd);
-                        }
                     }
 
                     composition.add(_collector.getPartByName(basicPartName, true));
