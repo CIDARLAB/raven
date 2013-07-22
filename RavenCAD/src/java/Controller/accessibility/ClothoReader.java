@@ -98,6 +98,7 @@ public class ClothoReader {
                             for (int j = 0; j < sTags.size(); j++) {
                                 if (sTags.get(j).startsWith("Type:")) {
                                     String typeTag = sTags.get(j);
+                                    System.out.println("Search Tag: " + typeTag);
                                     ArrayList<String> types = parseTags(typeTag);
                                     type.addAll(types);
                                 }
@@ -218,10 +219,15 @@ public class ClothoReader {
     /** Parse type search tags from a string into an ArrayList **/
     public static ArrayList<String> parseTags(String tag) {
         ArrayList<String> list = new ArrayList<String>();
-        tag = tag.substring(tag.length(),tag.length()-1);
-        String[] tokens1 = tag.split("[");
-        String splitTag = tokens1[1];
-        String[] tokens = splitTag.split(",");
+        System.out.println("Tag length: " + tag.length());
+        int tl = tag.length();
+        tag.replaceAll("\\[", "");
+        tag.replaceAll("\\]", "");
+        int indexOf = tag.indexOf(":");
+        tag = tag.substring(indexOf + 2,tl);
+        System.out.println("tag: " + tag);
+
+        String[] tokens = tag.split(",");
         list.addAll(Arrays.asList(tokens));
         return list;
     }
