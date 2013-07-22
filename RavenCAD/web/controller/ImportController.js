@@ -261,7 +261,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
 
     _connection.onerror = function(e) {
-        alert("F**K");
+//        alert("F**K");
     };
 
     _connection.onclose = function() {

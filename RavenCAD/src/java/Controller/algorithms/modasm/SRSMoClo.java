@@ -71,34 +71,36 @@ public class SRSMoClo extends SRSGeneral {
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
+
+            HashMap<String, String> finalOverhangHash = new HashMap();
             if (tryCartesian) {
                 //gather some info
                 ArrayList<SRSGraph> nonCartesianGraphs = new ArrayList(); //graphs without valid cartesian products
-                _forcedOverhangHash = new HashMap();
+                HashMap<String, ArrayList<String>> availableOverhangs = new HashMap(); //key: composition, value: arrayList containing available overhangs
                 for (Part p : _partLibrary) {
                     if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
                         String composition = p.getStringComposition().toString();
                         if (_encounteredCompositions.contains(composition)) {
-                            ArrayList<String> existingOverhangs = _forcedOverhangHash.get(composition);
+                            ArrayList<String> existingOverhangs = availableOverhangs.get(composition);
                             if (existingOverhangs != null) {
                                 existingOverhangs.add(p.getLeftOverhang() + "|" + p.getRightOverhang());
                             } else {
-                                _forcedOverhangHash.put(composition, new ArrayList(Arrays.asList(new String[]{p.getLeftOverhang() + "|" + p.getRightOverhang()}))); //create new array list
+                                availableOverhangs.put(composition, new ArrayList(Arrays.asList(new String[]{p.getLeftOverhang() + "|" + p.getRightOverhang()}))); //create new array list
                             }
                         }
                     }
                 }
-                HashMap<String, ArrayList<String>> forcedOverhangs = new HashMap();
+                HashMap<String, ArrayList<String>> cartesianOverhangs = new HashMap();
                 for (SRSGraph graph : optimalGraphs) {
                     SRSNode root = graph.getRootNode();
                     ArrayList<SRSNode> composition = _rootBasicNodeHash.get(root);
                     //use cartesian product methods to find an assignment
-                    ArrayList<ArrayList<String>> optimalAssignments = findOptimalAssignment(buildCartesianGraph(composition, _forcedOverhangHash), composition.size());
+                    ArrayList<ArrayList<String>> optimalAssignments = findOptimalAssignment(buildCartesianGraph(composition, availableOverhangs), composition.size());
                     //iterate through each cartesian assignment and see if they are valid
                     if (optimalAssignments.size() > 0) {
                         for (ArrayList<String> cartesianAssignment : optimalAssignments) {
-                            forcedOverhangs.put(root.getComposition().toString(), cartesianAssignment);
-                            HashMap<String, String> graphOverhangAssignment = preAssignOverhangs(optimalGraphs, forcedOverhangs);
+                            cartesianOverhangs.put(root.getComposition().toString(), cartesianAssignment);
+                            HashMap<String, String> graphOverhangAssignment = assignOverhangs(optimalGraphs, cartesianOverhangs);
                             //traverse graph and assign overhangs
                             ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
                             HashSet<SRSNode> seenNodes = new HashSet();
@@ -118,6 +120,7 @@ public class SRSMoClo extends SRSGeneral {
                             //if graph is valid, no need to check other cartesian assignments for graph
                             //otherwise try another assignment
                             if (validateOverhangs(optimalGraphs)) {
+                                finalOverhangHash.putAll(graphOverhangAssignment);
                                 break;
                             }
                             if (optimalAssignments.indexOf(cartesianAssignment) == optimalAssignments.size() - 1) {
@@ -131,17 +134,18 @@ public class SRSMoClo extends SRSGeneral {
                     }
 
                 }
+
+                finalOverhangHash.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
                 //regular asssignment for graphs with no cartesian assignment
                 minimizeOverhangs(nonCartesianGraphs);
-                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet);
-                optimalGraphs.addAll(nonCartesianGraphs);
-            }
-            //if we're not doing the cartesian product or the cartesian products are wrong
-            if (!tryCartesian) {
+                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
+            } else {
+                //if we're not doing the cartesian product or the cartesian products are wrong
                 minimizeOverhangs(optimalGraphs);
                 valid = validateOverhangs(optimalGraphs);
                 System.out.println("##############################\nsecond pass: " + valid);
-                optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
+                finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+                optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
                 valid = validateOverhangs(optimalGraphs);
                 System.out.println("##############################\nfinal pass: " + valid);
             }
@@ -474,9 +478,7 @@ public class SRSMoClo extends SRSGeneral {
 //concurrent optimizes vector assignment based on vector assignment
 //prioritize existing parts with correct overhangs
 //next priority is overhangs that vectors already have
-    private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
-        HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
-        finalOverhangHash = preAssignOverhangs(optimalGraphs, _forcedOverhangHash);
+    private void optimizeOverhangVectors(ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet, HashMap<String, String> finalOverhangHash) {
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
@@ -763,7 +765,7 @@ public class SRSMoClo extends SRSGeneral {
     }
 
     //sets user specified overhangs before algorithm computes the rest
-    private HashMap<String, String> preAssignOverhangs(ArrayList<SRSGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
+    private HashMap<String, String> assignOverhangs(ArrayList<SRSGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
         for (SRSGraph graph : optimalGraphs) {
             SRSNode root = graph.getRootNode();
@@ -1045,7 +1047,6 @@ public class SRSMoClo extends SRSGeneral {
                 } else {
                     toParent = false;
                 }
-                System.out.println(currentSolution);
                 SRSNode parent = parentHash.get(currentNode);
 
                 int childrenCount = 0;
