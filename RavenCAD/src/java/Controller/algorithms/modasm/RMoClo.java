@@ -69,24 +69,27 @@ public class RMoClo extends RGeneral {
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
 
 
-//            for (RGraph graph : optimalGraphs) {
-//                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-//                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-//                RNode root = graph.getRootNode();
-//                queue.add(root);
-//                while (!queue.isEmpty()) {
-//                    RNode current = queue.get(0);
-//                    queue.remove(0);
-//                    seenNodes.add(current);
-//
-//                    ArrayList<SRSNode> neighbors = current.getNeighbors();
-//                    for (RNode neighbor : neighbors) {
-//                        if (!seenNodes.contains(neighbor)) {
-//                            queue.add(neighbor);
-//                        }
-//                    }
-//                }
-//            }
+            for (RGraph graph : optimalGraphs) {
+                ArrayList<RNode> queue = new ArrayList<RNode>();
+                HashSet<RNode> seenNodes = new HashSet<RNode>();
+                RNode root = graph.getRootNode();
+                queue.add(root);
+                while (!queue.isEmpty()) {
+                    RNode current = queue.get(0);
+                    queue.remove(0);
+                    seenNodes.add(current);
+
+                    System.out.println("composition: " + current.getComposition());
+                    System.out.println("direction: " + current.getDirection());
+                    
+                    ArrayList<RNode> neighbors = current.getNeighbors();
+                    for (RNode neighbor : neighbors) {
+                        if (!seenNodes.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+                }
+            }
 
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
@@ -739,7 +742,7 @@ public class RMoClo extends RGeneral {
                     seenNodes.add(current);
 
                     if (current.getStage() == 0) {
-                        basicParts.add(current);
+                        basicParts.add(0,current);
                     }
 
                     for (RNode neighbor : current.getNeighbors()) {

@@ -7,6 +7,80 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var canRun = true;
     var efficiencyArray = [];
     /********************EVENT HANDLERS********************/
+    $('button#requireButton').click(function() {
+        var toRequire = $.trim($("#intermediatesTypeAhead").val());
+        $("#intermediatesTypeAhead").val("");
+        var compositionRegExp = /^\[{1}.+\]$/;
+        if (compositionRegExp.test(toRequire)) {
+            //TODO do more validation on toRequire to make sure it's valid
+            //remove toRequire from other intermediates lists
+            $('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toRequire + '")').remove();
+            $('#selectedIntermediates div div div ul#discouragedList li:contains("' + toRequire + '")').remove();
+            $('#selectedIntermediates div div div ul#recommendedList li:contains("' + toRequire + '")').remove();
+            if ($('#selectedIntermediates div div div ul#requiredList li:contains("' + toRequire + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#requiredList').append('<li><span class="label">' + toRequire + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+                $('a.close').on("click", function() {
+                    $(this).parent().remove();
+                });
+            }
+        }
+    });
+    $('button#forbidButton').click(function() {
+        var toForbid = $.trim($("#intermediatesTypeAhead").val());
+        $("#intermediatesTypeAhead").val("");
+        var compositionRegExp = /^\[{1}.+\]$/;
+        if (compositionRegExp.test(toForbid)) {
+            //TODO do more validation on toRequire to make sure it's valid
+            //remove toRequire from other intermediates lists
+            $('#selectedIntermediates div div div ul#requiredList li:contains("' + toForbid + '")').remove();
+            $('#selectedIntermediates div div div ul#discouragedList li:contains("' + toForbid + '")').remove();
+            $('#selectedIntermediates div div div ul#recommendedList li:contains("' + toForbid + '")').remove();
+            if ($('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toForbid + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#forbiddenList').append('<li><span class="label">' + toForbid + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+                $('a.close').on("click", function() {
+                    $(this).parent().remove();
+                });
+            }
+        }
+    });
+    $('button#recommendButton').click(function() {
+        var toRecommend = $.trim($("#intermediatesTypeAhead").val());
+        $("#intermediatesTypeAhead").val("");
+        var compositionRegExp = /^\[{1}.+\]$/;
+        if (compositionRegExp.test(toRecommend)) {
+            //TODO do more validation on toRequire to make sure it's valid
+            //remove toRequire from other intermediates lists
+            $('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toRecommend + '")').remove();
+            $('#selectedIntermediates div div div ul#discouragedList li:contains("' + toRecommend + '")').remove();
+            $('#selectedIntermediates div div div ul#requiredList li:contains("' + toRecommend + '")').remove();
+            if ($('#selectedIntermediates div div div ul#recommendedList li:contains("' + toRecommend + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#recommendedList').append('<li><span class="label">' + toRecommend + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+                $('a.close').on("click", function() {
+                    $(this).parent().remove();
+                });
+            }
+        }
+    });
+    $('button#discourageButton').click(function() {
+        var toDiscourage = $.trim($("#intermediatesTypeAhead").val());
+        $("#intermediatesTypeAhead").val("");
+        var compositionRegExp = /^\[{1}.+\]$/;
+        if (compositionRegExp.test(toDiscourage)) {
+            //TODO do more validation on toRequire to make sure it's valid
+            //remove toRequire from other intermediates lists
+            $('#selectedIntermediates div div div ul#forbiddenList li:contains("' + toDiscourage + '")').remove();
+            $('#selectedIntermediates div div div ul#requiredList li:contains("' + toDiscourage + '")').remove();
+            $('#selectedIntermediates div div div ul#recommendedList li:contains("' + toDiscourage + '")').remove();
+            if ($('#selectedIntermediates div div div ul#discouragedList li:contains("' + toDiscourage + '")').length === 0) {
+                $('#selectedIntermediates div div div ul#discouragedList').append('<li><span class="label">' + toDiscourage + '<a class="close pull-right"><i class="icon-remove-circle"></i></a></span></li>');
+                $('a.close').on("click", function() {
+                    $(this).parent().remove();
+                });
+            }
+        }
+    });
+
+
     $('#sidebar').click(function() {
         $('#designTabHeader a:first').tab('show');
     });
@@ -24,7 +98,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     $('.minusEfficiencyButton').click(function() {
         if ($('#methodTabs div.active table tbody tr').length > 1) {
             $('#methodTabs div.active table tbody tr').last().remove();
-        }        
+        }
     });
     //target part button event handlers
     $('#targetSelectAllButton').click(function() {
@@ -34,7 +108,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#targetPartList').append($('#availableTargetPartList option'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     $('#targetDeselectAllButton').click(function() {
         $("#targetPartList option").each(function() {
@@ -43,7 +118,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#availableTargetPartList').append($('#targetPartList option'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     $('#targetSelectButton').click(function() {
         $('#availableTargetPartList :selected').each(function() {
@@ -52,7 +128,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#targetPartList').append($('#availableTargetPartList :selected'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     $('#targetDeselectButton').click(function() {
         $('#targetPartList :selected').each(function() {
@@ -61,7 +138,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#availableTargetPartList').append($('#targetPartList :selected'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     //library part button event handlers
     $('#libraryPartSelectAllButton').click(function() {
@@ -71,7 +149,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#libraryPartList').append($('#availableLibraryPartList option'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     $('#libraryPartDeselectAllButton').click(function() {
         $('#libraryPartList option.composite').each(function() {
@@ -79,7 +158,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#availableLibraryPartList').append($('#libraryPartList option'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     $('#libraryPartSelectButton').click(function() {
         $('#availableLibraryPartList :selected').each(function() {
@@ -88,7 +168,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#libraryPartList').append($('#availableLibraryPartList :selected'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     $('#libraryPartDeselectButton').click(function() {
         $('#libraryPartList :selected.composite').each(function() {
@@ -96,7 +177,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         $('#availableLibraryPartList').append($('#libraryPartList :selected'));
         sortPartLists();
-        drawIntermediates();
+        //drawIntermediates();
+        refreshIntermediatesTypeAhead();
     });
     $('#libraryVectorSelectAllButton').click(function() {
         $('#libraryVectorList').append($('#availableLibraryVectorList option'));
@@ -116,6 +198,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     });
     $('#resetIntermediatesButton').click(function() {
         $(':checked').attr("checked", false);
+        refreshIntermediatesTypeAhead();
     });
     $('.btn').click(function() {
         updateSummary();
@@ -440,6 +523,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#targetPartList').html("");
         $('#availableLibraryPartList').html(targetListBody);
         $('#availableLibraryVectorList').html("");
+        sortPartLists();
+        sortVectorLists();
     };
     var getData = function() {
         $.getJSON("RavenServlet", {"command": "fetch"}, function(json) {
@@ -454,6 +539,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
     };
     refreshData();
+
+    //generates all intermediates for input composition
     var generateIntermediates = function(composition) {
         var toSplit = composition.substring(1, composition.length - 1);
         var toReturn = [];
@@ -479,6 +566,49 @@ $(document).ready(function() { //don't run javascript until page is loaded
         }
         return toReturn;
     };
+
+    //generates typeahead items for input composition
+    var generateIntermediateTokens = function(composition) {
+        var toSplit = composition.substring(1, composition.length - 1);
+        var toReturn = [];
+        var compositionArray = toSplit.split(",");
+        var seenIntermediates = {};
+        for (var start = 0; start < compositionArray.length; start++) {
+            for (var end = start + 1; end < compositionArray.length + 1; end++) {
+                var intermediate = compositionArray.slice(start, end);
+                var name = "";
+                if (intermediate.length > 1) {
+                    for (var i = 0; i < intermediate.length; i++) {
+                        name = name + intermediate[i] + ",";
+                    }
+                    name = "[" + name.substring(0, name.length - 1).trim() + "]";
+                    if (name !== composition) {
+                        if (seenIntermediates[name] !== "seen") {
+                            seenIntermediates[name] = "seen";
+                            toReturn.push(name);
+                        }
+                    }
+                }
+            }
+        }
+        return toReturn;
+    };
+
+    var refreshIntermediatesTypeAhead = function() {
+        var targets = "";
+        var source = [];
+        $("#targetPartList option").each(function() {
+            targets = targets + "\n" + uuidCompositionHash[$(this).attr("id")];
+            var intermediates = generateIntermediateTokens(uuidCompositionHash[$(this).attr("id")]);
+            source = source.concat(intermediates);
+        });
+        var typeahead = $('#intermediatesTypeAhead').data('typeahead');
+        if (typeahead)
+            typeahead.source = source;
+        else
+            $('#intermediatesTypeAhead').typeahead({source: source});
+    };
+
     var drawIntermediates = function() {
         var targets = "";
         var tableBody = "<table id='intermediateTable' class='table table-bordered table-hover'><thead>"
@@ -486,45 +616,20 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var seen = {};
         $("#targetPartList option").each(function() {
             targets = targets + "\n" + uuidCompositionHash[$(this).attr("id")];
-//            var intermediates = generateIntermediates(uuidCompositionHash[$(this).attr("id")]);
-//            $.each(intermediates, function() {
-//                if (seen[this] !== "seen") {
-//                    tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this
-//                            + '"></td><td><input class="required" type="checkbox" value="' + this
-//                            + '"></td><td><input class="forbidden" type="checkbox" value="' + this
-//                            + '"></td><td><input class="discouraged" type="checkbox" value="' + this
-//                            + '"></td></tr>';
-//                    seen[this] = "seen";
-//                }
-//            });
+            var intermediates = generateIntermediates(uuidCompositionHash[$(this).attr("id")]);
+            $.each(intermediates, function() {
+                if (seen[this] !== "seen") {
+                    tableBody = tableBody + '<tr><td>' + this + '<td><input class="recommended" type="checkbox" value="' + this
+                            + '"></td><td><input class="required" type="checkbox" value="' + this
+                            + '"></td><td><input class="forbidden" type="checkbox" value="' + this
+                            + '"></td><td><input class="discouraged" type="checkbox" value="' + this
+                            + '"></td></tr>';
+                    seen[this] = "seen";
+                }
+            });
         });
         seen = null;
         tableBody = tableBody + '</tbody>';
-        $('#intermediateTableArea').html(tableBody);
-        $('input.forbidden').click(function() {
-            if ($(this).is(":checked")) {
-                $('#intermediateTableArea input.required[value="' + $(this).val() + '"]').attr("checked", false);
-                $('#intermediateTableArea input.recommended[value="' + $(this).val() + '"]').attr("checked", false);
-            }
-        });
-        $('input.discouraged').click(function() {
-            if ($(this).is(":checked")) {
-                $('#intermediateTableArea input.required[value="' + $(this).val() + '"]').attr("checked", false);
-                $('#intermediateTableArea input.recommended[value="' + $(this).val() + '"]').attr("checked", false);
-            }
-        });
-        $('input.required').click(function() {
-            if ($(this).is(":checked")) {
-                $('#intermediateTableArea input.forbidden[value="' + $(this).val() + '"]').attr("checked", false);
-                $('#intermediateTableArea input.discouraged[value="' + $(this).val() + '"]').attr("checked", false);
-            }
-        });
-        $('input.recommended').click(function() {
-            if ($(this).is(":checked")) {
-                $('#intermediateTableArea input.forbidden[value="' + $(this).val() + '"]').attr("checked", false);
-                $('#intermediateTableArea input.discouraged[value="' + $(this).val() + '"]').attr("checked", false);
-            }
-        });
         $("#intermediateTable").dataTable({
             "sScrollY": "300px",
             "bPaginate": false,
@@ -560,41 +665,45 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
         });
         summary = summary + '<p>This is the efficiency matrix that you are using for your assembly</p>';
-        if ($('.recommended:checked').length > 0) {
+        var recommended = $('#selectedIntermediates div div div ul#recommendedList li');
+        if (recommended.length > 0) {
             summary = summary + '<p>The following intermediates are recommended:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
-            $('.recommended:checked').each(function() {
-                summary = summary + '<li>' + $(this).val() + '</li>';
+            recommended.each(function() {
+                summary = summary + '<li>' + $(this).text() + '</li>';
             });
             summary = summary + '</ul>';
         } else {
             summary = summary + '<p>No intermediates are recommended</p>';
         }
-        if ($('.required:checked').length > 0) {
+        var required = $('#selectedIntermediates div div div ul#requiredList li');
+        if (required.length > 0) {
             summary = summary + '<p>The following intermediates are required:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
-            $('.required:checked').each(function() {
-                summary = summary + '<li>' + $(this).val() + '</li>';
+            required.each(function() {
+                summary = summary + '<li>' + $(this).text() + '</li>';
             });
             summary = summary + '</ul>';
         } else {
             summary = summary + '<p>No intermediates are required</p>';
         }
-        if ($('.forbidden:checked').length > 0) {
+        var forbidden = $('#selectedIntermediates div div div ul#forbiddenList li');
+        if (forbidden.length > 0) {
             summary = summary + '<p>The following intermediates are forbidden:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
-            $('.forbidden:checked').each(function() {
-                summary = summary + '<li>' + $(this).val() + '</li>';
+            forbidden.each(function() {
+                summary = summary + '<li>' + $(this).text() + '</li>';
             });
             summary = summary + '</ul>';
         } else {
             summary = summary + '<p>No intermediates are forbidden</p>';
         }
-        if ($('.discouraged:checked').length > 0) {
+        var discouraged = $('#selectedIntermediates div div div ul#discouragedList li');
+        if (discouraged.length > 0) {
             summary = summary + '<p>The following intermediates are discouraged:</p>';
             summary = summary + '<ul>';
-            $('.discouraged:checked').each(function() {
-                summary = summary + '<li>' + $(this).val() + '</li>';
+            discouraged.each(function() {
+                summary = summary + '<li>' + $(this).text() + '</li>';
             });
             summary = summary + '</ul>';
         } else {

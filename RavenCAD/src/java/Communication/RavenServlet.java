@@ -168,7 +168,7 @@ public class RavenServlet extends HttpServlet {
                 out.write(responseString);
             
             } else if (command.equals("mail")) {
-                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
+//                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -259,7 +259,8 @@ public class RavenServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         processGetRequest(request, response);
     }
 
@@ -273,7 +274,8 @@ public class RavenServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         processPostRequest(request, response);
     }
 

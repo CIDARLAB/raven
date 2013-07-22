@@ -5,6 +5,7 @@
 package Communication;
 
 import Controller.accessibility.ClothoWriter;
+import Controller.accessibility.ClothoReader;
 import Controller.algorithms.modasm.*;
 import Controller.algorithms.nonmodasm.*;
 import Controller.datastructures.*;
@@ -154,6 +155,7 @@ public class RavenController {
             String RO = "";
             String LO = "";
             String type = "";
+            ArrayList<String> direction = new ArrayList<String>();
             for (int k = 0; k < tags.size(); k++) {
                 if (tags.get(k).startsWith("LO:")) {
                     LO = tags.get(k).substring(4);
@@ -161,17 +163,29 @@ public class RavenController {
                     RO = tags.get(k).substring(4);
                 } else if (tags.get(k).startsWith("Type:")) {
                     type = tags.get(k).substring(6);
+                } else if (tags.get(k).startsWith("Direction:")) {
+                    String dir = tags.get(k);
+                    direction = ClothoReader.parseTags(dir);
                 }
             }
             String composition = "";
+            
+            System.out.println("composition of p: " + p.getStringComposition());
+            System.out.println("name of p: " + p.getName());
+            
             if (p.isBasic()) {
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             } else {
                 composition = "";
                 type = "composite";
-                for (Part subpart : p.getComposition()) {
-                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang();
+                for (int i = 0; i < p.getComposition().size(); i++) {
+                    Part subpart = p.getComposition().get(i);
+                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(i);
                 }
+                
+                System.out.println("composition: " + composition);
+                
+                composition = composition.substring(1);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             }
             toReturn = toReturn
@@ -221,17 +235,17 @@ public class RavenController {
     //reset collector, all field variales, deletes all files in user's directory
     public void clearData() throws Exception {
         _collector.purge();
-        _goalParts = new HashMap<Part, ArrayList<Part>>();//key: target part, value: composition
-        _efficiency = new HashMap<Integer, Double>();
-        _required = new HashSet<String>();
-        _recommended = new HashSet<String>();
-        _discouraged = new HashSet<String>();
-        _forbidden = new HashSet<String>();
+        _goalParts = new HashMap();//key: target part, value: composition
+        _efficiency = new HashMap();
+        _required = new HashSet();
+        _recommended = new HashSet();
+        _discouraged = new HashSet();
+        _forbidden = new HashSet();
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
         forcedOverhangHash = new HashMap<String, ArrayList<String>>();
-        _partLibrary = new ArrayList<Part>();
-        _vectorLibrary = new ArrayList<Vector>();
+        _partLibrary = new ArrayList();
+        _vectorLibrary = new ArrayList();
         _instructions = "";
         _error = "";
 
@@ -248,6 +262,63 @@ public class RavenController {
         ArrayList<Part> allParts = _collector.getAllParts(false);
         for (Part p : allParts) {
             if (!p.isTransient()) {
+                
+                //Get the composition's overhangs and directions
+                ArrayList<Part> composition = p.getComposition();
+                ArrayList<String> compositions = new ArrayList<String>();
+                String bpDir = new String();
+                String bpLO = new String();
+                String bpRO = new String();
+                ArrayList<String> direction = new ArrayList<String>();
+
+                ArrayList<String> tags = p.getSearchTags();
+                for (String tag : tags) {
+                    if (tag.startsWith("Direction:")) {
+                        direction = ClothoReader.parseTags(tag);
+                    }
+                }
+                
+                if (composition.size() > 1) {
+                    for (int i = 0; i < composition.size(); i++) {
+                        Part part = composition.get(i);
+                        
+                        if (!direction.isEmpty()) {
+                            bpDir = direction.get(i);
+                        }
+                        
+                        ArrayList<String> searchTags = part.getSearchTags();
+                        String aPartComp;
+
+                        //Look at all of the search tags
+                        for (String tag : searchTags) {
+                            if (tag.startsWith("LO:")) {
+                                bpLO = tag.substring(4);
+                            } else if (tag.startsWith("RO:")) {
+                                bpRO = tag.substring(4);
+                            }
+                        }
+
+                        if (!bpDir.isEmpty()) {
+                            if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
+                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO + "|" + bpDir;
+                            } else {
+                                aPartComp = part.getName() + "|" + bpDir;
+                            }
+                        } else {
+                            if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
+                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO;
+                            } else {
+                                aPartComp = part.getName();
+                            }
+                        }
+                        compositions.add(aPartComp);
+                    }
+                } else {
+                    compositions.add(p.getName());
+                }
+                
+                System.out.println("FETCH METHOD CALLED FOR TABLE UPLOAD");
+                
                 toReturn = toReturn
                         + "{\"uuid\":\"" + p.getUUID()
                         + "\",\"Name\":\"" + p.getName()
@@ -255,7 +326,7 @@ public class RavenController {
                         + "\",\"LO\":\"" + p.getLeftOverhang()
                         + "\",\"RO\":\"" + p.getRightOverhang()
                         + "\",\"Type\":\"" + p.getType()
-                        + "\",\"Composition\":\"" + p.getStringComposition()
+                        + "\",\"Composition\":\"" + compositions
                         + "\",\"Resistance\":\"\",\"Level\":\"\"},";
             }
         }
@@ -358,7 +429,7 @@ public class RavenController {
                     String leftOverhang = tokens[2].trim();
                     String rightOverhang = tokens[3].trim();
                     String resistance = tokens[5].toLowerCase().trim();
-                    int level = -1;
+                    int level;
                     try {
                         level = Integer.parseInt(tokens[6]);
                     } catch (NumberFormatException e) {
@@ -458,11 +529,12 @@ public class RavenController {
                         }
                     }
 
-                    directions.add(bpDirection);
+                    directions.add(bpDirection);                    
                     composition.add(_collector.getPartByName(basicPartName, true));
                 }
 
                 Part newComposite = Part.generateComposite(composition, name);
+                System.out.println("parsed directions: " + directions);
                 newComposite.addSearchTag("Direction: " + directions);
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
@@ -584,8 +656,8 @@ public class RavenController {
         _forbidden = forbidden;
         _discouraged = discouraged;
         _statistics = new Statistics();
-        _vectorLibrary = new ArrayList<Vector>();
-        _partLibrary = new ArrayList<Part>();
+        _vectorLibrary = new ArrayList();
+        _partLibrary = new ArrayList();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
