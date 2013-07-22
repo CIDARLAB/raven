@@ -101,6 +101,8 @@ public class SRSMoClo extends SRSGeneral {
                         for (ArrayList<String> cartesianAssignment : optimalAssignments) {
                             cartesianOverhangs.put(root.getComposition().toString(), cartesianAssignment);
                             HashMap<String, String> graphOverhangAssignment = assignOverhangs(optimalGraphs, cartesianOverhangs);
+                            //force overhangs each time
+                            graphOverhangAssignment.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
                             //traverse graph and assign overhangs
                             ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
                             HashSet<SRSNode> seenNodes = new HashSet();
@@ -134,10 +136,10 @@ public class SRSMoClo extends SRSGeneral {
                     }
 
                 }
-
-                finalOverhangHash.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
+//                finalOverhangHash.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
                 //regular asssignment for graphs with no cartesian assignment
                 minimizeOverhangs(nonCartesianGraphs);
+//                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
                 optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
             } else {
                 //if we're not doing the cartesian product or the cartesian products are wrong
@@ -571,16 +573,20 @@ public class SRSMoClo extends SRSGeneral {
                 SRSNode parent = _parentHash.get(currentNode);
 
                 if (reservedLeftOverhangs != null) {
-                    freeLeftOverhangs.addAll(reservedLeftOverhangs);
-                    Collections.sort(freeLeftOverhangs);
+                    Collections.sort(reservedLeftOverhangs);
+                    freeLeftOverhangs.addAll(0,reservedLeftOverhangs);
+//                    freeLeftOverhangs.addAll(reservedLeftOverhangs);
+//                    Collections.sort(freeLeftOverhangs);
                 } else {
                     reservedLeftOverhangs = new ArrayList();
                     reservedLeftFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
                 }
 
                 if (reservedRightOverhangs != null) {
-                    freeRightOverhangs.addAll(reservedRightOverhangs);
-                    Collections.sort(freeRightOverhangs);
+                    Collections.sort(reservedRightOverhangs);
+                    freeRightOverhangs.addAll(0,reservedRightOverhangs);
+//                    freeRightOverhangs.addAll(reservedRightOverhangs);
+//                    Collections.sort(freeRightOverhangs);
                 } else {
                     reservedRightOverhangs = new ArrayList();
                     reservedRightFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
