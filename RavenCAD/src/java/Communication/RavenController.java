@@ -172,6 +172,7 @@ public class RavenController {
             
             System.out.println("composition of p: " + p.getStringComposition());
             System.out.println("name of p: " + p.getName());
+            System.out.println("direction: " + direction);
             
             if (p.isBasic()) {
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);

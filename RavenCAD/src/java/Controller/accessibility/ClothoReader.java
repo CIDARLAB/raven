@@ -258,7 +258,15 @@ public class ClothoReader {
     /** Parse type search tags from a string into an ArrayList **/
     public static ArrayList<String> parseTags(String tag) {
         ArrayList<String> list = new ArrayList<String>();
-//        System.out.println(tag);
+//        tag.replaceAll("\\[", "");
+//        tag.replaceAll("\\]", "");
+//        tag = tag.substring(tag.indexOf(":") + 2, tag.length());
+//        String[] tokens = tag.split(",");
+//        for (String token : tokens) {
+//            list.add(token);
+//        }
+        
+        //        System.out.println(tag);
         
         if (tag.charAt(tag.length()-1) == ']') {
             tag = tag.substring(0,tag.length()-1);
