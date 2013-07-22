@@ -324,7 +324,7 @@ public class ClothoWriter {
             ArrayList<SRSNode> neighbors = current.getNeighbors();
             
             //second part of if statement is for library parts with large compositions but no child neighbors
-            if ((currentPart.isComposite() || current.getNeighbors().size()>=currentPart.getComposition().size()) && current.getStage()>0) {
+            if ((currentPart.isComposite() || current.getNeighbors().size()>=currentPart.getComposition().size()) && current.getStage()>0 ) {
                 ArrayList<Part> composition = new ArrayList();
                 for (SRSNode neighbor : neighbors) {
                     if (current.getStage() > neighbor.getStage()) {
