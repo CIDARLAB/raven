@@ -46,7 +46,7 @@ public class RMoClo extends RGeneral {
             _maxNeighbors = max;
 
             //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
+            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
             ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            

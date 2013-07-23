@@ -50,6 +50,7 @@ public class ClothoReader {
 
                     //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
                     ArrayList<String> composition = new ArrayList<String>();
+                    ArrayList<String> direction = new ArrayList<String>();
                     composition.add(basicParts.get(i).getName());
                     ArrayList<String> sTags = basicParts.get(i).getSearchTags();
                     ArrayList<String> type = new ArrayList<String>();
@@ -66,8 +67,12 @@ public class ClothoReader {
                     RNode root = newBasicGraph.getRootNode();
                     root.setName(basicParts.get(i).getName());
                     root.setComposition(composition);
+                    root.setDirection(direction);
                     root.setType(type);
-                    library.put(root.getComposition().toString(), newBasicGraph);
+                    
+                    System.out.println("Putting basic part in library: " + composition.toString() + direction.toString());
+                    
+                    library.put(composition.toString(), newBasicGraph);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -148,7 +153,10 @@ public class ClothoReader {
                     }
 
                     //Put library part into library for assembly
-                    library.put(libraryPartGraph.getRootNode().getComposition().toString(), libraryPartGraph);
+                    
+                    System.out.println("Putting composite part in library: " + composition.toString() + direction.toString());
+                    
+                    library.put(composition.toString(), libraryPartGraph);
                 }
             }
         }
@@ -255,25 +263,19 @@ public class ClothoReader {
         return gpsNodes;
     }
 
-    /** Parse type search tags from a string into an ArrayList **/
+    /** Parse Clotho search tags from a string into an ArrayList **/
     public static ArrayList<String> parseTags(String tag) {
         ArrayList<String> list = new ArrayList<String>();
-//        tag.replaceAll("\\[", "");
-//        tag.replaceAll("\\]", "");
-//        tag = tag.substring(tag.indexOf(":") + 2, tag.length());
-//        String[] tokens = tag.split(",");
-//        for (String token : tokens) {
-//            list.add(token);
-//        }
         
-        //        System.out.println(tag);
-        
+        //Split any arraylist-like search tag
         if (tag.charAt(tag.length()-1) == ']') {
             tag = tag.substring(0,tag.length()-1);
             String[] tokens1 = tag.split("\\[");
             String splitTag = tokens1[1];
             String[] tokens = splitTag.split(",");
             ArrayList<String> trimmedTokens = new ArrayList<String>();
+            
+            //Trim tokens to add to final list
             for (String token : tokens) {
                 String trimmedToken = token.trim();
                 trimmedTokens.add(trimmedToken);

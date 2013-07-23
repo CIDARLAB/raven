@@ -567,8 +567,7 @@ public class RGraph {
                 pigeonLine.append("PIGEON_START\n");
                 pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
 
-                //Assign left overhang if it exists
-                
+                //Assign left overhang if it exists                
                 pigeonLine.append("5 ").append(currentPart.getLeftOverhang()).append("\n");
 
                 for (int i = 0; i < composition.size(); i++) {
@@ -620,7 +619,6 @@ public class RGraph {
 
                 //Assign right overhang
                 pigeonLine.append("3 ").append(currentPart.getRightOverhang()).append("\n");
-
                 pigeonLine.append("# Arcs\n");
                 pigeonLine.append("PIGEON_END\n\n");
                 weyekinText.append(pigeonLine.toString());
@@ -632,8 +630,6 @@ public class RGraph {
                 weyekinText.append("\"").append(coll.getPart(key, true).getStringComposition()).append("\"" + " [shape=box, color=\"#B293C9\", style=\"filled,rounded\"]" + "\n");
             }
         }
-
-
 
         //Write edge lines
         weyekinText.append(edgeLines);
@@ -655,6 +651,7 @@ public class RGraph {
         }
         ArrayList<String> keyLines = new ArrayList<String>(); //stores the lines in all of the keys
         HashSet<String> seenArcLines = new HashSet(); //stores arc lines
+        
         //Iterate through each arc file; each one is represented by a string
         for (String inputFile : inputFiles) {
             String[] lines = inputFile.split("\n"); //should split file into separate lines
@@ -664,6 +661,7 @@ public class RGraph {
             for (int j = 2; j < 4; j++) {
                 header = header + lines[j] + "\n";
             }
+            
             //Apend to the key section
             for (int k = 4; k < lines.length; k++) {//first 4 lines are the header
                 if (lines[k].contains("# Key")) {

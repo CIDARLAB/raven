@@ -102,7 +102,8 @@ public class RGeneral extends Modularity {
             //Add pinned graph and graph for each intermediate part to our hash of pinned graphs
             //Also search through the subgraphs of the bestGraph to see if it has any basic parts
             boolean cantMake = true;
-            pinnedPartHash.put(pinnedGraph.getRootNode().getComposition().toString(), pinnedGraph.clone());
+            RNode pinnedRoot = pinnedGraph.getRootNode();
+            pinnedPartHash.put(pinnedRoot.getComposition().toString(), pinnedGraph.clone());
             
             if (!pinnedGraph.getSubGraphs().isEmpty()) {
                 cantMake = false;
@@ -112,7 +113,8 @@ public class RGeneral extends Modularity {
                 RGraph subGraph = pinnedGraph.getSubGraphs().get(k);
                 RGraph subGraphClone = subGraph.clone();
                 subGraphClone.pin();
-                pinnedPartHash.put(subGraph.getRootNode().getComposition().toString(), subGraphClone);
+                RNode subGraphRoot = subGraph.getRootNode();
+                pinnedPartHash.put(subGraphRoot.getComposition().toString(), subGraphClone);
 
                 //If a basic part is seen in the solution graph
                 if (subGraph.getRootNode().getStage() > 0) {
@@ -166,12 +168,26 @@ public class RGeneral extends Modularity {
         if (modularityHash == null) {
             modularityHash = new HashMap<Integer, HashMap<String, Double>>();
         }
-
-//        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
         
-        //Memoization Case - If graph already exists for this composition. This is the case for all basic parts and library parts
+        //        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
+        
+        //Memoization Case - If graph already exists for this composition and direction. This is always the case for basic parts and library parts
+        //Check to see if this solution has already been searched for cost in the opposite direction
+//        ArrayList<String> libRevComposition = goalPartNode.getComposition();
+//        Collections.reverse(libRevComposition);
+//        ArrayList<String> libRevDirection = goalPartNode.getDirection();
+//        Collections.reverse(libRevDirection);
+//        for (String aDir : libRevDirection) {
+//            if ("+".equals(aDir)) {
+//                aDir = "-";
+//            } else {
+//                aDir = "+";
+//            }
+//        }
+        
         if (partsHash.containsKey(goalPartNode.getComposition().toString())) {
-//            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
+            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
+            System.out.println("Composition and direction: " + goalPartNode.getComposition().toString() + goalPartNode.getDirection().toString());
             return partsHash.get(goalPartNode.getComposition().toString());
         }
         
@@ -351,9 +367,9 @@ public class RGeneral extends Modularity {
                 }
             }
         }        
-        
         //Save best graph for this intermediate
-        partsHash.put(bestGraph.getRootNode().getComposition().toString(), bestGraph);
+        RNode bestGraphRoot = bestGraph.getRootNode();
+        partsHash.put(bestGraphRoot.getComposition().toString(), bestGraph);
 
         //Return best graph for the initial goal part
         return bestGraph;
