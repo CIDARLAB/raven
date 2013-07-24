@@ -500,8 +500,8 @@ public class RavenController {
                 for (int i = 7; i < tokens.length; i++) {
                     String basicPartString = tokens[i].trim();
                     String[] partNameTokens = basicPartString.split("\\|");
-                    String bpForcedLeft = "";
-                    String bpForcedRight = "";
+                    String bpForcedLeft = " ";
+                    String bpForcedRight = " ";
                     String bpDirection = "+";
                      String compositePartName = tokens[0];
                     String basicPartName = partNameTokens[0];
