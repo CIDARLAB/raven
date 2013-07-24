@@ -116,12 +116,13 @@ public class RMoClo extends RGeneral {
     private void basicOverhangAssignment(ArrayList<RGraph> optimalGraphs) {
 
         encounteredCompositions = new HashSet();
-        parentHash = new HashMap(); //key: node, value: parent node
+        parentHash = new HashMap<RNode, RNode>(); //key: node, value: parent node
         HashMap<RNode, RNode> previousHash = new HashMap(); //key: node, value: sibling node on the "left"
         HashMap<RNode, RNode> nextHash = new HashMap(); //key: node, value: sibling node on the "right"
-        compositionLevelHash = new HashMap();
-        rootBasicNodeHash = new HashMap();
+        compositionLevelHash = new HashMap<String, Integer>();
+        rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
 
+        //Collecting rule-based information
         for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> queue = new ArrayList<RNode>();
             HashSet<RNode> seenNodes = new HashSet<RNode>();
@@ -165,12 +166,13 @@ public class RMoClo extends RGeneral {
 
         }
 
+        //Basic overhang assignment based upon information gathered in previous loop
         for (RGraph graph : optimalGraphs) {
 
-            HashMap<RNode, HashSet<String>> neighborConflictHash = new HashMap();
+            HashMap<RNode, HashSet<String>> neighborConflictHash = new HashMap<RNode, HashSet<String>>();
             RNode root = graph.getRootNode();
             neighborConflictHash.put(root, new HashSet());
-            HashSet<RNode> seenNodes = new HashSet();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
             ArrayList<RNode> queue = new ArrayList<RNode>();
             queue.add(root);
 
@@ -178,8 +180,6 @@ public class RMoClo extends RGeneral {
             root.setLOverhang(randIndex);
             randIndex = String.valueOf((int) (Math.random() * ((1000000000 - 1) + 1)));
             root.setROverhang(randIndex);
-            ArrayList<String> toAdd = new ArrayList();
-            toAdd.add(root.getLOverhang() + "|" + root.getROverhang());
 
             //Travere the graph
             while (!queue.isEmpty()) {
@@ -207,7 +207,7 @@ public class RMoClo extends RGeneral {
                                 seenLast = true;
                             }
 
-                            //usual cases for assigning left overhang
+                            //assigning left overhang
                             if (currentNode.getLOverhang().equals("")) {
                                 if (!seenFirst) {
                                     //first part automatically gets left overhang of parent
@@ -218,7 +218,7 @@ public class RMoClo extends RGeneral {
                                 }
                             }
 
-                            //usual cases for assigning right overhang
+                            //assigning right overhang
                             if (currentNode.getROverhang().equals("")) {
                                 if (seenLast) {
 
@@ -272,6 +272,9 @@ public class RMoClo extends RGeneral {
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A_,B_,C_,D_,E_,G_,H_,I_,J_,K_,L_,M_,N_,O_,P_,Q_,R_,S_,T_,U_,V_,W_,X_,Y_,Z_,a_,b_,c_,d_,e_,f_,g_,h_,i_,j_,k_,l_,m_,n_,o_,p_,q_,r_,s_,t_,u_,v_,w_,x_,y_,z_".split(","))); //overhangs that don't exist in part or vector library
         //aa_,ba_,ca_,da_,ea_,fa_,ga_,ha_,ia_,ja_,ka_,la_,ma_,na_,oa_,pa_,qa_,ra_,sa_,ta_,ua_,va_,wa_,xa_,ya_,za_,ab_,bb_,cb_,db_,eb_,fb_,gb_,hb_,ib_,jb_,kb_,lb_,mb_,nb_,ob_,pb_,qb_,rb_,sb_,tb_,ub_,vb_,wb_,xb_,yb_,zb_
 
+        //Selects overhangs for level 0 parts
+        //Sharing determined in this loop
+        //All of the work done in this loop
         for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
 
@@ -374,6 +377,7 @@ public class RMoClo extends RGeneral {
             }
         }
 
+        //All the work actually assigned to nodes in this loop
         for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> queue = new ArrayList<RNode>();
             HashSet<RNode> seenNodes = new HashSet<RNode>();
@@ -427,10 +431,11 @@ public class RMoClo extends RGeneral {
     }
 
     //optimizes overhang assignment based on frequency of a parts appearance and the availability of existing overhangs
-//concurrent optimizes vector assignment based on vector assignment
-//prioritize existing parts with correct overhangs
-//next priority is overhangs that vectors already have
+    //concurrent optimizes vector assignment based on vector assignment
+    //prioritize existing parts with correct overhangs
+    //next priority is overhangs that vectors already have
     private void optimizeOverhangVectors(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet) {
+
         HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
         finalOverhangHash = preAssignOverhangs(optimalGraphs);
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library

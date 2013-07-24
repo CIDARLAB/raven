@@ -186,8 +186,7 @@ public class RGeneral extends Modularity {
 //        }
         
         if (partsHash.containsKey(goalPartNode.getComposition().toString())) {
-            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
-            System.out.println("Composition and direction: " + goalPartNode.getComposition().toString() + goalPartNode.getDirection().toString());
+//            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
             return partsHash.get(goalPartNode.getComposition().toString());
         }
         
