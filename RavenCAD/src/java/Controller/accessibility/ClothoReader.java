@@ -70,8 +70,6 @@ public class ClothoReader {
                     root.setDirection(direction);
                     root.setType(type);
                     
-                    System.out.println("Putting basic part in library: " + composition.toString() + direction.toString());
-                    
                     library.put(composition.toString(), newBasicGraph);
                 }
             } catch (Exception e) {
@@ -152,10 +150,7 @@ public class ClothoReader {
                         libraryPartGraph.getRootNode().setDiscouraged(true);
                     }
 
-                    //Put library part into library for assembly
-                    
-                    System.out.println("Putting composite part in library: " + composition.toString() + direction.toString());
-                    
+                    //Put library part into library for assembly                   
                     library.put(composition.toString(), libraryPartGraph);
                 }
             }

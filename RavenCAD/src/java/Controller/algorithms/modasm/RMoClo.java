@@ -68,7 +68,6 @@ public class RMoClo extends RGeneral {
             //Run SDS Algorithm for multiple parts
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
             boolean tryCartesian = false;
-//            basicOverhangAssignment(optimalGraphs);
             enforceOverhangRules(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
@@ -167,8 +166,7 @@ public class RMoClo extends RGeneral {
         _encounteredCompositions = new HashSet<String>();
         _parentHash = new HashMap<RNode, RNode>(); //key: node, value: parent node
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>(); //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
-        _compositionLevelHash = new HashMap<String, Integer>();
-        int count = 0;
+        _countOH = 0;
         
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
@@ -177,18 +175,17 @@ public class RMoClo extends RGeneral {
             ArrayList<RNode> l0nodes= new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
             _encounteredCompositions.add(root.getComposition().toString());
-            root.setLOverhang(Integer.toString(count));
-            count++;
-            root.setROverhang(Integer.toString(count));
-            count++;
+            root.setLOverhang(Integer.toString(_countOH));
+            _countOH++;
+            root.setROverhang(Integer.toString(_countOH));
+            _countOH++;
             ArrayList<RNode> neighbors = root.getNeighbors();
-            
-            enforceOverhangRulesHelper(root, neighbors, count, root);
+            enforceOverhangRulesHelper(root, neighbors, root);
         }
     }
     
     /** This helper method executes the loops necessary to enforce overhangs for each graph in enforceOverhangRules **/
-    private void enforceOverhangRulesHelper (RNode parent, ArrayList<RNode> children, int count, RNode root) {
+    private void enforceOverhangRulesHelper (RNode parent, ArrayList<RNode> children, RNode root) {
         
         String nextLOverhang = new String();
         
@@ -213,16 +210,16 @@ public class RMoClo extends RGeneral {
                     child.setLOverhang(nextLOverhang);
                     nextLOverhang = "";
                 } else {
-                    child.setLOverhang(Integer.toString(count));
-                    count++;
+                    child.setLOverhang(Integer.toString(_countOH));
+                    _countOH++;
                 }                
             }
 
             //Assign new right overhang if empty
             if (child.getROverhang().isEmpty()) {
-                child.setROverhang(Integer.toString(count));
-                nextLOverhang = Integer.toString(count);
-                count++;
+                child.setROverhang(Integer.toString(_countOH));
+                nextLOverhang = Integer.toString(_countOH);
+                _countOH++;
             }
 
             //Make recursive call
@@ -234,7 +231,7 @@ public class RMoClo extends RGeneral {
                 if (grandChildren.contains(parent)) {
                     grandChildren.remove(parent);
                 }
-                enforceOverhangRulesHelper(child, grandChildren, count, root);
+                enforceOverhangRulesHelper(child, grandChildren, root);
             
             //Or record the level zero parts
             } else {
@@ -375,7 +372,7 @@ public class RMoClo extends RGeneral {
                 queue.remove(0);
                 currentNode.setLOverhang(numberToLetterOverhangHash.get(currentNode.getLOverhang()));
                 currentNode.setROverhang(numberToLetterOverhangHash.get(currentNode.getROverhang()));
-                _compositionLevelHash.put(currentNode.getComposition() + "|" + currentNode.getROverhang() + "|" + currentNode.getLOverhang(), currentNode.getStage());
+//                _compositionLevelHash.put(currentNode.getComposition() + "|" + currentNode.getROverhang() + "|" + currentNode.getLOverhang(), currentNode.getStage());
                 seenNodes.add(currentNode);
                 ArrayList<RNode> neighbors = currentNode.getNeighbors();
 
@@ -417,9 +414,9 @@ public class RMoClo extends RGeneral {
     }
 
     //optimizes overhang assignment based on frequency of a parts appearance and the availability of existing overhangs
-    //concurrent optimizes vector assignment based on vector assignment
-    //prioritize existing parts with correct overhangs
-    //next priority is overhangs that vectors already have
+//concurrent optimizes vector assignment based on vector assignment
+//prioritize existing parts with correct overhangs
+//next priority is overhangs that vectors already have
     private void optimizeOverhangVectors(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet, HashMap<String, String> finalOverhangHash) {
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za
@@ -1038,6 +1035,7 @@ public class RMoClo extends RGeneral {
     private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private HashMap<String, Integer> _compositionLevelHash; //key: string composition with overhangs, value; arrayList of nodes with the given composition
+    private int _countOH;
     private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap(); //key: composite part composition
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
     private ArrayList<Part> _partLibrary = new ArrayList();
