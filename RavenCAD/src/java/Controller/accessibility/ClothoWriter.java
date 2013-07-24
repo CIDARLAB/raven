@@ -22,17 +22,17 @@ public class ClothoWriter {
     }
 
     /** Generate Clotho parts with uuids from intermediates without uuids **/
-    public void nodesToClothoPartsVectors(Collector coll, SRSGraph graph) throws Exception {
+    public void nodesToClothoPartsVectors(Collector coll, RGraph graph) throws Exception {
         String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
-        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-        HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
+        HashSet<RNode> seenNodes = new HashSet<RNode>();
         queue.add(graph.getRootNode());
         
         while (!queue.isEmpty()) {
-            SRSNode currentNode = queue.get(0);
+            RNode currentNode = queue.get(0);
             seenNodes.add(currentNode);
             queue.remove(0);
-            for (SRSNode neighbor : currentNode.getNeighbors()) {
+            for (RNode neighbor : currentNode.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -53,7 +53,7 @@ public class ClothoWriter {
                 String RO = currentNode.getROverhang();
 
                 //If there's overhangs, add search tags
-                Part newPart = generateNewClothoPart(coll, partName, "", currentNode.getComposition(), LO, RO);
+                Part newPart = generateNewClothoPart(coll, partName, "", currentNode.getComposition(), currentNode.getDirection(), LO, RO);
                 newPart.addSearchTag("Type: composite");
                 currentNode.setName(partName);
                 newPart.saveDefault(coll);
@@ -63,8 +63,9 @@ public class ClothoWriter {
 
             //create new part and change node uuid if overhangs not match
             Part currentPart = coll.getPart(currentNode.getUUID(), true);
-            boolean createNewPart = false;
             
+            //If a part with this composition and overhangs does not exist, a new part is needed
+            boolean createNewPart = false;
             if (currentPart != null) {
                 if (!currentNode.getLOverhang().equals(currentPart.getLeftOverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
                     createNewPart = true;
@@ -73,40 +74,46 @@ public class ClothoWriter {
                 createNewPart = true;
             }
             
+            //A new part must be created if one with the same composition and overhangs does not exist
             if (createNewPart) {
                 
                 //current part is not an exact match for the node in terms of over hang, find a better match or create a new part
-                Part betterPart = null;
+                Part newPart = null;
                 
                 if (currentPart != null) {
-                    betterPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang(), true); //search for a better match
+                    newPart = coll.getPartByName(currentPart.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang(), true); //search for a better match
                     
-                    if (betterPart == null || !currentNode.getLOverhang().equals(betterPart.getLeftOverhang()) || !currentNode.getROverhang().equals(betterPart.getRightOverhang())) {
+                    if (newPart == null || !currentNode.getLOverhang().equals(newPart.getLeftOverhang()) || !currentNode.getROverhang().equals(newPart.getRightOverhang())) {
                         
-                        //if no better part exists, create a new one
+                        //If a new part must be created
                         if (currentPart.isBasic()) {
-                            betterPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
+                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
 
                         } else if (currentPart.isComposite()) {
-                            betterPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
+                            newPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
                         }
                     }
-                    betterPart.addSearchTag("LO: " + currentNode.getLOverhang());
-                    betterPart.addSearchTag("RO: " + currentNode.getROverhang());
+                    
+                    newPart.addSearchTag("LO: " + currentNode.getLOverhang());
+                    newPart.addSearchTag("RO: " + currentNode.getROverhang());
                     String type = currentNode.getType().toString();
                     type = type.substring(1, type.length() - 1);
+                    
                     if (currentNode.getComposition().size() > 1) {
                         type = "composite";
+                        String direction = currentNode.getDirection().toString();
+                        newPart.addSearchTag("Direction: " + direction);
                     }
-                    betterPart.addSearchTag("Type: " + type);
-                    betterPart.saveDefault(coll);
+                    
+                    newPart.addSearchTag("Type: " + type);
+                    newPart.saveDefault(coll);
                 }
-                currentNode.setUUID(betterPart.getUUID());
+                currentNode.setUUID(newPart.getUUID());
             }
 
 
             //Get the vector and save a new vector if it does not have a uuid
-            SRSVector vector = currentNode.getVector();
+            RVector vector = currentNode.getVector();
             if (vector != null) {
                 
                 //Get new intermediate name
@@ -133,7 +140,7 @@ public class ClothoWriter {
     }
 
     /** Make intermediate parts of a graph into Clotho parts (typically only done for solution graphs) **/
-    private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> composition, String LO, String RO) throws Exception {
+    private Part generateNewClothoPart(Collector coll, String name, String description, ArrayList<String> composition, ArrayList<String> direction, String LO, String RO) throws Exception {
         if (_allCompositeParts.isEmpty() || _allBasicParts.isEmpty()) {
             refreshPartVectorList(coll);
         }
@@ -183,9 +190,12 @@ public class ClothoWriter {
             if (!RO.isEmpty()) {
                 newPart.addSearchTag("RO: " + RO);
             }
+            if (!direction.isEmpty()) {
+                newPart.addSearchTag("Direction: " + direction);
+            }
             return newPart;
 
-            //Make a new basic part
+        //Make a new basic part
         } else {
             Part newPart = Part.generateBasic(name, coll.getPart(composition.get(0), true).getSeq());
             if (!LO.isEmpty()) {
@@ -293,22 +303,22 @@ public class ClothoWriter {
     }
 
     /** Correct composite part UUIDs for Clotho export **/
-    public void fixCompositeUUIDs(Collector coll, SRSGraph graph) throws Exception {
+    public void fixCompositeUUIDs(Collector coll, RGraph graph) throws Exception {
         
-        ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-        HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-        SRSNode root = graph.getRootNode();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
+        HashSet<RNode> seenNodes = new HashSet<RNode>();
+        RNode root = graph.getRootNode();
         queue.add(root);
-        ArrayList<SRSNode> sortedQueue = new ArrayList();
+        ArrayList<RNode> sortedQueue = new ArrayList();
         sortedQueue.add(root);
         
         while (!queue.isEmpty()) {
-            SRSNode current = queue.get(0);
+            RNode current = queue.get(0);
             queue.remove(0);
             seenNodes.add(current);
-            ArrayList<SRSNode> neighbors = current.getNeighbors();
+            ArrayList<RNode> neighbors = current.getNeighbors();
             sortedQueue.add(0, current);
-            for (SRSNode neighbor : neighbors) {
+            for (RNode neighbor : neighbors) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
                 }
@@ -317,16 +327,16 @@ public class ClothoWriter {
         seenNodes.clear();
         
         while (!sortedQueue.isEmpty()) {
-            SRSNode current = sortedQueue.get(0);
+            RNode current = sortedQueue.get(0);
             sortedQueue.remove(0);
             seenNodes.add(current);
             Part currentPart = coll.getPart(current.getUUID(), true);
-            ArrayList<SRSNode> neighbors = current.getNeighbors();
+            ArrayList<RNode> neighbors = current.getNeighbors();
             
             //second part of if statement is for library parts with large compositions but no child neighbors
             if ((currentPart.isComposite() || current.getNeighbors().size()>=currentPart.getComposition().size()) && current.getStage()>0 ) {
                 ArrayList<Part> composition = new ArrayList();
-                for (SRSNode neighbor : neighbors) {
+                for (RNode neighbor : neighbors) {
                     if (current.getStage() > neighbor.getStage()) {
                         Part p= coll.getPart(neighbor.getUUID(),true);
                         composition.add(coll.getPart(neighbor.getUUID(), true));

@@ -5,14 +5,16 @@
 package Controller.accessibility;
 
 import Controller.datastructures.Part;
-import Controller.datastructures.SRSGraph;
-import Controller.datastructures.SRSNode;
-import Controller.datastructures.SRSVector;
+import Controller.datastructures.RestrictionEnzyme;
+import Controller.datastructures.RGraph;
+import Controller.datastructures.RNode;
+import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.regex.*;
 
 /**
  *
@@ -29,41 +31,48 @@ public class ClothoReader {
      */
     
     /** Given goal parts and library, create hashMem, key: composition with overhangs concatenated at the end, value: corresponding graph **/
-    public static HashMap<String, SRSGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
+    public static HashMap<String, RGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
 
         //Create library to initialize hashMem
-        HashMap<String, SRSGraph> library = new HashMap<String, SRSGraph>();
+        HashMap<String, RGraph> library = new HashMap<String, RGraph>();
 
-        //Add goal parts to memoization hash, making new nodes with only type and composition from library
+        //Add all basic parts in the goal parts to the memoization hash
         for (Part goalPart : goalParts) {
             try {
+                
+                //Add all basic parts to the memoization hash
                 ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
                 for (int i = 0; i < basicParts.size(); i++) {
 
                     //Initialize new graph for a basic part
-                    SRSGraph newBasicGraph = new SRSGraph();
+                    RGraph newBasicGraph = new RGraph();
                     newBasicGraph.getRootNode().setUUID(basicParts.get(i).getUUID());
 
                     //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
                     ArrayList<String> composition = new ArrayList<String>();
+                    ArrayList<String> direction = new ArrayList<String>();
                     composition.add(basicParts.get(i).getName());
                     ArrayList<String> sTags = basicParts.get(i).getSearchTags();
                     ArrayList<String> type = new ArrayList<String>();
 
                     for (int k = 0; k < sTags.size(); k++) {
-                        if (sTags.get(k).startsWith("Type:")) {
-                            String typeTag = sTags.get(k);
-                            ArrayList<String> types = parseTypeTags(typeTag);
-                            type.addAll(types);
+                        String tag = sTags.get(k);
+                        if (tag.startsWith("Type:")) {
+                            ArrayList<String> list = parseTags(tag);
+                            type.addAll(list);
                         }
                     }
 
                     //Set type and composition
-                    SRSNode root = newBasicGraph.getRootNode();
+                    RNode root = newBasicGraph.getRootNode();
                     root.setName(basicParts.get(i).getName());
                     root.setComposition(composition);
+                    root.setDirection(direction);
                     root.setType(type);
-                    library.put(root.getComposition().toString(), newBasicGraph);
+                    
+                    System.out.println("Putting basic part in library: " + composition.toString() + direction.toString());
+                    
+                    library.put(composition.toString(), newBasicGraph);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -85,29 +94,49 @@ public class ClothoReader {
 
                     //For all of this library part's components make new basic graph
                     ArrayList<String> type = new ArrayList<String>();
+                    ArrayList<String> direction = new ArrayList<String>();
                     ArrayList<String> composition = new ArrayList<String>();
-
-                    for (Part libPartComponent : libPartComposition) {
-                        ArrayList<String> sTags = libPartComponent.getSearchTags();
-                        composition.add(libPartComponent.getName());
-
-                        //If the part has search tags
-                        if (libPartComponent.getSearchTags() != null) {
-                            for (int j = 0; j < sTags.size(); j++) {
-                                if (sTags.get(j).startsWith("Type:")) {
-                                    String typeTag = sTags.get(j);
-                                    ArrayList<String> types = parseTypeTags(typeTag);
-                                    type.addAll(types);
-                                }
-                            }
+                    ArrayList<String> tags = libraryPart.getSearchTags();
+                  
+                    //Get direction
+                    for (String tag : tags) {
+                        if (tag.startsWith("Direction:")) {
+                            ArrayList<String> list = parseTags(tag);
+                            direction.addAll(list);
                         }
                     }
 
+                    //Get basic part types
+                    for (Part libPartComponent : libPartComposition) {
+                        ArrayList<String> sTags = libPartComponent.getSearchTags();
+                        composition.add(libPartComponent.getName());
+                        
+                        //If there was no direction found, all basic parts assumed to be forward
+                        if (libraryPart.isComposite()) {
+                            if (direction.isEmpty()) {
+                                direction.add("+");
+                            }
+                        }             
+
+                        if (libPartComponent.getSearchTags() != null) {
+                            for (int j = 0; j < sTags.size(); j++) {
+                                String tag = sTags.get(j);
+                                if (tag.startsWith("Type:")) {
+                                    ArrayList<String> list = parseTags(tag);
+                                    type.addAll(list);
+                                } 
+                            }                            
+                        }
+                    }
+
+//                    System.out.println("direction library: " + direction);
+                    
                     //Initialize new graph for library part
-                    SRSGraph libraryPartGraph = new SRSGraph();
+                    RGraph libraryPartGraph = new RGraph();
                     libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
                     libraryPartGraph.getRootNode().setComposition(composition);
                     libraryPartGraph.getRootNode().setType(type);
+                    libraryPartGraph.getRootNode().setDirection(direction);
                     libraryPartGraph.getRootNode().setName(libraryPart.getName());
 
 
@@ -124,7 +153,10 @@ public class ClothoReader {
                     }
 
                     //Put library part into library for assembly
-                    library.put(libraryPartGraph.getRootNode().getComposition().toString(), libraryPartGraph);
+                    
+                    System.out.println("Putting composite part in library: " + composition.toString() + direction.toString());
+                    
+                    library.put(composition.toString(), libraryPartGraph);
                 }
             }
         }
@@ -132,10 +164,10 @@ public class ClothoReader {
     }
 
     /** Given a vector library, create vectorHash **/
-    public static ArrayList<SRSVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
+    public static ArrayList<RVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
 
         //Initialize vector library
-        ArrayList<SRSVector> library = new ArrayList<SRSVector>();
+        ArrayList<RVector> library = new ArrayList<RVector>();
 
         //Provided there is an input vector library
         if (vectorLibrary != null) {
@@ -143,7 +175,7 @@ public class ClothoReader {
                 for (Vector aVector : vectorLibrary) {
 
                     //Initialize a new vector
-                    SRSVector vector = new SRSVector();
+                    RVector vector = new RVector();
 
                     //If there's search tags, find overhangs
                     if (aVector.getSearchTags() != null) {
@@ -181,47 +213,138 @@ public class ClothoReader {
     }
 
     /** Convert goal parts into SRS nodes for the algorithm **/
-    public static ArrayList<SRSNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
-        ArrayList<SRSNode> gpsNodes = new ArrayList<SRSNode>();
+    public static ArrayList<RNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
+        
+        ArrayList<RNode> gpsNodes = new ArrayList<RNode>();
         for (int i = 0; i < goalParts.size(); i++) {
-
+            
             //Get goal part's composition and type (part description type)
-            ArrayList<Part> basicParts = ClothoWriter.getComposition(goalParts.get(i));
+            Part goalPart = goalParts.get(i);
+            ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
             ArrayList<String> composition = new ArrayList<String>();
             ArrayList<String> type = new ArrayList<String>();
-            for (int j = 0; j < basicParts.size(); j++) {
-                composition.add(basicParts.get(j).getName());
-                ArrayList<String> sTags = basicParts.get(j).getSearchTags();
-                for (int k = 0; k < sTags.size(); k++) {
-                    if (sTags.get(k).startsWith("Type:")) {
-                        String typeTag = sTags.get(k);
-                        ArrayList<String> types = parseTypeTags(typeTag);
-                        type.addAll(types);
-
-                    }
+            ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> searchTags = goalPart.getSearchTags();
+            
+            //Get direction
+            for (String tag : searchTags) {
+                if (tag.startsWith("Direction:")) {
+                    ArrayList<String> list = parseTags(tag);
+                    direction.addAll(list);
                 }
             }
 
+            //Get basic part types
+            for (int j = 0; j < basicParts.size(); j++) {
+                composition.add(basicParts.get(j).getName());
+                ArrayList<String> sTags = basicParts.get(j).getSearchTags();
+                
+                //If there was no direction found, all basic parts assumed to be forward
+                if (direction.isEmpty()) {
+                    direction.add("+");
+                }
+
+                for (int k = 0; k < sTags.size(); k++) {
+                    String tag = sTags.get(k);
+                    if (tag.startsWith("Type:")) {
+                        ArrayList<String> list = parseTags(tag);
+                        type.addAll(list);
+                    } 
+                }
+            }
+
+//            System.out.println("direction gpsToNodes: " + direction);
+            
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            SRSNode gp = new SRSNode(false, false, null, composition, type, false);
+            RNode gp = new RNode(false, false, null, composition, direction, type, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
         return gpsNodes;
     }
 
-    /** Parse type search tags from a string into an ArrayList **/
-    public static ArrayList<String> parseTypeTags(String typeTag) {
-        ArrayList<String> types = new ArrayList<String>();
-        int length = typeTag.length();
-        if (typeTag.startsWith("Type:")) {
-            typeTag = typeTag.substring(6, length);
+    /** Parse Clotho search tags from a string into an ArrayList **/
+    public static ArrayList<String> parseTags(String tag) {
+        ArrayList<String> list = new ArrayList<String>();
+        
+        //Split any arraylist-like search tag
+        if (tag.charAt(tag.length()-1) == ']') {
+            tag = tag.substring(0,tag.length()-1);
+            String[] tokens1 = tag.split("\\[");
+            String splitTag = tokens1[1];
+            String[] tokens = splitTag.split(",");
+            ArrayList<String> trimmedTokens = new ArrayList<String>();
+            
+            //Trim tokens to add to final list
+            for (String token : tokens) {
+                String trimmedToken = token.trim();
+                trimmedTokens.add(trimmedToken);
+            }
+            list.addAll(trimmedTokens);
+        } else {
+            String[] tokens1 = tag.split(":");
+            String splitTag = tokens1[1];
+            splitTag = splitTag.trim();
+            list.add(splitTag);
         }
-        if (typeTag.startsWith("[")) {
-            typeTag = typeTag.substring(1, (length - 1));
+        
+        return list;
+    }
+    
+    //THIS NEXT METHOD USES RESTRICTION ENZYMES WHICH ARE OUTSIDE THE CLOTHO DATA MODEL, UNCLEAR WHERE THIS METHOD SHOULD GO
+    
+    /** Scan a set of parts for restriction sites **/
+    //HashMap<Part, HashMap<Restriction Enzyme name, ArrayList<ArrayList<Start site, End site>>>>
+    public static HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>> reSeqScan(ArrayList<Part> parts, ArrayList<RestrictionEnzyme> enzymes) {
+        
+        HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>> partEnzResSeqs = new HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>>();
+        
+        //For all parts
+        for (int i = 0; i < parts.size(); i++) {
+            Part part = parts.get(i);
+            String name = part.getName();
+            String seq = part.getSeq();
+            HashMap<String, ArrayList<ArrayList<Integer>>> detectedResSeqs = new HashMap<String, ArrayList<ArrayList<Integer>>>();
+            
+            //Look at each enzyme's cut sites
+            for (int j = 0; j < enzymes.size(); j++) {
+                ArrayList<ArrayList<Integer>> matchSites = new ArrayList<ArrayList<Integer>>();
+                RestrictionEnzyme enzyme = enzymes.get(j);
+                String enzName = enzyme.getName();
+                String fwdRec = enzyme.getFwdRecSeq();
+                String revRec = enzyme.getRevRecSeq();
+                
+                //Compile regular expressions
+                Pattern compileFwdRec = Pattern.compile(fwdRec, Pattern.CASE_INSENSITIVE);
+                Pattern compileRevRec = Pattern.compile(revRec, Pattern.CASE_INSENSITIVE);
+                Matcher matcherFwdRec = compileFwdRec.matcher(seq);
+                Matcher matcherRevRec = compileRevRec.matcher(seq);
+                
+                //Find matches of forward sequence
+                while (matcherFwdRec.find()) {
+                    ArrayList<Integer> matchIndexes = new ArrayList<Integer>(2);
+                    int start = matcherFwdRec.start();
+                    int end = matcherFwdRec.end();
+                    matchIndexes.add(start);
+                    matchIndexes.add(end);
+                    matchSites.add(matchIndexes);
+                }
+                
+                //Find matches of reverse sequence
+                while (matcherRevRec.find()) {
+                    ArrayList<Integer> matchIndexes = new ArrayList<Integer>(2);
+                    int start = matcherRevRec.start();
+                    int end = matcherRevRec.end();
+                    matchIndexes.add(start);
+                    matchIndexes.add(end);
+                    matchSites.add(matchIndexes);
+                }
+                
+                detectedResSeqs.put(enzName, matchSites);
+            }
+            partEnzResSeqs.put(part, detectedResSeqs);
         }
-        String[] tokens = typeTag.split(",");
-        types.addAll(Arrays.asList(tokens));
-        return types;
-    }    
+        
+        return partEnzResSeqs;
+    }
 }
