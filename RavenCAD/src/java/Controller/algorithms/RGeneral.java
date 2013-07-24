@@ -102,7 +102,8 @@ public class RGeneral extends Modularity {
             //Add pinned graph and graph for each intermediate part to our hash of pinned graphs
             //Also search through the subgraphs of the bestGraph to see if it has any basic parts
             boolean cantMake = true;
-            pinnedPartHash.put(pinnedGraph.getRootNode().getComposition().toString(), pinnedGraph.clone());
+            RNode pinnedRoot = pinnedGraph.getRootNode();
+            pinnedPartHash.put(pinnedRoot.getComposition().toString(), pinnedGraph.clone());
             
             if (!pinnedGraph.getSubGraphs().isEmpty()) {
                 cantMake = false;
@@ -112,7 +113,8 @@ public class RGeneral extends Modularity {
                 RGraph subGraph = pinnedGraph.getSubGraphs().get(k);
                 RGraph subGraphClone = subGraph.clone();
                 subGraphClone.pin();
-                pinnedPartHash.put(subGraph.getRootNode().getComposition().toString(), subGraphClone);
+                RNode subGraphRoot = subGraph.getRootNode();
+                pinnedPartHash.put(subGraphRoot.getComposition().toString(), subGraphClone);
 
                 //If a basic part is seen in the solution graph
                 if (subGraph.getRootNode().getStage() > 0) {
@@ -166,12 +168,26 @@ public class RGeneral extends Modularity {
         if (modularityHash == null) {
             modularityHash = new HashMap<Integer, HashMap<String, Double>>();
         }
-
-//        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
         
-        //Memoization Case - If graph already exists for this composition. This is the case for all basic parts and library parts
+        //        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
+        
+        //Memoization Case - If graph already exists for this composition and direction. This is always the case for basic parts and library parts
+        //Check to see if this solution has already been searched for cost in the opposite direction
+//        ArrayList<String> libRevComposition = goalPartNode.getComposition();
+//        Collections.reverse(libRevComposition);
+//        ArrayList<String> libRevDirection = goalPartNode.getDirection();
+//        Collections.reverse(libRevDirection);
+//        for (String aDir : libRevDirection) {
+//            if ("+".equals(aDir)) {
+//                aDir = "-";
+//            } else {
+//                aDir = "+";
+//            }
+//        }
+        
         if (partsHash.containsKey(goalPartNode.getComposition().toString())) {
-//            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
+            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
+            System.out.println("Composition and direction: " + goalPartNode.getComposition().toString() + goalPartNode.getDirection().toString());
             return partsHash.get(goalPartNode.getComposition().toString());
         }
         
@@ -183,7 +199,8 @@ public class RGeneral extends Modularity {
         int gpSize = goalPartNode.getComposition().size();
         ArrayList<String> gpComp = goalPartNode.getComposition();
         ArrayList<String> gpType = goalPartNode.getType();
-
+        ArrayList<String> gpDir = goalPartNode.getDirection();
+        
         //Create idexes for goal part
         ArrayList<Integer> indexes = new ArrayList<Integer>();
         for (int i = 1; i < gpSize; i++) {
@@ -282,15 +299,19 @@ public class RGeneral extends Modularity {
                 for (int n = 0; n < (thisPartition.length + 1); n++) {
                     ArrayList<String> type = new ArrayList<String>();
                     ArrayList<String> comp = new ArrayList<String>();
+                    ArrayList<String> dir = new ArrayList<String>();
                     if (n == 0) {
                         type.addAll(gpType.subList(0, thisPartition[n]));
                         comp.addAll(gpComp.subList(0, thisPartition[n]));
+                        dir.addAll(gpDir.subList(0, thisPartition[n]));
                     } else if (n == thisPartition.length) {
                         type.addAll(gpType.subList(thisPartition[n - 1], gpSize));
                         comp.addAll(gpComp.subList(thisPartition[n - 1], gpSize));
+                        dir.addAll(gpDir.subList(thisPartition[n - 1], gpSize));
                     } else {
                         type.addAll(gpType.subList(thisPartition[n - 1], thisPartition[n]));
                         comp.addAll(gpComp.subList(thisPartition[n - 1], thisPartition[n]));
+                        dir.addAll(gpDir.subList(thisPartition[n - 1], thisPartition[n]));
                     }
 
                     //If any of the compositions is in the forbidden hash, this partition will not work
@@ -303,7 +324,7 @@ public class RGeneral extends Modularity {
                     //If not, make the new RNode
                     boolean rec = recommended.contains(comp.toString());
                     boolean dis = discouraged.contains(comp.toString());
-                    RNode aSubPart = new RNode(rec, dis, null, comp, null, type, 0, 0);
+                    RNode aSubPart = new RNode(rec, dis, null, comp, dir, type, 0, 0);
                     allSubParts.add(aSubPart);
                 }
 
@@ -312,8 +333,16 @@ public class RGeneral extends Modularity {
                 if (canPartitionThis) {
                     canPartitionAny = true;
                     ArrayList<RGraph> toCombine = new ArrayList<RGraph>();
+                    
+                    //Recursive call
                     for (int o = 0; o < allSubParts.size(); o++) {
-                        RGraph solution = createAsmGraph_sgp(allSubParts.get(o), partsHash, null, required, recommended, forbidden, discouraged, slack - 1, sharingHash, modularityHash, efficiencies);
+                        RNode oneSubPart = allSubParts.get(o);
+                        RGraph solution = createAsmGraph_sgp(oneSubPart, partsHash, null, required, recommended, forbidden, discouraged, slack - 1, sharingHash, modularityHash, efficiencies);
+                        
+                        //Set the direction for basic parts... they do not have direction
+                        if (oneSubPart.getComposition().size() == 1) {
+                            solution.getRootNode().setDirection(oneSubPart.getDirection());
+                        }
                         toCombine.add(solution);
                     }
 
@@ -338,9 +367,9 @@ public class RGeneral extends Modularity {
                 }
             }
         }        
-        
         //Save best graph for this intermediate
-        partsHash.put(bestGraph.getRootNode().getComposition().toString(), bestGraph);
+        RNode bestGraphRoot = bestGraph.getRootNode();
+        partsHash.put(bestGraphRoot.getComposition().toString(), bestGraph);
 
         //Return best graph for the initial goal part
         return bestGraph;
@@ -420,14 +449,19 @@ public class RGeneral extends Modularity {
         RNode newRoot = new RNode();
         ArrayList<String> mergerComposition = new ArrayList<String>();
         ArrayList<String> mergerType = new ArrayList<String>();
+        ArrayList<String> mergerDirection = new ArrayList<String>();
+        
+        //Get all the children types, compositions and directions
         for (int i = 0; i < graphs.size(); i++) {
             RNode currentNeighbor = graphs.get(i).getRootNode();
             mergerComposition.addAll(currentNeighbor.getComposition());
             mergerType.addAll(currentNeighbor.getType());
+            mergerDirection.addAll(currentNeighbor.getDirection());
         }
         newRoot.setComposition(mergerComposition);
         newRoot.setType(mergerType);
-
+        newRoot.setDirection(mergerDirection);
+        
         //Clone all the nodes from graphs being combined and then add to new root node
         for (int j = 0; j < graphs.size(); j++) {
             RNode toAdd = graphs.get(j).getRootNode().clone();

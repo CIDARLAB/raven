@@ -46,7 +46,7 @@ public class RMoClo extends RGeneral {
             _maxNeighbors = max;
 
             //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
+            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
             ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
@@ -67,37 +67,90 @@ public class RMoClo extends RGeneral {
 
             //Run SDS Algorithm for multiple parts
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
-
-
-//            for (RGraph graph : optimalGraphs) {
-//                ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-//                HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-//                RNode root = graph.getRootNode();
-//                queue.add(root);
-//                while (!queue.isEmpty()) {
-//                    RNode current = queue.get(0);
-//                    queue.remove(0);
-//                    seenNodes.add(current);
-//
-//                    ArrayList<SRSNode> neighbors = current.getNeighbors();
-//                    for (RNode neighbor : neighbors) {
-//                        if (!seenNodes.contains(neighbor)) {
-//                            queue.add(neighbor);
-//                        }
-//                    }
-//                }
-//            }
-
+            boolean tryCartesian = true;
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
-            minimizeOverhangs(optimalGraphs);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nsecond pass: " + valid);
-            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nfinal pass: " + valid);
 
+            HashMap<String, String> finalOverhangHash = new HashMap();
+            if (tryCartesian) {
+                //gather some info
+                ArrayList<RGraph> nonCartesianGraphs = new ArrayList(); //graphs without valid cartesian products
+                HashMap<String, ArrayList<String>> availableOverhangs = new HashMap(); //key: composition, value: arrayList containing available overhangs
+                for (Part p : _partLibrary) {
+                    if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
+                        String composition = p.getStringComposition().toString();
+                        if (_encounteredCompositions.contains(composition)) {
+                            ArrayList<String> existingOverhangs = availableOverhangs.get(composition);
+                            if (existingOverhangs != null) {
+                                existingOverhangs.add(p.getLeftOverhang() + "|" + p.getRightOverhang());
+                            } else {
+                                availableOverhangs.put(composition, new ArrayList(Arrays.asList(new String[]{p.getLeftOverhang() + "|" + p.getRightOverhang()}))); //create new array list
+                            }
+                        }
+                    }
+                }
+                HashMap<String, ArrayList<String>> cartesianOverhangs = new HashMap();
+                for (RGraph graph : optimalGraphs) {
+                    RNode root = graph.getRootNode();
+                    ArrayList<RNode> composition = _rootBasicNodeHash.get(root);
+                    //use cartesian product methods to find an assignment
+                    ArrayList<ArrayList<String>> optimalAssignments = findOptimalAssignment(buildCartesianGraph(composition, availableOverhangs), composition.size());
+                    //iterate through each cartesian assignment and see if they are valid
+                    if (optimalAssignments.size() > 0) {
+                        for (ArrayList<String> cartesianAssignment : optimalAssignments) {
+                            cartesianOverhangs.put(root.getComposition().toString(), cartesianAssignment);
+                            HashMap<String, String> graphOverhangAssignment = assignOverhangs(optimalGraphs, cartesianOverhangs);
+                            //force overhangs each time
+                            graphOverhangAssignment.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
+                            //traverse graph and assign overhangs
+                            ArrayList<RNode> queue = new ArrayList<RNode>();
+                            HashSet<RNode> seenNodes = new HashSet();
+                            queue.add(graph.getRootNode());
+                            while (!queue.isEmpty()) {
+                                RNode current = queue.get(0);
+                                queue.remove(0);
+                                seenNodes.add(current);
+                                current.setLOverhang(graphOverhangAssignment.get(current.getLOverhang()));
+                                current.setROverhang(graphOverhangAssignment.get(current.getROverhang()));
+                                for (RNode neighbor : current.getNeighbors()) {
+                                    if (!seenNodes.contains(neighbor)) {
+                                        queue.add(neighbor);
+                                    }
+                                }
+                            }
+                            //if graph is valid, no need to check other cartesian assignments for graph
+                            //otherwise try another assignment
+                            if (validateOverhangs(optimalGraphs)) {
+                                finalOverhangHash.putAll(graphOverhangAssignment);
+                                break;
+                            }
+                            if (optimalAssignments.indexOf(cartesianAssignment) == optimalAssignments.size() - 1) {
+                                //if no cartesian assignments are valid, we have to do things the old fashioned way
+                                nonCartesianGraphs.add(graph);
+                            }
+                        }
+                    } else {
+                        nonCartesianGraphs.add(graph);
+                        //if no cartesian product then do things the old fashioned way
+                    }
+
+                }
+//                finalOverhangHash.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
+                //regular asssignment for graphs with no cartesian assignment
+                minimizeOverhangs(nonCartesianGraphs);
+//                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
+                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
+            } else {
+                //if we're not doing the cartesian product or the cartesian products are wrong
+                minimizeOverhangs(optimalGraphs);
+                valid = validateOverhangs(optimalGraphs);
+                System.out.println("##############################\nsecond pass: " + valid);
+                finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+                optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
+                valid = validateOverhangs(optimalGraphs);
+                System.out.println("##############################\nfinal pass: " + valid);
+            }
             return optimalGraphs;
         } catch (Exception E) {
             ArrayList<RGraph> blank = new ArrayList<RGraph>();
@@ -112,23 +165,23 @@ public class RMoClo extends RGeneral {
      */
     private void basicOverhangAssignment(ArrayList<RGraph> optimalGraphs) {
 
-        encounteredCompositions = new HashSet();
-        parentHash = new HashMap(); //key: node, value: parent node
+        _encounteredCompositions = new HashSet();
+        _parentHash = new HashMap(); //key: node, value: parent node
         HashMap<RNode, RNode> previousHash = new HashMap(); //key: node, value: sibling node on the "left"
         HashMap<RNode, RNode> nextHash = new HashMap(); //key: node, value: sibling node on the "right"
-        compositionLevelHash = new HashMap();
-        rootBasicNodeHash = new HashMap();
+        _compositionLevelHash = new HashMap();
+        _rootBasicNodeHash = new HashMap();
 
         for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> queue = new ArrayList<RNode>();
             HashSet<RNode> seenNodes = new HashSet<RNode>();
             RNode root = graph.getRootNode();
             queue.add(root);
-            parentHash.put(root, null);
+            _parentHash.put(root, null);
             previousHash.put(root, null);
             nextHash.put(root, null);
             ArrayList<RNode> basic = new ArrayList();
-            rootBasicNodeHash.put(root, basic);
+            _rootBasicNodeHash.put(root, basic);
 
             //Traverse the graph
             while (!queue.isEmpty()) {
@@ -139,7 +192,7 @@ public class RMoClo extends RGeneral {
                 seenNodes.add(current);
                 ArrayList<RNode> neighbors = current.getNeighbors();
                 RNode previous = null;
-                encounteredCompositions.add(current.getComposition().toString());
+                _encounteredCompositions.add(current.getComposition().toString());
 
                 for (RNode neighbor : neighbors) {
 
@@ -149,7 +202,7 @@ public class RMoClo extends RGeneral {
 
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
-                        parentHash.put(neighbor, current);
+                        _parentHash.put(neighbor, current);
                         previousHash.put(neighbor, previous);
 
                         if (previous != null) {
@@ -260,8 +313,8 @@ public class RMoClo extends RGeneral {
     }
 
     private void minimizeOverhangs(ArrayList<RGraph> optimalGraphs) {
-        abstractOverhangCompositionHash = new HashMap();
-        partOverhangFrequencyHash = new HashMap();
+        _abstractOverhangCompositionHash = new HashMap();
+        _partOverhangFrequencyHash = new HashMap();
         HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
         HashMap<String, ArrayList<String>> reservedRightAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
 
@@ -270,14 +323,14 @@ public class RMoClo extends RGeneral {
         //aa_,ba_,ca_,da_,ea_,fa_,ga_,ha_,ia_,ja_,ka_,la_,ma_,na_,oa_,pa_,qa_,ra_,sa_,ta_,ua_,va_,wa_,xa_,ya_,za_,ab_,bb_,cb_,db_,eb_,fb_,gb_,hb_,ib_,jb_,kb_,lb_,mb_,nb_,ob_,pb_,qb_,rb_,sb_,tb_,ub_,vb_,wb_,xb_,yb_,zb_
 
         for (RGraph graph : optimalGraphs) {
-            ArrayList<RNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
+            ArrayList<RNode> compositionNodes = _rootBasicNodeHash.get(graph.getRootNode());
 
             for (RNode currentNode : compositionNodes) {
                 ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> reservedLeftOverhangs = reservedLeftAbstractHash.get(currentNode.getType().toString().toLowerCase());
                 ArrayList<String> reservedRightOverhangs = reservedRightAbstractHash.get(currentNode.getType().toString().toLowerCase());
-                RNode parent = parentHash.get(currentNode);
+                RNode parent = _parentHash.get(currentNode);
 
                 if (reservedLeftOverhangs != null) {
                     freeLeftOverhangs.addAll(reservedLeftOverhangs);
@@ -317,7 +370,7 @@ public class RMoClo extends RGeneral {
                 }
 
                 if (partIndex == 0 || partIndex == parentNeighbors.size() - 1) {
-                    RNode grandParent = parentHash.get(parent);
+                    RNode grandParent = _parentHash.get(parent);
                     if (grandParent != null) {
                         for (RNode uncle : grandParent.getNeighbors()) {
                             freeLeftOverhangs.remove(numberToLetterOverhangHash.get(uncle.getLOverhang()));
@@ -382,7 +435,7 @@ public class RMoClo extends RGeneral {
                 queue.remove(0);
                 currentNode.setLOverhang(numberToLetterOverhangHash.get(currentNode.getLOverhang()));
                 currentNode.setROverhang(numberToLetterOverhangHash.get(currentNode.getROverhang()));
-                compositionLevelHash.put(currentNode.getComposition() + "|" + currentNode.getROverhang() + "|" + currentNode.getLOverhang(), currentNode.getStage());
+                _compositionLevelHash.put(currentNode.getComposition() + "|" + currentNode.getROverhang() + "|" + currentNode.getLOverhang(), currentNode.getStage());
                 seenNodes.add(currentNode);
                 ArrayList<RNode> neighbors = currentNode.getNeighbors();
 
@@ -396,10 +449,10 @@ public class RMoClo extends RGeneral {
                 //count instances of each part overhang combination, which will be used for optimization later
                 if (currentNode.getComposition().size() == 1) {
                     String partOverhangName = currentNode.getComposition() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang();
-                    if (partOverhangFrequencyHash.get(partOverhangName) != null) {
-                        partOverhangFrequencyHash.put(partOverhangName, partOverhangFrequencyHash.get(partOverhangName) + 1);
+                    if (_partOverhangFrequencyHash.get(partOverhangName) != null) {
+                        _partOverhangFrequencyHash.put(partOverhangName, _partOverhangFrequencyHash.get(partOverhangName) + 1);
                     } else {
-                        partOverhangFrequencyHash.put(partOverhangName, 1);
+                        _partOverhangFrequencyHash.put(partOverhangName, 1);
                     }
                 }
 
@@ -407,7 +460,7 @@ public class RMoClo extends RGeneral {
                 //track only basic nodes
                 if (currentNode.getComposition().size() == 1) {
                     String overhangPair = currentNode.getLOverhang() + "|" + currentNode.getROverhang();
-                    ArrayList<String> existingCompositions = abstractOverhangCompositionHash.get(overhangPair);
+                    ArrayList<String> existingCompositions = _abstractOverhangCompositionHash.get(overhangPair);
                     if (existingCompositions != null) {
                         if (!existingCompositions.contains(currentNode.getComposition().toString())) {
                             existingCompositions.add(currentNode.getComposition().toString());
@@ -415,7 +468,7 @@ public class RMoClo extends RGeneral {
                     } else {
                         ArrayList<String> toAdd = new ArrayList();
                         toAdd.add(currentNode.getComposition().toString());
-                        abstractOverhangCompositionHash.put(overhangPair, toAdd);
+                        _abstractOverhangCompositionHash.put(overhangPair, toAdd);
                     }
                 }
             }
@@ -427,9 +480,7 @@ public class RMoClo extends RGeneral {
 //concurrent optimizes vector assignment based on vector assignment
 //prioritize existing parts with correct overhangs
 //next priority is overhangs that vectors already have
-    private void optimizeOverhangVectors(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet) {
-        HashMap<String, String> finalOverhangHash; //key: abstract overhang assignment with "_" character, value: final overhang
-        finalOverhangHash = preAssignOverhangs(optimalGraphs);
+    private void optimizeOverhangVectors(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet, HashMap<String, String> finalOverhangHash) {
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
@@ -473,7 +524,7 @@ public class RMoClo extends RGeneral {
             if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
                 String composition = p.getStringComposition().toString();
 
-                if (encounteredCompositions.contains(composition)) {
+                if (_encounteredCompositions.contains(composition)) {
                     allOverhangs.remove(p.getLeftOverhang());
                     allOverhangs.remove(p.getRightOverhang());
                     ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get("[" + p.getType().toLowerCase() + "]");
@@ -511,32 +562,30 @@ public class RMoClo extends RGeneral {
         }
 
         //pick overhangs
-
         for (RGraph graph : optimalGraphs) {
-            System.out.println("************************************************\nassigning for: " + graph.getRootNode().getComposition());
-            ArrayList<RNode> compositionNodes = rootBasicNodeHash.get(graph.getRootNode());
-
+            ArrayList<RNode> compositionNodes = _rootBasicNodeHash.get(graph.getRootNode());
             for (RNode currentNode : compositionNodes) {
                 ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
                 ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get(currentNode.getType().toString().toLowerCase());
                 ArrayList<String> reservedRightOverhangs = reservedRightFinalHash.get(currentNode.getType().toString().toLowerCase());
-                System.out.println("freeLeftOverhangs: " + freeLeftOverhangs);
-                System.out.println("freeRightOverhangs: " + freeRightOverhangs);
-                System.out.println("reservedLeftOverhangs: " + reservedLeftOverhangs);
-                System.out.println("reservedRightOverhangs: " + reservedRightOverhangs);
-                RNode parent = parentHash.get(currentNode);
+                RNode parent = _parentHash.get(currentNode);
+
                 if (reservedLeftOverhangs != null) {
-                    freeLeftOverhangs.addAll(reservedLeftOverhangs);
-                    Collections.sort(freeLeftOverhangs);
+                    Collections.sort(reservedLeftOverhangs);
+                    freeLeftOverhangs.addAll(0,reservedLeftOverhangs);
+//                    freeLeftOverhangs.addAll(reservedLeftOverhangs);
+//                    Collections.sort(freeLeftOverhangs);
                 } else {
                     reservedLeftOverhangs = new ArrayList();
                     reservedLeftFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
                 }
 
                 if (reservedRightOverhangs != null) {
-                    freeRightOverhangs.addAll(reservedRightOverhangs);
-                    Collections.sort(freeRightOverhangs);
+                    Collections.sort(reservedRightOverhangs);
+                    freeRightOverhangs.addAll(0,reservedRightOverhangs);
+//                    freeRightOverhangs.addAll(reservedRightOverhangs);
+//                    Collections.sort(freeRightOverhangs);
                 } else {
                     reservedRightOverhangs = new ArrayList();
                     reservedRightFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
@@ -553,7 +602,7 @@ public class RMoClo extends RGeneral {
                 }
 
                 if (partIndex == 0 || partIndex == parentNeighbors.size() - 1) {
-                    RNode grandParent = parentHash.get(parent);
+                    RNode grandParent = _parentHash.get(parent);
 
                     if (grandParent != null) {
 
@@ -722,11 +771,11 @@ public class RMoClo extends RGeneral {
     }
 
     //sets user specified overhangs before algorithm computes the rest
-    private HashMap<String, String> preAssignOverhangs(ArrayList<RGraph> optimalGraphs) {
+    private HashMap<String, String> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
         for (RGraph graph : optimalGraphs) {
             RNode root = graph.getRootNode();
-            if (forcedOverhangHash.containsKey(root.getComposition().toString())) {
+            if (forcedHash.containsKey(root.getComposition().toString())) {
                 //traverse the graph and find all of the basic parts and then put them in order
                 ArrayList<RNode> stack = new ArrayList();
                 HashSet<RNode> seenNodes = new HashSet();
@@ -739,7 +788,7 @@ public class RMoClo extends RGeneral {
                     seenNodes.add(current);
 
                     if (current.getStage() == 0) {
-                        basicParts.add(0,current);
+                        basicParts.add(0, current);
                     }
 
                     for (RNode neighbor : current.getNeighbors()) {
@@ -748,7 +797,7 @@ public class RMoClo extends RGeneral {
                         }
                     }
                 }
-                ArrayList<String> forcedOverhangs = forcedOverhangHash.get(root.getComposition().toString());
+                ArrayList<String> forcedOverhangs = forcedHash.get(root.getComposition().toString());
                 for (int i = 0; i < basicParts.size(); i++) {
                     String[] forcedTokens = forcedOverhangs.get(i).split("\\|");
                     String forcedLeft = forcedTokens[0].trim();
@@ -769,11 +818,11 @@ public class RMoClo extends RGeneral {
 
     public void setForcedOverhangs(Collector coll, HashMap<String, ArrayList<String>> requiredOverhangs) {
         if (requiredOverhangs != null) {
-            forcedOverhangHash = new HashMap();
+            _forcedOverhangHash = new HashMap();
             for (String key : requiredOverhangs.keySet()) {
                 Part part = coll.getPartByName(key, false);
                 if (part != null) {
-                    forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
+                    _forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
                 }
             }
         }
@@ -946,15 +995,111 @@ public class RMoClo extends RGeneral {
         }
         return toReturn;
     }
-    
-    //FIELDS
-    private HashMap<String, ArrayList<String>> abstractOverhangCompositionHash; //key: overhangs delimited by "|", value: compositions with overhangs indicated by keys
-    private HashMap<String, Integer> partOverhangFrequencyHash; //key: part composition concatenated with abstract overhang with "_" delimited with "|", value: number of occurences of part with given overhangs
-    private HashSet<String> encounteredCompositions; //set of part compositions that appear in the set of all graphs
-    private HashMap<RNode, RNode> parentHash; //key: node, value: parent node
-    private HashMap<String, Integer> compositionLevelHash; //key: string composition with overhangs, value; arrayList of nodes with the given composition
-    private HashMap<String, ArrayList<String>> forcedOverhangHash = new HashMap(); //key: composite part composition
-    private HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash; //key: root node, value: ordered arrayList of basic nodes in graph that root node belongs to
+
+    //given a part composition and an hashmap containing existing overhangs, build a directed graph representing all overhang assignment choices
+    private ArrayList<RGraph> buildCartesianGraph(ArrayList<RNode> composition, HashMap<String, ArrayList<String>> compositionOverhangHash) {
+        ArrayList<RNode> previousNodes = null;
+        ArrayList<RGraph> toReturn = new ArrayList();
+        int stage = 0;
+        for (RNode node : composition) {
+            String part = node.getComposition().toString();
+            ArrayList<RNode> currentNodes = new ArrayList();
+            ArrayList<String> existingOverhangs = compositionOverhangHash.get(part);
+            for (String overhangPair : existingOverhangs) {
+                String[] tokens = overhangPair.split("\\|");
+                String leftOverhang = tokens[0];
+                String rightOverhang = tokens[1];
+                RNode newNode = new RNode();
+                newNode.setName(part);
+                newNode.setLOverhang(leftOverhang);
+                newNode.setROverhang(rightOverhang);
+                newNode.setStage(stage);
+                currentNodes.add(newNode);
+            }
+            if (previousNodes != null) {
+                for (RNode prev : previousNodes) {
+                    for (RNode curr : currentNodes) {
+                        if (prev.getROverhang().equals(curr.getLOverhang())) {
+                            prev.addNeighbor(curr);
+                        }
+                    }
+                }
+            } else {
+                for (RNode root : currentNodes) {
+                    toReturn.add(new RGraph(root));
+                }
+            }
+            previousNodes = currentNodes;
+            stage++;
+
+        }
+        return toReturn;
+    }
+
+    //given a cartesian product graph, traverse a graph to see if a complete assignment exists
+    //returns null if no such assignment exists
+    private ArrayList<ArrayList<String>> findOptimalAssignment(ArrayList<RGraph> graphs, int targetLength) {
+        ArrayList<ArrayList<String>> toReturn = new ArrayList();
+        ArrayList<String> currentSolution;
+        HashMap<RNode, RNode> parentHash = new HashMap(); //key: node, value: parent node
+        for (RGraph graph : graphs) {
+            currentSolution = new ArrayList();
+            RNode root = graph.getRootNode();
+            ArrayList<RNode> stack = new ArrayList();
+            stack.add(root);
+            boolean toParent = false; // am i returning to a parent node?
+            HashSet<RNode> seenNodes = new HashSet();
+            while (!stack.isEmpty()) {
+                RNode currentNode = stack.get(0);
+                stack.remove(0);
+                seenNodes.add(currentNode);
+                if (!toParent) {
+                    currentSolution.add(currentNode.getLOverhang() + "|" + currentNode.getROverhang());
+                } else {
+                    toParent = false;
+                }
+                RNode parent = parentHash.get(currentNode);
+
+                int childrenCount = 0;
+                for (RNode neighbor : currentNode.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        if (neighbor.getStage() > currentNode.getStage()) {
+                            stack.add(0, neighbor);
+                            parentHash.put(neighbor, currentNode);
+                            childrenCount++;
+                        }
+                    }
+                }
+                if (childrenCount == 0) {
+                    //no children means we've reached the end of a branch
+                    if (currentSolution.size() == targetLength) {
+                        //yay complete assignment
+                        toReturn.add((ArrayList<String>) currentSolution.clone());
+
+                    } else {
+                        //incomplete assignment
+                    }
+                    if (currentSolution.size() > 0) {
+                        currentSolution.remove(currentSolution.size() - 1);
+                    }
+                    if (parent != null) {
+                        toParent = true;
+                        stack.add(0, parent);
+                    }
+                }
+
+            }
+
+        }
+        return toReturn;
+    }
+    private HashMap<String, ArrayList<String>> _abstractOverhangCompositionHash; //key: overhangs delimited by "|", value: compositions with overhangs indicated by keys
+    private HashMap<String, Integer> _partOverhangFrequencyHash; //key: part composition concatenated with abstract overhang with "_" delimited with "|", value: number of occurences of part with given overhangs
+    private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
+    private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
+    private HashMap<String, Integer> _compositionLevelHash; //key: string composition with overhangs, value; arrayList of nodes with the given composition
+    private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap(); //key: composite part composition
+    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
     private ArrayList<Part> _partLibrary = new ArrayList();
     private ArrayList<Vector> _vectorLibrary = new ArrayList();
     private static HashMap<String, String> _overhangVariableSequenceHash = new HashMap(); //key:variable name, value: sequence associated with that variable

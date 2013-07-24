@@ -36,9 +36,11 @@ public class ClothoReader {
         //Create library to initialize hashMem
         HashMap<String, RGraph> library = new HashMap<String, RGraph>();
 
-        //Add goal parts to memoization hash, making new nodes with only type and composition from library
+        //Add all basic parts in the goal parts to the memoization hash
         for (Part goalPart : goalParts) {
             try {
+                
+                //Add all basic parts to the memoization hash
                 ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
                 for (int i = 0; i < basicParts.size(); i++) {
 
@@ -48,15 +50,16 @@ public class ClothoReader {
 
                     //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
                     ArrayList<String> composition = new ArrayList<String>();
+                    ArrayList<String> direction = new ArrayList<String>();
                     composition.add(basicParts.get(i).getName());
                     ArrayList<String> sTags = basicParts.get(i).getSearchTags();
                     ArrayList<String> type = new ArrayList<String>();
 
                     for (int k = 0; k < sTags.size(); k++) {
-                        if (sTags.get(k).startsWith("Type:")) {
-                            String typeTag = sTags.get(k);
-                            ArrayList<String> types = parseTags(typeTag);
-                            type.addAll(types);
+                        String tag = sTags.get(k);
+                        if (tag.startsWith("Type:")) {
+                            ArrayList<String> list = parseTags(tag);
+                            type.addAll(list);
                         }
                     }
 
@@ -64,8 +67,12 @@ public class ClothoReader {
                     RNode root = newBasicGraph.getRootNode();
                     root.setName(basicParts.get(i).getName());
                     root.setComposition(composition);
+                    root.setDirection(direction);
                     root.setType(type);
-                    library.put(root.getComposition().toString(), newBasicGraph);
+                    
+                    System.out.println("Putting basic part in library: " + composition.toString() + direction.toString());
+                    
+                    library.put(composition.toString(), newBasicGraph);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -87,29 +94,49 @@ public class ClothoReader {
 
                     //For all of this library part's components make new basic graph
                     ArrayList<String> type = new ArrayList<String>();
+                    ArrayList<String> direction = new ArrayList<String>();
                     ArrayList<String> composition = new ArrayList<String>();
-
-                    for (Part libPartComponent : libPartComposition) {
-                        ArrayList<String> sTags = libPartComponent.getSearchTags();
-                        composition.add(libPartComponent.getName());
-
-                        //If the part has search tags
-                        if (libPartComponent.getSearchTags() != null) {
-                            for (int j = 0; j < sTags.size(); j++) {
-                                if (sTags.get(j).startsWith("Type:")) {
-                                    String typeTag = sTags.get(j);
-                                    ArrayList<String> types = parseTags(typeTag);
-                                    type.addAll(types);
-                                }
-                            }
+                    ArrayList<String> tags = libraryPart.getSearchTags();
+                  
+                    //Get direction
+                    for (String tag : tags) {
+                        if (tag.startsWith("Direction:")) {
+                            ArrayList<String> list = parseTags(tag);
+                            direction.addAll(list);
                         }
                     }
 
+                    //Get basic part types
+                    for (Part libPartComponent : libPartComposition) {
+                        ArrayList<String> sTags = libPartComponent.getSearchTags();
+                        composition.add(libPartComponent.getName());
+                        
+                        //If there was no direction found, all basic parts assumed to be forward
+                        if (libraryPart.isComposite()) {
+                            if (direction.isEmpty()) {
+                                direction.add("+");
+                            }
+                        }             
+
+                        if (libPartComponent.getSearchTags() != null) {
+                            for (int j = 0; j < sTags.size(); j++) {
+                                String tag = sTags.get(j);
+                                if (tag.startsWith("Type:")) {
+                                    ArrayList<String> list = parseTags(tag);
+                                    type.addAll(list);
+                                } 
+                            }                            
+                        }
+                    }
+
+//                    System.out.println("direction library: " + direction);
+                    
                     //Initialize new graph for library part
                     RGraph libraryPartGraph = new RGraph();
                     libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
                     libraryPartGraph.getRootNode().setComposition(composition);
                     libraryPartGraph.getRootNode().setType(type);
+                    libraryPartGraph.getRootNode().setDirection(direction);
                     libraryPartGraph.getRootNode().setName(libraryPart.getName());
 
 
@@ -126,7 +153,10 @@ public class ClothoReader {
                     }
 
                     //Put library part into library for assembly
-                    library.put(libraryPartGraph.getRootNode().getComposition().toString(), libraryPartGraph);
+                    
+                    System.out.println("Putting composite part in library: " + composition.toString() + direction.toString());
+                    
+                    library.put(composition.toString(), libraryPartGraph);
                 }
             }
         }
@@ -184,29 +214,47 @@ public class ClothoReader {
 
     /** Convert goal parts into SRS nodes for the algorithm **/
     public static ArrayList<RNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
+        
         ArrayList<RNode> gpsNodes = new ArrayList<RNode>();
         for (int i = 0; i < goalParts.size(); i++) {
-
+            
             //Get goal part's composition and type (part description type)
-            ArrayList<Part> basicParts = ClothoWriter.getComposition(goalParts.get(i));
+            Part goalPart = goalParts.get(i);
+            ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
             ArrayList<String> composition = new ArrayList<String>();
             ArrayList<String> type = new ArrayList<String>();
             ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> searchTags = goalPart.getSearchTags();
+            
+            //Get direction
+            for (String tag : searchTags) {
+                if (tag.startsWith("Direction:")) {
+                    ArrayList<String> list = parseTags(tag);
+                    direction.addAll(list);
+                }
+            }
+
+            //Get basic part types
             for (int j = 0; j < basicParts.size(); j++) {
                 composition.add(basicParts.get(j).getName());
                 ArrayList<String> sTags = basicParts.get(j).getSearchTags();
+                
+                //If there was no direction found, all basic parts assumed to be forward
+                if (direction.isEmpty()) {
+                    direction.add("+");
+                }
+
                 for (int k = 0; k < sTags.size(); k++) {
                     String tag = sTags.get(k);
                     if (tag.startsWith("Type:")) {
                         ArrayList<String> list = parseTags(tag);
                         type.addAll(list);
-                    } else if (tag.startsWith("Direction:")) {
-                        ArrayList<String> list = parseTags(tag);
-                        direction.addAll(list);
-                    }
+                    } 
                 }
             }
 
+//            System.out.println("direction gpsToNodes: " + direction);
+            
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
             RNode gp = new RNode(false, false, null, composition, direction, type, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
@@ -215,14 +263,31 @@ public class ClothoReader {
         return gpsNodes;
     }
 
-    /** Parse type search tags from a string into an ArrayList **/
+    /** Parse Clotho search tags from a string into an ArrayList **/
     public static ArrayList<String> parseTags(String tag) {
         ArrayList<String> list = new ArrayList<String>();
-        tag = tag.substring(tag.length(),tag.length()-1);
-        String[] tokens1 = tag.split("[");
-        String splitTag = tokens1[1];
-        String[] tokens = splitTag.split(",");
-        list.addAll(Arrays.asList(tokens));
+        
+        //Split any arraylist-like search tag
+        if (tag.charAt(tag.length()-1) == ']') {
+            tag = tag.substring(0,tag.length()-1);
+            String[] tokens1 = tag.split("\\[");
+            String splitTag = tokens1[1];
+            String[] tokens = splitTag.split(",");
+            ArrayList<String> trimmedTokens = new ArrayList<String>();
+            
+            //Trim tokens to add to final list
+            for (String token : tokens) {
+                String trimmedToken = token.trim();
+                trimmedTokens.add(trimmedToken);
+            }
+            list.addAll(trimmedTokens);
+        } else {
+            String[] tokens1 = tag.split(":");
+            String splitTag = tokens1[1];
+            splitTag = splitTag.trim();
+            list.add(splitTag);
+        }
+        
         return list;
     }
     

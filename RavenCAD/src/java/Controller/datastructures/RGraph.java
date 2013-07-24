@@ -4,6 +4,7 @@
  */
 package Controller.datastructures;
 
+import Controller.accessibility.ClothoReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -553,56 +554,61 @@ public class RGraph {
         if (pigeon) {
             for (String key : nodeMap.keySet()) {
                 Part currentPart = coll.getPart(key, true);
+                ArrayList<Part> composition = currentPart.getComposition();
+                ArrayList<String> direction = new ArrayList<String>();
+                ArrayList<String> searchTags = currentPart.getSearchTags();
+                for (String tag : searchTags) {
+                    if (tag.startsWith("Direction:")) {
+                        direction = ClothoReader.parseTags(tag);
+                    }
+                }
+                
                 StringBuilder pigeonLine = new StringBuilder();
                 pigeonLine.append("PIGEON_START\n");
                 pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
 
-                //Assign left overhang if it exists
-                
+                //Assign left overhang if it exists                
                 pigeonLine.append("5 ").append(currentPart.getLeftOverhang()).append("\n");
 
-                for (Part p: currentPart.getComposition()) {
+                for (int i = 0; i < composition.size(); i++) {
+
+                    Part p = composition.get(i);
+                    String dir = "";
+                    
+                    //Turn direction of glyph in reverse if reverse direction
+                    if (!direction.isEmpty()) {
+                        dir = direction.get(i);
+                        if ("-".equals(dir)) {
+                            pigeonLine.append("<");
+                        } 
+                    }
+                    
+                    //Write pigeon code line
                     if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
                         pigeonLine.append("P ").append(p.getName()).append(" 4" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("promoter_r") || p.getType().equalsIgnoreCase("p_r")) {
-                        pigeonLine.append("<P ").append(p.getName()).append(" 4" + "\n");
                     } else if (p.getType().equalsIgnoreCase("RBS") || p.getType().equalsIgnoreCase("r")) {
                         pigeonLine.append("r ").append(p.getName()).append(" 5" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("RBS_r") || p.getType().equalsIgnoreCase("r_r")) {
-                        pigeonLine.append("<r ").append(p.getName()).append(" 5" + "\n");
                     } else if (p.getType().equalsIgnoreCase("gene") || p.getType().equalsIgnoreCase("g")) {
                         pigeonLine.append("c ").append(p.getName()).append(" 1" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("gene_r") || p.getType().equalsIgnoreCase("g_r")) {
-                        pigeonLine.append("<c ").append(p.getName()).append(" 1" + "\n");
                     } else if (p.getType().equalsIgnoreCase("reporter") || p.getType().equalsIgnoreCase("gr")) {
                         pigeonLine.append("c ").append(p.getName()).append(" 2" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("reporter_r") || p.getType().equalsIgnoreCase("gr_r")) {
-                        pigeonLine.append("<c ").append(p.getName()).append(" 2" + "\n");
                     } else if (p.getType().equalsIgnoreCase("terminator") || p.getType().equalsIgnoreCase("t")) {
                         pigeonLine.append("T ").append(p.getName()).append(" 6" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("terminator_r") || p.getType().equalsIgnoreCase("t_r")) {
-                        pigeonLine.append("<T ").append(p.getName()).append(" 6" + "\n");
                     } else if (p.getType().equalsIgnoreCase("invertase site") || p.getType().equalsIgnoreCase("is")) {
-                        pigeonLine.append("> ").append(p.getName()).append(" 12" + "\n");                       
-                    } else if (p.getType().equalsIgnoreCase("invertase site_r") || p.getType().equalsIgnoreCase("is_r")) {
-                        pigeonLine.append("< ").append(p.getName()).append(" 12" + "\n");                       
-                    } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s") || p.getType().equalsIgnoreCase("spacer_r") || p.getType().equalsIgnoreCase("s_r")) {
+                        if ("-".equals(dir)) {
+                            pigeonLine.append(" ").append(p.getName()).append(" 12" + "\n");
+                        } else {
+                            pigeonLine.append("> ").append(p.getName()).append(" 12" + "\n");  
+                        }                                           
+                    } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s")) {
                         pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");  
                     } else if (p.getType().equalsIgnoreCase("origin") || p.getType().equalsIgnoreCase("o")) {
                         pigeonLine.append("z ").append(p.getName()).append(" 14" + "\n");
                     } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
                         pigeonLine.append("f1");
                         String[] fusionParts = p.getName().split("-");                        
-                        for (int i = 1; i < fusionParts.length; i++) {
-                            int color = i % 13 + 1;
-                            pigeonLine.append("-").append(color);
-                        }
-                        pigeonLine.append(" ").append(p.getName()).append("\n");   
-                    }else if (p.getType().equalsIgnoreCase("fusion_r") || p.getType().equalsIgnoreCase("fu_r")) {
-                        pigeonLine.append("<f1");
-                        String[] fusionParts = p.getName().split("-");                        
-                        for (int i = 1; i < fusionParts.length; i++) {
-                            int color = i % 13 + 1;
+                        for (int j = 1; j < fusionParts.length; j++) {
+                            int color = j % 13 + 1;
                             pigeonLine.append("-").append(color);
                         }
                         pigeonLine.append(" ").append(p.getName()).append("\n");   
@@ -613,7 +619,6 @@ public class RGraph {
 
                 //Assign right overhang
                 pigeonLine.append("3 ").append(currentPart.getRightOverhang()).append("\n");
-
                 pigeonLine.append("# Arcs\n");
                 pigeonLine.append("PIGEON_END\n\n");
                 weyekinText.append(pigeonLine.toString());
@@ -625,8 +630,6 @@ public class RGraph {
                 weyekinText.append("\"").append(coll.getPart(key, true).getStringComposition()).append("\"" + " [shape=box, color=\"#B293C9\", style=\"filled,rounded\"]" + "\n");
             }
         }
-
-
 
         //Write edge lines
         weyekinText.append(edgeLines);
@@ -648,6 +651,7 @@ public class RGraph {
         }
         ArrayList<String> keyLines = new ArrayList<String>(); //stores the lines in all of the keys
         HashSet<String> seenArcLines = new HashSet(); //stores arc lines
+        
         //Iterate through each arc file; each one is represented by a string
         for (String inputFile : inputFiles) {
             String[] lines = inputFile.split("\n"); //should split file into separate lines
@@ -657,6 +661,7 @@ public class RGraph {
             for (int j = 2; j < 4; j++) {
                 header = header + lines[j] + "\n";
             }
+            
             //Apend to the key section
             for (int k = 4; k < lines.length; k++) {//first 4 lines are the header
                 if (lines[k].contains("# Key")) {
