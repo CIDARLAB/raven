@@ -68,7 +68,8 @@ public class RMoClo extends RGeneral {
             //Run SDS Algorithm for multiple parts
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
             boolean tryCartesian = false;
-            basicOverhangAssignment(optimalGraphs);
+//            basicOverhangAssignment(optimalGraphs);
+            enforceOverhangRules(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
 
@@ -159,166 +160,101 @@ public class RMoClo extends RGeneral {
         }
     }
 
-    /**
-     * Assign overhangs ignoring the library of parts and vectors; overhangs are
-     * saved to graph nodes not part/vectors *
-     */
-    private void basicOverhangAssignment(ArrayList<RGraph> optimalGraphs) {
-
-        _encounteredCompositions = new HashSet();
+    /** First step of overhang assignment - enforce numeric place holders for overhangs **/
+    private void enforceOverhangRules (ArrayList<RGraph> optimalGraphs) {
+        
+        //Initialize fields that record information to save complexity for future steps
+        _encounteredCompositions = new HashSet<String>();
         _parentHash = new HashMap<RNode, RNode>(); //key: node, value: parent node
-        HashMap<RNode, RNode> previousHash = new HashMap(); //key: node, value: sibling node on the "left"
-        HashMap<RNode, RNode> nextHash = new HashMap(); //key: node, value: sibling node on the "right"
+        _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>(); //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
         _compositionLevelHash = new HashMap<String, Integer>();
-        _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
-
-        //Collecting rule-based information
+        int count = 0;
+        
+        //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
-            ArrayList<RNode> queue = new ArrayList<RNode>();
-            HashSet<RNode> seenNodes = new HashSet<RNode>();
+            
             RNode root = graph.getRootNode();
-            queue.add(root);
-            _parentHash.put(root, null);
-            previousHash.put(root, null);
-            nextHash.put(root, null);
-            ArrayList<RNode> basic = new ArrayList();
-            _rootBasicNodeHash.put(root, basic);
-
-            //Traverse the graph
-            while (!queue.isEmpty()) {
-                RNode current = queue.get(0);
-                queue.remove(0);
-                current.setLOverhang("");
-                current.setROverhang("");
-                seenNodes.add(current);
-                ArrayList<RNode> neighbors = current.getNeighbors();
-                RNode previous = null;
-                _encounteredCompositions.add(current.getComposition().toString());
-
-                for (RNode neighbor : neighbors) {
-
-                    if (neighbor.getStage() == 0) {
-                        basic.add(neighbor);
-                    }
-
-                    if (!seenNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                        _parentHash.put(neighbor, current);
-                        previousHash.put(neighbor, previous);
-
-                        if (previous != null) {
-                            nextHash.put(previous, neighbor);
-                        }
-                        previous = neighbor;
-                    }
-                }
-            }
-
-        }
-
-        //Basic overhang assignment based upon information gathered in previous loop
-        for (RGraph graph : optimalGraphs) {
-
-            HashMap<RNode, HashSet<String>> neighborConflictHash = new HashMap<RNode, HashSet<String>>();
-            RNode root = graph.getRootNode();
-            neighborConflictHash.put(root, new HashSet());
-            HashSet<RNode> seenNodes = new HashSet<RNode>();
-            ArrayList<RNode> queue = new ArrayList<RNode>();
-            queue.add(root);
-
-            String randIndex = String.valueOf((int) (Math.random() * ((1000000000 - 1) + 1)));
-            root.setLOverhang(randIndex);
-            randIndex = String.valueOf((int) (Math.random() * ((1000000000 - 1) + 1)));
-            root.setROverhang(randIndex);
-
-            //Travere the graph
-            while (!queue.isEmpty()) {
-                RNode parent = queue.get(0);
-                queue.remove(0);
-                seenNodes.add(parent);
-
-                if (parent.getNeighbors().size() > 0) {
-                    RNode previousNode;
-                    RNode nextNode;
-                    HashSet<String> neighborConflictSet = neighborConflictHash.get(parent);
-                    neighborConflictSet.add(parent.getLOverhang());
-                    neighborConflictSet.add(parent.getROverhang());
-
-                    for (RNode currentNode : parent.getNeighbors()) {
-                        if (!seenNodes.contains(currentNode)) {
-                            previousNode = previousHash.get(currentNode);
-                            nextNode = nextHash.get(currentNode);
-                            Boolean seenFirst = true; //seen the first beighbor
-                            Boolean seenLast = false; //seen the last neighbor
-                            if (previousNode == null) {
-                                seenFirst = false;
-                            }
-                            if (nextNode == null) {
-                                seenLast = true;
-                            }
-
-                            //assigning left overhang
-                            if (currentNode.getLOverhang().equals("")) {
-                                if (!seenFirst) {
-                                    //first part automatically gets left overhang of parent
-                                    currentNode.setLOverhang(parent.getLOverhang());
-                                } else {
-                                    randIndex = String.valueOf((int) (Math.random() * ((1000000000 - 1) + 1)));
-                                    currentNode.setLOverhang(randIndex);
-                                }
-                            }
-
-                            //assigning right overhang
-                            if (currentNode.getROverhang().equals("")) {
-                                if (seenLast) {
-
-                                    // last node gets right overhang of parent
-                                    currentNode.setROverhang(parent.getROverhang());
-                                } else {
-                                    randIndex = String.valueOf((int) (Math.random() * ((1000000000 - 1) + 1)));
-                                    currentNode.setROverhang(randIndex);
-                                }
-                            }
-
-                            //assign overhangs to neighbors if necessary 
-                            if (nextNode != null && currentNode.getROverhang().length() > 0) {
-                                if (nextNode.getLOverhang().length() > 0) {
-                                    currentNode.setROverhang(nextNode.getLOverhang());
-                                } else {
-                                    nextNode.setLOverhang(currentNode.getROverhang());
-                                }
-                            }
-                            if (previousNode != null && currentNode.getLOverhang().length() > 0) {
-                                if (previousNode.getROverhang().length() > 0) {
-                                    currentNode.setLOverhang(previousNode.getROverhang());
-                                } else {
-                                    previousNode.setROverhang(currentNode.getLOverhang());
-                                }
-                            }
-
-                            //the overhangs of neighbors cannot overlap at all
-                            if (currentNode.getLOverhang().length() > 0) {
-                                neighborConflictSet.add(currentNode.getLOverhang());
-                            }
-                            if (currentNode.getROverhang().length() > 0) {
-                                neighborConflictSet.add(currentNode.getROverhang());
-                            }
-                            neighborConflictHash.put(currentNode, new HashSet());
-                            queue.add(currentNode);
-                        }
-                    }
-                }
-            }
+            ArrayList<RNode> l0nodes= new ArrayList<RNode>();
+            _rootBasicNodeHash.put(root, l0nodes);
+            _encounteredCompositions.add(root.getComposition().toString());
+            root.setLOverhang(Integer.toString(count));
+            count++;
+            root.setROverhang(Integer.toString(count));
+            count++;
+            ArrayList<RNode> neighbors = root.getNeighbors();
+            
+            enforceOverhangRulesHelper(root, neighbors, count, root);
         }
     }
+    
+    /** This helper method executes the loops necessary to enforce overhangs for each graph in enforceOverhangRules **/
+    private void enforceOverhangRulesHelper (RNode parent, ArrayList<RNode> children, int count, RNode root) {
+        
+        String nextLOverhang = new String();
+        
+        //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
+        for (int i = 0; i < children.size(); i++) {
 
+            RNode child = children.get(i);
+            _parentHash.put(child, parent);
+            
+            //Pass numeric overhangs down from the parent to the correct child
+            if (i == 0) {
+                child.setLOverhang(parent.getLOverhang());
+            } else if (i == children.size() - 1) {
+                child.setROverhang(parent.getROverhang());
+            }
+
+            //Assign new left overhang if empty
+            if (child.getLOverhang().isEmpty()) {
+                
+                //If the nextLOverhangVariable has an overhang waiting
+                if (!nextLOverhang.isEmpty()) {
+                    child.setLOverhang(nextLOverhang);
+                    nextLOverhang = "";
+                } else {
+                    child.setLOverhang(Integer.toString(count));
+                    count++;
+                }                
+            }
+
+            //Assign new right overhang if empty
+            if (child.getROverhang().isEmpty()) {
+                child.setROverhang(Integer.toString(count));
+                nextLOverhang = Integer.toString(count);
+                count++;
+            }
+
+            //Make recursive call
+            if (child.getStage() > 0) {
+                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
+                grandChildren.addAll(child.getNeighbors());
+
+                //Remove the current parent from the list
+                if (grandChildren.contains(parent)) {
+                    grandChildren.remove(parent);
+                }
+                enforceOverhangRulesHelper(child, grandChildren, count, root);
+            
+            //Or record the level zero parts
+            } else {
+                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
+                l0nodes.add(child);
+                _rootBasicNodeHash.put(root, l0nodes);
+            }
+        }     
+    }
+
+    /**
+     * This is part two of the overhang assignment, where overhang sharing is determined 
+     **/
     private void minimizeOverhangs(ArrayList<RGraph> optimalGraphs) {
-        _abstractOverhangCompositionHash = new HashMap();
-        _partOverhangFrequencyHash = new HashMap();
-        HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
-        HashMap<String, ArrayList<String>> reservedRightAbstractHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
+        _abstractOverhangCompositionHash = new HashMap<String, ArrayList<String>>();
+        _partOverhangFrequencyHash = new HashMap<String, Integer>();
+        HashMap<String, ArrayList<String>> reservedLeftAbstractHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
+        HashMap<String, ArrayList<String>> reservedRightAbstractHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
 
-        HashMap<String, String> numberToLetterOverhangHash = new HashMap(); //replaces the abstract numerical with abstract letter overhangs; key: abstract numerical overhang, value: abstract letter overhang
+        HashMap<String, String> numberToLetterOverhangHash = new HashMap<String, String>(); //replaces the abstract numerical with abstract letter overhangs; key: abstract numerical overhang, value: abstract letter overhang
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A_,B_,C_,D_,E_,G_,H_,I_,J_,K_,L_,M_,N_,O_,P_,Q_,R_,S_,T_,U_,V_,W_,X_,Y_,Z_,a_,b_,c_,d_,e_,f_,g_,h_,i_,j_,k_,l_,m_,n_,o_,p_,q_,r_,s_,t_,u_,v_,w_,x_,y_,z_".split(","))); //overhangs that don't exist in part or vector library
         //aa_,ba_,ca_,da_,ea_,fa_,ga_,ha_,ia_,ja_,ka_,la_,ma_,na_,oa_,pa_,qa_,ra_,sa_,ta_,ua_,va_,wa_,xa_,ya_,za_,ab_,bb_,cb_,db_,eb_,fb_,gb_,hb_,ib_,jb_,kb_,lb_,mb_,nb_,ob_,pb_,qb_,rb_,sb_,tb_,ub_,vb_,wb_,xb_,yb_,zb_
 
@@ -481,9 +417,9 @@ public class RMoClo extends RGeneral {
     }
 
     //optimizes overhang assignment based on frequency of a parts appearance and the availability of existing overhangs
-//concurrent optimizes vector assignment based on vector assignment
-//prioritize existing parts with correct overhangs
-//next priority is overhangs that vectors already have
+    //concurrent optimizes vector assignment based on vector assignment
+    //prioritize existing parts with correct overhangs
+    //next priority is overhangs that vectors already have
     private void optimizeOverhangVectors(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet, HashMap<String, String> finalOverhangHash) {
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za

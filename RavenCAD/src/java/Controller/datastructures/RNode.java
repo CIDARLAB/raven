@@ -81,40 +81,40 @@ public class RNode {
         return clone;
     }
     
-    private void cloneHelper(RNode parentClone, RNode parent, ArrayList<RNode> neighbors) {
+    private void cloneHelper(RNode parentClone, RNode parent, ArrayList<RNode> children) {
         
-        for (int i = 0; i < neighbors.size(); i++) {
+        for (int i = 0; i < children.size(); i++) {
             
-            RNode neighbor = neighbors.get(i);
+            RNode child = children.get(i);
             
             RNode neighborClone = new RNode();
-            neighborClone._recommended = neighbor._recommended;
-            neighborClone._discouraged = neighbor._discouraged;
-            neighborClone._uuid = neighbor._uuid;
-            neighborClone._type = neighbor._type;
-            neighborClone._lOverhang = neighbor._lOverhang;
-            neighborClone._rOverhang = neighbor._rOverhang;
-            neighborClone._composition = neighbor._composition;
-            neighborClone._direction = neighbor._direction;
-            neighborClone._name = neighbor._name;
-            neighborClone._stage = neighbor._stage;
-            neighborClone._vector = neighbor._vector;
-            neighborClone._efficiency = neighbor._efficiency;
-            neighborClone._successCnt = neighbor._successCnt;
-            neighborClone._failureCnt = neighbor._failureCnt;
+            neighborClone._recommended = child._recommended;
+            neighborClone._discouraged = child._discouraged;
+            neighborClone._uuid = child._uuid;
+            neighborClone._type = child._type;
+            neighborClone._lOverhang = child._lOverhang;
+            neighborClone._rOverhang = child._rOverhang;
+            neighborClone._composition = child._composition;
+            neighborClone._direction = child._direction;
+            neighborClone._name = child._name;
+            neighborClone._stage = child._stage;
+            neighborClone._vector = child._vector;
+            neighborClone._efficiency = child._efficiency;
+            neighborClone._successCnt = child._successCnt;
+            neighborClone._failureCnt = child._failureCnt;
             
             parentClone.addNeighbor(neighborClone);
             neighborClone.addNeighbor(parentClone);
             
-            if (neighbor.getStage() > 0) {
-                ArrayList<RNode> orderedChildren = new ArrayList<RNode>();
-                orderedChildren.addAll(neighbor.getNeighbors());
+            if (child.getStage() > 0) {
+                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
+                grandChildren.addAll(child.getNeighbors());
 
                 //Remove the current parent from the list
-                if (orderedChildren.contains(parent)) {
-                    orderedChildren.remove(parent);
+                if (grandChildren.contains(parent)) {
+                    grandChildren.remove(parent);
                 }
-                cloneHelper(neighborClone, neighbor, orderedChildren);
+                cloneHelper(neighborClone, child, grandChildren);
             }
         }
     }
