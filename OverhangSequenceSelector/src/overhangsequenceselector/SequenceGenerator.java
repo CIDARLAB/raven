@@ -6,6 +6,14 @@ package overhangsequenceselector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.biojava3.alignment.Alignments;
+import org.biojava3.alignment.SimpleGapPenalty;
+import org.biojava3.alignment.SubstitutionMatrixHelper;
+import org.biojava3.alignment.template.SequencePair;
+import org.biojava3.alignment.template.SubstitutionMatrix;
+import org.biojava3.core.sequence.DNASequence;
+import org.biojava3.core.sequence.compound.AmbiguityDNACompoundSet;
+import org.biojava3.core.sequence.compound.NucleotideCompound;
 
 /**
  *
@@ -46,5 +54,30 @@ public class SequenceGenerator {
             }
             System.out.println();
         }
+    }
+
+    public static int scoreAlignment(String seqA, String seqB) {
+
+        DNASequence target = new DNASequence(seqA,
+                AmbiguityDNACompoundSet.getDNACompoundSet());
+
+
+        DNASequence query = new DNASequence(seqB,
+                AmbiguityDNACompoundSet.getDNACompoundSet());
+
+        SubstitutionMatrix<NucleotideCompound> matrix = SubstitutionMatrixHelper.getNuc4_4();
+
+        SimpleGapPenalty gapP = new SimpleGapPenalty();
+        gapP.setOpenPenalty((short) 5);
+        gapP.setExtensionPenalty((short) 2);
+
+        SequencePair<DNASequence, NucleotideCompound> psa =
+                Alignments.getPairwiseAlignment(query, target,
+                Alignments.PairwiseSequenceAlignerType.GLOBAL, gapP, matrix);
+
+        String[] alignmentStrings = psa.toString().split("[\\n\\r]");
+        //TODO iterate over alignment strings and count stuff
+        return -1;
+
     }
 }
