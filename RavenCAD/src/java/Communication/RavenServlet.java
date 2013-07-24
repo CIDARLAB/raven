@@ -21,6 +21,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -93,8 +95,14 @@ public class RavenServlet extends HttpServlet {
                 for (int i = 0; i < vectorIDs.length; i++) {
                     controller._collector.removeVector(partIDs[i]);
                 }
-            
+            } else if (command.equals("importClotho")) {
+                response.setContentType("application/json");
+                String data = request.getParameter("data");
+                JSONArray devices = new JSONArray(data);
+                String toReturn = controller.importClotho(devices);
+                out.write("{\"result\":\"" + toReturn + "\",\"status\":\"" + toReturn + "\"}");
             } else if (command.equals("run")) {
+                System.out.println(request.getParameter("required"));
                 response.setContentType("application/json");
                 String[] targetIDs = request.getParameter("targets").split(",");
                 String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
