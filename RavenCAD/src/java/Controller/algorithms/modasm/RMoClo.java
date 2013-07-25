@@ -252,9 +252,8 @@ public class RMoClo extends RGeneral {
 
         HashMap<String, ArrayList<String>> typeLOHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
         HashMap<String, ArrayList<String>> typeROHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
-
-        HashMap<String, String> numberLetterHash = new HashMap<String, String>(); //replaces the enumerated overhangs with abstract letter overhangs; key: abstract numerical overhang, value: abstract letter overhang
-        ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A_,B_,C_,D_,E_,F_,G_,H_,I_,J_,K_,L_,M_,N_,O_,P_,Q_,R_,S_,T_,U_,V_,W_,X_,Y_,Z_,a_,b_,c_,d_,e_,f_,g_,h_,i_,j_,k_,l_,m_,n_,o_,p_,q_,r_,s_,t_,u_,v_,w_,x_,y_,z_".split(","))); //overhangs that don't exist in part or vector library
+        HashMap<String, String> numberHash = new HashMap<String, String>(); //replaces the enumerated overhangs with numbers and an underscore; key: abstract numerical overhang round 1, value: abstract numerical overhang round 2
+        int count = 0;
 
         //Sharing determined in this loop
         for (RGraph graph : optimalGraphs) {
@@ -266,124 +265,115 @@ public class RMoClo extends RGeneral {
                 
                 System.out.println("typeLOHHash keySet: " + typeLOHHash.keySet() + " typeLOHHash valueSet: " + typeLOHHash.values());
                 System.out.println("typeROHHash keySet: " + typeROHHash.keySet() + " typeROHHash valueSet: " + typeROHHash.values());
-                
-                
+
                 //Clone all overhangs to the free overhang hashes and get reserved overhangs from the reserved hash based upon part type
-                ArrayList<String> assignableLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
-                ArrayList<String> assignableRightOverhangs = (ArrayList<String>) allOverhangs.clone();
-                ArrayList<String> existingPartTypeLeftOverhangs = typeLOHHash.get(l0Node.getType().toString().toLowerCase());
-                ArrayList<String> existingPartTypeRightOverhangs = typeROHHash.get(l0Node.getType().toString().toLowerCase());
+                ArrayList<String> reusableLeftOverhangs = new ArrayList<String>();
+                ArrayList<String> reusableRightOverhangs = new ArrayList<String>();
+                ArrayList<String> typeLeftOverhangs = typeLOHHash.get(l0Node.getType().toString().toLowerCase());
+                ArrayList<String> typeRightOverhangs = typeROHHash.get(l0Node.getType().toString().toLowerCase());
                 RNode parent = _parentHash.get(l0Node);
 
-                //If there are reserved left overhangs, add them to the free left overhang hash, else add new entry to the reserved abstract left OH hash
-                if (existingPartTypeLeftOverhangs != null) {
-                    assignableLeftOverhangs.addAll(existingPartTypeLeftOverhangs);
-                    Collections.sort(assignableLeftOverhangs);
+                //If there are reusable left overhangs for this part type, add them to the reuable left overhang hash, else add new entry for this type
+                if (typeLeftOverhangs != null) {                    
+                    reusableLeftOverhangs.addAll(typeLeftOverhangs);
+                    Collections.sort(reusableLeftOverhangs);                   
                 } else {
-                    existingPartTypeLeftOverhangs = new ArrayList();
-                    typeLOHHash.put(l0Node.getType().toString().toLowerCase(), existingPartTypeLeftOverhangs);
+                    typeLeftOverhangs = new ArrayList();
+                    typeLOHHash.put(l0Node.getType().toString().toLowerCase(), typeLeftOverhangs);
                 }
 
-                //If there are reserved right overhangs, add them to the free right overhang hash, else add new entry to the reserved abstract right OH hash
-                if (existingPartTypeRightOverhangs != null) {
-                    assignableRightOverhangs.addAll(existingPartTypeRightOverhangs);
-                    Collections.sort(assignableRightOverhangs);
+                //If there are reusable right overhangs for this part type, add them to the reusable right overhang hash, else add new entry for this type
+                if (typeRightOverhangs != null) {
+                    reusableRightOverhangs.addAll(typeRightOverhangs);
+                    Collections.sort(reusableRightOverhangs);                  
                 } else {
-                    existingPartTypeRightOverhangs = new ArrayList();
-                    typeROHHash.put(l0Node.getType().toString().toLowerCase(), existingPartTypeRightOverhangs);
+                    typeRightOverhangs = new ArrayList();
+                    typeROHHash.put(l0Node.getType().toString().toLowerCase(), typeRightOverhangs);
                 }
 
-                System.out.println("partTypeLeftOverhangs: " + existingPartTypeLeftOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
-                System.out.println("partTypeRightOverhangs: " + existingPartTypeRightOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
-                System.out.println("assignableRightOHs: " + assignableRightOverhangs);
-                System.out.println("assignableLeftOHs: " + assignableLeftOverhangs);
-                
-//                //Determine if this level 0 node is the left-most or right-most child of the parent
-//                int partIndex = -1;
-//                ArrayList<String> parentComposition = parent.getComposition();
-//                for (int i = 0; i < parentComposition.size(); i++) {
-//                    String l0NodeName = l0Node.getName();
-//                    if (l0NodeName.equals(parentComposition.get(i))) {
-//                        partIndex = i;
-//                    }
-//                }
-//
-//                //If this node is the left-most or right-most child of its parent, 
-//                if (partIndex == 0 || partIndex == parentComposition.size() - 1) {
-//                    RNode grandParent = _parentHash.get(parent);
-//                    
-//                    //If the parent has a parent also, remove all overhangs from all neighbors of this "grandparent" to permit more sharing
-//                    if (grandParent != null) {
-//                        for (RNode uncle : grandParent.getNeighbors()) {
-//                            assignableLeftOverhangs.remove(numberLetterHash.get(uncle.getLOverhang()));
-//                            assignableLeftOverhangs.remove(numberLetterHash.get(uncle.getROverhang()));
-//                            assignableRightOverhangs.remove(numberLetterHash.get(uncle.getLOverhang()));
-//                            assignableRightOverhangs.remove(numberLetterHash.get(uncle.getROverhang()));
-//                        }
-//                    }
-//                }
-                
-                //
+                System.out.println("partTypeLeftOverhangs: " + typeLeftOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
+                System.out.println("partTypeRightOverhangs: " + typeRightOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
+                System.out.println("reusableRightOHs: " + reusableRightOverhangs);
+                System.out.println("reusableLeftOHs: " + reusableLeftOverhangs);
 
-                //Assign left overhang if there is no existing mapping of number to letter
-                if (!numberLetterHash.containsKey(l0Node.getLOverhang())) {
-                    
-                    String newOverhang = assignableLeftOverhangs.get(0);
-                    int counter = 1;
+                //Assign left overhang if there is no existing mapping of number to number and underscore
+                if (!numberHash.containsKey(l0Node.getLOverhang())) {                   
+                    String nOverhang;
+                    if (!reusableLeftOverhangs.isEmpty()) {
+                        nOverhang = reusableLeftOverhangs.get(0);
+                        reusableLeftOverhangs.remove(0);
+                    } else {
+                        nOverhang = count + "_";
+                        count++;
+                    }
 
                     //Pull from the available overhang list until one does not match one already assigned to the right overhang of the current node or its parent
-                    while (newOverhang.equals(numberLetterHash.get(l0Node.getROverhang())) || newOverhang.equals(numberLetterHash.get(parent.getROverhang()))) {
-                        newOverhang = assignableLeftOverhangs.get(counter);
-                        counter = counter + 1;
-                    }
-                    numberLetterHash.put(l0Node.getLOverhang(), newOverhang);
-                    allOverhangs.remove(newOverhang);
+                    while (nOverhang.equals(numberHash.get(l0Node.getROverhang())) || nOverhang.equals(numberHash.get(parent.getROverhang()))) {                       
+                        if (!reusableLeftOverhangs.isEmpty()) {
+                            nOverhang = reusableLeftOverhangs.get(0);
+                            reusableLeftOverhangs.remove(0);
+                        } else {
+                            nOverhang = count + "_";
+                            count++;
+                        }
+                    }                    
+                    numberHash.put(l0Node.getLOverhang(), nOverhang);
 
                     //If this overhang is not contained in the part type OHs for right or left, add it to the left
-                    if (!existingPartTypeLeftOverhangs.contains(newOverhang) && !existingPartTypeRightOverhangs.contains(newOverhang)) {
-                        existingPartTypeLeftOverhangs.add(newOverhang);
+                    if (!typeLeftOverhangs.contains(nOverhang) && !typeRightOverhangs.contains(nOverhang)) {
+                        typeLeftOverhangs.add(nOverhang);
                     }
                     
-                    //Remove this overhang from the assignable overhangs
-                    assignableLeftOverhangs.remove(newOverhang);
-                    assignableRightOverhangs.remove(newOverhang);
+                    System.out.println("LOH assigned: " + nOverhang);
+                
+                } else if (numberHash.containsKey(l0Node.getLOverhang())) {
                     
-                    System.out.println("LOH assigned: " + newOverhang);
-                } else if (numberLetterHash.containsKey(l0Node.getLOverhang())) {
-                    
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the left
+                    if (!typeLeftOverhangs.contains(numberHash.get(l0Node.getLOverhang())) && !typeRightOverhangs.contains(numberHash.get(l0Node.getLOverhang()))) {
+                        typeLeftOverhangs.add(numberHash.get(l0Node.getLOverhang()));
+                    }
                 }
 
-                //Assign right overhang if there is no existing mapping of number to letter
-                if (!numberLetterHash.containsKey(l0Node.getROverhang())) {
-                    
-                    String newOverhang = assignableRightOverhangs.get(0);
-                    int counter = 1;
-
-                    //Pull from the available overhang list until one does not match one already assigned to the left overhang of the current node or its parent
-                    while (newOverhang.equals(numberLetterHash.get(l0Node.getLOverhang())) || newOverhang.equals(numberLetterHash.get(parent.getLOverhang()))) {
-                        newOverhang = assignableRightOverhangs.get(counter);
-                        counter = counter + 1;
+                //Assign right overhang if there is no existing mapping of number to number and underscore
+                if (!numberHash.containsKey(l0Node.getROverhang())) {
+                    String nOverhang;
+                    if (!reusableRightOverhangs.isEmpty()) {
+                        nOverhang = reusableRightOverhangs.get(0);
+                        reusableRightOverhangs.remove(0);
+                    } else {
+                        nOverhang = count + "_";
+                        count++;
                     }
-                    numberLetterHash.put(l0Node.getROverhang(), newOverhang);
-                    allOverhangs.remove(newOverhang);
+                    
+                    //Pull from the available overhang list until one does not match one already assigned to the left overhang of the current node or its parent
+                    while (nOverhang.equals(numberHash.get(l0Node.getLOverhang())) || nOverhang.equals(numberHash.get(parent.getLOverhang()))) {                       
+                        if (!reusableRightOverhangs.isEmpty()) {
+                            nOverhang = reusableRightOverhangs.get(0);
+                            reusableRightOverhangs.remove(0);
+                        } else {
+                            nOverhang = count + "_";
+                            count++;
+                        }
+                    }
+                    numberHash.put(l0Node.getROverhang(), nOverhang);
 
                     //If this overhang is not contained in the part type OHs for right or left, add it to the right
-                    if (!existingPartTypeLeftOverhangs.contains(newOverhang) && !existingPartTypeRightOverhangs.contains(newOverhang)) {
-                        existingPartTypeRightOverhangs.add(newOverhang);
+                    if (!typeLeftOverhangs.contains(nOverhang) && !typeRightOverhangs.contains(nOverhang)) {
+                        typeRightOverhangs.add(nOverhang);
                     }
-
-                    //Remove this overhang from the assignable overhangs
-                    assignableRightOverhangs.remove(newOverhang);
-                    assignableLeftOverhangs.remove(newOverhang);
                     
-                    System.out.println("ROH assigned: " + newOverhang);
-                } else if (numberLetterHash.containsKey(l0Node.getROverhang())) {
+                    System.out.println("ROH assigned: " + nOverhang);
+                
+                } else if (numberHash.containsKey(l0Node.getROverhang())) {
                     
-                }
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the right
+                    if (!typeLeftOverhangs.contains(numberHash.get(l0Node.getROverhang())) && !typeRightOverhangs.contains(numberHash.get(l0Node.getROverhang()))) {
+                        typeRightOverhangs.add(numberHash.get(l0Node.getROverhang()));
+                    }
+                }              
                 
-                
-                System.out.println("partTypeLeftOverhangs: " + existingPartTypeLeftOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
-                System.out.println("partTypeRightOverhangs: " + existingPartTypeRightOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
+                System.out.println("partTypeLeftOverhangs: " + typeLeftOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
+                System.out.println("partTypeRightOverhangs: " + typeRightOverhangs + " partType: " + l0Node.getType().toString().toLowerCase());
             }
         }
 
@@ -397,8 +387,8 @@ public class RMoClo extends RGeneral {
             while (!queue.isEmpty()) {
                 RNode currentNode = queue.get(0);
                 queue.remove(0);
-                currentNode.setLOverhang(numberLetterHash.get(currentNode.getLOverhang()));
-                currentNode.setROverhang(numberLetterHash.get(currentNode.getROverhang()));
+                currentNode.setLOverhang(numberHash.get(currentNode.getLOverhang()));
+                currentNode.setROverhang(numberHash.get(currentNode.getROverhang()));
                 seenNodes.add(currentNode);
                 ArrayList<RNode> neighbors = currentNode.getNeighbors();
 

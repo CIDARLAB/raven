@@ -568,6 +568,7 @@ public class RGraph {
                 pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
 
                 //Assign left overhang if it exists                
+                pigeonLine.append("3 ").append(currentPart.getLeftOverhang()).append("\n");
                 pigeonLine.append("5 ").append(currentPart.getLeftOverhang()).append("\n");
 
                 for (int i = 0; i < composition.size(); i++) {
@@ -617,8 +618,10 @@ public class RGraph {
                     }
                 }
 
-                //Assign right overhang
+                //Assign right overhang                
                 pigeonLine.append("3 ").append(currentPart.getRightOverhang()).append("\n");
+                pigeonLine.append("5 ").append(currentPart.getRightOverhang()).append("\n");
+                pigeonLine.append("v").append("\n");
                 pigeonLine.append("# Arcs\n");
                 pigeonLine.append("PIGEON_END\n\n");
                 weyekinText.append(pigeonLine.toString());
