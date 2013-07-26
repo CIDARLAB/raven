@@ -20,7 +20,7 @@ public class RGeneral extends Modularity {
 
     /** Find assembly graph for multiple goal parts **/
     protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<String, RGraph> partHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, boolean sharing) {
-
+        
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
         for (int i = 0; i < gps.size(); i++) {
             RNode gp = gps.get(i);
