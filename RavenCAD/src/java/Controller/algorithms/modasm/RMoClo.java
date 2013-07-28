@@ -329,6 +329,7 @@ public class RMoClo extends RGeneral {
         HashMap<String, ArrayList<String>> typeROHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
         HashMap<String, String> numberHash = new HashMap<String, String>(); //replaces the enumerated overhangs with numbers and an underscore; key: abstract numerical overhang round 1, value: abstract numerical overhang round 2
         HashMap<RNode, HashSet<String>> takenParentOHs = new HashMap<RNode, HashSet<String>>();
+        HashSet<String> allLevelOHs = new HashSet<String>();
         int count = 0;
         
         Set<Integer> keySet = _stageDirectionAssignHash.keySet();
@@ -343,6 +344,8 @@ public class RMoClo extends RGeneral {
             
             HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(i);
 //            HashMap<RNode, HashSet<String>> takenParentOHs = new HashMap<RNode, HashSet<String>>();
+            HashSet<String> currentLevelOHs = new HashSet<String>();            
+            HashSet<String> takenOHs;
 
             //Assign nodes in the forward direction first
             if (directionHash.containsKey("+")) {
@@ -375,11 +378,13 @@ public class RMoClo extends RGeneral {
                     }
                     
                     //Get taken overhangs from the ancestor
-                    HashSet<String> takenOHs;
+//                    HashSet<String> takenOHs;
                     if (takenParentOHs.containsKey(ancestor)) {
                         takenOHs = takenParentOHs.get(ancestor);
+                        takenOHs.addAll(allLevelOHs);
                     } else {
                         takenOHs = new HashSet<String>();
+                        takenOHs.addAll(allLevelOHs);
                         takenParentOHs.put(ancestor, takenOHs);
                     }                   
                     
@@ -428,6 +433,7 @@ public class RMoClo extends RGeneral {
                         }
                         numberHash.put(fwdNode.getLOverhang(), OH);
                         takenOHs.add(OH);
+                        currentLevelOHs.add(OH);
 
                         //If this overhang is not contained in the part type OHs for right or left, add it to the left
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
@@ -469,11 +475,13 @@ public class RMoClo extends RGeneral {
                     }
                     
                     //Get taken overhangs from the ancestor
-                    HashSet<String> takenOHs;
+//                    HashSet<String> takenOHs;
                     if (takenParentOHs.containsKey(ancestor)) {
                         takenOHs = takenParentOHs.get(ancestor);
+                        takenOHs.addAll(allLevelOHs);
                     } else {
                         takenOHs = new HashSet<String>();
+                        takenOHs.addAll(allLevelOHs);
                         takenParentOHs.put(ancestor, takenOHs);
                     }
                     
@@ -522,6 +530,7 @@ public class RMoClo extends RGeneral {
                         }
                         numberHash.put(fwdNode.getROverhang(), OH);
                         takenOHs.add(OH);
+                        currentLevelOHs.add(OH);
 
                         //If this overhang is not contained in the part type OHs for right or left, add it to the right
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
@@ -571,11 +580,13 @@ public class RMoClo extends RGeneral {
                     }
                     
                     //Get taken overhangs from the ancestor
-                    HashSet<String> takenOHs;
+//                    HashSet<String> takenOHs;
                     if (takenParentOHs.containsKey(ancestor)) {
                         takenOHs = takenParentOHs.get(ancestor);
+                        takenOHs.addAll(allLevelOHs);
                     } else {
                         takenOHs = new HashSet<String>();
+                        takenOHs.addAll(allLevelOHs);
                         takenParentOHs.put(ancestor, takenOHs);
                     }
                     
@@ -626,6 +637,7 @@ public class RMoClo extends RGeneral {
                         String hashOH = OH + "*";
                         numberHash.put(bkwdNode.getROverhang(), hashOH);
                         takenOHs.add(OH);
+                        currentLevelOHs.add(OH);
 
                         //If this overhang is not contained in the part type OHs for right or left, add it to the right
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
@@ -668,11 +680,13 @@ public class RMoClo extends RGeneral {
                     }
                     
                     //Get taken overhangs from the ancestor
-                    HashSet<String> takenOHs;
+//                    HashSet<String> takenOHs;
                     if (takenParentOHs.containsKey(ancestor)) {
                         takenOHs = takenParentOHs.get(ancestor);
+                        takenOHs.addAll(allLevelOHs);
                     } else {
                         takenOHs = new HashSet<String>();
+                        takenOHs.addAll(allLevelOHs);
                         takenParentOHs.put(ancestor, takenOHs);
                     }
                     
@@ -723,6 +737,7 @@ public class RMoClo extends RGeneral {
                         String hashOH = OH + "*";
                         numberHash.put(bkwdNode.getLOverhang(), hashOH);
                         takenOHs.add(OH);
+                        currentLevelOHs.add(OH);
 
                         //If this overhang is not contained in the part type OHs for right or left, add it to the left
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
@@ -741,7 +756,12 @@ public class RMoClo extends RGeneral {
                     System.out.println("bkwdNode ROverhang: " + numberHash.get(bkwdNode.getROverhang()));
                 }               
             }
+            
+            //Add all overhangs seen in this level to the taken overhang hash of each node
+            allLevelOHs.addAll(currentLevelOHs);
         }
+        
+        
         
         /** Assign all calculated assignments actually to the nodes. **/
         for (RGraph graph : optimalGraphs) {
