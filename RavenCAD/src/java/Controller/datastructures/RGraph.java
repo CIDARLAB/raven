@@ -552,13 +552,19 @@ public class RGraph {
         }
             
         for (String compLORO : nodeMap.keySet()) {
+            
             Part currentPart = coll.getPart(compLORO, true);
             ArrayList<Part> composition = currentPart.getComposition();
             ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> scars = new ArrayList<String>();
             ArrayList<String> searchTags = currentPart.getSearchTags();
+            
             for (String tag : searchTags) {
                 if (tag.startsWith("Direction:")) {
                     direction = ClothoReader.parseTags(tag);
+                }
+                if (tag.startsWith("Scars:")) {
+                    scars = ClothoReader.parseTags(tag);
                 }
             }
 
@@ -574,7 +580,7 @@ public class RGraph {
 
                 Part p = composition.get(i);
                 String dir = "";
-
+                
                 //Turn direction of glyph in reverse if reverse direction
                 if (!direction.isEmpty()) {
                     dir = direction.get(i);
@@ -615,6 +621,15 @@ public class RGraph {
                 } else {
                     pigeonLine.append("c ").append(p.getName()).append(" 13" + "\n");
                 }
+                
+                //Scars
+                if (!scars.isEmpty()) {
+                    if (i < composition.size()-1) {
+                        if (!"_".equals(scars.get(i))) {
+                            pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
+                        }
+                    }
+                }               
             }
 
             //Assign right overhang                

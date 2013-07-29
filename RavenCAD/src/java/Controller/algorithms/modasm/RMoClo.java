@@ -67,6 +67,35 @@ public class RMoClo extends RGeneral {
 
             //Run hierarchical Raven Algorithm
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
+            
+            for (RGraph graph : optimalGraphs) {
+                ArrayList<RNode> queue = new ArrayList<RNode>();
+                HashSet<RNode> seenNodes = new HashSet<RNode>();
+                RNode root = graph.getRootNode();
+                queue.add(root);
+                while (!queue.isEmpty()) {
+                    RNode current = queue.get(0);
+                    queue.remove(0);
+                    seenNodes.add(current);
+
+                    System.out.println("*********************");
+                    System.out.println("node composition: " + current.getComposition());
+                    System.out.println("LO: " + current.getLOverhang());
+                    System.out.println("RO: " + current.getROverhang());                                      
+                    System.out.println("NodeID: " + current.getNodeID());
+                    System.out.println("uuid: " + current.getUUID());
+
+                    ArrayList<RNode> neighbors = current.getNeighbors();
+                    for (RNode neighbor : neighbors) {
+                        System.out.println("neighbor: " + neighbor.getComposition());
+                        if (!seenNodes.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+                    System.out.println("*********************");
+                }
+            }
+            
             boolean tryCartesian = false;
             enforceOverhangRules(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
@@ -185,11 +214,7 @@ public class RMoClo extends RGeneral {
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
             
-            RNode root = graph.getRootNode();
-            
-            System.out.println("root composition: " + root.getComposition());
-            System.out.println("root direction: " + root.getDirection());
-            
+            RNode root = graph.getRootNode();            
             ArrayList<RNode> l0nodes= new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
             _encounteredCompositions.add(root.getComposition().toString());
@@ -246,10 +271,6 @@ public class RMoClo extends RGeneral {
                 _stageDirectionAssignHash.put(level, directionHash);
             }
         }
-        
-        Set<Integer> keySet = _stageDirectionAssignHash.keySet();
-        ArrayList<Integer> levels = new ArrayList<Integer>(keySet);
-        Collections.sort(levels);
     }
     
     /** This helper method executes the loops necessary to enforce overhangs for each graph in enforceOverhangRules **/
@@ -322,7 +343,7 @@ public class RMoClo extends RGeneral {
         _typeROHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
         _takenParentOHs = new HashMap<RNode, HashSet<String>>(); //key: node (parent) value: all overhangs assigned to the reaction the level below
         _countOH = 0;
-        HashMap<String, String> numberHash = new HashMap<String, String>(); //overhang assignment map between round 1 and round 2
+        HashMap<String, String> numberHash = new HashMap<String, String>(); //key: overhang from round 1, value: overhang from round 2
         HashSet<String> allLevelOHs = new HashSet<String>();
  
         Set<Integer> allLevels = _stageDirectionAssignHash.keySet();
@@ -330,7 +351,7 @@ public class RMoClo extends RGeneral {
         Collections.sort(levels);
         
         //Assign by levels of impact starting from 0
-        for (int level = 0; level < levels.size(); level++) {
+        for (Integer level : levels) {
             
             HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(level);
             HashSet<String> currentLevelOHs = new HashSet<String>();            
@@ -344,7 +365,7 @@ public class RMoClo extends RGeneral {
                 for (int j = 0; j < fwdNodes.size(); j++) {
                     
                     RNode fwdNode = fwdNodes.get(j);                                        
-                    takenOHs = getTakenAbstractOHs (fwdNode, allLevelOHs, level);
+                    takenOHs = getTakenAbstractOHs(fwdNode, allLevelOHs, level);
                     ArrayList<String> reusableOHs = getReusableAbstractOHs(fwdNode, "Left", "+");
                     ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(fwdNode.getType().toString().toLowerCase());
                     ArrayList<String> typeRightOverhangs = _typeROHHash.get(fwdNode.getType().toString().toLowerCase());
@@ -374,7 +395,7 @@ public class RMoClo extends RGeneral {
                 for (int k = 0; k < fwdNodes.size(); k++) {
                     
                     RNode fwdNode = fwdNodes.get(k);               
-                    takenOHs = getTakenAbstractOHs (fwdNode, allLevelOHs, level);
+                    takenOHs = getTakenAbstractOHs(fwdNode, allLevelOHs, level);
                     ArrayList<String> reusableOHs = getReusableAbstractOHs(fwdNode, "Right", "+");
                     ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(fwdNode.getType().toString().toLowerCase());
                     ArrayList<String> typeRightOverhangs = _typeROHHash.get(fwdNode.getType().toString().toLowerCase());
@@ -409,7 +430,7 @@ public class RMoClo extends RGeneral {
                 for (int k = bkwdNodes.size()-1; k > -1; k--) {
                     
                     RNode bkwdNode = bkwdNodes.get(k);
-                    takenOHs = getTakenAbstractOHs (bkwdNode, allLevelOHs, level);
+                    takenOHs = getTakenAbstractOHs(bkwdNode, allLevelOHs, level);
                     ArrayList<String> reusableOHs = getReusableAbstractOHs(bkwdNode, "Right", "-");
                     ArrayList<String> typeLeftOverhangs = _typeROHHash.get(bkwdNode.getType().toString().toLowerCase());
                     ArrayList<String> typeRightOverhangs = _typeLOHHash.get(bkwdNode.getType().toString().toLowerCase());
@@ -440,7 +461,7 @@ public class RMoClo extends RGeneral {
                 for (int j = bkwdNodes.size()-1; j > -1; j--) {
                     
                     RNode bkwdNode = bkwdNodes.get(j);                    
-                    takenOHs = getTakenAbstractOHs (bkwdNode, allLevelOHs, level);
+                    takenOHs = getTakenAbstractOHs(bkwdNode, allLevelOHs, level);
                     ArrayList<String> reusableOHs = getReusableAbstractOHs(bkwdNode, "Left", "-");
                     ArrayList<String> typeLeftOverhangs = _typeROHHash.get(bkwdNode.getType().toString().toLowerCase());
                     ArrayList<String> typeRightOverhangs = _typeLOHHash.get(bkwdNode.getType().toString().toLowerCase());
@@ -608,7 +629,7 @@ public class RMoClo extends RGeneral {
         
     }
     
-    private void assignScarsHelper(RNode parent, ArrayList<RNode> children) {
+    private ArrayList<String> assignScarsHelper(RNode parent, ArrayList<RNode> children) {
         
         ArrayList<String> scars = new ArrayList<String>();
         
@@ -616,9 +637,14 @@ public class RMoClo extends RGeneral {
         for (int i = 0; i < children.size(); i++) {
 
             RNode child = children.get(i);
+            scars.addAll(child.getScars());
+            
             if (i > 0) {
-               scars.add(child.getLOverhang()); 
-            }
+                if (child.getLOverhang().isEmpty()) {
+                    scars.add("_");
+                }
+                scars.add(child.getLOverhang()); 
+            }   
             
             //Make recursive call
             if (child.getStage() > 0) {
@@ -630,17 +656,16 @@ public class RMoClo extends RGeneral {
                     grandChildren.remove(parent);
                 }
                 
-                assignScarsHelper(child, grandChildren);
+                ArrayList<String> childScars = assignScarsHelper(child, grandChildren);
+                scars.addAll(childScars);
             }
-        }
+        }     
         
         parent.setScars(scars);
-        System.out.println("parent name: " + parent.getName());
         System.out.println("parent composition: " + parent.getComposition());
-        System.out.println("parent direction: " + parent.getDirection());
-        System.out.println("parent LO: " + parent.getLOverhang());
-        System.out.println("parent scars: " + scars);
-        System.out.println("parent RO: " + parent.getROverhang());
+        System.out.println("scars: " + scars);
+        
+        return scars;
     }
     
     //optimizes overhang assignment based on frequency of a parts appearance and the availability of existing overhangs
