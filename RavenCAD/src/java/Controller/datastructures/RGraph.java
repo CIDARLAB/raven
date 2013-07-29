@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
@@ -540,8 +542,6 @@ public class RGraph {
         for (String key : nodeMap.keySet()) {
             arcsText.append("# ").append(nodeMap.get(key)).append("\n");
             arcsText.append("# ").append(key).append("\n");
-            String compositionString = compositionHash.get(key);
-            arcsText.append("# (").append(compositionString.substring(1, compositionString.length() - 1)).append(")\n");
         }
         return arcsText.toString();
     }
@@ -672,7 +672,7 @@ public class RGraph {
         for (int i = 0; i < 2; i++) {
             header = header + firstFileLines[i] + "\n";
         }
-        ArrayList<String> keyLines = new ArrayList<String>(); //stores the lines in all of the keys
+        HashMap<String, String> keyLines = new HashMap(); //stores the lines in all of the keys
         HashSet<String> seenArcLines = new HashSet(); //stores arc lines
 
         //Iterate through each arc file; each one is represented by a string
@@ -686,17 +686,18 @@ public class RGraph {
             }
 
             //Apend to the key section
-            for (int k = 4; k < lines.length; k++) {//first 4 lines are the header
+            for (int k = 4; k < lines.length - 1; k++) {//first 4 lines are the header
                 if (lines[k].contains("# Key")) {
-
+                    k++;
                     //Once this line appears, store the following lines (which are lines of the key) into the keyLines arrayList.
                     seenKey = true;
                 }
                 if (seenKey) {
 
                     //If the key file doesnt have the current line in the current key, add it
-                    if (!keyLines.contains(lines[k])) {
-                        keyLines.add(lines[k]);
+                    if (!keyLines.containsKey(lines[k])) {
+                        keyLines.put(lines[k + 1], lines[k]);
+                        k++;
                     }
                 } else {
 
@@ -710,9 +711,11 @@ public class RGraph {
         }
 
         //Apend key to toReturn
-        outFile = outFile + "\n";
-        for (int l = 0; l < keyLines.size(); l++) {
-            outFile = outFile + keyLines.get(l) + "\n";
+        outFile = outFile + "\n# Key\n";
+        ArrayList<String> sortedKeys = new ArrayList(keyLines.keySet());
+        Collections.sort(sortedKeys);
+        for (String keyLine : sortedKeys) {
+            outFile = outFile + keyLines.get(keyLine) + "\n" + keyLine + "\n";
         }
 
         //Add header to toReturn
