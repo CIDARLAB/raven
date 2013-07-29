@@ -11,7 +11,6 @@ import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.*;
@@ -70,7 +69,8 @@ public class ClothoReader {
                     root.setDirection(direction);
                     root.setType(type);
                     
-                    library.put(composition.toString(), newBasicGraph);
+                    System.out.println("composition.toString() + direction.toString(): " + composition.toString() + direction.toString());
+                    library.put(composition.toString() + direction.toString(), newBasicGraph);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -150,8 +150,9 @@ public class ClothoReader {
                         libraryPartGraph.getRootNode().setDiscouraged(true);
                     }
 
-                    //Put library part into library for assembly                   
-                    library.put(composition.toString(), libraryPartGraph);
+                    //Put library part into library for assembly
+                    System.out.println("composition.toString() + direction.toString(): " + composition.toString() + direction.toString());
+                    library.put(composition.toString() + direction.toString(), libraryPartGraph);
                 }
             }
         }

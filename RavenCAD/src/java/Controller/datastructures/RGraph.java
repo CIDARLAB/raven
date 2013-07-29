@@ -528,7 +528,7 @@ public class RGraph {
     /**
      * Generate a Weyekin image file for a list of edges *
      */
-    public String generateWeyekinFile(Collector coll, ArrayList<String> edges, boolean pigeon) {
+    public String generateWeyekinFile(Collector coll, ArrayList<String> edges) {
         //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
@@ -550,88 +550,80 @@ public class RGraph {
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
 
         }
+            
+        for (String compLORO : nodeMap.keySet()) {
+            Part currentPart = coll.getPart(compLORO, true);
+            ArrayList<Part> composition = currentPart.getComposition();
+            ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> searchTags = currentPart.getSearchTags();
+            for (String tag : searchTags) {
+                if (tag.startsWith("Direction:")) {
+                    direction = ClothoReader.parseTags(tag);
+                }
+            }
 
-        if (pigeon) {
-            for (String key : nodeMap.keySet()) {
-                Part currentPart = coll.getPart(key, true);
-                ArrayList<Part> composition = currentPart.getComposition();
-                ArrayList<String> direction = new ArrayList<String>();
-                ArrayList<String> searchTags = currentPart.getSearchTags();
-                for (String tag : searchTags) {
-                    if (tag.startsWith("Direction:")) {
-                        direction = ClothoReader.parseTags(tag);
+            StringBuilder pigeonLine = new StringBuilder();
+            pigeonLine.append("PIGEON_START\n");
+            pigeonLine.append("\"").append(nodeMap.get(compLORO)).append("\"\n");
+
+            //Assign left overhang if it exists                
+//            pigeonLine.append("3 ").append(currentPart.getLeftOverhang()).append("\n");
+            pigeonLine.append("5 ").append(currentPart.getLeftOverhang()).append("\n");
+
+            for (int i = 0; i < composition.size(); i++) {
+
+                Part p = composition.get(i);
+                String dir = "";
+
+                //Turn direction of glyph in reverse if reverse direction
+                if (!direction.isEmpty()) {
+                    dir = direction.get(i);
+                    if ("-".equals(dir)) {
+                        pigeonLine.append("<");
                     }
                 }
-                
-                StringBuilder pigeonLine = new StringBuilder();
-                pigeonLine.append("PIGEON_START\n");
-                pigeonLine.append("\"").append(nodeMap.get(key)).append("\"\n");
 
-                //Assign left overhang if it exists                
-//                pigeonLine.append("3 ").append(currentPart.getLeftOverhang()).append("\n");
-                pigeonLine.append("5 ").append(currentPart.getLeftOverhang()).append("\n");
-
-                for (int i = 0; i < composition.size(); i++) {
-
-                    Part p = composition.get(i);
-                    String dir = "";
-                    
-                    //Turn direction of glyph in reverse if reverse direction
-                    if (!direction.isEmpty()) {
-                        dir = direction.get(i);
-                        if ("-".equals(dir)) {
-                            pigeonLine.append("<");
-                        } 
-                    }
-                    
-                    //Write pigeon code line
-                    if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
-                        pigeonLine.append("P ").append(p.getName()).append(" 4" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("RBS") || p.getType().equalsIgnoreCase("r")) {
-                        pigeonLine.append("r ").append(p.getName()).append(" 5" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("gene") || p.getType().equalsIgnoreCase("g")) {
-                        pigeonLine.append("c ").append(p.getName()).append(" 1" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("reporter") || p.getType().equalsIgnoreCase("gr")) {
-                        pigeonLine.append("c ").append(p.getName()).append(" 2" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("terminator") || p.getType().equalsIgnoreCase("t")) {
-                        pigeonLine.append("T ").append(p.getName()).append(" 6" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("invertase site") || p.getType().equalsIgnoreCase("is")) {
-                        if ("-".equals(dir)) {
-                            pigeonLine.append(" ").append(p.getName()).append(" 12" + "\n");
-                        } else {
-                            pigeonLine.append("> ").append(p.getName()).append(" 12" + "\n");  
-                        }                                           
-                    } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s")) {
-                        pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");  
-                    } else if (p.getType().equalsIgnoreCase("origin") || p.getType().equalsIgnoreCase("o")) {
-                        pigeonLine.append("z ").append(p.getName()).append(" 14" + "\n");
-                    } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
-                        pigeonLine.append("f1");
-                        String[] fusionParts = p.getName().split("-");                        
-                        for (int j = 1; j < fusionParts.length; j++) {
-                            int color = j % 13 + 1;
-                            pigeonLine.append("-").append(color);
-                        }
-                        pigeonLine.append(" ").append(p.getName()).append("\n");   
+                //Write pigeon code line
+                if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
+                    pigeonLine.append("P ").append(p.getName()).append(" 4" + "\n");
+                } else if (p.getType().equalsIgnoreCase("RBS") || p.getType().equalsIgnoreCase("r")) {
+                    pigeonLine.append("r ").append(p.getName()).append(" 5" + "\n");
+                } else if (p.getType().equalsIgnoreCase("gene") || p.getType().equalsIgnoreCase("g")) {
+                    pigeonLine.append("c ").append(p.getName()).append(" 1" + "\n");
+                } else if (p.getType().equalsIgnoreCase("reporter") || p.getType().equalsIgnoreCase("gr")) {
+                    pigeonLine.append("c ").append(p.getName()).append(" 2" + "\n");
+                } else if (p.getType().equalsIgnoreCase("terminator") || p.getType().equalsIgnoreCase("t")) {
+                    pigeonLine.append("T ").append(p.getName()).append(" 6" + "\n");
+                } else if (p.getType().equalsIgnoreCase("invertase site") || p.getType().equalsIgnoreCase("is")) {
+                    if ("-".equals(dir)) {
+                        pigeonLine.append(" ").append(p.getName()).append(" 12" + "\n");
                     } else {
-                        pigeonLine.append(key);
+                        pigeonLine.append("> ").append(p.getName()).append(" 12" + "\n");
                     }
+                } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s")) {
+                    pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");
+                } else if (p.getType().equalsIgnoreCase("origin") || p.getType().equalsIgnoreCase("o")) {
+                    pigeonLine.append("z ").append(p.getName()).append(" 14" + "\n");
+                } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
+                    pigeonLine.append("f1");
+                    String[] fusionParts = p.getName().split("-");
+                    for (int j = 1; j < fusionParts.length; j++) {
+                        int color = j % 13 + 1;
+                        pigeonLine.append("-").append(color);
+                    }
+                    pigeonLine.append(" ").append(p.getName()).append("\n");
+                } else {
+                    pigeonLine.append("c ").append(p.getName()).append(" 13" + "\n");
                 }
-
-                //Assign right overhang                
-                pigeonLine.append("3 ").append(currentPart.getRightOverhang()).append("\n");
-//                pigeonLine.append("5 ").append(currentPart.getRightOverhang()).append("\n");
-                pigeonLine.append("v").append("\n");
-                pigeonLine.append("# Arcs\n");
-                pigeonLine.append("PIGEON_END\n\n");
-                weyekinText.append(pigeonLine.toString());
             }
-        } else {
 
-            //Write node properties - purple boxes if cannot pigeon
-            for (String key : nodeMap.keySet()) {
-                weyekinText.append("\"").append(coll.getPart(key, true).getStringComposition()).append("\"" + " [shape=box, color=\"#B293C9\", style=\"filled,rounded\"]" + "\n");
-            }
+            //Assign right overhang                
+            pigeonLine.append("3 ").append(currentPart.getRightOverhang()).append("\n");
+//            pigeonLine.append("5 ").append(currentPart.getRightOverhang()).append("\n");
+            pigeonLine.append("v").append("\n");
+            pigeonLine.append("# Arcs\n");
+            pigeonLine.append("PIGEON_END\n\n");
+            weyekinText.append(pigeonLine.toString());
         }
 
         //Write edge lines
@@ -802,21 +794,6 @@ public class RGraph {
         mergedFile = "digraph{\n" + mergedFile + "\n}";
 
         return mergedFile;
-    }
-
-    /**
-     * Check a graph to see if all of its basic parts *
-     */
-    public boolean canPigeon() {
-        boolean canPigeon = true;
-        RNode root = this.getRootNode();
-        ArrayList<String> types = root.getType();
-        for (int i = 0; i < types.size(); i++) {
-            if (!(types.get(i).equalsIgnoreCase("promoter") || types.get(i).equalsIgnoreCase("p") || types.get(i).equalsIgnoreCase("RBS") || types.get(i).equalsIgnoreCase("r") || types.get(i).equalsIgnoreCase("gene") || types.get(i).equalsIgnoreCase("g") || types.get(i).equalsIgnoreCase("terminator") || types.get(i).equalsIgnoreCase("t") || types.get(i).equalsIgnoreCase("reporter") || types.get(i).equalsIgnoreCase("gr") || types.get(i).equalsIgnoreCase("invertase site") || types.get(i).equalsIgnoreCase("is") || types.get(i).equalsIgnoreCase("fusion") || types.get(i).equalsIgnoreCase("fu") || types.get(i).equalsIgnoreCase("spacer") || types.get(i).equalsIgnoreCase("s") || types.get(i).equalsIgnoreCase("origin") || types.get(i).equalsIgnoreCase("o") || types.get(i).equalsIgnoreCase("promoter_r") || types.get(i).equalsIgnoreCase("p_r") || types.get(i).equalsIgnoreCase("RBS_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("gene_r") || types.get(i).equalsIgnoreCase("g_r") || types.get(i).equalsIgnoreCase("terminator_r") || types.get(i).equalsIgnoreCase("t_r") || types.get(i).equalsIgnoreCase("reporter_r") || types.get(i).equalsIgnoreCase("r_r") || types.get(i).equalsIgnoreCase("invertase site_r") || types.get(i).equalsIgnoreCase("is_r") || types.get(i).equalsIgnoreCase("fusion_r") || types.get(i).equalsIgnoreCase("fu_r") || types.get(i).equalsIgnoreCase("spacer_r") || types.get(i).equalsIgnoreCase("s_r"))) {
-                canPigeon = false;
-            }
-        }
-        return canPigeon;
     }
 
     /**

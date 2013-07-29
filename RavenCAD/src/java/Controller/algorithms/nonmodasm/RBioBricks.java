@@ -19,7 +19,7 @@ public class RBioBricks extends RGeneral {
 
 /** This is the only entry point for this class. A list of goal parts is passed and a list of optimal graphs is output. 
      * PASS THE FOLLOWING ARGUMENTS: ArrayList(Goal_Parts), HashMap(A_Goal_Part, HashSet(Required_Part_Compositions)), HashMap(A_Goal_Part, HashSet(Recommended_Part_Compositions)), HashMap(Part_Compositions, Optimal_Assembly_Graphs) **/
-    public ArrayList<RGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, ArrayList<Double> costs) {
+    public ArrayList<RGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) {
 
         //Try-Catch block around wrapper method
         try {
@@ -32,16 +32,9 @@ public class RBioBricks extends RGeneral {
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
-
-            //Positional scoring of transcriptional units
-            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-            if (modular) {
-                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-                positionScores = getPositionalScoring(TUs);
-            }   
             
-            //Run SDS Algorithm for multiple parts
-            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, null, true);
+            //Run hierarchical Raven Algorithm
+            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
             optimalGraphs = assignVectors(optimalGraphs, vectorSet);
            
 //            System.out.println("optimalGraphs: " + optimalGraphs);
