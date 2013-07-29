@@ -67,7 +67,7 @@ public class RMoClo extends RGeneral {
 
             //Run SDS Algorithm for multiple parts
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
-            boolean tryCartesian = true;
+            boolean tryCartesian = false;
             basicOverhangAssignment(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfirst pass: " + valid);
