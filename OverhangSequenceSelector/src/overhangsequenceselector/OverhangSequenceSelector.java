@@ -107,7 +107,7 @@ public class OverhangSequenceSelector {
             }
             for (int i = 0; i < sequences.length; i++) {
                 if (i != currentIndex && !selectedIndices.contains(i)) {
-                    if (scoreMatrix[currentIndex][i] < scoreMatrix[potentialIndices.get(0)][i]) {
+                    if (scoreMatrix[currentIndex][i] < scoreMatrix[currentIndex][potentialIndices.get(0)]) {
                         potentialIndices.clear();
                         potentialIndices.add(i);
                     } else if (scoreMatrix[currentIndex][i] > scoreMatrix[potentialIndices.get(0)][i]) {
