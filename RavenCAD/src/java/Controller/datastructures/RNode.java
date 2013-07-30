@@ -5,7 +5,6 @@
 package Controller.datastructures;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  *
@@ -36,7 +35,7 @@ public class RNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, int successCnt, int failureCnt) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, int successCnt, int failureCnt) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
@@ -47,7 +46,7 @@ public class RNode {
         if (_neighbors == null) {
             _neighbors = new ArrayList<RNode>();
         }
-        _scars = new ArrayList<String>();
+        _scars = scars;
         _composition = composition;
         _direction = direction;
         _type = type;

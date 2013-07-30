@@ -25,7 +25,7 @@ public class RGraph {
      * SDSGraph constructor, no specified root node *
      */
     public RGraph() {
-        _node = new RNode();
+        _rootNode = new RNode();
         _subGraphs = new ArrayList<RGraph>();
         _stages = 0;
         _steps = 0;
@@ -40,7 +40,7 @@ public class RGraph {
      * SDSGraph constructor, specified root node *
      */
     public RGraph(RNode node) {
-        _node = node;
+        _rootNode = node;
         _subGraphs = new ArrayList<RGraph>();
         _stages = 0;
         _steps = 0;
@@ -57,7 +57,7 @@ public class RGraph {
     @Override
     public RGraph clone() {
         RGraph clone = new RGraph();
-        clone._node = this._node.clone();
+        clone._rootNode = this._rootNode.clone();
         clone._recCnt = this._recCnt;
         clone._disCnt = this._disCnt;
         clone._stages = this._stages;
@@ -415,12 +415,12 @@ public class RGraph {
     public ArrayList<String> getPostOrderEdges() {
         ArrayList<String> edges = new ArrayList();
         HashSet<String> seenUUIDs = new HashSet();
-        seenUUIDs.add(this._node.getUUID());
+        seenUUIDs.add(this._rootNode.getUUID());
         
         //Start at the root node and look at all children
-        for (RNode neighbor : this._node.getNeighbors()) {
+        for (RNode neighbor : this._rootNode.getNeighbors()) {
             seenUUIDs.add(neighbor.getUUID());
-            edges = getPostOrderEdgesHelper(neighbor, this._node, edges, seenUUIDs, true);
+            edges = getPostOrderEdgesHelper(neighbor, this._rootNode, edges, seenUUIDs, true);
         }
         return edges;
     }
@@ -445,7 +445,7 @@ public class RGraph {
                         seenUUIDs.add(neighbor.getUUID());
                         edges = getPostOrderEdgesHelper(neighbor, current, edges, seenUUIDs, true);
 
-                        //If this neighbor has been seen, do not recursively call
+                    //If this neighbor has been seen, do not recursively call
                     } else {
                         edges = getPostOrderEdgesHelper(neighbor, current, edges, seenUUIDs, false);
                     }
@@ -468,8 +468,8 @@ public class RGraph {
             }
         }
 
-        for (String s : edgesToAdd) {
-            edges.add(s);
+        for (String edge : edgesToAdd) {
+            edges.add(edge);
         }
         return edges;
     }
@@ -485,8 +485,8 @@ public class RGraph {
         DateFormat dateFormat = new SimpleDateFormat("MMddyyyy@HHmm");
         Date date = new Date();
         arcsText.append("# AssemblyMethod: "+method+"\n# ").append(" ").append(dateFormat.format(date)).append("\n");
-        arcsText.append("# ").append(coll.getPart(this._node.getUUID(), true)).append("\n");
-        arcsText.append("# ").append(this._node.getUUID()).append("\n\n");
+        arcsText.append("# ").append(coll.getPart(this._rootNode.getUUID(), true)).append("\n");
+        arcsText.append("# ").append(this._rootNode.getUUID()).append("\n\n");
 
         //Build arc file 
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
@@ -504,7 +504,7 @@ public class RGraph {
         Stack<RNode> stack = new Stack<RNode>();
         HashSet<RNode> seenNodes = new HashSet<RNode>();
         HashMap<String, String> compositionHash = new HashMap<String, String>();
-        stack.add(this._node);
+        stack.add(this._rootNode);
         while (!stack.isEmpty()) {
             RNode current = stack.pop();
             seenNodes.add(current);
@@ -529,6 +529,7 @@ public class RGraph {
      * Generate a Weyekin image file for a list of edges *
      */
     public String generateWeyekinFile(Collector coll, ArrayList<String> edges) {
+        
         //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
@@ -541,24 +542,25 @@ public class RGraph {
 
         //Store list of edges
         String edgeLines = "";
-        for (String s : edges) {
-            String[] tokens = s.split("->");
+        for (String edge : edges) {
+            String[] tokens = edge.split("->");
             Part vertex1 = coll.getPart(tokens[0].trim(), true);
             Part vertex2 = coll.getPart(tokens[1].trim(), true);
             nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + vertex1.getLeftOverhang() + vertex1.getRightOverhang());
             nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + vertex2.getLeftOverhang() + vertex2.getRightOverhang());
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
-
         }
             
-        for (String compLORO : nodeMap.keySet()) {
+        for (String uuid : nodeMap.keySet()) {
             
-            Part currentPart = coll.getPart(compLORO, true);
-            ArrayList<Part> composition = currentPart.getComposition();
+            Part part = coll.getPart(uuid, true);
+            ArrayList<Part> composition = part.getComposition();
+            ArrayList<String> strComposition = new ArrayList<String>();
             ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> types = new ArrayList<String>();
             ArrayList<String> scars = new ArrayList<String>();
-            ArrayList<String> searchTags = currentPart.getSearchTags();
-            
+            ArrayList<String> searchTags = part.getSearchTags();
+
             for (String tag : searchTags) {
                 if (tag.startsWith("Direction:")) {
                     direction = ClothoReader.parseTags(tag);
@@ -567,77 +569,13 @@ public class RGraph {
                     scars = ClothoReader.parseTags(tag);
                 }
             }
-
-            StringBuilder pigeonLine = new StringBuilder();
-            pigeonLine.append("PIGEON_START\n");
-            pigeonLine.append("\"").append(nodeMap.get(compLORO)).append("\"\n");
-
-            //Assign left overhang if it exists                
-//            pigeonLine.append("3 ").append(currentPart.getLeftOverhang()).append("\n");
-            pigeonLine.append("5 ").append(currentPart.getLeftOverhang()).append("\n");
-
+            
             for (int i = 0; i < composition.size(); i++) {
-
-                Part p = composition.get(i);
-                String dir = "";
-                
-                //Turn direction of glyph in reverse if reverse direction
-                if (!direction.isEmpty()) {
-                    dir = direction.get(i);
-                    if ("-".equals(dir)) {
-                        pigeonLine.append("<");
-                    }
-                }
-
-                //Write pigeon code line
-                if (p.getType().equalsIgnoreCase("promoter") || p.getType().equalsIgnoreCase("p")) {
-                    pigeonLine.append("P ").append(p.getName()).append(" 4" + "\n");
-                } else if (p.getType().equalsIgnoreCase("RBS") || p.getType().equalsIgnoreCase("r")) {
-                    pigeonLine.append("r ").append(p.getName()).append(" 5" + "\n");
-                } else if (p.getType().equalsIgnoreCase("gene") || p.getType().equalsIgnoreCase("g")) {
-                    pigeonLine.append("c ").append(p.getName()).append(" 1" + "\n");
-                } else if (p.getType().equalsIgnoreCase("reporter") || p.getType().equalsIgnoreCase("gr")) {
-                    pigeonLine.append("c ").append(p.getName()).append(" 2" + "\n");
-                } else if (p.getType().equalsIgnoreCase("terminator") || p.getType().equalsIgnoreCase("t")) {
-                    pigeonLine.append("T ").append(p.getName()).append(" 6" + "\n");
-                } else if (p.getType().equalsIgnoreCase("invertase site") || p.getType().equalsIgnoreCase("is")) {
-                    if ("-".equals(dir)) {
-                        pigeonLine.append(" ").append(p.getName()).append(" 12" + "\n");
-                    } else {
-                        pigeonLine.append("> ").append(p.getName()).append(" 12" + "\n");
-                    }
-                } else if (p.getType().equalsIgnoreCase("spacer") || p.getType().equalsIgnoreCase("s")) {
-                    pigeonLine.append("s ").append(p.getName()).append(" 10" + "\n");
-                } else if (p.getType().equalsIgnoreCase("origin") || p.getType().equalsIgnoreCase("o")) {
-                    pigeonLine.append("z ").append(p.getName()).append(" 14" + "\n");
-                } else if (p.getType().equalsIgnoreCase("fusion") || p.getType().equalsIgnoreCase("fu")) {
-                    pigeonLine.append("f1");
-                    String[] fusionParts = p.getName().split("-");
-                    for (int j = 1; j < fusionParts.length; j++) {
-                        int color = j % 13 + 1;
-                        pigeonLine.append("-").append(color);
-                    }
-                    pigeonLine.append(" ").append(p.getName()).append("\n");
-                } else {
-                    pigeonLine.append("c ").append(p.getName()).append(" 13" + "\n");
-                }
-                
-                //Scars
-                if (!scars.isEmpty()) {
-                    if (i < composition.size()-1) {
-                        if (!"_".equals(scars.get(i))) {
-                            pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
-                        }
-                    }
-                }               
+                strComposition.add(composition.get(i).getName());
+                types.add(composition.get(i).getType());
             }
 
-            //Assign right overhang                
-            pigeonLine.append("3 ").append(currentPart.getRightOverhang()).append("\n");
-//            pigeonLine.append("5 ").append(currentPart.getRightOverhang()).append("\n");
-            pigeonLine.append("v").append("\n");
-            pigeonLine.append("# Arcs\n");
-            pigeonLine.append("PIGEON_END\n\n");
+            StringBuilder pigeonLine = generatePigeonCode(strComposition, types, direction, scars, nodeMap.get(uuid), part.getLeftOverhang(), part.getRightOverhang());
             weyekinText.append(pigeonLine.toString());
         }
 
@@ -647,6 +585,83 @@ public class RGraph {
         return weyekinText.toString();
     }
 
+    /** Pigeon code generation **/
+    private StringBuilder generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO) {
+
+        StringBuilder pigeonLine = new StringBuilder();
+        pigeonLine.append("PIGEON_START\n");
+        pigeonLine.append("\"").append(compLORO).append("\"\n");
+
+        //Assign left overhang if it exists                
+//        pigeonLine.append("3 ").append(LO).append("\n");
+        pigeonLine.append("5 ").append(LO).append("\n");
+
+        for (int i = 0; i < types.size(); i++) {
+
+            String name = composition.get(i);
+            String type = types.get(i);
+            String dir = "";
+
+            //Turn direction of glyph in reverse if reverse direction
+            if (!direction.isEmpty()) {
+                dir = direction.get(i);
+                if ("-".equals(dir)) {
+                    pigeonLine.append("<");
+                }
+            }
+
+            //Write pigeon code line
+            if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
+                pigeonLine.append("P ").append(name).append(" 4" + "\n");
+            } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
+                pigeonLine.append("r ").append(name).append(" 5" + "\n");
+            } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
+                pigeonLine.append("c ").append(name).append(" 1" + "\n");
+            } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
+                pigeonLine.append("c ").append(name).append(" 2" + "\n");
+            } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
+                pigeonLine.append("T ").append(name).append(" 6" + "\n");
+            } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
+                if ("-".equals(dir)) {
+                    pigeonLine.append(" ").append(name).append(" 12" + "\n");
+                } else {
+                    pigeonLine.append("> ").append(name).append(" 12" + "\n");
+                }
+            } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
+                pigeonLine.append("s ").append(name).append(" 10" + "\n");
+            } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
+                pigeonLine.append("z ").append(name).append(" 14" + "\n");
+            } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
+                pigeonLine.append("f1");
+                String[] fusionParts = name.split("-");
+                for (int j = 1; j < fusionParts.length; j++) {
+                    int color = j % 13 + 1;
+                    pigeonLine.append("-").append(color);
+                }
+                pigeonLine.append(" ").append(name).append("\n");
+            } else {
+                pigeonLine.append("c ").append(name).append(" 13" + "\n");
+            }
+
+            //Scars
+            if (!scars.isEmpty()) {
+                if (i < composition.size() - 1) {
+                    if (!"_".equals(scars.get(i))) {
+                        pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
+                    }
+                }
+            }
+        }
+
+        //Assign right overhang                
+        pigeonLine.append("3 ").append(RO).append("\n");
+//        pigeonLine.append("5 ").append(RO).append("\n");
+        pigeonLine.append("v").append("\n");
+        pigeonLine.append("# Arcs\n");
+        pigeonLine.append("PIGEON_END\n\n");
+        return pigeonLine;
+    }
+    
     /**
      * Merge multiple arc files into one file with one graph *
      */
@@ -829,7 +844,7 @@ public class RGraph {
      * Get graph root node *
      */
     public RNode getRootNode() {
-        return _node;
+        return _rootNode;
     }
 
     /**
@@ -963,7 +978,7 @@ public class RGraph {
      * Set graph root node *
      */
     public void setRootNode(RNode newRoot) {
-        _node = newRoot;
+        _rootNode = newRoot;
     }
 
     /**
@@ -1017,7 +1032,7 @@ public class RGraph {
     
     //FIELDS
     private ArrayList<RGraph> _subGraphs;
-    private RNode _node;
+    private RNode _rootNode;
     private int _stages;
     private int _steps;
     private int _sharedSteps;
