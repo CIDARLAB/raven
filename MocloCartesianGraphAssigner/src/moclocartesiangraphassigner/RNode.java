@@ -10,14 +10,14 @@ import java.util.ArrayList;
  *
  * @author jenhantao, evanappleton
  */
-public class SRSNode {
+public class RNode {
 
     /** SDSNode constructor, no neighbors, parent or children or meta-data specified **/
-    public SRSNode() {
+    public RNode() {
         _recommended = false;
         _discouraged = false;
         _efficiency = 0;
-        _neighbors = new ArrayList<SRSNode>();
+        _neighbors = new ArrayList<RNode>();
         _composition = new ArrayList<String>();
         _uuid = null;
         _type = new ArrayList<String>();
@@ -31,7 +31,7 @@ public class SRSNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public SRSNode(boolean recommended, boolean discouraged, ArrayList<SRSNode> neighbors, ArrayList<String> composition, ArrayList<String> type, boolean success) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> type, boolean success) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
@@ -39,7 +39,7 @@ public class SRSNode {
         _success = success;
         _neighbors = neighbors;
         if (_neighbors == null) {
-            _neighbors = new ArrayList<SRSNode>();
+            _neighbors = new ArrayList<RNode>();
         }
         _composition = composition;
         _type = type;
@@ -53,9 +53,9 @@ public class SRSNode {
     
     /** Clone nodes of a graph by traversing and copying nodes **/
     @Override
-    public SRSNode clone() {
+    public RNode clone() {
         
-        SRSNode clone = new SRSNode();
+        RNode clone = new RNode();
         clone._recommended = this._recommended;
         clone._discouraged = this._discouraged;
         clone._uuid = this._uuid;
@@ -67,19 +67,19 @@ public class SRSNode {
         clone._stage = this._stage;
         clone._efficiency = this._efficiency;
         clone._success = this._success;
-        ArrayList<SRSNode> neighbors = this._neighbors;
+        ArrayList<RNode> neighbors = this._neighbors;
         cloneHelper(clone, this, neighbors);
         
         return clone;
     }
     
-    private void cloneHelper(SRSNode parentClone, SRSNode parent, ArrayList<SRSNode> neighbors) {
+    private void cloneHelper(RNode parentClone, RNode parent, ArrayList<RNode> neighbors) {
         
         for (int i = 0; i < neighbors.size(); i++) {
             
-            SRSNode neighbor = neighbors.get(i);
+            RNode neighbor = neighbors.get(i);
             
-            SRSNode neighborClone = new SRSNode();
+            RNode neighborClone = new RNode();
             neighborClone._recommended = neighbor._recommended;
             neighborClone._discouraged = neighbor._discouraged;
             neighborClone._uuid = neighbor._uuid;
@@ -96,7 +96,7 @@ public class SRSNode {
             neighborClone.addNeighbor(parentClone);
             
             if (neighbor.getStage() > 0) {
-                ArrayList<SRSNode> orderedChildren = new ArrayList<SRSNode>();
+                ArrayList<RNode> orderedChildren = new ArrayList<RNode>();
                 orderedChildren.addAll(neighbor.getNeighbors());
 
                 //Remove the current parent from the list
@@ -149,7 +149,7 @@ public class SRSNode {
     }
     
     /** Get node neighbors **/
-    public ArrayList<SRSNode> getNeighbors() {
+    public ArrayList<RNode> getNeighbors() {
         return _neighbors;
     }
 
@@ -215,18 +215,18 @@ public class SRSNode {
     }
     
     /** Add neighbor node to end of the list **/
-    public void addNeighbor(SRSNode newNeighbor) {
+    public void addNeighbor(RNode newNeighbor) {
         _neighbors.add(newNeighbor);
     }
     
     /** Remove a node's neighbor **/
-    public void removeNeighbor(SRSNode neighbor) {
+    public void removeNeighbor(RNode neighbor) {
         _neighbors.remove(neighbor);
     }
 
     
     /** Replace a neighbor with the same composition at an exact point in the list to conserve order **/
-    public void replaceNeighbor(SRSNode oldNode, SRSNode newNode) {
+    public void replaceNeighbor(RNode oldNode, RNode newNode) {
         int indexOf = _neighbors.indexOf(oldNode);
         _neighbors.remove(indexOf);
         _neighbors.add(indexOf, newNode);
@@ -269,7 +269,7 @@ public class SRSNode {
     private double _modularity;
     private boolean _recommended;
     private boolean _discouraged;
-    private ArrayList<SRSNode> _neighbors;
+    private ArrayList<RNode> _neighbors;
     private String _uuid;
     private ArrayList<String> _composition;
     private ArrayList<String> _type;
