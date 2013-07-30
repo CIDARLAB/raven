@@ -68,34 +68,6 @@ public class RMoClo extends RGeneral {
             //Run hierarchical Raven Algorithm
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
             
-//            for (RGraph graph : optimalGraphs) {
-//                ArrayList<RNode> queue = new ArrayList<RNode>();
-//                HashSet<RNode> seenNodes = new HashSet<RNode>();
-//                RNode root = graph.getRootNode();
-//                queue.add(root);
-//                while (!queue.isEmpty()) {
-//                    RNode current = queue.get(0);
-//                    queue.remove(0);
-//                    seenNodes.add(current);
-//
-//                    System.out.println("*********************");
-//                    System.out.println("node composition: " + current.getComposition());
-//                    System.out.println("LO: " + current.getLOverhang());
-//                    System.out.println("RO: " + current.getROverhang());                                      
-//                    System.out.println("NodeID: " + current.getNodeID());
-//                    System.out.println("uuid: " + current.getUUID());
-//
-//                    ArrayList<RNode> neighbors = current.getNeighbors();
-//                    for (RNode neighbor : neighbors) {
-//                        System.out.println("neighbor: " + neighbor.getComposition());
-//                        if (!seenNodes.contains(neighbor)) {
-//                            queue.add(neighbor);
-//                        }
-//                    }
-//                    System.out.println("*********************");
-//                }
-//            }
-            
             boolean tryCartesian = false;
             enforceOverhangRules(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
@@ -193,6 +165,37 @@ public class RMoClo extends RGeneral {
                 System.out.println("##############################\nfinal pass: " + valid);
                 assignScars(optimalGraphs);
             }
+//            
+//            for (RGraph graph : optimalGraphs) {
+//                ArrayList<RNode> queue = new ArrayList<RNode>();
+//                HashSet<RNode> seenNodes = new HashSet<RNode>();
+//                RNode root = graph.getRootNode();
+//                queue.add(root);
+//                while (!queue.isEmpty()) {
+//                    RNode current = queue.get(0);
+//                    queue.remove(0);
+//                    seenNodes.add(current);
+//
+//                    System.out.println("*********************");
+//                    System.out.println("node composition: " + current.getComposition());
+//                    System.out.println("node type: " + current.getType());
+//                    System.out.println("node scars: " + current.getScars());
+//                    System.out.println("LO: " + current.getLOverhang());
+//                    System.out.println("RO: " + current.getROverhang());
+//                    System.out.println("NodeID: " + current.getNodeID());
+//                    System.out.println("uuid: " + current.getUUID());
+//
+//                    ArrayList<RNode> neighbors = current.getNeighbors();
+//                    for (RNode neighbor : neighbors) {
+//                        System.out.println("neighbor: " + neighbor.getComposition());
+//                        if (!seenNodes.contains(neighbor)) {
+//                            queue.add(neighbor);
+//                        }
+//                    }
+//                    System.out.println("*********************");
+//                }
+//            }
+            
             return optimalGraphs;
         } catch (Exception E) {
             ArrayList<RGraph> blank = new ArrayList<RGraph>();
@@ -339,6 +342,11 @@ public class RMoClo extends RGeneral {
      **/
     private void maximizeOverhangSharing(ArrayList<RGraph> optimalGraphs) {
         
+        HashSet<RNode> roots = new HashSet<RNode>();
+        for (RGraph graph : optimalGraphs) {
+            roots.add(graph.getRootNode());
+        }
+        
         _typeLOHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
         _typeROHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
         _takenParentOHs = new HashMap<RNode, HashSet<String>>(); //key: node (parent) value: all overhangs assigned to the reaction the level below
@@ -351,9 +359,6 @@ public class RMoClo extends RGeneral {
         
         //Assign by levels of impact starting from lowest level of impact
         for (Integer level : levels) {
-            
-//            System.out.println("*****************************************************");
-//            System.out.println("Level: " + level);
             
             HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(level);
             HashSet<String> currentLevelOHs = new HashSet<String>();            
@@ -385,14 +390,7 @@ public class RMoClo extends RGeneral {
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
                             typeLeftOverhangs.add(OH);
                         }
-
-                    //Else if the left overhang is already assigned, add it to the hash
-                    } else if (numberHash.containsKey(fwdNode.getLOverhang())) {
-                        String OH = numberHash.get(fwdNode.getLOverhang());
-                        OH = OH.replaceAll("\\*", "");
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeLeftOverhangs.add(OH);
-                        }
+                        assignTypeOHNeighbor(roots, fwdNode, OH, "Left", "+");
                     }
                 }
                 
@@ -418,23 +416,16 @@ public class RMoClo extends RGeneral {
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
                             typeRightOverhangs.add(OH);
                         }
-
-                    //Else if the right overhang is already assigned, add it to the hash
-                    } else if (numberHash.containsKey(fwdNode.getROverhang())) {
-                        String OH = numberHash.get(fwdNode.getROverhang());
-                        OH = OH.replaceAll("\\*", "");
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeRightOverhangs.add(OH);
-                        }
+                        assignTypeOHNeighbor(roots, fwdNode, OH, "Right", "+");
                     }
                 }
             } 
             
-            /** Assign right overhangs to backwards nodes third. **/
+            //Assign nodes in the backward direction second
             if (directionHash.containsKey("-")) {
                 ArrayList<RNode> bkwdNodes = directionHash.get("-");
                 
-                //Assign all right overhangs to backward nodes third
+                /** Assign right overhangs to backwards nodes third. **/
                 for (int k = bkwdNodes.size()-1; k > -1; k--) {
                     
                     RNode bkwdNode = bkwdNodes.get(k);
@@ -457,14 +448,7 @@ public class RMoClo extends RGeneral {
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
                             typeRightOverhangs.add(OH);
                         }
-
-                    //Else if the right overhang is already assigned, add it to the hash
-                    } else if (numberHash.containsKey(bkwdNode.getROverhang())) {
-                        String OH = numberHash.get(bkwdNode.getROverhang());
-                        OH = OH.replaceAll("\\*", "");
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeRightOverhangs.add(OH);
-                        }
+                        assignTypeOHNeighbor(roots, bkwdNode, OH, "Right", "-");
                     }
                 }
                 
@@ -491,14 +475,7 @@ public class RMoClo extends RGeneral {
                         if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
                             typeLeftOverhangs.add(OH);
                         }
-
-                    //Else if the left overhang is already assigned, add it to the hash
-                    } else if (numberHash.containsKey(bkwdNode.getLOverhang())) {
-                        String OH = numberHash.get(bkwdNode.getLOverhang());
-                        OH = OH.replaceAll("\\*", "");
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeLeftOverhangs.add(OH);
-                        }
+                        assignTypeOHNeighbor(roots, bkwdNode, OH, "Left", "-");
                     }
                 }               
             }
@@ -507,7 +484,7 @@ public class RMoClo extends RGeneral {
             allLevelOHs.addAll(currentLevelOHs);
         }
         
-        /** Assign all calculated assignments actually to the nodes. **/
+        /** Assign all assignments within numberHash map. **/
         for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> queue = new ArrayList<RNode>();
             HashSet<RNode> seenNodes = new HashSet<RNode>();
@@ -555,12 +532,7 @@ public class RMoClo extends RGeneral {
             _takenParentOHs.put(ancestor, takenOHs);
         }
         
-        takenOHs.addAll(allLevelOHs);
-        
-//        System.out.println("node evaluated: " + node.getComposition());
-//        System.out.println("ancestor composition: " + ancestor.getComposition());
-//        System.out.println("takenOHs: " + takenOHs);
-        
+        takenOHs.addAll(allLevelOHs);        
         return takenOHs;
     }
     
@@ -574,7 +546,7 @@ public class RMoClo extends RGeneral {
         ArrayList<String> typeRightOverhangs;
         ArrayList<String> typeLeftOverhangs;
         String type = node.getType().toString().toLowerCase();
-        
+
         //If the direction is forward, return the same side overhangs, else flip the direction
         if (direction.equals("+")) {
             typeLeftOverhangs = _typeLOHHash.get(type);
@@ -588,9 +560,13 @@ public class RMoClo extends RGeneral {
         if (typeLeftOverhangs != null) {
             reusableLeftOverhangs.addAll(typeLeftOverhangs);
             Collections.sort(reusableLeftOverhangs);
-        } else {
-            typeLeftOverhangs = new ArrayList();
-            _typeLOHHash.put(type, typeLeftOverhangs);
+        } else {            
+            typeLeftOverhangs = new ArrayList<String>();
+            if (direction.equals("+")) {
+                _typeLOHHash.put(type, typeLeftOverhangs);
+            } else {
+                _typeROHHash.put(type, typeLeftOverhangs);
+            }
         }
 
         //If there are reusable right overhangs for this part type, add them to the reusable right overhang hash, else add new entry for this type
@@ -598,12 +574,13 @@ public class RMoClo extends RGeneral {
             reusableRightOverhangs.addAll(typeRightOverhangs);
             Collections.sort(reusableRightOverhangs);
         } else {
-            typeRightOverhangs = new ArrayList();
-            _typeROHHash.put(type, typeRightOverhangs);
+            typeRightOverhangs = new ArrayList<String>();
+            if (direction.equals("+")) {
+                _typeROHHash.put(type, typeRightOverhangs);
+            } else {
+                _typeLOHHash.put(type, typeRightOverhangs);
+            }
         }
-
-//        System.out.println("reusableLeftOverhangs: " + reusableLeftOverhangs);
-//        System.out.println("reusableRightOverhangs: " + reusableRightOverhangs);
         
         //Return either the either the left or right re-usable overhangs
         if (LR.equals("Left")) {
@@ -640,6 +617,103 @@ public class RMoClo extends RGeneral {
         return OH;
     }
 
+    private void assignTypeOHNeighbor(HashSet<RNode> roots, RNode currentNode, String OH, String LR, String direction) {
+        
+        //Find which l0Node set this node is containted in
+        for (RNode root : roots) {
+            ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
+            
+            if (l0Nodes.contains(currentNode)) {
+                int indexOf = l0Nodes.indexOf(currentNode);
+                
+                //If assiging right overhang to the type of the node on the left
+                if ("Left".equals(LR)) {
+                    if (indexOf > 0) {
+                        RNode l0Node = l0Nodes.get(indexOf - 1);
+                        String l0Type = l0Node.getType().toString().toLowerCase();
+                        ArrayList<String> l0TypeLeftOverhangs;
+                        ArrayList<String> l0TypeRightOverhangs;
+                        
+                        //Consider correct direction
+                        if ("+".equals(direction)) {
+                            l0TypeLeftOverhangs = _typeLOHHash.get(l0Type);
+                            l0TypeRightOverhangs = _typeROHHash.get(l0Type);
+                            
+                            if (l0TypeRightOverhangs == null) {
+                                l0TypeRightOverhangs = new ArrayList<String>();
+                                _typeROHHash.put(l0Type, l0TypeRightOverhangs);
+                            }
+                            if (l0TypeLeftOverhangs == null) {
+                                l0TypeLeftOverhangs = new ArrayList<String>();
+                                _typeLOHHash.put(l0Type, l0TypeLeftOverhangs);
+                            }
+                            
+                        } else {
+                            l0TypeLeftOverhangs = _typeROHHash.get(l0Type);
+                            l0TypeRightOverhangs = _typeLOHHash.get(l0Type);
+                            
+                            if (l0TypeRightOverhangs == null) {
+                                l0TypeRightOverhangs = new ArrayList<String>();
+                                _typeLOHHash.put(l0Type, l0TypeRightOverhangs);
+                            }
+                            if (l0TypeLeftOverhangs == null) {
+                                l0TypeLeftOverhangs = new ArrayList<String>();
+                                _typeROHHash.put(l0Type, l0TypeLeftOverhangs);
+                            }
+                        }
+                        
+                        //Add this OH to the right overhangs of the type of the node on the left
+                        if (!l0TypeLeftOverhangs.contains(OH) && !l0TypeRightOverhangs.contains(OH)) {
+                            l0TypeRightOverhangs.add(OH);
+                        }
+                    }
+                
+                //If assiging right overhang to the type of the node on the left
+                } else {
+                    if (indexOf < l0Nodes.size()-1) {
+                        RNode l0Node = l0Nodes.get(indexOf + 1);
+                        String l0Type = l0Node.getType().toString().toLowerCase();
+                        ArrayList<String> l0TypeLeftOverhangs;
+                        ArrayList<String> l0TypeRightOverhangs;
+                        
+                        //Consider correct direction
+                        if ("+".equals(direction)) {
+                            l0TypeLeftOverhangs = _typeLOHHash.get(l0Type);
+                            l0TypeRightOverhangs = _typeROHHash.get(l0Type);
+                            
+                            if (l0TypeRightOverhangs == null) {
+                                l0TypeRightOverhangs = new ArrayList<String>();
+                                _typeROHHash.put(l0Type, l0TypeRightOverhangs);
+                            }
+                            if (l0TypeLeftOverhangs == null) {
+                                l0TypeLeftOverhangs = new ArrayList<String>();
+                                _typeLOHHash.put(l0Type, l0TypeLeftOverhangs);
+                            }
+                            
+                        } else {
+                            l0TypeLeftOverhangs = _typeROHHash.get(l0Type);
+                            l0TypeRightOverhangs = _typeLOHHash.get(l0Type);
+                            
+                            if (l0TypeRightOverhangs == null) {
+                                l0TypeRightOverhangs = new ArrayList<String>();
+                                _typeLOHHash.put(l0Type, l0TypeRightOverhangs);
+                            }
+                            if (l0TypeLeftOverhangs == null) {
+                                l0TypeLeftOverhangs = new ArrayList<String>();
+                                _typeROHHash.put(l0Type, l0TypeLeftOverhangs);
+                            }
+                        }
+                        
+                        //Add this OH to the left overhangs of the type of the node on the right
+                        if (!l0TypeLeftOverhangs.contains(OH) && !l0TypeRightOverhangs.contains(OH)) {
+                            l0TypeLeftOverhangs.add(OH);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     /** Determine overhang scars **/
     private void assignScars(ArrayList<RGraph> optimalGraphs) {
         
@@ -662,7 +736,6 @@ public class RMoClo extends RGeneral {
         for (int i = 0; i < children.size(); i++) {
 
             RNode child = children.get(i);
-            scars.addAll(child.getScars());
             
             if (i > 0) {
                 if (child.getLOverhang().isEmpty()) {
@@ -683,13 +756,25 @@ public class RMoClo extends RGeneral {
                 
                 ArrayList<String> childScars = assignScarsHelper(child, grandChildren);
                 scars.addAll(childScars);
+            } else {
+                
+                ArrayList<String> childScars = new ArrayList<String>();
+                if (child.getComposition().size() > 1) {
+                    if (!child.getScars().isEmpty()) {
+                        childScars.addAll(child.getScars());
+                    } else {
+                        
+                        for (int j = 0; j < child.getComposition().size() - 1; j++) {
+                            childScars.add("_");
+                        }
+                        child.setScars(childScars);
+                    }
+                }
+                scars.addAll(childScars);
             }
         }     
         
-        parent.setScars(scars);
-//        System.out.println("parent composition: " + parent.getComposition());
-//        System.out.println("scars: " + scars);
-        
+        parent.setScars(scars);       
         return scars;
     }
     

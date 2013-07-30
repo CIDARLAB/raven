@@ -596,7 +596,7 @@ public class RGraph {
 //        pigeonLine.append("3 ").append(LO).append("\n");
         pigeonLine.append("5 ").append(LO).append("\n");
 
-        for (int i = 0; i < types.size(); i++) {
+        for (int i = 0; i < composition.size(); i++) {
 
             String name = composition.get(i);
             String type = types.get(i);
