@@ -69,6 +69,8 @@ public class RGeneral extends Modularity {
                 RGraph newGraph = createAsmGraph_sgp(gp, hashMem, libCompDir, required, recommended, forbidden, discouraged, slack, sharingHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
 
+//                System.out.println("current gp: " + gp.getComposition() + " sharing factor: " + newGraph.getModularityFactor());
+                
                 //Pin graph if no existing pinned graph
                 if (pinnedGraph == null) {
                     pinnedGraph = newGraph;
@@ -92,13 +94,18 @@ public class RGeneral extends Modularity {
 
                 //If no recommended parts, pin the graph with the most sharing
                 } else {
-                    if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
+                    if (newGraph.getSharing() > pinnedGraph.getSharing()) {
+                        pinnedGraph = newGraph;
+                        index = j;
+                    } else if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
                         pinnedGraph = newGraph;
                         index = j;
                     }
                 }
             }
 
+//            System.out.println("pinnedGraph root: " + pinnedGraph.getRootNode().getComposition());
+            
             //Add pinned graph and graph for each intermediate part to our hash of pinned graphs
             //Also search through the subgraphs of the bestGraph to see if it has any basic parts
             boolean cantMake = true;
@@ -166,22 +173,7 @@ public class RGeneral extends Modularity {
             efficiencies = new HashMap<Integer, Double>();
         }
         
-        //        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
-        
         //Memoization Case - If graph already exists for this composition and direction. This is always the case for basic parts and library parts
-        //Check to see if this solution has already been searched for cost in the opposite direction
-//        ArrayList<String> libRevComposition = goalPartNode.getComposition();
-//        Collections.reverse(libRevComposition);
-//        ArrayList<String> libRevDirection = goalPartNode.getDirection();
-//        Collections.reverse(libRevDirection);
-//        for (String aDir : libRevDirection) {
-//            if ("+".equals(aDir)) {
-//                aDir = "-";
-//            } else {
-//                aDir = "+";
-//            }
-//        }
-
         if (goalPartNode.getComposition().size() == 1) {
             if (partsHash.containsKey(goalPartNode.getComposition().toString() + "[]")) {
                 return partsHash.get(goalPartNode.getComposition().toString() + "[]");
@@ -191,8 +183,6 @@ public class RGeneral extends Modularity {
                 return partsHash.get(goalPartNode.getComposition().toString() + goalPartNode.getDirection().toString());
             }
         }
-        
-//        System.out.println("THIS NODE DOES NOT YET EXIST, MUST SEARCH HOW TO BUILD IT");
         
         RGraph bestGraph = new RGraph(goalPartNode);
 

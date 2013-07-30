@@ -15,8 +15,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -47,8 +49,21 @@ public class RavenController {
         
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
-        ArrayList<Part> gps = new ArrayList();
-        gps.addAll(_goalParts.keySet());
+        ArrayList<Part> gps = new ArrayList<Part>();
+        
+        //Sort goal parts by part name
+        Set<Part> keySet = _goalParts.keySet();
+        HashMap<String, Part> partNameHash = new HashMap<String, Part>();
+        for (Part part : keySet) {
+            partNameHash.put(part.getName(), part);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            gps.add(partNameHash.get(partName));
+        }
+        
         RBioBricks biobricks = new RBioBricks();
         ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, null);
         return optimalGraphs;
@@ -64,8 +79,21 @@ public class RavenController {
         
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
-        ArrayList<Part> gps = new ArrayList();
-        gps.addAll(_goalParts.keySet());
+        ArrayList<Part> gps = new ArrayList<Part>();
+        
+        //Sort goal parts by part name
+        Set<Part> keySet = _goalParts.keySet();
+        HashMap<String, Part> partNameHash = new HashMap<String, Part>();
+        for (Part part : keySet) {
+            partNameHash.put(part.getName(), part);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            gps.add(partNameHash.get(partName));
+        }
+        
         RGibson gibson = new RGibson();
         ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
@@ -81,8 +109,21 @@ public class RavenController {
         
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
-        ArrayList<Part> gps = new ArrayList();
-        gps.addAll(_goalParts.keySet());
+        ArrayList<Part> gps = new ArrayList<Part>();
+        
+        //Sort goal parts by part name
+        Set<Part> keySet = _goalParts.keySet();
+        HashMap<String, Part> partNameHash = new HashMap<String, Part>();
+        for (Part part : keySet) {
+            partNameHash.put(part.getName(), part);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            gps.add(partNameHash.get(partName));
+        }
+        
         RCPEC cpec = new RCPEC();
         ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
@@ -98,8 +139,21 @@ public class RavenController {
         
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
-        ArrayList<Part> gps = new ArrayList();
-        gps.addAll(_goalParts.keySet());
+        ArrayList<Part> gps = new ArrayList<Part>();
+        
+        //Sort goal parts by part name
+        Set<Part> keySet = _goalParts.keySet();
+        HashMap<String, Part> partNameHash = new HashMap<String, Part>();
+        for (Part part : keySet) {
+            partNameHash.put(part.getName(), part);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            gps.add(partNameHash.get(partName));
+        }
+        
         RSLIC slic = new RSLIC();
         ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
@@ -115,8 +169,21 @@ public class RavenController {
         
         //Run algorithm for MoClo assembly
         _assemblyGraphs.clear();
-        ArrayList<Part> gps = new ArrayList();
-        gps.addAll(_goalParts.keySet());
+        ArrayList<Part> gps = new ArrayList<Part>();
+        
+        //Sort goal parts by part name
+        Set<Part> keySet = _goalParts.keySet();
+        HashMap<String, Part> partNameHash = new HashMap<String, Part>();
+        for (Part part : keySet) {
+            partNameHash.put(part.getName(), part);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            gps.add(partNameHash.get(partName));
+        }
+        
         RMoClo moclo = new RMoClo();
         moclo.setForcedOverhangs(_collector, forcedOverhangHash);
         ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
@@ -133,8 +200,21 @@ public class RavenController {
         
         //Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
-        ArrayList<Part> gps = new ArrayList();
-        gps.addAll(_goalParts.keySet());
+        ArrayList<Part> gps = new ArrayList<Part>();
+        
+        //Sort goal parts by part name
+        Set<Part> keySet = _goalParts.keySet();
+        HashMap<String, Part> partNameHash = new HashMap<String, Part>();
+        for (Part part : keySet) {
+            partNameHash.put(part.getName(), part);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            gps.add(partNameHash.get(partName));
+        }
+        
         RGoldenGate gg = new RGoldenGate();
         ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
