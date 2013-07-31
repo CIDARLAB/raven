@@ -291,6 +291,7 @@ public class RGeneral extends Modularity {
                     ArrayList<String> type = new ArrayList<String>();
                     ArrayList<String> comp = new ArrayList<String>();
                     ArrayList<String> dir = new ArrayList<String>();
+                    
                     if (n == 0) {
                         type.addAll(gpType.subList(0, thisPartition[n]));
                         comp.addAll(gpComp.subList(0, thisPartition[n]));
@@ -324,20 +325,16 @@ public class RGeneral extends Modularity {
                 if (canPartitionThis) {
                     canPartitionAny = true;
                     ArrayList<RGraph> toCombine = new ArrayList<RGraph>();
+                    ArrayList<String> combineDirection = new ArrayList<String>();
                     
                     //Recursive call
                     for (int o = 0; o < allSubParts.size(); o++) {
                         RNode oneSubPart = allSubParts.get(o);
                         RGraph solution = createAsmGraph_sgp(oneSubPart, partsHash, libCompDir, required, recommended, forbidden, discouraged, slack - 1, sharingHash, efficiencies);
-                        
-                        //Set the direction for basic parts... they do not have direction
-                        if (oneSubPart.getComposition().size() == 1) {
-                            solution.getRootNode().setDirection(oneSubPart.getDirection());
-                        }
                         toCombine.add(solution);
+                        combineDirection.addAll(oneSubPart.getDirection());
                     }
-
-                    RGraph newGraph = combineGraphsModEff(toCombine, recommended, discouraged, sharingHash, efficiencies);
+                    RGraph newGraph = combineGraphsModEff(toCombine, combineDirection, recommended, discouraged, sharingHash, efficiencies);
 
                     //Edge case: best graph does not exist yet
                     if (bestGraph.getRootNode().getNeighbors().isEmpty()) {
@@ -358,6 +355,7 @@ public class RGeneral extends Modularity {
                 }
             }
         }        
+        
         //Save best graph for this intermediate
         RNode bestGraphRoot = bestGraph.getRootNode();
         partsHash.put(bestGraphRoot.getComposition().toString() + bestGraphRoot.getDirection().toString(), bestGraph);
@@ -368,10 +366,10 @@ public class RGeneral extends Modularity {
 
     /** Combine multiple graphs, including efficiency and modularity scoring **/
     //Currently, it is assumed that efficiencies are additive and not multiplicative
-    protected RGraph combineGraphsModEff(ArrayList<RGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash, HashMap<Integer, Double> efficiencies) {
+    protected RGraph combineGraphsModEff(ArrayList<RGraph> graphs, ArrayList<String> direction, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash, HashMap<Integer, Double> efficiencies) {
         
         //Call method without efficiency and modularity first
-        RGraph combineGraphsME = combineGraphsShareRecDis(graphs, recommended, discouraged, sharingHash);
+        RGraph combineGraphsME = combineGraphsShareRecDis(graphs, direction, recommended, discouraged, sharingHash);
         RNode root = combineGraphsME.getRootNode();
 
         //Get effiency of subgraphs
@@ -394,10 +392,10 @@ public class RGeneral extends Modularity {
     }
 
     /** Combine multiple graphs, including sharing and recommended **/
-    protected RGraph combineGraphsShareRecDis(ArrayList<RGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash) {
+    protected RGraph combineGraphsShareRecDis(ArrayList<RGraph> graphs, ArrayList<String> direction, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash) {
 
         //Call method without sharing first
-        RGraph combineGraphsSRD = combineGraphsStageStep(graphs);
+        RGraph combineGraphsSRD = combineGraphsStageStep(graphs, direction);
         RNode root = combineGraphsSRD.getRootNode();
 
         //Look in sharing and recommended hash to set sharing and recommended
@@ -436,22 +434,20 @@ public class RGeneral extends Modularity {
     }
 
     /** Combine multiple graphs, ignoring sharing and recommended **/
-    protected RGraph combineGraphsStageStep(ArrayList<RGraph> graphs) {
+    protected RGraph combineGraphsStageStep(ArrayList<RGraph> graphs, ArrayList<String> direction) {
         RNode newRoot = new RNode();
         ArrayList<String> mergerComposition = new ArrayList<String>();
         ArrayList<String> mergerType = new ArrayList<String>();
-        ArrayList<String> mergerDirection = new ArrayList<String>();
         
         //Get all the children types, compositions and directions
         for (int i = 0; i < graphs.size(); i++) {
             RNode currentNeighbor = graphs.get(i).getRootNode();
             mergerComposition.addAll(currentNeighbor.getComposition());
             mergerType.addAll(currentNeighbor.getType());
-            mergerDirection.addAll(currentNeighbor.getDirection());
         }
         newRoot.setComposition(mergerComposition);
         newRoot.setType(mergerType);
-        newRoot.setDirection(mergerDirection);
+        newRoot.setDirection(direction);
         
         //Clone all the nodes from graphs being combined and then add to new root node
         for (int j = 0; j < graphs.size(); j++) {

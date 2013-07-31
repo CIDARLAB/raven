@@ -67,7 +67,6 @@ public class RMoClo extends RGeneral {
 
             //Run hierarchical Raven Algorithm
             ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-            
             boolean tryCartesian = false;
             enforceOverhangRules(optimalGraphs);
             boolean valid = validateOverhangs(optimalGraphs);
@@ -156,7 +155,14 @@ public class RMoClo extends RGeneral {
                 optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
             } else {
                 //if we're not doing the cartesian product or the cartesian products are wrong
-                maximizeOverhangSharing(optimalGraphs);
+                maximizeOverhangSharing(optimalGraphs);                
+                valid = validateOverhangs(optimalGraphs);
+                System.out.println("##############################\nsecond pass: " + valid);
+                finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+                optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
+                valid = validateOverhangs(optimalGraphs);
+                System.out.println("##############################\nfinal pass: " + valid);
+                assignScars(optimalGraphs);
 
 //                for (RGraph graph : optimalGraphs) {
 //                    ArrayList<RNode> queue = new ArrayList<RNode>();
@@ -170,6 +176,7 @@ public class RMoClo extends RGeneral {
 //
 //                        System.out.println("*********************");
 //                        System.out.println("node composition: " + current.getComposition());
+//                        System.out.println("node direction: " + current.getDirection());
 //                        System.out.println("node type: " + current.getType());
 //                        System.out.println("node scars: " + current.getScars());
 //                        System.out.println("LO: " + current.getLOverhang());
@@ -184,19 +191,11 @@ public class RMoClo extends RGeneral {
 //                                queue.add(neighbor);
 //                            }
 //                        }
-//                        System.out.println("*********************");
+////                        System.out.println("*********************");
 //                    }
 //                }
-                
-                valid = validateOverhangs(optimalGraphs);
-                System.out.println("##############################\nsecond pass: " + valid);
-                finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
-                optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
-                valid = validateOverhangs(optimalGraphs);
-                System.out.println("##############################\nfinal pass: " + valid);
-                assignScars(optimalGraphs);
             }
-            
+
             return optimalGraphs;
         } catch (Exception E) {
             ArrayList<RGraph> blank = new ArrayList<RGraph>();
@@ -1244,6 +1243,12 @@ public class RMoClo extends RGeneral {
             queue.add(root);
             while (!queue.isEmpty()) {
                 RNode currentNode = queue.get(0);
+                
+                System.out.println("currentNode.getUUID(): " + currentNode.getUUID());
+                System.out.println("currentNode.getComposition(): " + currentNode.getComposition());
+                System.out.println("currentNode.getLOverhang(): " + currentNode.getLOverhang());
+                System.out.println("currentNode.getROverhang(): " + currentNode.getROverhang());
+                
                 queue.remove(0); //queue for traversing graphs (bfs)
 
                 if (!seenNodes.contains(currentNode)) {
@@ -1255,6 +1260,12 @@ public class RMoClo extends RGeneral {
                         //append which parts to use for a moclo reaction
                         toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
                         for (RNode neighbor : currentNode.getNeighbors()) {
+                            
+                            System.out.println("neighborNode.getUUID(): " + neighbor.getUUID());
+                            System.out.println("neighborNode.getComposition(): " + neighbor.getComposition());
+                            System.out.println("neighborNode.getLOverhang(): " + neighbor.getLOverhang());
+                            System.out.println("neighborNode.getROverhang(): " + neighbor.getROverhang());
+                            
                             if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
                                 toReturn = toReturn + coll.getPart(neighbor.getUUID(), true).getName() + ", ";
                                 if (!seenNodes.contains(neighbor)) {
