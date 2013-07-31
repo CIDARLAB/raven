@@ -841,7 +841,7 @@ public class RavenController {
         return _instructions;
     }
 
-    public String importClotho(JSONArray devices) {
+    public String importClotho(JSONArray devices,JSONArray basicParts) {
         String toReturn = "";
         try {
             for (int i = 0; i < devices.length(); i++) {

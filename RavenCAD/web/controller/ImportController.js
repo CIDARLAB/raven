@@ -268,18 +268,27 @@ $(document).ready(function() { //don't run javascript until page is loaded
 //        alert('closing connection');
     };
     _connection.onopen = function(e) {
-        send("query", '{"className":"CompositePart"}', function(data) {
+        send("query", '{"schema":"CompositePart"}', function(data) {
             var newParts = {};
-            var newPartsArray =[];
+            var devices = [];
             $.each(data, function() {
                 if (newParts[this["name"]] === undefined) {
                     newParts[this["name"]] = "added";
-                    newPartsArray.push(this);
+                    devices.push(this);
                 }
             });
-            $.get("RavenServlet", {command: "importClotho", "data":JSON.stringify(newPartsArray)}, function(response) {
-                refreshData();
+            var basicPartIDs = [];
+            $.each(devices, function() {
+                $.each(this["composition"], function() {
+                    basicPartIDs.push({"schema": "BasicPart", "id": this});
+                });
             });
+            send("query", basicPartIDs, function(basicParts) {
+                $.get("RavenServlet", {command: "importClotho", "devices": JSON.stringify(devices), "basicParts": basicParts}, function(response) {
+                    refreshData();
+                });
+            });
+
         });
 
     };

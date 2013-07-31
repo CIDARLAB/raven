@@ -41,13 +41,13 @@ public class RavenServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processGetRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
+
         RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
         String user = getUser(request).toLowerCase();
         RavenController controller = _controllerHash.get(user);
-        
+
         try {
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
@@ -65,7 +65,7 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "loaded data";
                 controller.saveNewDesign(request.getParameter("designCount"));
                 out.write(responseString);
-            
+
             } else if (command.equals("logout")) {
                 response.setContentType("text/html;charset=UTF-8");
                 RavenLogger.logSessionOut(user, request.getRemoteAddr());
@@ -73,19 +73,19 @@ public class RavenServlet extends HttpServlet {
                 _controllerHash.remove(user);
                 controller.clearData();
                 out.write(responseString);
-            
+
             } else if (command.equals("fetch")) {
                 response.setContentType("application/json");
                 String responseString = "";
                 responseString = controller.fetchData();
                 out.write(responseString);
-            
+
             } else if (command.equals("purge")) {
                 response.setContentType("test/plain");
                 String responseString = "purged";
                 controller.clearData();
                 out.write(responseString);
-            
+
             } else if (command.equals("delete")) {
                 String[] partIDs = request.getParameter("parts").split(",");
                 String[] vectorIDs = request.getParameter("vectors").split(",");
@@ -97,9 +97,11 @@ public class RavenServlet extends HttpServlet {
                 }
             } else if (command.equals("importClotho")) {
                 response.setContentType("application/json");
-                String data = request.getParameter("data");
-                JSONArray devices = new JSONArray(data);
-                String toReturn = controller.importClotho(devices);
+                String deviceString = request.getParameter("devices");
+                JSONArray devices = new JSONArray(deviceString);
+                String basicPartString = request.getParameter("basicParts");
+                JSONArray basicParts = new JSONArray(basicPartString);
+                String toReturn = controller.importClotho(devices, basicParts);
                 out.write("{\"result\":\"" + toReturn + "\",\"status\":\"" + toReturn + "\"}");
             } else if (command.equals("run")) {
                 System.out.println(request.getParameter("required"));
@@ -164,7 +166,7 @@ public class RavenServlet extends HttpServlet {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
                 out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":" + partsList + "}");
-            
+
             } else if (command.equals("save")) {
                 String[] partIDs = request.getParameter("partIDs").split(",");
                 String[] vectorIDs = request.getParameter("vectorIDs").split(",");
@@ -174,7 +176,7 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "failed save data";
                 responseString = controller.save(partIDs, vectorIDs, writeSQL);
                 out.write(responseString);
-            
+
             } else if (command.equals("mail")) {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             }
@@ -297,7 +299,9 @@ public class RavenServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
-    /** Get session user **/
+    /**
+     * Get session user *
+     */
     private String getUser(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String user = "default";
@@ -310,7 +314,6 @@ public class RavenServlet extends HttpServlet {
         }
         return user;
     }
-    
     //FIELDS
     private HashMap<String, RavenController> _controllerHash = new HashMap(); //key:user, value: collector assocaited with that user
 }
