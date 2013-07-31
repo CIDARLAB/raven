@@ -249,13 +249,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
         //parase message into JSON
         var dataJSON = $.parseJSON(e.data);
         //ignore say messages which have not requestId
+        var channel = dataJSON["channel"];
         var requestId = dataJSON["requestId"];
         if (requestId !== null) {
             //if callback function exists, run it
-            var callback = _requestCommand[requestId];
+            var callback = _requestCommand[channel+requestId];
             if (callback !== undefined) {
                 callback(dataJSON["data"]);
-                delete _requestCommand[requestId];
+                delete _requestCommand[channel+requestId];
             }
         }
     };
@@ -268,7 +269,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 //        alert('closing connection');
     };
     _connection.onopen = function(e) {
-        send("query", '{"className":"CompositePart"}', function(data) {
+        send("query", '{"schema":"CompositePart"}', function(data) {
             var newParts = {};
             var newPartsArray =[];
             $.each(data, function() {
@@ -289,7 +290,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         if (_connection.readyState === 1) {
             var message = '{"channel":"' + channel + '", "data":' + data + ',"requestId":"' + _requestID + '"}';
 //            alert("sending:\n" + message);
-            _requestCommand[_requestID] = callback;
+            _requestCommand[channel+_requestID] = callback;
             _connection.send(message);
             _requestID++;
         } else {
