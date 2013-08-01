@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
@@ -76,6 +77,7 @@ public class RGraph {
         this._steps = 0;
     }
 
+    /** Return all parts in this graph **/
     public ArrayList<Part> getPartsInGraph(Collector coll) {
         ArrayList<Part> toReturn = new ArrayList<Part>();
         HashSet<RNode> seenNodes = new HashSet();
@@ -98,6 +100,7 @@ public class RGraph {
         return toReturn;
     }
 
+    /** Return all vectors in this graph **/
     public ArrayList<Vector> getVectorsInGraph(Collector coll) {
         ArrayList<Vector> toReturn = new ArrayList<Vector>();
         HashSet<RNode> seenNodes = new HashSet();
@@ -122,6 +125,7 @@ public class RGraph {
         return toReturn;
     }
 
+    /** Merge all graphs from a set of graphs **/
     public static ArrayList<RGraph> mergeGraphs(ArrayList<RGraph> graphs) {
 
         ArrayList<RGraph> mergedGraphs = new ArrayList<RGraph>();
@@ -142,10 +146,42 @@ public class RGraph {
                 seenNodes.add(current);
                 queue.remove(0);
                 
-                String currentCompDirOHStage = current.getComposition().toString() + "|" + current.getDirection() + "|" + current.getLOverhang() + "|" + current.getROverhang() + "|" + current.getStage();
+                //Get forward and reverse part key string
+                ArrayList<String> comp = current.getComposition();
+                ArrayList<String> revComp = new ArrayList<String>();
+                revComp.addAll(comp);
+                Collections.reverse(revComp);
+                
+                ArrayList<String> dir = current.getDirection();
+                ArrayList<String> revDir = new ArrayList<String>();
+                revDir.addAll(dir);
+                Collections.reverse(revDir);
+                
+                ArrayList<String> scars = current.getScars();
+                ArrayList<String> revScars = new ArrayList<String>();
+                revScars.addAll(scars);
+                Collections.reverse(revScars);
+                
+                String lOverhang = current.getLOverhang();
+                String rOverhang = current.getROverhang();
+                String lOverhangR = current.getROverhang();
+                String rOverhangR = current.getLOverhang();
+                if (lOverhangR.contains("*")) {
+                    lOverhangR = lOverhangR.replace("*", "");
+                } else {
+                    lOverhangR = lOverhangR + "*";
+                }
+                if (rOverhangR.contains("*")) {
+                    rOverhangR = rOverhangR.replace("*", "");
+                } else {
+                    rOverhangR = rOverhangR + "*";
+                }
+                
+                String currentCompDirOHStage = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + current.getStage();
+                String currentCompDirOHStageRev = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR + current.getStage();
                 
                 //If a node with this composition, overhangs and stage has not been seen before
-                if (mergedNodesHash.containsKey(currentCompDirOHStage) == false) {
+                if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
                     mergedNodesHash.put(currentCompDirOHStage, current);
                     
                     for (RNode neighbor : current.getNeighbors()) {
@@ -156,31 +192,36 @@ public class RGraph {
                 
                 //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
-                 
-                    RNode finalNode = mergedNodesHash.get(currentCompDirOHStage);
+
+                    RNode finalNode;
+                    if (mergedNodesHash.containsKey(currentCompDirOHStageRev)) {
+                        finalNode = mergedNodesHash.get(currentCompDirOHStageRev);
+                    } else {
+                        finalNode = mergedNodesHash.get(currentCompDirOHStage);
+                    }
                     ArrayList<RNode> neighbors = current.getNeighbors();
-                    
+
                     //Remove parent from current node's neighbors, add it to the hashed node's nieghbors
                     hasParent = false;
                     for (int j = 0; j < neighbors.size(); j++) {
                         if (neighbors.get(j).getStage() > current.getStage()) {
                             RNode parent = neighbors.get(j);
-                            hasParent = true;                           
-                            parent.replaceNeighbor(current, finalNode); 
+                            hasParent = true;
+                            parent.replaceNeighbor(current, finalNode);
                             finalNode.addNeighbor(parent);
                             current.removeNeighbor(parent);
                         }
                     }
-                    
+
                     //Edge case where multiple goal parts have the same composition
                     if (hasParent == false) {
                         String name = finalNode.getName();
                         name = name + " | " + current.getName();
-                        finalNode.setName(name);                        
-                    }                   
+                        finalNode.setName(name);
+                    }
                 }
             }
-            
+
             if (hasParent == true) {
                 mergedGraphs.add(aGraph);
             }            
@@ -238,27 +279,81 @@ public class RGraph {
         
         //Go through parts library, put all compositions into hash of things that already exist
         for (Part aPart : partLib) {
-            String leftOverhang = aPart.getLeftOverhang();
-            String rightOverhang = aPart.getRightOverhang();
+            
+            //Get forward and reverse part key string
             ArrayList<Part> partComp = aPart.getComposition();
             ArrayList<String> comp = new ArrayList<String>();
             for (int j = 0; j < partComp.size(); j++) {
                 String name = partComp.get(j).getName();
                 comp.add(name);
             }
+            ArrayList<String> revComp = new ArrayList<String>();
+            revComp.addAll(comp);
+            Collections.reverse(revComp);
+            
+            ArrayList<String> dir = new ArrayList<String>();
+            ArrayList<String> scars = new ArrayList<String>();
+            ArrayList<String> searchTags = aPart.getSearchTags();
+            for (String tag : searchTags) {
+                if (tag.startsWith("Direction: ")) {
+                    dir.addAll(ClothoReader.parseTags(tag));
+                } else if (tag.startsWith("Scars: ")) {
+                    scars.addAll(ClothoReader.parseTags(tag));
+                }
+            }
+            
+            
+            ArrayList<String> revDir = new ArrayList<String>();
+            revDir.addAll(dir);
+            Collections.reverse(revDir);
+            ArrayList<String> revScars = new ArrayList<String>();
+            revScars.addAll(scars);
+            Collections.reverse(revScars);
 
-            String aPartLOnameRO = leftOverhang + comp + rightOverhang;
-            startPartsLOcompRO.add(aPartLOnameRO);          
+            String lOverhang = aPart.getLeftOverhang();
+            String rOverhang = aPart.getRightOverhang();
+            String lOverhangR = aPart.getRightOverhang();
+            String rOverhangR = aPart.getLeftOverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+            
+            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + lOverhangR + "|" + rOverhangR;
+            startPartsLOcompRO.add(aPartCompDirScarLORO);
+            startPartsLOcompRO.add(aPartCompDirScarLOROR);
         }
 
         //Go through vectors library, put all compositions into hash of things that already exist
         for (Vector aVec : vectorLib) {
-            String leftoverhang = aVec.getLeftoverhang();
-            String rightOverhang = aVec.getRightOverhang();
+            
+            String lOverhang = aVec.getLeftoverhang();
+            String rOverhang = aVec.getRightOverhang();
+            String lOverhangR = aVec.getRightOverhang();
+            String rOverhangR = aVec.getLeftoverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
             int stage = aVec.getLevel();
 
-            String aVecLOlevelRO = leftoverhang + stage + rightOverhang;
-            startVectorsLOlevelRO.add(aVecLOlevelRO);          
+            String aVecLOlevelRO = lOverhang + "|" + stage + "|" + rOverhang;
+            String aVecLOlevelROR = lOverhangR + "|" + stage + "|" + rOverhangR;
+            startVectorsLOlevelRO.add(aVecLOlevelRO);
+            startVectorsLOlevelRO.add(aVecLOlevelROR);
         }
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
@@ -302,9 +397,11 @@ public class RGraph {
                 }
 
                 ArrayList<String> composition = current.getComposition();
+                ArrayList<String> direction = current.getDirection();
+                ArrayList<String> scars = current.getScars();
                 String lOverhang = current.getLOverhang();
                 String rOverhang = current.getROverhang();
-                String aPartLOcompRO = lOverhang + composition + rOverhang;
+                String aPartLOcompRO = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
                 String aVecLOlevelRO = new String();
 
                 //PCR Reactions for scarless assembly
@@ -337,7 +434,7 @@ public class RGraph {
                 
                 if (current.getVector() != null) {
                     int level = current.getVector().getLevel();
-                    aVecLOlevelRO = lOverhang + level + rOverhang;
+                    aVecLOlevelRO = lOverhang + "|" + level + "|" + rOverhang;
                 }
 
 
