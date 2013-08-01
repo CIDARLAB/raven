@@ -40,13 +40,9 @@ public class ClothoWriter {
                 }
             }
             
-            System.out.println("currentNode composition: " + currentNode.getComposition() + " LO: " + currentNode.getLOverhang() + " RO: " + currentNode.getROverhang());
-            
             //If the node has no uuid, make a new part
             //This is pretty much only the case for composite parts
             if (currentNode.getUUID() == null) {
-                
-                System.out.println("current uuid is null, going to look for or generate a new clotho part");
                 
                 //Get new intermediate name
                 String partName = nameRoot + "_intermediate" + Math.random() * 999999999;
@@ -68,8 +64,6 @@ public class ClothoWriter {
 
             } else {
                 
-                System.out.println("current part's uuid is already assigned, have to check if a new part needs to be made");
-                
                 //If a part with this composition and overhangs does not exist, a new part is needed
                 Part currentPart = coll.getPart(currentNode.getUUID(), true);
                 boolean createNewPart = false;
@@ -79,8 +73,6 @@ public class ClothoWriter {
 
                 //A new part must be created if one with the same composition and overhangs does not exist
                 if (createNewPart) {
-                    
-                    System.out.println("<< a new part must be made >>");
                     
                     //If a new part must be created
                     Part newPart;
@@ -147,32 +139,31 @@ public class ClothoWriter {
         //Every time a new composite part can be made, search to see there's nothing made from the same components before saving
         for (Part existingPart : _allCompositeParts) {
             ArrayList<String> existingPartComp = new ArrayList<String>();
-
+            
             //Get an existing part's overhangs
             ArrayList<String> sTags = existingPart.getSearchTags();
             String existingPartLO = "";
             String existingPartRO = "";
+            String existingPartDir = "";
             for (int k = 0; k < sTags.size(); k++) {
                 if (sTags.get(k).startsWith("LO:")) {
                     existingPartLO = sTags.get(k).substring(4);
                 } else if (sTags.get(k).startsWith("RO:")) {
                     existingPartRO = sTags.get(k).substring(4);
+                } else if (sTags.get(k).startsWith("Direction:")) {
+                    existingPartDir = sTags.get(k).substring(10);
                 }
             }
 
-            //Obtain the basic part uuids
+            //Obtain the basic part names
             ArrayList<Part> existingPartComposition = getComposition(existingPart);
             for (Part basicPart : existingPartComposition) {
                 existingPartComp.add(basicPart.getName());
             }
 
             //If the composition and overhangs of the new part is the same as an existing composite part, return that part
-            if (composition.toString().equals(existingPartComp.toString())) {
+            if (composition.toString().equals(existingPartComp.toString()) && direction.toString().equals(existingPartDir)) {
                 if (existingPartLO.equalsIgnoreCase(LO) && existingPartRO.equalsIgnoreCase(RO)) {
-                    
-                    System.out.println("<< Existing Part Returned >>");
-                    System.out.println("existingPartComp.toString(): " + existingPartComp.toString() + " existingPartLO: " + existingPartLO + " existingPartRO: " + existingPartRO);
-                    
                     return existingPart;
                 }
             }
@@ -196,9 +187,6 @@ public class ClothoWriter {
         if (!scars.isEmpty()) {
             newPart.addSearchTag("Scars: " + scars);
         }
-        
-        System.out.println("<< New part generated >>");
-        
         return newPart;       
     }
 

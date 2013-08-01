@@ -142,11 +142,11 @@ public class RGraph {
                 seenNodes.add(current);
                 queue.remove(0);
                 
-                String currentCompOHStage = current.getComposition().toString() + "|" + current.getLOverhang() + "|" + current.getROverhang() + "|" + current.getStage();
+                String currentCompDirOHStage = current.getComposition().toString() + "|" + current.getDirection() + "|" + current.getLOverhang() + "|" + current.getROverhang() + "|" + current.getStage();
                 
                 //If a node with this composition, overhangs and stage has not been seen before
-                if (mergedNodesHash.containsKey(currentCompOHStage) == false) {
-                    mergedNodesHash.put(currentCompOHStage, current);
+                if (mergedNodesHash.containsKey(currentCompDirOHStage) == false) {
+                    mergedNodesHash.put(currentCompDirOHStage, current);
                     
                     for (RNode neighbor : current.getNeighbors()) {
                         if (!seenNodes.contains(neighbor)) {
@@ -157,7 +157,7 @@ public class RGraph {
                 //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
                  
-                    RNode finalNode = mergedNodesHash.get(currentCompOHStage);
+                    RNode finalNode = mergedNodesHash.get(currentCompDirOHStage);
                     ArrayList<RNode> neighbors = current.getNeighbors();
                     
                     //Remove parent from current node's neighbors, add it to the hashed node's nieghbors
@@ -546,8 +546,29 @@ public class RGraph {
             String[] tokens = edge.split("->");
             Part vertex1 = coll.getPart(tokens[0].trim(), true);
             Part vertex2 = coll.getPart(tokens[1].trim(), true);
-            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + vertex1.getLeftOverhang() + vertex1.getRightOverhang());
-            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + vertex2.getLeftOverhang() + vertex2.getRightOverhang());
+            
+            //Directionality
+            String direction1 = new String();
+            ArrayList<String> searchTagsV1 = vertex1.getSearchTags();
+            if (!searchTagsV1.isEmpty()) {
+                for (String tag : searchTagsV1) {
+                    if (tag.startsWith("Direction:")) {
+                        direction1 = tag.substring(10);
+                    }
+                }
+            }
+            String direction2 = new String();
+            ArrayList<String> searchTagsV2 = vertex2.getSearchTags();
+            if (!searchTagsV2.isEmpty()) {
+                for (String tag : searchTagsV2) {
+                    if (tag.startsWith("Direction:")) {
+                        direction2 = tag.substring(10);
+                    }
+                }
+            }
+            
+            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + direction1 + vertex1.getLeftOverhang() + vertex1.getRightOverhang());
+            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + direction2 + vertex2.getLeftOverhang() + vertex2.getRightOverhang());
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
         }
             
