@@ -38,9 +38,9 @@ public class Partitioning {
         ArrayList<Integer> keys = new ArrayList<Integer>(keySet);
         Collections.sort(keys);
 
-        for (Integer n : keys) {
-            ArrayList<int[]> subsets = getSubsets(newIndexes, n, forbiddenPartitions.get(n));
-            partitions.put(n, subsets);
+        for (Integer numBreaks : keys) {
+            ArrayList<int[]> subsets = getSubsets(newIndexes, numBreaks, forbiddenPartitions.get(numBreaks));
+            partitions.put(numBreaks, subsets);
         }
 
         return partitions;

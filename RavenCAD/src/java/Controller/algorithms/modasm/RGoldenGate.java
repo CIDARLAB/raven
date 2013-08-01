@@ -21,7 +21,7 @@ public class RGoldenGate extends RGeneral {
     /**
      * Clotho part wrapper for Golden Gate assembly *
      */
-    public ArrayList<RGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
+    public ArrayList<RGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
         try {
 
             //Designate how many parts can be efficiently ligated in one step
@@ -41,15 +41,8 @@ public class RGoldenGate extends RGeneral {
             //Put all parts into hash for mgp algorithm            
             ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
-            //Positional scoring of transcriptional units
-            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-            if (modular) {
-                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-                positionScores = getPositionalScoring(TUs);
-            }
-
-            //Run SDS Algorithm for multiple parts
-            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
+            //Run hierarchical Raven Algorithm
+            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
             optimalGraphs = assignOverhangs(optimalGraphs, partHash, vectorSet);
 
             return optimalGraphs;

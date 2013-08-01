@@ -11,7 +11,6 @@ import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.*;
@@ -70,9 +69,7 @@ public class ClothoReader {
                     root.setDirection(direction);
                     root.setType(type);
                     
-                    System.out.println("Putting basic part in library: " + composition.toString() + direction.toString());
-                    
-                    library.put(composition.toString(), newBasicGraph);
+                    library.put(composition.toString() + direction.toString(), newBasicGraph);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -95,14 +92,18 @@ public class ClothoReader {
                     //For all of this library part's components make new basic graph
                     ArrayList<String> type = new ArrayList<String>();
                     ArrayList<String> direction = new ArrayList<String>();
+                    ArrayList<String> scars = new ArrayList<String>();
                     ArrayList<String> composition = new ArrayList<String>();
                     ArrayList<String> tags = libraryPart.getSearchTags();
                   
-                    //Get direction
+                    //Get direction and scars
                     for (String tag : tags) {
                         if (tag.startsWith("Direction:")) {
                             ArrayList<String> list = parseTags(tag);
                             direction.addAll(list);
+                        } else if (tag.startsWith("Scars:")) {
+                            ArrayList<String> list = parseTags(tag);
+                            scars.addAll(list);
                         }
                     }
 
@@ -137,8 +138,8 @@ public class ClothoReader {
                     libraryPartGraph.getRootNode().setComposition(composition);
                     libraryPartGraph.getRootNode().setType(type);
                     libraryPartGraph.getRootNode().setDirection(direction);
+                    libraryPartGraph.getRootNode().setScars(scars);
                     libraryPartGraph.getRootNode().setName(libraryPart.getName());
-
 
                     //If recommended, give graph a recommended score of 1, make root node recommended
                     if (recommended.contains(composition.toString())) {
@@ -153,10 +154,7 @@ public class ClothoReader {
                     }
 
                     //Put library part into library for assembly
-                    
-                    System.out.println("Putting composite part in library: " + composition.toString() + direction.toString());
-                    
-                    library.put(composition.toString(), libraryPartGraph);
+                    library.put(composition.toString() + direction.toString(), libraryPartGraph);
                 }
             }
         }
@@ -224,13 +222,17 @@ public class ClothoReader {
             ArrayList<String> composition = new ArrayList<String>();
             ArrayList<String> type = new ArrayList<String>();
             ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> scars = new ArrayList<String>();
             ArrayList<String> searchTags = goalPart.getSearchTags();
             
-            //Get direction
+            //Get direction and scars
             for (String tag : searchTags) {
                 if (tag.startsWith("Direction:")) {
                     ArrayList<String> list = parseTags(tag);
                     direction.addAll(list);
+                } else if (tag.startsWith("Scars:")) {
+                    ArrayList<String> list = parseTags(tag);
+                    scars.addAll(list);
                 }
             }
 
@@ -252,11 +254,9 @@ public class ClothoReader {
                     } 
                 }
             }
-
-//            System.out.println("direction gpsToNodes: " + direction);
             
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            RNode gp = new RNode(false, false, null, composition, direction, type, 0, 0);
+            RNode gp = new RNode(false, false, null, composition, direction, type, scars, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
