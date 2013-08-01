@@ -264,10 +264,6 @@ public class RavenController {
             }
             String composition = "";
             
-            System.out.println("composition of p: " + p.getStringComposition());
-            System.out.println("name of p: " + p.getName());
-            System.out.println("direction: " + direction);
-            
             if (p.isBasic()) {
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             } else {
@@ -278,7 +274,6 @@ public class RavenController {
                     composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(i);
                 }
                 
-                System.out.println("composition: " + composition);
                 
                 composition = composition.substring(1);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
@@ -411,9 +406,7 @@ public class RavenController {
                 } else {
                     compositions.add(p.getName());
                 }
-                
-                System.out.println("FETCH METHOD CALLED FOR TABLE UPLOAD");
-                
+                                
                 toReturn = toReturn
                         + "{\"uuid\":\"" + p.getUUID()
                         + "\",\"Name\":\"" + p.getName()
@@ -623,7 +616,6 @@ public class RavenController {
                 }
 
                 Part newComposite = Part.generateComposite(composition, name);
-                System.out.println("parsed directions: " + directions);
                 newComposite.addSearchTag("Direction: " + directions);
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
@@ -738,7 +730,7 @@ public class RavenController {
     }
 
     //using parameters from the client, run the algorithm
-    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash) throws Exception {
+    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters) throws Exception {
         _goalParts = new HashMap();
         _required = required;
         _recommended = recommended;
@@ -849,7 +841,7 @@ public class RavenController {
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("moclo")) {
-            _instructions = RMoClo.generateInstructions(targetRootNodes, _collector, null);
+            _instructions = RMoClo.generateInstructions(targetRootNodes, _collector, primerParameters);
         } else if (method.equals("slic")) {
             _instructions = RSLIC.generateInstructions(targetRootNodes, _collector);
         }

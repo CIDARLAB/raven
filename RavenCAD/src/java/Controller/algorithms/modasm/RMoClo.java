@@ -1200,18 +1200,19 @@ public class RMoClo extends RGeneral {
 
     //generates human readable instructions as well as primer sequences
     //primerParameters contains (in this order): 
-    //[primerNameRoot, forwardPrimerPrefix, reversePrimerPrefix, forwardEnzymeCutSite, reverseEnzymeCutSite, forwardEnzymeCutDistance, reverseEnzymeCutDistance,meltingTemperature)
+    //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
     public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<String> primerParameters) {
         
         //initialize primer parameters
-        String oligoNameRoot = "";
-        String forwardPrimerPrefix = "";
-        String reversePrimerPrefix = "";
-        String forwardEnzymeCutSite = "";
-        String reverseEnzymeCutSite = "";
-        int forwardEnzymeCutDistance = 0;
-        int reverseEnzymeCutDistance = 0;
-        Double meltingTemp = 0.0;
+        String oligoNameRoot = primerParameters.get(0);
+        String forwardPrimerPrefix = primerParameters.get(1);
+        String reversePrimerPrefix = primerParameters.get(2);
+        String forwardEnzymeCutSite = primerParameters.get(3);
+        String reverseEnzymeCutSite = primerParameters.get(4);
+        int forwardEnzymeCutDistance = Integer.parseInt(primerParameters.get(5));
+        int reverseEnzymeCutDistance = Integer.parseInt(primerParameters.get(6));
+        Double meltingTemp = Double.parseDouble(primerParameters.get(7));
+        int targetLength = Integer.parseInt(primerParameters.get(8));
         boolean designPrimers = false;
         if (primerParameters != null) {
             designPrimers = true;

@@ -114,6 +114,7 @@ public class RavenServlet extends HttpServlet {
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
                 String[] discouragedArray = request.getParameter("discouraged").split(";");
                 String[] efficiencyArray = request.getParameter("efficiency").split(",");
+                JSONObject primerParam = new JSONObject(request.getParameter("primer"));
                 String method = request.getParameter("method");
                 HashSet<String> required = new HashSet();
                 HashSet<String> recommended = new HashSet();
@@ -121,30 +122,41 @@ public class RavenServlet extends HttpServlet {
                 HashSet<String> discouraged = new HashSet();
                 HashMap<Integer, Double> efficiencyHash = new HashMap();
 
+                //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
+                ArrayList<String> primerParameters = new ArrayList();
+                primerParameters.add(primerParam.getString("oligoNameRoot"));
+                primerParameters.add(primerParam.getString("forwardPrefix"));
+                primerParameters.add(primerParam.getString("reversePrefix"));
+                primerParameters.add(primerParam.getString("forwardCutSite"));
+                primerParameters.add(primerParam.getString("reverseCutSite"));
+                primerParameters.add(primerParam.getString("forwardCutDistance"));
+                primerParameters.add(primerParam.getString("reverseCutDistance"));
+                primerParameters.add(primerParam.getString("meltingTemperature"));
+                primerParameters.add(primerParam.getString("targetLength"));
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
-                        if (recArray[i].length() > 0) {                            
+                        if (recArray[i].length() > 0) {
                             String rcA = recArray[i];
                             rcA = rcA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
                             recommended.add(rcA);
                         }
                     }
                 }
-                
+
                 if (reqArray.length > 0) {
                     for (int i = 0; i < reqArray.length; i++) {
-                        if (reqArray[i].length() > 0) {                            
+                        if (reqArray[i].length() > 0) {
                             String rqA = reqArray[i];
-                            rqA = rqA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");                            
+                            rqA = rqA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
                             required.add(rqA);
                         }
                     }
                 }
-                
+
                 if (forbiddenArray.length > 0) {
                     for (int i = 0; i < forbiddenArray.length; i++) {
-                        if (forbiddenArray[i].length() > 0) {                            
-                            String fA = forbiddenArray[i]; 
+                        if (forbiddenArray[i].length() > 0) {
+                            String fA = forbiddenArray[i];
                             fA = fA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
                             forbidden.add(fA);
                         }
@@ -153,23 +165,23 @@ public class RavenServlet extends HttpServlet {
 
                 if (discouragedArray.length > 0) {
                     for (int i = 0; i < discouragedArray.length; i++) {
-                        if (discouragedArray[i].length() > 0) {                            
+                        if (discouragedArray[i].length() > 0) {
                             String dA = discouragedArray[i];
                             dA = dA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
                             discouraged.add(dA);
                         }
                     }
                 }
-                
+
                 //generate efficiency hash
                 if (efficiencyArray.length > 0) {
                     for (int i = 0; i < efficiencyArray.length; i++) {
                         efficiencyHash.put(i + 2, Double.parseDouble(efficiencyArray[i]));
                     }
                 }
-                
+
                 String designCount = request.getParameter("designCount");
-                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash);
+                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
                 String partsList = controller.generatePartsList(designCount);
                 String instructions = controller.getInstructions();
                 String statString = controller.generateStats();
