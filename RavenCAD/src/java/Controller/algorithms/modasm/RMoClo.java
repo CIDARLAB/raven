@@ -1244,11 +1244,6 @@ public class RMoClo extends RGeneral {
             while (!queue.isEmpty()) {
                 RNode currentNode = queue.get(0);
                 
-                System.out.println("currentNode.getUUID(): " + currentNode.getUUID());
-                System.out.println("currentNode.getComposition(): " + currentNode.getComposition());
-                System.out.println("currentNode.getLOverhang(): " + currentNode.getLOverhang());
-                System.out.println("currentNode.getROverhang(): " + currentNode.getROverhang());
-                
                 queue.remove(0); //queue for traversing graphs (bfs)
 
                 if (!seenNodes.contains(currentNode)) {
@@ -1260,11 +1255,6 @@ public class RMoClo extends RGeneral {
                         //append which parts to use for a moclo reaction
                         toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
                         for (RNode neighbor : currentNode.getNeighbors()) {
-                            
-                            System.out.println("neighborNode.getUUID(): " + neighbor.getUUID());
-                            System.out.println("neighborNode.getComposition(): " + neighbor.getComposition());
-                            System.out.println("neighborNode.getLOverhang(): " + neighbor.getLOverhang());
-                            System.out.println("neighborNode.getROverhang(): " + neighbor.getROverhang());
                             
                             if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
                                 toReturn = toReturn + coll.getPart(neighbor.getUUID(), true).getName() + ", ";
