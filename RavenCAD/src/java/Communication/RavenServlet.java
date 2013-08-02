@@ -125,7 +125,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {                            
                             String rcA = recArray[i];
-                            rcA = rcA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
+                            rcA = rcA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
                             recommended.add(rcA);
                         }
                     }
@@ -135,7 +135,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < reqArray.length; i++) {
                         if (reqArray[i].length() > 0) {                            
                             String rqA = reqArray[i];
-                            rqA = rqA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");                            
+                            rqA = rqA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");                            
                             required.add(rqA);
                         }
                     }
@@ -145,7 +145,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < forbiddenArray.length; i++) {
                         if (forbiddenArray[i].length() > 0) {                            
                             String fA = forbiddenArray[i]; 
-                            fA = fA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
+                            fA = fA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
                             
                             System.out.println("fA: " + fA);
                             
@@ -158,7 +158,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < discouragedArray.length; i++) {
                         if (discouragedArray[i].length() > 0) {                            
                             String dA = discouragedArray[i];
-                            dA = dA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
+                            dA = dA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
                             discouraged.add(dA);
                         }
                     }

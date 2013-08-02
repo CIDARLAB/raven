@@ -237,19 +237,19 @@ public class RMoClo extends RGeneral {
             
             //Determine which levels each basic node impacts            
             for (int i = 0; i < l0Nodes.size(); i++) {
-                int level = 0;
+                int level;
                 RNode l0Node = l0Nodes.get(i);
                 RNode parent = _parentHash.get(l0Node);
                 
                 //Go up the parent hash until the parent doesn't have an overhang impacted by the child
-                while (l0Node.getLOverhang().equals(parent.getLOverhang()) || l0Node.getROverhang().equals(parent.getROverhang())) {
-                    level++;                   
+                while (l0Node.getLOverhang().equals(parent.getLOverhang()) || l0Node.getROverhang().equals(parent.getROverhang())) {                   
                     if (_parentHash.containsKey(parent)) {
                         parent = _parentHash.get(parent);
                     } else {
                         break;
                     }                    
                 }
+                level = parent.getStage();
                 
                 //Determine direction and enter into hash               
                 l0Node = l0Nodes.get(i);               
@@ -273,6 +273,22 @@ public class RMoClo extends RGeneral {
                 directionHash.put(l0Direction, nodeList);
                 _stageDirectionAssignHash.put(level, directionHash);
             }
+        }
+        
+        Set<Integer> keySet = _stageDirectionAssignHash.keySet();
+        for (Integer level : keySet) {
+            System.out.println("Level: " + level);
+            HashMap<String, ArrayList<RNode>> dirHash = _stageDirectionAssignHash.get(level);
+            Set<String> keySet1 = dirHash.keySet();
+            
+            for (String dir : keySet1) {
+                System.out.println("Direction: " + dir);
+                ArrayList<RNode> nodes = dirHash.get(dir);
+                
+                for (RNode node : nodes) {
+                    System.out.println("Node composition: " + node.getComposition());
+                }
+            }            
         }
     }
     
@@ -515,7 +531,7 @@ public class RMoClo extends RGeneral {
         
         //Get the taken overhangs for the 'ancestor' appropriate
         RNode ancestor = _parentHash.get(node);
-        while (ancestor.getStage() <= level) {
+        while (ancestor.getStage() < level) {
             if (_parentHash.containsKey(ancestor)) {
                 ancestor = _parentHash.get(ancestor);
             } else {
