@@ -30,8 +30,8 @@ public class MocloCartesianGraphAssigner {
 //        for (ArrayList<String> solution : findOptimalAssignment(buildCartesianGraph, composition.size())) {
 //            System.out.println("assignment: " + solution);
 //        }
-
-
+String overhang = "a_";
+System.out.println(overhang.substring(0,overhang.indexOf("*")));
         //build example
         ArrayList<RGraph> optimalGraphs = new ArrayList();
         //part ABC

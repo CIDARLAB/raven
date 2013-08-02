@@ -841,7 +841,8 @@ public class RavenController {
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector);
         } else if (method.equals("moclo")) {
-            _instructions = RMoClo.generateInstructions(targetRootNodes, _collector, primerParameters);
+//            _instructions = RMoClo.generateInstructions(targetRootNodes, _collector, primerParameters);
+            _instructions = RMoClo.generateInstructions(targetRootNodes, _collector, null);
         } else if (method.equals("slic")) {
             _instructions = RSLIC.generateInstructions(targetRootNodes, _collector);
         }
