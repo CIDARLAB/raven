@@ -11,4 +11,11 @@
 /RavenCAD/build/
 /RavenCAD/dist/
 /OverhangSequenceSelector/nbproject/private/
+<<<<<<< HEAD
 /OverhangSequenceSelector/build/
+=======
+/OverhangSequenceSelector/build/
+/MocloCartesianGraphAssigner/nbproject/private/
+/MocloCartesianGraphAssigner/build/
+/OverhangSequenceSelector/dist/
+>>>>>>> fca941ad967561b8e565a682e64f7751fee78533

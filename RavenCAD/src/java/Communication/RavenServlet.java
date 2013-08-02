@@ -102,7 +102,9 @@ public class RavenServlet extends HttpServlet {
                 String toReturn = controller.importClotho(devices);
                 out.write("{\"result\":\"" + toReturn + "\",\"status\":\"" + toReturn + "\"}");
             } else if (command.equals("run")) {
+                System.out.println("<<<< REQUIRED AND FOBIDDEN PART ARRAYS >>>>");
                 System.out.println(request.getParameter("required"));
+                System.out.println(request.getParameter("forbidden"));
                 response.setContentType("application/json");
                 String[] targetIDs = request.getParameter("targets").split(",");
                 String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
@@ -144,6 +146,9 @@ public class RavenServlet extends HttpServlet {
                         if (forbiddenArray[i].length() > 0) {                            
                             String fA = forbiddenArray[i]; 
                             fA = fA.replaceAll("\\|", "").replaceAll("\\+", "").replaceAll("-", "");
+                            
+                            System.out.println("fA: " + fA);
+                            
                             forbidden.add(fA);
                         }
                     }
