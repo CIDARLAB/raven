@@ -245,17 +245,28 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var _requestID = 0;
 
 
+    var send = function(channel, data, callback) {
+        if (_connection.readyState === 1) {
+            var message = '{"channel":"' + channel + '", "data":' + data + ',"requestId":"' + _requestID + '"}';
+            _requestCommand[channel + _requestID] = callback;
+            _connection.send(message);
+            _requestID++;
+        } else {
+            _connection = new WebSocket('ws://localhost:8080/websocket');
+        }
+    };
     _connection.onmessage = function(e) {
         //parase message into JSON
         var dataJSON = $.parseJSON(e.data);
         //ignore say messages which have not requestId
+        var channel = dataJSON["channel"];
         var requestId = dataJSON["requestId"];
         if (requestId !== null) {
             //if callback function exists, run it
-            var callback = _requestCommand[requestId];
+            var callback = _requestCommand[channel + requestId];
             if (callback !== undefined) {
                 callback(dataJSON["data"]);
-                delete _requestCommand[requestId];
+                delete _requestCommand[channel + requestId];
             }
         }
     };
@@ -268,33 +279,37 @@ $(document).ready(function() { //don't run javascript until page is loaded
 //        alert('closing connection');
     };
     _connection.onopen = function(e) {
-        send("query", '{"className":"CompositePart"}', function(data) {
+        //import basic parts
+        send("query", '{"schema":"BasicPart"}', function(data) {
             var newParts = {};
-            var newPartsArray =[];
+            var newPartsArray = [];
             $.each(data, function() {
                 if (newParts[this["name"]] === undefined) {
                     newParts[this["name"]] = "added";
                     newPartsArray.push(this);
                 }
             });
-            $.get("RavenServlet", {command: "importClotho", "data":JSON.stringify(newPartsArray)}, function(response) {
-                refreshData();
+//            alert(JSON.stringify(newPartsArray));
+            $.get("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+                //import composite parts
+                send("query", '{"schema":"CompositePart"}', function(data) {
+                    var newParts = {};
+                    var newPartsArray = [];
+                    $.each(data, function() {
+                        if (newParts[this["name"]] === undefined) {
+                            newParts[this["name"]] = "added";
+                            newPartsArray.push(this);
+                        }
+                    });
+//                    alert(JSON.stringify(newPartsArray));
+                    $.get("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+                        refreshData();
+                    });
+                });
             });
         });
 
-    };
 
-
-    var send = function(channel, data, callback) {
-        if (_connection.readyState === 1) {
-            var message = '{"channel":"' + channel + '", "data":' + data + ',"requestId":"' + _requestID + '"}';
-//            alert("sending:\n" + message);
-            _requestCommand[_requestID] = callback;
-            _connection.send(message);
-            _requestID++;
-        } else {
-            _connection = new WebSocket('ws://localhost:8080/websocket');
-        }
     };
 
 

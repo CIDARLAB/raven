@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -173,11 +174,11 @@ public class RavenController {
                 }
             }
             String composition = "";
-            
+
             System.out.println("composition of p: " + p.getStringComposition());
             System.out.println("name of p: " + p.getName());
             System.out.println("direction: " + direction);
-            
+
             if (p.isBasic()) {
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             } else {
@@ -187,9 +188,9 @@ public class RavenController {
                     Part subpart = p.getComposition().get(i);
                     composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(i);
                 }
-                
+
                 System.out.println("composition: " + composition);
-                
+
                 composition = composition.substring(1);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             }
@@ -267,7 +268,7 @@ public class RavenController {
         ArrayList<Part> allParts = _collector.getAllParts(false);
         for (Part p : allParts) {
             if (!p.isTransient()) {
-                
+
                 //Get the composition's overhangs and directions
                 ArrayList<Part> composition = p.getComposition();
                 ArrayList<String> compositions = new ArrayList<String>();
@@ -282,15 +283,15 @@ public class RavenController {
                         direction = ClothoReader.parseTags(tag);
                     }
                 }
-                
+
                 if (composition.size() > 1) {
                     for (int i = 0; i < composition.size(); i++) {
                         Part part = composition.get(i);
-                        
+
                         if (!direction.isEmpty()) {
                             bpDir = direction.get(i);
                         }
-                        
+
                         ArrayList<String> searchTags = part.getSearchTags();
                         String aPartComp;
 
@@ -321,9 +322,9 @@ public class RavenController {
                 } else {
                     compositions.add(p.getName());
                 }
-                
+
                 System.out.println("FETCH METHOD CALLED FOR TABLE UPLOAD");
-                
+
                 toReturn = toReturn
                         + "{\"uuid\":\"" + p.getUUID()
                         + "\",\"Name\":\"" + p.getName()
@@ -502,7 +503,7 @@ public class RavenController {
                     String bpForcedLeft = " ";
                     String bpForcedRight = " ";
                     String bpDirection = "+";
-                     String compositePartName = tokens[0];
+                    String compositePartName = tokens[0];
                     String basicPartName = partNameTokens[0];
 
                     //Check for forced overhangs and direction
@@ -525,15 +526,14 @@ public class RavenController {
                     } else {
                         ArrayList<String> toAdd = new ArrayList();
                         toAdd.add(bpForcedLeft + "|" + bpForcedRight);
-                            forcedOverhangHash.put(compositePartName, toAdd);
+                        forcedOverhangHash.put(compositePartName, toAdd);
                     }
 
-                    directions.add(bpDirection);                    
+                    directions.add(bpDirection);
                     composition.add(_collector.getPartByName(basicPartName, true));
                 }
 
                 Part newComposite = Part.generateComposite(composition, name);
-                System.out.println("parsed directions: " + directions);
                 newComposite.addSearchTag("Direction: " + directions);
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
@@ -797,7 +797,7 @@ public class RavenController {
         toReturn = WeyekinPoster.getmGraphVizURI().toString();
         return toReturn;
     }
-    
+
     //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition
     private boolean validateGraphComposition() throws Exception {
         boolean toReturn = true;
@@ -835,36 +835,40 @@ public class RavenController {
         }
 
     }
-    
+
     //getter for accessing the instructions from RavenServlet
     public String getInstructions() {
         return _instructions;
     }
 
-    public String importClotho(JSONArray devices) {
+    public String importClotho(JSONArray toImport) {
         String toReturn = "";
         try {
-            for (int i = 0; i < devices.length(); i++) {
-                JSONObject device = devices.getJSONObject(i);
-                JSONArray components = device.getJSONArray("components");
-//                toReturn = toReturn + device.getString("name") + "|";
-                ArrayList<Part> compositeComposition = new ArrayList();
-                for (int j = 0; j < components.length(); j++) {
-                    JSONObject basicPart = components.getJSONObject(j);
-                    Part newBasicPart = Part.generateBasic(basicPart.getString("name"), basicPart.getString("sequence"));
-                    String type = basicPart.getString("type");
-                    if (type.equals("ConstPr") || type.equals("RepPr") || type.equals("Repressor")) {
-                        type = "promoter";
-                    }
+            for (int i = 0; i < toImport.length(); i++) {
+                JSONObject currentPart = toImport.getJSONObject(i);
+                if (currentPart.getString("schema").equals("BasicPart")) {
+                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"));
+                    String type = currentPart.getString("type");
                     newBasicPart.addSearchTag("Type: " + type);
+                    newBasicPart.setUuid(currentPart.getString("id"));
                     newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
-                    compositeComposition.add(newBasicPart);
+                } else if (currentPart.getString("schema").equals("CompositePart")) {
+                    JSONArray compositionArray = currentPart.getJSONArray("composition");
+                    ArrayList<Part> composition = new ArrayList();
+                    ArrayList<String> direction = new ArrayList();
+                    for (int j = 0; j < compositionArray.length(); j++) {
+                        composition.add(_collector.getPart(compositionArray.getString(j), false));
+                        direction.add("+");
+                    }
+                    Part newComposite = Part.generateComposite(composition, currentPart.getString("name"));
+                    newComposite.setUuid(currentPart.getString("id"));
+                    newComposite.addSearchTag("Type: composite");
+                    newComposite.addSearchTag("Direction: "+direction);
+                    newComposite.saveDefault(_collector);
+                    newComposite.setTransientStatus(false);
                 }
-                Part newComposite = Part.generateComposite(compositeComposition, device.getString("name"));
-                newComposite.addSearchTag("Type: composite");
-                newComposite.saveDefault(_collector);
-                newComposite.setTransientStatus(false);
+
 
             }
         } catch (JSONException ex) {
