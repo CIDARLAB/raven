@@ -249,7 +249,8 @@ public class RavenController {
             String RO = "";
             String LO = "";
             String type = "";
-            ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
+            
             for (int k = 0; k < tags.size(); k++) {
                 if (tags.get(k).startsWith("LO:")) {
                     LO = tags.get(k).substring(4);
@@ -257,9 +258,6 @@ public class RavenController {
                     RO = tags.get(k).substring(4);
                 } else if (tags.get(k).startsWith("Type:")) {
                     type = tags.get(k).substring(6);
-                } else if (tags.get(k).startsWith("Direction:")) {
-                    String dir = tags.get(k);
-                    direction = ClothoReader.parseTags(dir);
                 }
             }
             String composition = "";
@@ -364,24 +362,18 @@ public class RavenController {
                 String bpDir = new String();
                 String bpLO = new String();
                 String bpRO = new String();
-                ArrayList<String> direction = new ArrayList<String>();
-
                 ArrayList<String> tags = p.getSearchTags();
-                for (String tag : tags) {
-                    if (tag.startsWith("Direction:")) {
-                        direction = ClothoReader.parseTags(tag);
-                    }
-                }
+                ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
                 
                 if (composition.size() > 1) {
                     for (int i = 0; i < composition.size(); i++) {
-                        Part part = composition.get(i);
+                        Part bp = composition.get(i);
                         
                         if (!direction.isEmpty()) {
                             bpDir = direction.get(i);
                         }
                         
-                        ArrayList<String> searchTags = part.getSearchTags();
+                        ArrayList<String> searchTags = bp.getSearchTags();
                         String aPartComp;
 
                         //Look at all of the search tags
@@ -395,15 +387,15 @@ public class RavenController {
 
                         if (!bpDir.isEmpty()) {
                             if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
-                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO + "|" + bpDir;
+                                aPartComp = bp.getName() + "|" + bpLO + "|" + bpRO + "|" + bpDir;
                             } else {
-                                aPartComp = part.getName() + "|" + bpDir;
+                                aPartComp = bp.getName() + "|" + bpDir;
                             }
                         } else {
                             if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
-                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO;
+                                aPartComp = bp.getName() + "|" + bpLO + "|" + bpRO;
                             } else {
-                                aPartComp = part.getName();
+                                aPartComp = bp.getName();
                             }
                         }
                         compositions.add(aPartComp);

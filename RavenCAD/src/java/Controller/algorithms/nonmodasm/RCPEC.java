@@ -18,36 +18,32 @@ import java.util.Set;
  */
 public class RCPEC extends RGeneral {
     
- /** Clotho part wrapper for sequence independent one pot reactions **/
-    public ArrayList<RGraph> cpecClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
-        try {
-            
-            //Designate how many parts can be efficiently ligated in one step
-            int max = 0;
-            Set<Integer> keySet = efficiencies.keySet();
-            for (Integer key : keySet) {
-                if (key > max) {
-                    max = key;
-                }
+    /**
+     * Clotho part wrapper for CPEC *
+     */
+    public ArrayList<RGraph> cpecClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+
+        //Designate how many parts can be efficiently ligated in one step
+        int max = 0;
+        Set<Integer> keySet = efficiencies.keySet();
+        for (Integer key : keySet) {
+            if (key > max) {
+                max = key;
             }
-            _maxNeighbors = max;
-
-            //Initialize part hash and vector set
-            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
-
-            //Put all parts into hash for mgp algorithm            
-            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
-            
-            //Run hierarchical Raven Algorithm
-            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
-            assignOverhangs(optimalGraphs);
-            
-            return optimalGraphs;
-        } catch (Exception E) {
-            ArrayList<RGraph> blank = new ArrayList<RGraph>();
-//            E.printStackTrace();
-            return blank;
         }
+        _maxNeighbors = max;
+
+        //Initialize part hash and vector set
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
+
+        //Put all parts into hash for mgp algorithm            
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+
+        //Run hierarchical Raven Algorithm
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
+        assignOverhangs(optimalGraphs);
+
+        return optimalGraphs;
     }
     
     /** Assign overhangs for scarless assembly **/

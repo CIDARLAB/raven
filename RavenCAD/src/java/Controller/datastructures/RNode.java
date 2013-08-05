@@ -27,7 +27,6 @@ public class RNode {
         _type = new ArrayList<String>();
         _lOverhang = "";
         _rOverhang = "";
-//        _vector = new RVector();
         _name = "";
         _stage = 0;
         _nodeID = _nodeCount;
@@ -52,7 +51,6 @@ public class RNode {
         _type = type;
         _lOverhang = "";
         _rOverhang = "";
-//        _vector = vector;
         _name = "";
         _nodeID = _nodeCount;
         _nodeCount++;

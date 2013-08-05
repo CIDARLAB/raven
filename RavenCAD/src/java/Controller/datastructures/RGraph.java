@@ -5,6 +5,7 @@
 package Controller.datastructures;
 
 import Controller.accessibility.ClothoReader;
+import static Controller.accessibility.ClothoReader.parseTags;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -156,6 +157,13 @@ public class RGraph {
                 ArrayList<String> revDir = new ArrayList<String>();
                 revDir.addAll(dir);
                 Collections.reverse(revDir);
+                for (String rD : revDir) {
+                    if (rD.equals("+")) {
+                        rD = "-";
+                    } else if (rD.equals("-")) {
+                        rD = "+";
+                    }
+                }
                 
                 ArrayList<String> scars = current.getScars();
                 ArrayList<String> revScars = new ArrayList<String>();
@@ -179,6 +187,8 @@ public class RGraph {
                 
                 String currentCompDirOHStage = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + current.getStage();
                 String currentCompDirOHStageRev = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR + current.getStage();
+                
+                System.out.println("currentCompDirOHStage: " + currentCompDirOHStage + " currentCompDirOHStageRev: " + currentCompDirOHStageRev);
                 
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
@@ -291,17 +301,9 @@ public class RGraph {
             revComp.addAll(comp);
             Collections.reverse(revComp);
             
-            ArrayList<String> dir = new ArrayList<String>();
-            ArrayList<String> scars = new ArrayList<String>();
             ArrayList<String> searchTags = aPart.getSearchTags();
-            for (String tag : searchTags) {
-                if (tag.startsWith("Direction: ")) {
-                    dir.addAll(ClothoReader.parseTags(tag));
-                } else if (tag.startsWith("Scars: ")) {
-                    scars.addAll(ClothoReader.parseTags(tag));
-                }
-            }
-            
+            ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
+            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
             
             ArrayList<String> revDir = new ArrayList<String>();
             revDir.addAll(dir);
@@ -645,27 +647,13 @@ public class RGraph {
             Part vertex2 = coll.getPart(tokens[1].trim(), true);
             
             //Directionality
-            String direction1 = new String();
             ArrayList<String> searchTagsV1 = vertex1.getSearchTags();
-            if (!searchTagsV1.isEmpty()) {
-                for (String tag : searchTagsV1) {
-                    if (tag.startsWith("Direction:")) {
-                        direction1 = tag.substring(10);
-                    }
-                }
-            }
-            String direction2 = new String();
+            ArrayList<String> direction1 = ClothoReader.parseTags(searchTagsV1, "Direction:");
             ArrayList<String> searchTagsV2 = vertex2.getSearchTags();
-            if (!searchTagsV2.isEmpty()) {
-                for (String tag : searchTagsV2) {
-                    if (tag.startsWith("Direction:")) {
-                        direction2 = tag.substring(10);
-                    }
-                }
-            }
+            ArrayList<String> direction2 = ClothoReader.parseTags(searchTagsV2, "Direction:");
             
-            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + direction1 + vertex1.getLeftOverhang() + vertex1.getRightOverhang());
-            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + direction2 + vertex2.getLeftOverhang() + vertex2.getRightOverhang());
+            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + direction1.toString() + vertex1.getLeftOverhang() + vertex1.getRightOverhang());
+            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + direction2.toString() + vertex2.getLeftOverhang() + vertex2.getRightOverhang());
             edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
         }
             
@@ -674,19 +662,10 @@ public class RGraph {
             Part part = coll.getPart(uuid, true);
             ArrayList<Part> composition = part.getComposition();
             ArrayList<String> strComposition = new ArrayList<String>();
-            ArrayList<String> direction = new ArrayList<String>();
             ArrayList<String> types = new ArrayList<String>();
-            ArrayList<String> scars = new ArrayList<String>();
             ArrayList<String> searchTags = part.getSearchTags();
-
-            for (String tag : searchTags) {
-                if (tag.startsWith("Direction:")) {
-                    direction = ClothoReader.parseTags(tag);
-                }
-                if (tag.startsWith("Scars:")) {
-                    scars = ClothoReader.parseTags(tag);
-                }
-            }
+            ArrayList<String> direction = ClothoReader.parseTags(searchTags, "Direction:");
+            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
             
             for (int i = 0; i < composition.size(); i++) {
                 strComposition.add(composition.get(i).getName());
