@@ -912,8 +912,6 @@ public class RMoClo extends RGeneral {
                 if (reservedLeftOverhangs != null) {
                     Collections.sort(reservedLeftOverhangs);
                     freeLeftOverhangs.addAll(0, reservedLeftOverhangs);
-//                    freeLeftOverhangs.addAll(reservedLeftOverhangs);
-//                    Collections.sort(freeLeftOverhangs);
                 } else {
                     reservedLeftOverhangs = new ArrayList();
                     reservedLeftFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
@@ -922,8 +920,6 @@ public class RMoClo extends RGeneral {
                 if (reservedRightOverhangs != null) {
                     Collections.sort(reservedRightOverhangs);
                     freeRightOverhangs.addAll(0, reservedRightOverhangs);
-//                    freeRightOverhangs.addAll(reservedRightOverhangs);
-//                    Collections.sort(freeRightOverhangs);
                 } else {
                     reservedRightOverhangs = new ArrayList();
                     reservedRightFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
@@ -966,18 +962,28 @@ public class RMoClo extends RGeneral {
                         newOverhang = freeLeftOverhangs.get(counter);
                         counter = counter + 1;
                     }
+                    //detect and handle inverted overhangs
                     if (currentLeftOverhang.indexOf("*") > -1) {
                         String starlessLeftOverhang = currentLeftOverhang.substring(0, currentLeftOverhang.indexOf("*"));
                         if (finalOverhangHash.containsKey(starlessLeftOverhang)) {
                             String starlessLeftAssignment = finalOverhangHash.get(starlessLeftOverhang);
                             if (starlessLeftAssignment.indexOf("*") > -1) {
-                                newOverhang = starlessLeftOverhang.substring(0, starlessLeftOverhang.indexOf("*"));                               
+                                newOverhang = starlessLeftAssignment.substring(0, starlessLeftOverhang.indexOf("*"));
                             } else {
-                                newOverhang = starlessLeftOverhang.substring(0, starlessLeftOverhang.indexOf("*"))+"*"; 
+                                newOverhang = starlessLeftAssignment + "*";
                             }
 
-                        } else {
-                            finalOverhangHash.put(starlessLeftOverhang, newOverhang+"*");
+                        }
+                    } else {
+                        String starredLeftOverhang = currentLeftOverhang + "*";
+                        if (finalOverhangHash.containsKey(starredLeftOverhang)) {
+                            String starredLeftAssignment = finalOverhangHash.get(starredLeftOverhang);
+                            if (starredLeftAssignment.indexOf("*") > -1) {
+                                newOverhang = starredLeftAssignment.substring(0, starredLeftAssignment.indexOf("*"));
+                            } else {
+                                newOverhang = starredLeftAssignment + "*";
+                            }
+
                         }
                     }
                     finalOverhangHash.put(currentLeftOverhang, newOverhang);
@@ -1005,18 +1011,28 @@ public class RMoClo extends RGeneral {
                         newOverhang = freeRightOverhangs.get(counter);
                         counter = counter + 1;
                     }
+                    //detect and handle inverted overhangs
                     if (currentRightOverhang.indexOf("*") > -1) {
                         String starlessRightOverhang = currentRightOverhang.substring(0, currentRightOverhang.indexOf("*"));
                         if (finalOverhangHash.containsKey(starlessRightOverhang)) {
                             String starlessRightAssignment = finalOverhangHash.get(starlessRightOverhang);
                             if (starlessRightAssignment.indexOf("*") > -1) {
-                                newOverhang = starlessRightOverhang.substring(0, starlessRightOverhang.indexOf("*"));                               
+                                newOverhang = starlessRightAssignment.substring(0, starlessRightOverhang.indexOf("*"));
                             } else {
-                                newOverhang = starlessRightOverhang.substring(0, starlessRightOverhang.indexOf("*"))+"*"; 
+                                newOverhang = starlessRightAssignment + "*";
                             }
 
-                        } else {
-                            finalOverhangHash.put(starlessRightOverhang, newOverhang+"*");
+                        }
+                    } else {
+                        String starredRightOverhang = currentRightOverhang + "*";
+                        if (finalOverhangHash.containsKey(starredRightOverhang)) {
+                            String starredRightAssignment = finalOverhangHash.get(starredRightOverhang);
+                            if (starredRightAssignment.indexOf("*") > -1) {
+                                newOverhang = starredRightAssignment.substring(0, starredRightAssignment.indexOf("*"));
+                            } else {
+                                newOverhang = starredRightAssignment + "*";
+                            }
+
                         }
                     }
                     finalOverhangHash.put(currentRightOverhang, newOverhang);
@@ -1111,7 +1127,6 @@ public class RMoClo extends RGeneral {
                 //count the number of reactions
                 ArrayList<String> overhangOptions = compositionConcreteOverhangHash.get(current.getComposition().toString());
                 String overhangString = current.getLOverhang() + "|" + current.getROverhang();
-
                 if (overhangOptions != null) {
                     if (!overhangOptions.contains(overhangString)) {
                         reactions = reactions + 1;
