@@ -21,7 +21,7 @@ public class Part {
         newComposite.sequence = sequence;
         newComposite.composition = newComposition;
         newComposite.name = name;
-        newComposite.uuid = "part_"+String.valueOf(UUID);
+        newComposite.uuid = "part_" + String.valueOf(UUID);
         newComposite.isComposite = true;
         newComposite._transient = true;
         return newComposite;
@@ -29,7 +29,7 @@ public class Part {
 
     private Part() {
         UUID++;
-        this.uuid = "part_"+String.valueOf(UUID);
+        this.uuid = "part_" + String.valueOf(UUID);
     }
 
     public static Part retrieveByExactName(Collector coll, String name, boolean allowTransient) {
@@ -133,6 +133,11 @@ public class Part {
     public void setComposition(ArrayList<Part> comp) {
         this.composition = comp;
     }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+    
     //Fields
     private ArrayList<Part> composition;
     private String name;
