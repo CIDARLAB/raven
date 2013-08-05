@@ -158,6 +158,39 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
     };
     //EVENT HANDLERS
+    $('button#clotho3').click(function() {
+        if (canSend) {
+            //import basic parts
+            send("query", '{"schema":"BasicPart"}', function(data) {
+                var newParts = {};
+                var newPartsArray = [];
+                $.each(data, function() {
+                    if (newParts[this["name"]] === undefined) {
+                        newParts[this["name"]] = "added";
+                        newPartsArray.push(this);
+                    }
+                });
+//            alert(JSON.stringify(newPartsArray));
+                $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
+                    //import composite parts
+                    send("query", '{"schema":"CompositePart"}', function(data) {
+                        var newParts = {};
+                        var newPartsArray = [];
+                        $.each(data, function() {
+                            if (newParts[this["name"]] === undefined) {
+                                newParts[this["name"]] = "added";
+                                newPartsArray.push(this);
+                            }
+                        });
+                        $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+                            refreshData();
+                        });
+                    });
+                });
+            });
+        }
+        ;
+    });
     $('.tablink').click(function() {
         tabResized = false;
     });
@@ -240,7 +273,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
     /********Clotho Functions and Variables********/
     var _connection = new WebSocket('ws://localhost:8080/websocket');
-
+    var canSend = false;
     var _requestCommand = {}; //key request id, value: callback function
     var _requestID = 0;
 
@@ -279,38 +312,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 //        alert('closing connection');
     };
     _connection.onopen = function(e) {
-        //import basic parts
-        send("query", '{"schema":"BasicPart"}', function(data) {
-            var newParts = {};
-            var newPartsArray = [];
-            $.each(data, function() {
-                if (newParts[this["name"]] === undefined) {
-                    newParts[this["name"]] = "added";
-                    newPartsArray.push(this);
-                }
-            });
-//            alert(JSON.stringify(newPartsArray));
-            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
-                //import composite parts
-                
-                send("query", '{"schema":"CompositePart"}', function(data) {
-                    var newParts = {};
-                    var newPartsArray = [];
-                    $.each(data, function() {
-                        if (newParts[this["name"]] === undefined) {
-                            newParts[this["name"]] = "added";
-                            newPartsArray.push(this);
-                        }
-                    });
-                    alert(JSON.stringify(newPartsArray));
-                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
-                        refreshData();
-                    });
-                });
-            });
-        });
-
-
+        canSend = true;
     };
 
 
