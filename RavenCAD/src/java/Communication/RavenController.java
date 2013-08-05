@@ -367,13 +367,13 @@ public class RavenController {
                 
                 if (composition.size() > 1) {
                     for (int i = 0; i < composition.size(); i++) {
-                        Part bp = composition.get(i);
+                        Part part = composition.get(i);
                         
                         if (!direction.isEmpty()) {
                             bpDir = direction.get(i);
                         }
                         
-                        ArrayList<String> searchTags = bp.getSearchTags();
+                        ArrayList<String> searchTags = part.getSearchTags();
                         String aPartComp;
 
                         //Look at all of the search tags
@@ -387,15 +387,15 @@ public class RavenController {
 
                         if (!bpDir.isEmpty()) {
                             if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
-                                aPartComp = bp.getName() + "|" + bpLO + "|" + bpRO + "|" + bpDir;
+                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO + "|" + bpDir;
                             } else {
-                                aPartComp = bp.getName() + "|" + bpDir;
+                                aPartComp = part.getName() + "|" + bpDir;
                             }
                         } else {
                             if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
-                                aPartComp = bp.getName() + "|" + bpLO + "|" + bpRO;
+                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO;
                             } else {
-                                aPartComp = bp.getName();
+                                aPartComp = part.getName();
                             }
                         }
                         compositions.add(aPartComp);
