@@ -45,11 +45,11 @@ public class RavenController {
         if (_goalParts == null) {
             return null;
         }
-        
+
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList<Part>();
-        
+
         //Sort goal parts by part name
         Set<Part> keySet = _goalParts.keySet();
         HashMap<String, Part> partNameHash = new HashMap<String, Part>();
@@ -62,7 +62,7 @@ public class RavenController {
         for (String partName : partNames) {
             gps.add(partNameHash.get(partName));
         }
-        
+
         RBioBricks biobricks = new RBioBricks();
         ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, null);
         return optimalGraphs;
@@ -75,11 +75,11 @@ public class RavenController {
         if (_goalParts == null) {
             return null;
         }
-        
+
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList<Part>();
-        
+
         //Sort goal parts by part name
         Set<Part> keySet = _goalParts.keySet();
         HashMap<String, Part> partNameHash = new HashMap<String, Part>();
@@ -92,7 +92,7 @@ public class RavenController {
         for (String partName : partNames) {
             gps.add(partNameHash.get(partName));
         }
-        
+
         RGibson gibson = new RGibson();
         ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
@@ -105,11 +105,11 @@ public class RavenController {
         if (_goalParts == null) {
             return null;
         }
-        
+
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList<Part>();
-        
+
         //Sort goal parts by part name
         Set<Part> keySet = _goalParts.keySet();
         HashMap<String, Part> partNameHash = new HashMap<String, Part>();
@@ -122,7 +122,7 @@ public class RavenController {
         for (String partName : partNames) {
             gps.add(partNameHash.get(partName));
         }
-        
+
         RCPEC cpec = new RCPEC();
         ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
@@ -135,11 +135,11 @@ public class RavenController {
         if (_goalParts == null) {
             return null;
         }
-        
+
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList<Part>();
-        
+
         //Sort goal parts by part name
         Set<Part> keySet = _goalParts.keySet();
         HashMap<String, Part> partNameHash = new HashMap<String, Part>();
@@ -152,7 +152,7 @@ public class RavenController {
         for (String partName : partNames) {
             gps.add(partNameHash.get(partName));
         }
-        
+
         RSLIC slic = new RSLIC();
         ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
@@ -165,11 +165,11 @@ public class RavenController {
         if (_goalParts == null) {
             return null;
         }
-        
+
         //Run algorithm for MoClo assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList<Part>();
-        
+
         //Sort goal parts by part name
         Set<Part> keySet = _goalParts.keySet();
         HashMap<String, Part> partNameHash = new HashMap<String, Part>();
@@ -182,7 +182,7 @@ public class RavenController {
         for (String partName : partNames) {
             gps.add(partNameHash.get(partName));
         }
-        
+
         RMoClo moclo = new RMoClo();
         moclo.setForcedOverhangs(_collector, forcedOverhangHash);
         ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
@@ -195,12 +195,12 @@ public class RavenController {
     public ArrayList<RGraph> runGoldenGate() throws Exception {
         if (_goalParts == null) {
             return null;
-        }        
-        
+        }
+
         //Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
         ArrayList<Part> gps = new ArrayList<Part>();
-        
+
         //Sort goal parts by part name
         Set<Part> keySet = _goalParts.keySet();
         HashMap<String, Part> partNameHash = new HashMap<String, Part>();
@@ -213,7 +213,7 @@ public class RavenController {
         for (String partName : partNames) {
             gps.add(partNameHash.get(partName));
         }
-        
+
         RGoldenGate gg = new RGoldenGate();
         ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
@@ -936,7 +936,10 @@ public class RavenController {
                 JSONObject currentPart = toImport.getJSONObject(i);
                 if (currentPart.getString("schema").equals("BasicPart")) {
                     Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"));
-                    String type = currentPart.getString("type");
+                    String type = "gene";
+                    if (currentPart.has("type")) {
+                        type = currentPart.getString("type");
+                    }
                     newBasicPart.addSearchTag("Type: " + type);
                     newBasicPart.setUuid(currentPart.getString("id"));
                     newBasicPart.saveDefault(_collector);
@@ -952,7 +955,7 @@ public class RavenController {
                     Part newComposite = Part.generateComposite(composition, currentPart.getString("name"));
                     newComposite.setUuid(currentPart.getString("id"));
                     newComposite.addSearchTag("Type: composite");
-                    newComposite.addSearchTag("Direction: "+direction);
+                    newComposite.addSearchTag("Direction: " + direction);
                     newComposite.saveDefault(_collector);
                     newComposite.setTransientStatus(false);
                 }

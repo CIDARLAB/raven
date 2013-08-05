@@ -290,8 +290,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 }
             });
 //            alert(JSON.stringify(newPartsArray));
-            $.get("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
                 //import composite parts
+                
                 send("query", '{"schema":"CompositePart"}', function(data) {
                     var newParts = {};
                     var newPartsArray = [];
@@ -301,8 +302,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             newPartsArray.push(this);
                         }
                     });
-//                    alert(JSON.stringify(newPartsArray));
-                    $.get("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+                    alert(JSON.stringify(newPartsArray));
+                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
                         refreshData();
                     });
                 });
