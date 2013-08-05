@@ -348,7 +348,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $('#selectedIntermediates div div div ul#recommendedList li').each(function() {
                     rec = rec + $(this).text() + ";";
                 });
-                $('#selectedIntermediates div div div ul#forbidden li').each(function() {
+                $('#selectedIntermediates div div div ul#forbiddenList li').each(function() {
                     forbid = forbid + $(this).text() + ";";
                 });
                 $('#selectedIntermediates div div div ul#discouragedList li').each(function() {
