@@ -274,8 +274,6 @@ public class RavenController {
                     composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(i);
                 }
 
-                System.out.println("composition: " + composition);
-
                 composition = composition.substring(1);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             }
@@ -407,8 +405,6 @@ public class RavenController {
                 } else {
                     compositions.add(p.getName());
                 }
-
-                System.out.println("FETCH METHOD CALLED FOR TABLE UPLOAD");
 
                 toReturn = toReturn
                         + "{\"uuid\":\"" + p.getUUID()

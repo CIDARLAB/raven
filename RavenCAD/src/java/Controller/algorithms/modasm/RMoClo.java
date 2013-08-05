@@ -1108,12 +1108,15 @@ public class RMoClo extends RGeneral {
                 RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
-                current.setLOverhang(finalOverhangHash.get(current.getLOverhang()));
-                current.setROverhang(finalOverhangHash.get(current.getROverhang()));
-
+                String currentLeftOverhang = current.getLOverhang();
+                String currentRightOverhang = current.getROverhang();
+                current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
+                current.setROverhang(finalOverhangHash.get(currentRightOverhang));
+                currentLeftOverhang = current.getLOverhang();
+                currentRightOverhang = current.getROverhang();
                 RVector newVector = new RVector();
-                newVector.setLOverhang(current.getLOverhang());
-                newVector.setROverhang(current.getROverhang());
+                newVector.setLOverhang(currentLeftOverhang);
+                newVector.setROverhang(currentRightOverhang);
                 newVector.setLevel(current.getStage());
                 newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
                 current.setVector(newVector);
@@ -1126,14 +1129,28 @@ public class RMoClo extends RGeneral {
 
                 //count the number of reactions
                 ArrayList<String> overhangOptions = compositionConcreteOverhangHash.get(current.getComposition().toString());
-                String overhangString = current.getLOverhang() + "|" + current.getROverhang();
+                String overhangString = currentLeftOverhang + "|" + currentRightOverhang;
+                
+                //handle inverted overhangs
+                String invertedLeftOverhang = "";
+                String invertedRightOverhang = "";
+                if (currentLeftOverhang.indexOf("*") > -1) {
+                    invertedLeftOverhang = currentLeftOverhang.substring(0, currentLeftOverhang.indexOf("*"));
+                } else {
+                    invertedLeftOverhang = currentLeftOverhang + "*";
+                }
+                if (currentRightOverhang.indexOf("*") > -1) {
+                    invertedRightOverhang = currentRightOverhang.substring(0, currentRightOverhang.indexOf("*"));
+                } else {
+                    invertedRightOverhang = currentRightOverhang + "*";
+                }
+                String invertedOverhangString = invertedRightOverhang+"|"+invertedLeftOverhang;
                 if (overhangOptions != null) {
-                    if (!overhangOptions.contains(overhangString)) {
+                    if (!overhangOptions.contains(overhangString) && !overhangOptions.contains(invertedOverhangString)) {
                         reactions = reactions + 1;
                         overhangOptions.add(overhangString);
                     }
                 } else {
-
                     if (current.getComposition().size() == 1) {
                         reactions = reactions + 1;
                     }
@@ -1141,7 +1158,6 @@ public class RMoClo extends RGeneral {
                     toAdd.add(overhangString);
                     compositionConcreteOverhangHash.put(current.getComposition().toString(), toAdd);
                 }
-
                 if (!vectorOverhangPairs.contains(overhangString)) {
                     reactions = reactions + 1;
                     vectorOverhangPairs.add(overhangString);
