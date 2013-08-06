@@ -132,30 +132,8 @@ public class MocloCartesianGraphAssigner {
     public static ArrayList<CartesianNode> buildCartesianGraph(ArrayList<RGraph> graphs) {
         //build abstractConcreteHash
 
-        //build meta node graph
-        HashMap<String, ArrayList<String>> relationshipHash = new HashMap(); //key: left overhang, value: right overhang
-        HashMap<String, CartesianMetaNode> overhangMetaNodeHash= new HashMap(); //key: overhang, value:CartesianMetaNode that corresponds to that Hash
-        for (RGraph graph : graphs) {
-            RNode rootNode = graph.getRootNode();
-            ArrayList<RNode> basicNodes = _rootBasicNodeHash.get(rootNode);
-            
-            for (RNode basicNode : basicNodes) {
-                ArrayList<String> rightOverhangs = relationshipHash.get(basicNode.getLOverhang());
-                if(!overhangMetaNodeHash.containsKey(basicNode.getLOverhang())) {
-                    overhangMetaNodeHash.put(basicNode.getLOverhang(), new CartesianMetaNode(basicNode.getLOverhang()));
-                }
-                if(!overhangMetaNodeHash.containsKey(basicNode.getROverhang())) {
-                    overhangMetaNodeHash.put(basicNode.getROverhang(), new CartesianMetaNode(basicNode.getROverhang()));
-                }
-                if (rightOverhangs != null) {
-                    if(!rightOverhangs.contains(basicNode.getROverhang())) {
-                        rightOverhangs.add(basicNode.getROverhang());
-                    }
-                } else {
-                    relationshipHash.put(basicNode.getLOverhang(), new ArrayList(Arrays.asList(new String[]{basicNode.getROverhang()})));
-                }
-            }
-        }
+
+        
 
 
         return null;
