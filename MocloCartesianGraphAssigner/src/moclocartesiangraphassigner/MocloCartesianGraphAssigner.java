@@ -30,8 +30,6 @@ public class MocloCartesianGraphAssigner {
 //        for (ArrayList<String> solution : findOptimalAssignment(buildCartesianGraph, composition.size())) {
 //            System.out.println("assignment: " + solution);
 //        }
-String overhang = "a_";
-System.out.println(overhang.substring(0,overhang.indexOf("*")));
         //build example
         ArrayList<RGraph> optimalGraphs = new ArrayList();
         //part ABC
@@ -165,7 +163,10 @@ System.out.println(overhang.substring(0,overhang.indexOf("*")));
 
     public void findOptimalAssignment(ArrayList<RGraph> optimalGraphs, ArrayList<CartesianNode> cartesianGraphs) {
     }
-
+    
+    
+    
+    //old single graph method
     public static ArrayList<RGraph> buildCartesianGraph(ArrayList<String> composition, HashMap<String, ArrayList<String>> compositionOverhangHash) {
         ArrayList<RNode> previousNodes = null;
         ArrayList<RGraph> toReturn = new ArrayList();
@@ -205,7 +206,7 @@ System.out.println(overhang.substring(0,overhang.indexOf("*")));
         }
         return toReturn;
     }
-
+    //old single graph method
     public static ArrayList<ArrayList<String>> findOptimalAssignment(ArrayList<RGraph> graphs, int targetLength) {
         ArrayList<ArrayList<String>> toReturn = new ArrayList();
         ArrayList<String> currentSolution;
@@ -269,6 +270,7 @@ System.out.println(overhang.substring(0,overhang.indexOf("*")));
         }
         return toReturn;
     }
+    
     private static HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private static HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private static HashMap<RNode, HashSet<String>> _takenParentOHs;
