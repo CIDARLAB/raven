@@ -34,7 +34,6 @@ public class RBioBricks extends RGeneral {
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
-//        optimalGraphs = assignOverhangs(optimalGraphs, vectorSet);
         enforceOverhangRules(optimalGraphs, null);
         assignScars(optimalGraphs);
 

@@ -24,185 +24,135 @@ public class RMoClo extends RGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
-        try {
-            _partLibrary = partLibrary;
-            _vectorLibrary = vectorLibrary;
-            if (_partLibrary == null) {
-                _partLibrary = new ArrayList();
+    public ArrayList<RGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+
+        _partLibrary = partLibrary;
+        _vectorLibrary = vectorLibrary;
+        if (_partLibrary == null) {
+            _partLibrary = new ArrayList();
+        }
+        if (_vectorLibrary == null) {
+            _vectorLibrary = new ArrayList();
+        }
+
+        //Designate how many parts can be efficiently ligated in one step
+        int max = 0;
+        Set<Integer> keySet = efficiencies.keySet();
+        for (Integer key : keySet) {
+            if (key > max) {
+                max = key;
             }
-            if (_vectorLibrary == null) {
-                _vectorLibrary = new ArrayList();
-            }
+        }
+        _maxNeighbors = max;
 
-            //Designate how many parts can be efficiently ligated in one step
-            int max = 0;
-            Set<Integer> keySet = efficiencies.keySet();
-            for (Integer key : keySet) {
-                if (key > max) {
-                    max = key;
-                }
-            }
-            _maxNeighbors = max;
+        //Create hashMem parameter for createAsmGraph_sgp() call
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
+        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
-            //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
-            ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+        //Put all parts into hash for mgp algorithm            
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
-            //Put all parts into hash for mgp algorithm            
-            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+        //Run hierarchical Raven Algorithm
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
+        boolean tryCartesian = false;
+        enforceOverhangRules(optimalGraphs);
+        boolean valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nfirst pass: " + valid);
 
-            //Positional scoring of transcriptional units
-//            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-//            if (modular) {
-//                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-//                positionScores = getPositionalScoring(TUs);
-//            }
+        HashMap<String, String> finalOverhangHash = new HashMap();
+        if (tryCartesian) {
 
-            //Add single transcriptional units to the required hash
-//            ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, 2);
-//            for (int i = 0; i < reqTUs.size(); i++) {
-//                required.add(reqTUs.get(i).toString());
-//            }
+            //gather some info
+            ArrayList<RGraph> nonCartesianGraphs = new ArrayList(); //graphs without valid cartesian products
+            HashMap<String, ArrayList<String>> availableOverhangs = new HashMap(); //key: composition, value: arrayList containing available overhangs
 
-            //Run hierarchical Raven Algorithm
-            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-            boolean tryCartesian = false;
-            enforceOverhangRules(optimalGraphs);
-            boolean valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nfirst pass: " + valid);
-
-            HashMap<String, String> finalOverhangHash = new HashMap();
-            if (tryCartesian) {
-
-                //gather some info
-                ArrayList<RGraph> nonCartesianGraphs = new ArrayList(); //graphs without valid cartesian products
-                HashMap<String, ArrayList<String>> availableOverhangs = new HashMap(); //key: composition, value: arrayList containing available overhangs
-
-                for (Part p : _partLibrary) {
-                    if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
-                        String composition = p.getStringComposition().toString();
-                        if (_encounteredCompositions.contains(composition)) {
-                            ArrayList<String> existingOverhangs = availableOverhangs.get(composition);
-                            if (existingOverhangs != null) {
-                                existingOverhangs.add(p.getLeftOverhang() + "|" + p.getRightOverhang());
-                            } else {
-                                availableOverhangs.put(composition, new ArrayList(Arrays.asList(new String[]{p.getLeftOverhang() + "|" + p.getRightOverhang()}))); //create new array list
-                            }
+            for (Part p : _partLibrary) {
+                if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
+                    String composition = p.getStringComposition().toString();
+                    if (_encounteredCompositions.contains(composition)) {
+                        ArrayList<String> existingOverhangs = availableOverhangs.get(composition);
+                        if (existingOverhangs != null) {
+                            existingOverhangs.add(p.getLeftOverhang() + "|" + p.getRightOverhang());
+                        } else {
+                            availableOverhangs.put(composition, new ArrayList(Arrays.asList(new String[]{p.getLeftOverhang() + "|" + p.getRightOverhang()}))); //create new array list
                         }
                     }
                 }
-                HashMap<String, ArrayList<String>> cartesianOverhangs = new HashMap();
+            }
+            HashMap<String, ArrayList<String>> cartesianOverhangs = new HashMap();
 
-                for (RGraph graph : optimalGraphs) {
-                    RNode root = graph.getRootNode();
-                    ArrayList<RNode> composition = _rootBasicNodeHash.get(root);
+            for (RGraph graph : optimalGraphs) {
+                RNode root = graph.getRootNode();
+                ArrayList<RNode> composition = _rootBasicNodeHash.get(root);
 
-                    //use cartesian product methods to find an assignment
-                    ArrayList<ArrayList<String>> optimalAssignments = findOptimalAssignment(buildCartesianGraph(composition, availableOverhangs), composition.size());
+                //use cartesian product methods to find an assignment
+                ArrayList<ArrayList<String>> optimalAssignments = findOptimalAssignment(buildCartesianGraph(composition, availableOverhangs), composition.size());
 
-                    //iterate through each cartesian assignment and see if they are valid
-                    if (optimalAssignments.size() > 0) {
+                //iterate through each cartesian assignment and see if they are valid
+                if (optimalAssignments.size() > 0) {
 
-                        for (ArrayList<String> cartesianAssignment : optimalAssignments) {
-                            cartesianOverhangs.put(root.getComposition().toString(), cartesianAssignment);
-                            HashMap<String, String> graphOverhangAssignment = assignOverhangs(optimalGraphs, cartesianOverhangs);
+                    for (ArrayList<String> cartesianAssignment : optimalAssignments) {
+                        cartesianOverhangs.put(root.getComposition().toString(), cartesianAssignment);
+                        HashMap<String, String> graphOverhangAssignment = assignOverhangs(optimalGraphs, cartesianOverhangs);
 
-                            //force overhangs each time
-                            graphOverhangAssignment.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
+                        //force overhangs each time
+                        graphOverhangAssignment.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
 
-                            //traverse graph and assign overhangs
-                            ArrayList<RNode> queue = new ArrayList<RNode>();
-                            HashSet<RNode> seenNodes = new HashSet();
-                            queue.add(graph.getRootNode());
+                        //traverse graph and assign overhangs
+                        ArrayList<RNode> queue = new ArrayList<RNode>();
+                        HashSet<RNode> seenNodes = new HashSet();
+                        queue.add(graph.getRootNode());
 
-                            while (!queue.isEmpty()) {
-                                RNode current = queue.get(0);
-                                queue.remove(0);
-                                seenNodes.add(current);
-                                current.setLOverhang(graphOverhangAssignment.get(current.getLOverhang()));
-                                current.setROverhang(graphOverhangAssignment.get(current.getROverhang()));
-                                for (RNode neighbor : current.getNeighbors()) {
-                                    if (!seenNodes.contains(neighbor)) {
-                                        queue.add(neighbor);
-                                    }
+                        while (!queue.isEmpty()) {
+                            RNode current = queue.get(0);
+                            queue.remove(0);
+                            seenNodes.add(current);
+                            current.setLOverhang(graphOverhangAssignment.get(current.getLOverhang()));
+                            current.setROverhang(graphOverhangAssignment.get(current.getROverhang()));
+                            for (RNode neighbor : current.getNeighbors()) {
+                                if (!seenNodes.contains(neighbor)) {
+                                    queue.add(neighbor);
                                 }
                             }
-
-                            //if graph is valid, no need to check other cartesian assignments for graph
-                            //otherwise try another assignment
-                            if (validateOverhangs(optimalGraphs)) {
-                                finalOverhangHash.putAll(graphOverhangAssignment);
-                                break;
-                            }
-
-                            if (optimalAssignments.indexOf(cartesianAssignment) == optimalAssignments.size() - 1) {
-
-                                //if no cartesian assignments are valid, we have to do things the old fashioned way
-                                nonCartesianGraphs.add(graph);
-                            }
                         }
-                    } else {
-                        nonCartesianGraphs.add(graph);
-                        //if no cartesian product then do things the old fashioned way
-                    }
 
-                }
-//                finalOverhangHash.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
-                //regular asssignment for graphs with no cartesian assignment
-                maximizeOverhangSharing(nonCartesianGraphs);
-//                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
-                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
-            } else {
-                //if we're not doing the cartesian product or the cartesian products are wrong
-                maximizeOverhangSharing(optimalGraphs);
-                               
-                for (RGraph graph : optimalGraphs) {
-                    ArrayList<RNode> queue = new ArrayList<RNode>();
-                    HashSet<RNode> seenNodes = new HashSet<RNode>();
-                    RNode root = graph.getRootNode();
-                    queue.add(root);
-                    while (!queue.isEmpty()) {
-                        RNode current = queue.get(0);
-                        queue.remove(0);
-                        seenNodes.add(current);
-
-                        System.out.println("*********************");
-                        System.out.println("node composition: " + current.getComposition());
-                        System.out.println("node direction: " + current.getDirection());
-                        System.out.println("node type: " + current.getType());
-                        System.out.println("node scars: " + current.getScars());
-                        System.out.println("LO: " + current.getLOverhang());
-                        System.out.println("RO: " + current.getROverhang());
-                        System.out.println("NodeID: " + current.getNodeID());
-                        System.out.println("uuid: " + current.getUUID());
-
-                        ArrayList<RNode> neighbors = current.getNeighbors();
-                        for (RNode neighbor : neighbors) {
-                            System.out.println("neighbor: " + neighbor.getComposition());
-                            if (!seenNodes.contains(neighbor)) {
-                                queue.add(neighbor);
-                            }
+                        //if graph is valid, no need to check other cartesian assignments for graph
+                        //otherwise try another assignment
+                        if (validateOverhangs(optimalGraphs)) {
+                            finalOverhangHash.putAll(graphOverhangAssignment);
+                            break;
                         }
-//                        System.out.println("*********************");
+
+                        if (optimalAssignments.indexOf(cartesianAssignment) == optimalAssignments.size() - 1) {
+
+                            //if no cartesian assignments are valid, we have to do things the old fashioned way
+                            nonCartesianGraphs.add(graph);
+                        }
                     }
+                } else {
+                    nonCartesianGraphs.add(graph);
+                    //if no cartesian product then do things the old fashioned way
                 }
-                
-                valid = validateOverhangs(optimalGraphs);
-                System.out.println("##############################\nsecond pass: " + valid);
-                finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
-                optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
-                valid = validateOverhangs(optimalGraphs);
-                System.out.println("##############################\nfinal pass: " + valid);
-                assignScars(optimalGraphs);
+
             }
-
-            return optimalGraphs;
-        } catch (Exception E) {
-            ArrayList<RGraph> blank = new ArrayList<RGraph>();
-            E.printStackTrace();
-            return blank;
+//                finalOverhangHash.putAll(assignOverhangs(optimalGraphs, _forcedOverhangHash));
+            //regular asssignment for graphs with no cartesian assignment
+            maximizeOverhangSharing(nonCartesianGraphs);
+//                optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
+            optimizeOverhangVectors(nonCartesianGraphs, partHash, vectorSet, finalOverhangHash);
+        } else {
+            //if we're not doing the cartesian product or the cartesian products are wrong
+            maximizeOverhangSharing(optimalGraphs);
+            valid = validateOverhangs(optimalGraphs);
+            System.out.println("##############################\nsecond pass: " + valid);
+            finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
+            valid = validateOverhangs(optimalGraphs);
+            System.out.println("##############################\nfinal pass: " + valid);
+            assignScars(optimalGraphs);
         }
+
+        return optimalGraphs;
     }
 
     /**
@@ -236,7 +186,9 @@ public class RMoClo extends RGeneral {
         //Determine which nodes impact which level to form the stageDirectionAssignHash
         for (RGraph graph : optimalGraphs) {
             RNode root = graph.getRootNode();
+            ArrayList<String> rootDir = new ArrayList<String>();
             ArrayList<String> direction = root.getDirection();
+            rootDir.addAll(direction);
             ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
 
             //Determine which levels each basic node impacts            
@@ -256,8 +208,16 @@ public class RMoClo extends RGeneral {
                 }
 
                 //Determine direction and enter into hash               
-                l0Node = l0Nodes.get(i);
-                String l0Direction = direction.get(i);
+//                l0Node = l0Nodes.get(i);
+                String l0Direction = rootDir.get(0);
+                if (l0Node.getComposition().size() == 1) {
+                    ArrayList<String> l0Dir = new ArrayList<String>();
+                    l0Dir.add(l0Direction);
+                    l0Node.setDirection(l0Dir);
+                }               
+                int size = l0Node.getDirection().size();
+                rootDir.subList(0, size).clear();
+                
                 HashMap<String, ArrayList<RNode>> directionHash;
                 ArrayList<RNode> nodeList;
 
@@ -376,8 +336,6 @@ public class RMoClo extends RGeneral {
             HashSet<String> currentLevelOHs = new HashSet<String>();
             HashSet<String> takenOHs;
             
-            System.out.println("*********** LEVEL " + level + " ***********");
-
             //Assign nodes in the forward direction first
             ArrayList<RNode> fwdNodes = new ArrayList<RNode>();
             if (directionHash.containsKey("+")) {

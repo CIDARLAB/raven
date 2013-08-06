@@ -4,6 +4,7 @@
  */
 package Controller.accessibility;
 
+import static Controller.accessibility.ClothoReader.parseTags;
 import java.util.ArrayList;
 import java.util.HashSet;
 import Controller.datastructures.*;
@@ -84,12 +85,15 @@ public class ClothoWriter {
 
                     newPart.addSearchTag("LO: " + currentNode.getLOverhang());
                     newPart.addSearchTag("RO: " + currentNode.getROverhang());
+                    newPart.addSearchTag("Direction: " + currentNode.getDirection().toString());
+                    
+                    System.out.println("Direction: " + currentNode.getDirection().toString());
+                    
                     String type = currentNode.getType().toString();
                     type = type.substring(1, type.length() - 1);
 
                     if (currentNode.getComposition().size() > 1) {
                         type = "composite";
-                        newPart.addSearchTag("Direction: " + currentNode.getDirection().toString());
                     }
                     
                     if (!currentNode.getScars().isEmpty()) {
@@ -135,24 +139,22 @@ public class ClothoWriter {
             refreshPartVectorList(coll);
         }
         
-        //For each composite part, get the basic part uuids
-        //Every time a new composite part can be made, search to see there's nothing made from the same components before saving
+        //Search to see there's nothing made from the same components before saving
         for (Part existingPart : _allCompositeParts) {
             ArrayList<String> existingPartComp = new ArrayList<String>();
             
-            //Get an existing part's overhangs
+            //Get an existing part's overhangs and direction
             ArrayList<String> sTags = existingPart.getSearchTags();
             String existingPartLO = "";
             String existingPartRO = "";
-            String existingPartDir = "";
+            ArrayList<String> existingPartDir = parseTags(sTags, "Direction:");
+            
             for (int k = 0; k < sTags.size(); k++) {
                 if (sTags.get(k).startsWith("LO:")) {
                     existingPartLO = sTags.get(k).substring(4);
                 } else if (sTags.get(k).startsWith("RO:")) {
                     existingPartRO = sTags.get(k).substring(4);
-                } else if (sTags.get(k).startsWith("Direction:")) {
-                    existingPartDir = sTags.get(k).substring(10);
-                }
+                } 
             }
 
             //Obtain the basic part names
@@ -162,8 +164,8 @@ public class ClothoWriter {
             }
 
             //If the composition and overhangs of the new part is the same as an existing composite part, return that part
-            if (composition.toString().equals(existingPartComp.toString()) && direction.toString().equals(existingPartDir)) {
-                if (existingPartLO.equalsIgnoreCase(LO) && existingPartRO.equalsIgnoreCase(RO)) {
+            if (composition.equals(existingPartComp) && direction.equals(existingPartDir)) {
+                if (existingPartLO.equals(LO) && existingPartRO.equals(RO)) {
                     return existingPart;
                 }
             }
@@ -198,7 +200,6 @@ public class ClothoWriter {
         for (Vector vector : _allVectors) {
             
             //Get an existing part's overhangs
-            ArrayList<String> sTags = vector.getSearchTags();
             String existingVecLO = vector.getLeftoverhang();
             String existingVecRO = vector.getRightOverhang();
             String existResistance = vector.getResistance();
@@ -211,6 +212,7 @@ public class ClothoWriter {
                 }
             }
         }
+        
         Vector newVector = Vector.generateVector(name, sequence);
         
         if (!LO.isEmpty()) {
