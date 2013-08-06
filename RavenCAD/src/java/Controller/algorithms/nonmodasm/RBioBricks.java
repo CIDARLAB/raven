@@ -50,12 +50,13 @@ public class RBioBricks extends RGeneral {
         }
         vector.setLOverhang("EX");
         vector.setROverhang("SP");
+        vector.setName("BBa_Vector");
         
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
 
             RNode root = graph.getRootNode();
-            
+            root.setVector(vector);
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
             ArrayList<RNode> neighbors = root.getNeighbors();

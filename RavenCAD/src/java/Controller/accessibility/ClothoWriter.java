@@ -111,11 +111,12 @@ public class ClothoWriter {
             if (vector != null) {
                 
                 //Get new intermediate name
-                String vecName = (nameRoot + "_vector" + Math.random() * 999999999);
-                vecName = vecName.replaceAll("\\.", "");
-                if (vecName.length() > 255) {
-                    vecName = vecName.substring(0, 255);
-                }
+//                String vecName = (nameRoot + "_vector" + Math.random() * 999999999);
+//                vecName = vecName.replaceAll("\\.", "");
+//                if (vecName.length() > 255) {
+//                    vecName = vecName.substring(0, 255);
+//                }
+                String vecName = vector.getName();
                 
                 //Get vector overhangs
                 String LO = vector.getLOverhang();

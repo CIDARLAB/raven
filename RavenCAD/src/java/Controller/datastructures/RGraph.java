@@ -193,9 +193,9 @@ public class RGraph {
                 }
                 
                 String currentCompDirOHStage = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + current.getStage();
-                String currentCompDirOHStageRev = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR + "|" + current.getStage();
+                String currentCompDirOHStageRev = revComp + "|" + revDir + "|" + revScars + "|" + lOverhangR + "|" + rOverhangR + "|" + current.getStage();
                 
-                System.out.println("currentCompDirOHStage: " + currentCompDirOHStage + " currentCompDirOHStageRev: " + currentCompDirOHStageRev);
+//                System.out.println("currentCompDirOHStage: " + currentCompDirOHStage + " currentCompDirOHStageRev: " + currentCompDirOHStageRev);
                 
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
@@ -489,7 +489,7 @@ public class RGraph {
             }
             
             String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + lOverhangR + "|" + rOverhangR;
+            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
             startPartsLOcompRO.add(aPartCompDirScarLORO);
             startPartsLOcompRO.add(aPartCompDirScarLOROR);
         }
@@ -521,8 +521,11 @@ public class RGraph {
             }
             int stage = aVec.getLevel();
 
-            String aVecLOlevelRO = lOverhang + "|" + stage + "|" + rOverhang;
-            String aVecLOlevelROR = lOverhangR + "|" + stage + "|" + rOverhangR;
+            String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+            String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+            
+//            System.out.println("aVecLOlevelRO: " + aVecLOlevelRO + " aVecLOlevelROR: " + aVecLOlevelROR);
+            
             startVectorsLOlevelRO.add(aVecLOlevelRO);
             startVectorsLOlevelRO.add(aVecLOlevelROR);
         }
@@ -667,20 +670,65 @@ public class RGraph {
         ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
 
+        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
+        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
+        
         //Traverse the graph
         while (!queue.isEmpty()) {
             RNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
 
+            RVector vector = current.getVector();
+            String vecName = null;
+            if (vector != null) {
+                vecName = vector.getName();
+            }
+            
             ArrayList<String> composition = current.getComposition();
             ArrayList<String> type = current.getType();
             ArrayList<String> scars = current.getScars();
             ArrayList<String> direction = current.getDirection();
             String lOverhang = current.getLOverhang();
             String rOverhang = current.getROverhang();
-            String nodeID = composition.toString() + direction.toString() + lOverhang + rOverhang;
-
+            String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
+            StringBuilder pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
+            weyekinText.append(pigeonLine.toString());            
+            
+            //Add PCR edges for level 0 nodes with
+            if (current.getStage() == 0) {
+                
+                String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+                edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                weyekinText.append(pigeonLine.toString());
+                
+                if (!startPartsLOcompRO.contains(nodeIDB)) {
+                    String NnodeID = composition + "|" + direction + "|" + scars;
+                    edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
+                    pigeonLine = generatePigeonCode(composition, type, direction, scars, NnodeID, null, null, null);
+                    weyekinText.append(pigeonLine.toString());
+                }
+            }
+            
+            //Get vector, make an extra edge if a PCR is required
+            if (vector != null) {
+                String vecLO = vector.getLOverhang();
+                String vecRO = vector.getROverhang();
+                int vecL = vector.getLevel();
+                String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
+                edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                pigeonLine = generatePigeonCode(null, null, null, null, vecID, vecLO, vecRO, vecName);
+                weyekinText.append(pigeonLine.toString());
+                
+                if (!startVectorsLOlevelRO.contains(vecID)) {
+                    String NvecID = vecName + "|" + vecL;
+                    edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
+                    pigeonLine = generatePigeonCode(null, null, null, null, NvecID, null, null, vecName);
+                    weyekinText.append(pigeonLine.toString());
+                }                    
+            }
+            
             //Add unseen neighbors to the queue
             for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
@@ -691,27 +739,23 @@ public class RGraph {
 
                 //If one of the neighbors is a parent, add an edge
                 if (neighbor.getStage() > current.getStage()) {
+                    
+                    RVector vectorN = neighbor.getVector();
+                    String vecNameN = null;
+                    if (vectorN != null) {
+                        vecNameN = vectorN.getName();
+                    }
+                    
                     ArrayList<String> compositionN = neighbor.getComposition();
                     ArrayList<String> directionN = neighbor.getDirection();
+                    ArrayList<String> scarsN = neighbor.getScars();
                     String lOverhangN = neighbor.getLOverhang();
                     String rOverhangN = neighbor.getROverhang();
-                    String nodeIDN = compositionN.toString() + directionN.toString() + lOverhangN + rOverhangN;
+                    String nodeIDN = compositionN + "|" + directionN + "|" + scarsN + "|" + lOverhangN + "|" + rOverhangN + "|" + vecNameN;
                     edgeLines = edgeLines + "\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"" + "\n";
                 }
             }
-
-            StringBuilder pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang);
-            weyekinText.append(pigeonLine.toString());
-            
-            RVector vector = current.getVector();
-            
-            if (current.getStage() == 0) {
-                
-                HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
-                HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
-            }
         }
-
 
         //Write edge lines
         weyekinText.append(edgeLines);
@@ -720,7 +764,7 @@ public class RGraph {
     }
 
     /** Pigeon code generation **/
-    private StringBuilder generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO) {
+    private StringBuilder generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
         pigeonLine.append("PIGEON_START\n");
@@ -728,69 +772,79 @@ public class RGraph {
 
         //Assign left overhang if it exists                
 //        pigeonLine.append("3 ").append(LO).append("\n");
-        pigeonLine.append("5 ").append(LO).append("\n");
+        if (LO != null) {
+            pigeonLine.append("5 ").append(LO).append("\n");
+        }       
 
-        for (int i = 0; i < composition.size(); i++) {
+        if (composition != null) {
+            for (int i = 0; i < composition.size(); i++) {
 
-            String name = composition.get(i);
-            String type = types.get(i);
-            String dir = "";
+                String name = composition.get(i);
+                String type = types.get(i);
+                String dir = "";
 
-            //Turn direction of glyph in reverse if reverse direction
-            if (!direction.isEmpty()) {
-                dir = direction.get(i);
-                if ("-".equals(dir)) {
-                    pigeonLine.append("<");
+                //Turn direction of glyph in reverse if reverse direction
+                if (!direction.isEmpty()) {
+                    dir = direction.get(i);
+                    if ("-".equals(dir)) {
+                        pigeonLine.append("<");
+                    }
                 }
-            }
 
-            //Write pigeon code line
-            if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
-                pigeonLine.append("P ").append(name).append(" 4" + "\n");
-            } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
-                pigeonLine.append("r ").append(name).append(" 5" + "\n");
-            } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
-                pigeonLine.append("c ").append(name).append(" 1" + "\n");
-            } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
-                pigeonLine.append("c ").append(name).append(" 2" + "\n");
-            } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
-                pigeonLine.append("T ").append(name).append(" 6" + "\n");
-            } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
-                if ("-".equals(dir)) {
-                    pigeonLine.append(" ").append(name).append(" 12" + "\n");
+                //Write pigeon code for a recognized regular part type
+                if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
+                    pigeonLine.append("P ").append(name).append(" 4" + "\n");
+                } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
+                    pigeonLine.append("r ").append(name).append(" 5" + "\n");
+                } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
+                    pigeonLine.append("c ").append(name).append(" 1" + "\n");
+                } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
+                    pigeonLine.append("c ").append(name).append(" 2" + "\n");
+                } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
+                    pigeonLine.append("T ").append(name).append(" 6" + "\n");
+                } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
+                    if ("-".equals(dir)) {
+                        pigeonLine.append(" ").append(name).append(" 12" + "\n");
+                    } else {
+                        pigeonLine.append("> ").append(name).append(" 12" + "\n");
+                    }
+                } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
+                    pigeonLine.append("s ").append(name).append(" 10" + "\n");
+                } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
+                    pigeonLine.append("z ").append(name).append(" 14" + "\n");
+                } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
+                    pigeonLine.append("f1");
+                    String[] fusionParts = name.split("-");
+                    for (int j = 1; j < fusionParts.length; j++) {
+                        int color = j % 13 + 1;
+                        pigeonLine.append("-").append(color);
+                    }
+                    pigeonLine.append(" ").append(name).append("\n");
                 } else {
-                    pigeonLine.append("> ").append(name).append(" 12" + "\n");
+                    pigeonLine.append("c ").append(name).append(" 13" + "\n");
                 }
-            } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
-                pigeonLine.append("s ").append(name).append(" 10" + "\n");
-            } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
-                pigeonLine.append("z ").append(name).append(" 14" + "\n");
-            } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
-                pigeonLine.append("f1");
-                String[] fusionParts = name.split("-");
-                for (int j = 1; j < fusionParts.length; j++) {
-                    int color = j % 13 + 1;
-                    pigeonLine.append("-").append(color);
-                }
-                pigeonLine.append(" ").append(name).append("\n");
-            } else {
-                pigeonLine.append("c ").append(name).append(" 13" + "\n");
-            }
 
-            //Scars
-            if (!scars.isEmpty()) {
-                if (i < composition.size() - 1) {
-                    if (!"_".equals(scars.get(i))) {
-                        pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
+                //Scars
+                if (!scars.isEmpty()) {
+                    if (i < composition.size() - 1) {
+                        if (!"_".equals(scars.get(i))) {
+                            pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
+                        }
                     }
                 }
             }
-        }
+        }        
 
         //Assign right overhang                
-        pigeonLine.append("3 ").append(RO).append("\n");
+        if (RO != null) {
+            pigeonLine.append("3 ").append(RO).append("\n");
+        }       
 //        pigeonLine.append("5 ").append(RO).append("\n");
-        pigeonLine.append("v").append("\n");
+        
+        //Vectors
+        if (vecName != null) {
+            pigeonLine.append("v ").append(vecName).append("\n");
+        }
         pigeonLine.append("# Arcs\n");
         pigeonLine.append("PIGEON_END\n\n");
         return pigeonLine;

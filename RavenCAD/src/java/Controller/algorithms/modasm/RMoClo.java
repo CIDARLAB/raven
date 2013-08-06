@@ -1083,6 +1083,7 @@ public class RMoClo extends RGeneral {
                 newVector.setROverhang(currentRightOverhang);
                 newVector.setLevel(current.getStage());
                 newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
+                newVector.setName("DVL" + current.getStage());
                 current.setVector(newVector);
 
                 for (RNode neighbor : current.getNeighbors()) {
