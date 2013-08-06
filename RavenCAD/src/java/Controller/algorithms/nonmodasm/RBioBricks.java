@@ -27,21 +27,21 @@ public class RBioBricks extends RGeneral {
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
-        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+//        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
-        enforceOverhangRules(optimalGraphs, null);
+        assignBioBricksOverhangs(optimalGraphs, null);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
     }
     
     /** First step of overhang assignment - enforce numeric place holders for overhangs, ie no overhang redundancy in any step **/
-    private void enforceOverhangRules (ArrayList<RGraph> optimalGraphs, RVector vector) {
+    private void assignBioBricksOverhangs (ArrayList<RGraph> optimalGraphs, RVector vector) {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
@@ -60,7 +60,7 @@ public class RBioBricks extends RGeneral {
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
             ArrayList<RNode> neighbors = root.getNeighbors();
-            enforceOverhangRulesHelper(root, neighbors, root, vector);
+            assignBioBricksOverhangsHelper(root, neighbors, root, vector);
         }
 
         //Determine which nodes impact which level to form the stageDirectionAssignHash
@@ -89,7 +89,7 @@ public class RBioBricks extends RGeneral {
     }
     
     /** This helper method executes the loops necessary to enforce overhangs for each graph in enforceOverhangRules **/
-    private void enforceOverhangRulesHelper (RNode parent, ArrayList<RNode> children, RNode root, RVector vector) {
+    private void assignBioBricksOverhangsHelper (RNode parent, ArrayList<RNode> children, RNode root, RVector vector) {
         
         //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
         for (int i = 0; i < children.size(); i++) {
@@ -110,7 +110,7 @@ public class RBioBricks extends RGeneral {
                 if (grandChildren.contains(parent)) {
                     grandChildren.remove(parent);
                 }
-                enforceOverhangRulesHelper(child, grandChildren, root, vector);
+                assignBioBricksOverhangsHelper(child, grandChildren, root, vector);
             
             //Or record the level zero parts
             } else {

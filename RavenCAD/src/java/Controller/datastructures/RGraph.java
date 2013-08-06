@@ -155,25 +155,29 @@ public class RGraph {
                 
                 ArrayList<String> dir = current.getDirection();
                 ArrayList<String> revDir = new ArrayList<String>();
+                ArrayList<String> revDirF = new ArrayList<String>();
                 revDir.addAll(dir);
                 Collections.reverse(revDir);
-                for (String rD : revDir) {
-                    if (rD.equals("+")) {
-                        rD = "-";
-                    } else if (rD.equals("-")) {
-                        rD = "+";
+                for (String RD : revDir) {
+                    if (RD.equals("+")) {
+                        revDirF.add("-");
+                    } else if (RD.equals("-")) {
+                        revDirF.add("+");
                     }
                 }
                 
                 ArrayList<String> scars = current.getScars();
                 ArrayList<String> revScars = new ArrayList<String>();
+                ArrayList<String> revScarsF = new ArrayList<String>();
                 revScars.addAll(scars);
                 Collections.reverse(revScars);
                 for (String aRevScar : revScars) {
                     if (aRevScar.contains("*")) {
                         aRevScar = aRevScar.replace("*", "");
+                        revScarsF.add(aRevScar);
                     } else {
                         aRevScar = aRevScar + "*";
+                        revScarsF.add(aRevScar);
                     }
                 }
                 
@@ -193,9 +197,9 @@ public class RGraph {
                 }
                 
                 String currentCompDirOHStage = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + current.getStage();
-                String currentCompDirOHStageRev = revComp + "|" + revDir + "|" + revScars + "|" + lOverhangR + "|" + rOverhangR + "|" + current.getStage();
+                String currentCompDirOHStageRev = revComp + "|" + revDirF + "|" + revScarsF + "|" + lOverhangR + "|" + rOverhangR + "|" + current.getStage();
                 
-//                System.out.println("currentCompDirOHStage: " + currentCompDirOHStage + " currentCompDirOHStageRev: " + currentCompDirOHStageRev);
+                System.out.println("currentCompDirOHStage: " + currentCompDirOHStage + " currentCompDirOHStageRev: " + currentCompDirOHStageRev);
                 
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
@@ -692,19 +696,43 @@ public class RGraph {
             String lOverhang = current.getLOverhang();
             String rOverhang = current.getROverhang();
             String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
+            
+            System.out.println("nodeID: " + nodeID);
+            
             StringBuilder pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
             weyekinText.append(pigeonLine.toString());            
             
             //Add PCR edges for level 0 nodes with
             if (current.getStage() == 0) {
                 
+                boolean basicNode = false;
                 String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-                edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
-                weyekinText.append(pigeonLine.toString());
                 
+                System.out.println("nodeIDB: " + nodeIDB);
+                System.out.println("nodeID.substring(0, nodeID.length() - 5): " + nodeID.substring(0, nodeID.length() - 5));
+                
+                if (nodeID.endsWith("null")) {
+                    if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
+                        edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                        pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                        weyekinText.append(pigeonLine.toString());
+                    } else {
+                        basicNode = true;
+                    }
+                } else {
+                    edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                    weyekinText.append(pigeonLine.toString());
+                }
+
                 if (!startPartsLOcompRO.contains(nodeIDB)) {
+                    if (basicNode == true) {
+                        nodeIDB = nodeID;
+                    }
                     String NnodeID = composition + "|" + direction + "|" + scars;
+                    
+                    System.out.println("NnodeID: " + NnodeID);
+                    
                     edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
                     pigeonLine = generatePigeonCode(composition, type, direction, scars, NnodeID, null, null, null);
                     weyekinText.append(pigeonLine.toString());
