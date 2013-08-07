@@ -198,9 +198,7 @@ public class RGraph {
                 
                 String currentCompDirOHStage = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + current.getStage();
                 String currentCompDirOHStageRev = revComp + "|" + revDirF + "|" + revScarsF + "|" + lOverhangR + "|" + rOverhangR + "|" + current.getStage();
-                
-                System.out.println("currentCompDirOHStage: " + currentCompDirOHStage + " currentCompDirOHStageRev: " + currentCompDirOHStageRev);
-                
+                                
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
                     mergedNodesHash.put(currentCompDirOHStage, current);
@@ -527,9 +525,7 @@ public class RGraph {
 
             String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
             String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
-            
-//            System.out.println("aVecLOlevelRO: " + aVecLOlevelRO + " aVecLOlevelROR: " + aVecLOlevelROR);
-            
+                        
             startVectorsLOlevelRO.add(aVecLOlevelRO);
             startVectorsLOlevelRO.add(aVecLOlevelROR);
         }

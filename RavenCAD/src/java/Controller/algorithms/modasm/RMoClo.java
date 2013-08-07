@@ -92,7 +92,7 @@ public class RMoClo extends RGeneral {
      * First step of overhang assignment - enforce numeric place holders for
      * overhangs, ie no overhang redundancy in any step *
      */
-    private void enforceOverhangRules(ArrayList<RGraph> optimalGraphs) {
+        private void enforceOverhangRules(ArrayList<RGraph> optimalGraphs) {
 
         //Initialize fields that record information to save complexity for future steps
         _encounteredCompositions = new HashSet<String>();
@@ -119,7 +119,9 @@ public class RMoClo extends RGeneral {
         //Determine which nodes impact which level to form the stageDirectionAssignHash
         for (RGraph graph : optimalGraphs) {
             RNode root = graph.getRootNode();
+            ArrayList<String> rootDir = new ArrayList<String>();
             ArrayList<String> direction = root.getDirection();
+            rootDir.addAll(direction);
             ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
 
             //Determine which levels each basic node impacts            
@@ -139,8 +141,15 @@ public class RMoClo extends RGeneral {
                 }
 
                 //Determine direction and enter into hash               
-                l0Node = l0Nodes.get(i);
-                String l0Direction = direction.get(i);
+                String l0Direction = rootDir.get(0);
+                if (l0Node.getComposition().size() == 1) {
+                    ArrayList<String> l0Dir = new ArrayList<String>();
+                    l0Dir.add(l0Direction);
+                    l0Node.setDirection(l0Dir);
+                }               
+                int size = l0Node.getDirection().size();
+                rootDir.subList(0, size).clear();
+                
                 HashMap<String, ArrayList<RNode>> directionHash;
                 ArrayList<RNode> nodeList;
 
@@ -1002,6 +1011,7 @@ public class RMoClo extends RGeneral {
                 newVector.setLOverhang(currentLeftOverhang);
                 newVector.setROverhang(currentRightOverhang);
                 newVector.setLevel(current.getStage());
+                newVector.setName("DVL" + current.getStage());
                 newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
                 current.setVector(newVector);
 

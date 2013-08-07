@@ -225,9 +225,7 @@ public class ClothoReader {
                 
                 //Split any arraylist-like search tag
                 if (ST.charAt(ST.length() - 1) == ']') {
-                    ST = ST.substring(0, ST.length() - 1);
-                    String[] tokens1 = ST.split("\\[");
-                    String splitTag = tokens1[1];
+                    String splitTag = ST.substring(ST.indexOf("[")+1, ST.length() - 1);
                     String[] tokens = splitTag.split(",");
                     ArrayList<String> trimmedTokens = new ArrayList<String>();
 
