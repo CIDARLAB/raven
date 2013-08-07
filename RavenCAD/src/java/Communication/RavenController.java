@@ -4,6 +4,7 @@
  */
 package Communication;
 
+import Controller.algorithms.modasm.RBioBricks;
 import Controller.accessibility.ClothoWriter;
 import Controller.accessibility.ClothoReader;
 import Controller.algorithms.modasm.*;

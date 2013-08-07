@@ -2,7 +2,7 @@
  * This class contains the SDS++ algorithm
  * 
  */
-package Controller.algorithms.nonmodasm;
+package Controller.algorithms.modasm;
 
 import Controller.accessibility.ClothoReader;
 import Controller.algorithms.RGeneral;
