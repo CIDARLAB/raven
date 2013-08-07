@@ -108,6 +108,38 @@ public class MocloCartesianGraphAssigner {
         _rootBasicNodeHash.put(root2, root2.getNeighbors());
         _rootBasicNodeHash.put(root3, root3.getNeighbors());
 
+        //generate parts
+        Collector coll = new Collector();
+        Part A12 = Part.generateBasic("partA", "A");
+        A12.addSearchTag("LO: 1");
+        A12.addSearchTag("RO: 2");
+        A12.saveDefault(coll);
+        Part A92 = Part.generateBasic("partA", "A");
+        A92.addSearchTag("LO: 9");
+        A92.addSearchTag("RO: 2");
+        A92.saveDefault(coll);
+        Part B = Part.generateBasic("partB", "B");
+        B.addSearchTag("LO: 2");
+        B.addSearchTag("RO: 3");
+        B.saveDefault(coll);
+        Part C = Part.generateBasic("partC", "C");
+        C.addSearchTag("LO: 3");
+        C.addSearchTag("RO: 4");
+        C.saveDefault(coll);
+        Part D = Part.generateBasic("partD", "D");
+        D.addSearchTag("LO: 4");
+        D.addSearchTag("RO: 5");
+        D.saveDefault(coll);
+        Part E = Part.generateBasic("partE", "E");
+        E.addSearchTag("LO: 6");
+        E.addSearchTag("RO: 7");
+        E.saveDefault(coll);
+        Part F = Part.generateBasic("partF", "F");
+        F.addSearchTag("LO: 7");
+        F.addSearchTag("RO: 8");
+        F.saveDefault(coll);
+        _partLibrary = coll.getAllParts(true);
+
         //build cartesian graph
         ArrayList<CartesianNode> buildCartesianGraph = buildCartesianGraph(optimalGraphs);
         //traverse cartesian graph to assign overhangs
@@ -131,19 +163,72 @@ public class MocloCartesianGraphAssigner {
 
     public static ArrayList<CartesianNode> buildCartesianGraph(ArrayList<RGraph> graphs) {
         //build abstractConcreteHash
+        HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap();
+        HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap(); //key: abstract overhang, value: set of all compositions associated with that composition
+        HashMap<String, HashSet<String>> abstractRightCompositionHash = new HashMap(); //key: composition, value: set of all abstract overhangs associated with that composition
+        HashMap<String, HashSet<String>> compositionLeftConcreteHash = new HashMap();
+        HashMap<String, HashSet<String>> compositionRightConcreteHash = new HashMap();
+        for (RGraph graph : graphs) {
+            for(RNode current :_rootBasicNodeHash.get(graph.getRootNode())) {
+                if (!abstractConcreteHash.containsKey(current.getLOverhang())) {
+                    abstractConcreteHash.put(current.getLOverhang(), new HashSet());
+                }
+                if (!abstractConcreteHash.containsKey(current.getROverhang())) {
+                    abstractConcreteHash.put(current.getROverhang(), new HashSet());
+                }
+                if (abstractLeftCompositionHash.containsKey(current.getLOverhang())) {
+                    abstractLeftCompositionHash.get(current.getLOverhang()).add(current.getComposition().toString());
+                } else {
+                    HashSet<String> toAddLeft = new HashSet();
+                    toAddLeft.add(current.getComposition().toString());
+                    abstractLeftCompositionHash.put(current.getLOverhang(), toAddLeft);
+                }
+                if (abstractRightCompositionHash.containsKey(current.getROverhang())) {
+                    abstractRightCompositionHash.get(current.getROverhang()).add(current.getComposition().toString());
+                } else {
+                    HashSet<String> toAddRight = new HashSet();
+                    toAddRight.add(current.getComposition().toString());
+                    abstractRightCompositionHash.put(current.getROverhang(), toAddRight);
+                }
+            }
 
-
-        
-
+        }
+        for (Part p : _partLibrary) {
+            String currentComposition = p.getStringComposition().toString();
+            if (compositionLeftConcreteHash.containsKey(currentComposition)) {
+                compositionLeftConcreteHash.get(currentComposition).add(p.getLeftOverhang());
+                compositionRightConcreteHash.get(currentComposition).add(p.getRightOverhang());
+            } else {
+                HashSet<String> toAddLeft = new HashSet();
+                HashSet<String> toAddRight = new HashSet();
+                toAddLeft.add(p.getLeftOverhang());
+                toAddRight.add(p.getRightOverhang());
+                compositionLeftConcreteHash.put(currentComposition, toAddLeft);
+                compositionRightConcreteHash.put(currentComposition, toAddRight);
+            }
+        }
+        for (String key : abstractLeftCompositionHash.keySet()) {
+            for (String composition : abstractLeftCompositionHash.get(key)) {
+                for (String concreteLeftOverhang : compositionLeftConcreteHash.get(composition)) {
+                    abstractConcreteHash.get(key).add(concreteLeftOverhang);
+                }
+            }
+        }
+        for (String key : abstractRightCompositionHash.keySet()) {
+            for (String composition : abstractRightCompositionHash.get(key)) {
+                for (String concreteRightOverhang : compositionRightConcreteHash.get(composition)) {
+                    abstractConcreteHash.get(key).add(concreteRightOverhang);
+                }
+            }
+        }
+        System.out.println("abstractConcreteHash: "+abstractConcreteHash.toString());
 
         return null;
     }
 
     public void findOptimalAssignment(ArrayList<RGraph> optimalGraphs, ArrayList<CartesianNode> cartesianGraphs) {
     }
-    
-    
-    
+
     //old single graph method
     public static ArrayList<RGraph> buildCartesianGraph(ArrayList<String> composition, HashMap<String, ArrayList<String>> compositionOverhangHash) {
         ArrayList<RNode> previousNodes = null;
@@ -185,6 +270,7 @@ public class MocloCartesianGraphAssigner {
         return toReturn;
     }
     //old single graph method
+
     public static ArrayList<ArrayList<String>> findOptimalAssignment(ArrayList<RGraph> graphs, int targetLength) {
         ArrayList<ArrayList<String>> toReturn = new ArrayList();
         ArrayList<String> currentSolution;
@@ -248,7 +334,6 @@ public class MocloCartesianGraphAssigner {
         }
         return toReturn;
     }
-    
     private static HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private static HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private static HashMap<RNode, HashSet<String>> _takenParentOHs;
@@ -258,7 +343,7 @@ public class MocloCartesianGraphAssigner {
     private static HashMap<Integer, HashMap<String, ArrayList<RNode>>> _stageDirectionAssignHash; //key: stage, value: HashMap: key: direction, value: nodes to visit
     private static HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap(); //key: composite part composition
     private static HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash = new HashMap(); //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
-//    private ArrayList<Part> _partLibrary = new ArrayList();
-//    private ArrayList<Vector> _vectorLibrary = new ArrayList();
+    private static ArrayList<Part> _partLibrary = new ArrayList();
+    private static ArrayList<Vector> _vectorLibrary = new ArrayList();
     private static HashMap<String, String> _overhangVariableSequenceHash = new HashMap(); //key:variable name, value: sequence associated with that variable
 }
