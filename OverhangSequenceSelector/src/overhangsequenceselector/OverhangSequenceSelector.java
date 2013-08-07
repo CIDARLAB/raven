@@ -149,9 +149,55 @@ public class OverhangSequenceSelector {
             System.out.println();
         }
     }
-
+    
+    
+    
+    public static String reverseComplement(String seq) {
+        String lSeq = seq.toLowerCase();
+        String revComplement = "";
+        for (int i = 0; i < lSeq.length(); i++) {
+            if (lSeq.charAt(i) == 'a') {
+                revComplement = "t" + revComplement;
+            } else if (lSeq.charAt(i) == 'g') {
+                revComplement = "c" + revComplement;
+            } else if (lSeq.charAt(i) == 'c') {
+                revComplement = "g" + revComplement;
+            } else if (lSeq.charAt(i) == 't') {
+                revComplement = "a" + revComplement;
+            } else if (lSeq.charAt(i) == 'w') {
+                revComplement = "w" + revComplement;
+            } else if (lSeq.charAt(i) == 's') {
+                revComplement = "s" + revComplement;
+            } else if (lSeq.charAt(i) == 'm') {
+                revComplement = "k" + revComplement;
+            } else if (lSeq.charAt(i) == 'k') {
+                revComplement = "m" + revComplement;
+            } else if (lSeq.charAt(i) == 'r') {
+                revComplement = "y" + revComplement;
+            } else if (lSeq.charAt(i) == 'y') {
+                revComplement = "r" + revComplement;
+            } else if (lSeq.charAt(i) == 'b') {
+                revComplement = "v" + revComplement;
+            } else if (lSeq.charAt(i) == 'd') {
+                revComplement = "h" + revComplement;
+            } else if (lSeq.charAt(i) == 'h') {
+                revComplement = "d" + revComplement;
+            } else if (lSeq.charAt(i) == 'v') {
+                revComplement = "b" + revComplement;
+            } else {
+                revComplement = "n" + revComplement;
+            }
+        }
+        return revComplement;
+    }
+    
+    //given two input sequences, return a score indicating the similarity of the two sequences
+    //positive score denotes similarity, negative score inidcates dissimilarity 
     public static int scoreAlignment(String seqA, String seqB) {
         int toReturn = 0;
+        if(seqA.equals(reverseComplement(seqB))) {
+            return Math.min(seqA.length(), seqB.length());
+        }        
         DNASequence target = new DNASequence(seqA,
                 AmbiguityDNACompoundSet.getDNACompoundSet());
 
