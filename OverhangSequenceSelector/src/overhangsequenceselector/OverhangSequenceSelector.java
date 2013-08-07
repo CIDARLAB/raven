@@ -119,7 +119,6 @@ public class OverhangSequenceSelector {
             }
             int minScore = 1000000000;
             int minIndex = potentialIndices.get(0);
-            System.out.println(potentialIndices);
             for (Integer potentialIndex : potentialIndices) {
                 int currentScore = 0;
                 for (Integer selectedIndex : selectedIndices) {
