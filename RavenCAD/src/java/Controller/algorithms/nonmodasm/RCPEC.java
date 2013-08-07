@@ -18,53 +18,78 @@ import java.util.Set;
  */
 public class RCPEC extends RGeneral {
     
- /** Clotho part wrapper for sequence independent one pot reactions **/
-    public ArrayList<RGraph> cpecClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
-        try {
-            
-            //Designate how many parts can be efficiently ligated in one step
-            int max = 0;
-            Set<Integer> keySet = efficiencies.keySet();
-            for (Integer key : keySet) {
-                if (key > max) {
-                    max = key;
-                }
+    /**
+     * Clotho part wrapper for CPEC *
+     */
+    public ArrayList<RGraph> cpecClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+
+        //Designate how many parts can be efficiently ligated in one step
+        int max = 0;
+        Set<Integer> keySet = efficiencies.keySet();
+        for (Integer key : keySet) {
+            if (key > max) {
+                max = key;
             }
-            _maxNeighbors = max;
-
-            //Initialize part hash and vector set
-            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended);
-
-            //Put all parts into hash for mgp algorithm            
-            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
-            
-            //Run hierarchical Raven Algorithm
-            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
-            assignOverhangs(optimalGraphs);
-            
-            return optimalGraphs;
-        } catch (Exception E) {
-            ArrayList<RGraph> blank = new ArrayList<RGraph>();
-//            E.printStackTrace();
-            return blank;
         }
+        _maxNeighbors = max;
+
+        //Initialize part hash and vector set
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
+
+        //Put all parts into hash for mgp algorithm            
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+
+        //Run hierarchical Raven Algorithm
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
+        assignOverhangs(optimalGraphs);
+
+        return optimalGraphs;
     }
     
     /** Assign overhangs for scarless assembly **/
     private void assignOverhangs(ArrayList<RGraph> asmGraphs) {
+        
+        //Initialize fields that record information to save complexity for future steps
+        _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
         
         for (int i = 0; i < asmGraphs.size(); i++) {
             
             RGraph graph = asmGraphs.get(i);
             RNode root = graph.getRootNode();
             ArrayList<RNode> neighbors = root.getNeighbors();
-            assignOverhangsHelper(root, neighbors);
+            ArrayList<RNode> l0nodes = new ArrayList<RNode>();
+            _rootBasicNodeHash.put(root, l0nodes);
+            assignOverhangsHelper(root, neighbors, root);
+        }
+        
+        //Determine which nodes impact which level to form the stageDirectionAssignHash
+        for (RGraph graph : asmGraphs) {
+            RNode root = graph.getRootNode();
+            ArrayList<String> rootDir = new ArrayList<String>();
+            ArrayList<String> direction = root.getDirection();
+            rootDir.addAll(direction);
+            ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
+
+            //Determine which levels each basic node impacts            
+            for (int i = 0; i < l0Nodes.size(); i++) {
+
+                //Determine direction of basic level 0 nodes               
+                RNode l0Node = l0Nodes.get(i);               
+                String l0Direction = rootDir.get(0);               
+                if (l0Node.getComposition().size() == 1) {
+                    ArrayList<String> l0Dir = new ArrayList<String>();
+                    l0Dir.add(l0Direction);
+                    l0Node.setDirection(l0Dir);
+                }               
+                int size = l0Node.getDirection().size();
+                rootDir.subList(0, size).clear();
+            }
         }
         
     }
     
     /** Overhang assignment helper **/
-    private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors) {
+    private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors, RNode root) {
 
         ArrayList<RNode> children = new ArrayList<RNode>();
         
@@ -95,9 +120,14 @@ public class RCPEC extends RGeneral {
                 child.setROverhang(nextComp.get(0));
             }
             
-            ArrayList<RNode> grandChildren = child.getNeighbors();
+            if (child.getStage() == 0) {
+                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
+                l0nodes.add(child);
+                _rootBasicNodeHash.put(root, l0nodes);
+            }
             
-            assignOverhangsHelper(child, grandChildren);
+            ArrayList<RNode> grandChildren = child.getNeighbors();           
+            assignOverhangsHelper(child, grandChildren, root);
         }
     }
     
@@ -108,4 +138,6 @@ public class RCPEC extends RGeneral {
     public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
         return null;
     }
+    
+    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }
