@@ -5,6 +5,7 @@
 package Controller.datastructures;
 
 import Controller.accessibility.ClothoReader;
+import static Controller.accessibility.ClothoReader.parseTags;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -154,13 +155,31 @@ public class RGraph {
                 
                 ArrayList<String> dir = current.getDirection();
                 ArrayList<String> revDir = new ArrayList<String>();
+                ArrayList<String> revDirF = new ArrayList<String>();
                 revDir.addAll(dir);
                 Collections.reverse(revDir);
+                for (String RD : revDir) {
+                    if (RD.equals("+")) {
+                        revDirF.add("-");
+                    } else if (RD.equals("-")) {
+                        revDirF.add("+");
+                    }
+                }
                 
                 ArrayList<String> scars = current.getScars();
                 ArrayList<String> revScars = new ArrayList<String>();
+                ArrayList<String> revScarsF = new ArrayList<String>();
                 revScars.addAll(scars);
                 Collections.reverse(revScars);
+                for (String aRevScar : revScars) {
+                    if (aRevScar.contains("*")) {
+                        aRevScar = aRevScar.replace("*", "");
+                        revScarsF.add(aRevScar);
+                    } else {
+                        aRevScar = aRevScar + "*";
+                        revScarsF.add(aRevScar);
+                    }
+                }
                 
                 String lOverhang = current.getLOverhang();
                 String rOverhang = current.getROverhang();
@@ -178,7 +197,9 @@ public class RGraph {
                 }
                 
                 String currentCompDirOHStage = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + current.getStage();
-                String currentCompDirOHStageRev = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR + current.getStage();
+                String currentCompDirOHStageRev = revComp + "|" + revDirF + "|" + revScarsF + "|" + lOverhangR + "|" + rOverhangR + "|" + current.getStage();
+                
+                System.out.println("currentCompDirOHStage: " + currentCompDirOHStage + " currentCompDirOHStageRev: " + currentCompDirOHStageRev);
                 
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
@@ -261,8 +282,8 @@ public class RGraph {
     /** Get graph statistics **/
     public static void getGraphStats(ArrayList<RGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
         
-        HashSet<String> startPartsLOcompRO = new HashSet<String>();
-        HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
+        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
+        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
         
         //Get goal part compositions
         Set<Part> keySet = goalParts.keySet();
@@ -277,85 +298,6 @@ public class RGraph {
             gpComps.add(compStr);
         }
         
-        //Go through parts library, put all compositions into hash of things that already exist
-        for (Part aPart : partLib) {
-            
-            //Get forward and reverse part key string
-            ArrayList<Part> partComp = aPart.getComposition();
-            ArrayList<String> comp = new ArrayList<String>();
-            for (int j = 0; j < partComp.size(); j++) {
-                String name = partComp.get(j).getName();
-                comp.add(name);
-            }
-            ArrayList<String> revComp = new ArrayList<String>();
-            revComp.addAll(comp);
-            Collections.reverse(revComp);
-            
-            ArrayList<String> dir = new ArrayList<String>();
-            ArrayList<String> scars = new ArrayList<String>();
-            ArrayList<String> searchTags = aPart.getSearchTags();
-            for (String tag : searchTags) {
-                if (tag.startsWith("Direction: ")) {
-                    dir.addAll(ClothoReader.parseTags(tag));
-                } else if (tag.startsWith("Scars: ")) {
-                    scars.addAll(ClothoReader.parseTags(tag));
-                }
-            }
-            
-            
-            ArrayList<String> revDir = new ArrayList<String>();
-            revDir.addAll(dir);
-            Collections.reverse(revDir);
-            ArrayList<String> revScars = new ArrayList<String>();
-            revScars.addAll(scars);
-            Collections.reverse(revScars);
-
-            String lOverhang = aPart.getLeftOverhang();
-            String rOverhang = aPart.getRightOverhang();
-            String lOverhangR = aPart.getRightOverhang();
-            String rOverhangR = aPart.getLeftOverhang();
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
-            } else {
-                lOverhangR = lOverhangR + "*";
-            }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
-            } else {
-                rOverhangR = rOverhangR + "*";
-            }
-            
-            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + lOverhangR + "|" + rOverhangR;
-            startPartsLOcompRO.add(aPartCompDirScarLORO);
-            startPartsLOcompRO.add(aPartCompDirScarLOROR);
-        }
-
-        //Go through vectors library, put all compositions into hash of things that already exist
-        for (Vector aVec : vectorLib) {
-            
-            String lOverhang = aVec.getLeftoverhang();
-            String rOverhang = aVec.getRightOverhang();
-            String lOverhangR = aVec.getRightOverhang();
-            String rOverhangR = aVec.getLeftoverhang();
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
-            } else {
-                lOverhangR = lOverhangR + "*";
-            }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
-            } else {
-                rOverhangR = rOverhangR + "*";
-            }
-            int stage = aVec.getLevel();
-
-            String aVecLOlevelRO = lOverhang + "|" + stage + "|" + rOverhang;
-            String aVecLOlevelROR = lOverhangR + "|" + stage + "|" + rOverhangR;
-            startVectorsLOlevelRO.add(aVecLOlevelRO);
-            startVectorsLOlevelRO.add(aVecLOlevelROR);
-        }
-
         //Will get stats for a set of graphs and assign the values to the individual graphs
         for (int i = 0; i < mergedGraphs.size(); i++) {
             
@@ -498,6 +440,102 @@ public class RGraph {
         }
     }
     
+    /** Returns a part library and finds all forward and reverse characteristics of each part **/
+    public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
+        
+        HashSet<String> startPartsLOcompRO = new HashSet<String>();
+        
+        //Go through parts library, put all compositions into hash of things that already exist
+        for (Part aPart : partLib) {
+            
+            //Get forward and reverse part key string
+            ArrayList<Part> partComp = aPart.getComposition();
+            ArrayList<String> comp = new ArrayList<String>();
+            for (int j = 0; j < partComp.size(); j++) {
+                String name = partComp.get(j).getName();
+                comp.add(name);
+            }
+            ArrayList<String> revComp = new ArrayList<String>();
+            revComp.addAll(comp);
+            Collections.reverse(revComp);
+            
+            ArrayList<String> searchTags = aPart.getSearchTags();
+            ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
+            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
+            
+            ArrayList<String> revDir = new ArrayList<String>();
+            revDir.addAll(dir);
+            Collections.reverse(revDir);
+            ArrayList<String> revScars = new ArrayList<String>();
+            revScars.addAll(scars);
+            Collections.reverse(revScars);
+            for (String aRevScar : revScars) {
+                if (aRevScar.contains("*")) {
+                    aRevScar = aRevScar.replace("*", "");
+                } else {
+                    aRevScar = aRevScar + "*";
+                }
+            }
+
+            String lOverhang = aPart.getLeftOverhang();
+            String rOverhang = aPart.getRightOverhang();
+            String lOverhangR = aPart.getRightOverhang();
+            String rOverhangR = aPart.getLeftOverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+            
+            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
+            startPartsLOcompRO.add(aPartCompDirScarLORO);
+            startPartsLOcompRO.add(aPartCompDirScarLOROR);
+        }
+        
+        return startPartsLOcompRO;
+    }
+    
+    /** Returns a part library and finds all forward and reverse characteristics of each part **/
+    public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
+        
+        HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
+        
+        //Go through vectors library, put all compositions into hash of things that already exist
+        for (Vector aVec : vectorLib) {
+            
+            String lOverhang = aVec.getLeftoverhang();
+            String rOverhang = aVec.getRightOverhang();
+            String lOverhangR = aVec.getRightOverhang();
+            String rOverhangR = aVec.getLeftoverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+            int stage = aVec.getLevel();
+
+            String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+            String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+            
+//            System.out.println("aVecLOlevelRO: " + aVecLOlevelRO + " aVecLOlevelROR: " + aVecLOlevelROR);
+            
+            startVectorsLOlevelRO.add(aVecLOlevelRO);
+            startVectorsLOlevelRO.add(aVecLOlevelROR);
+        }
+        
+        return startVectorsLOlevelRO;
+    }
     
     /**
      * ************************************************************************
@@ -623,78 +661,120 @@ public class RGraph {
     }
 
     /**
-     * Generate a Weyekin image file for a list of edges *
+     * Generate a Weyekin image file for a this graph *
      */
-    public String generateWeyekinFile(Collector coll, ArrayList<String> edges) {
+    public String generateWeyekinFile(ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
         
         //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
-        HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
+        String edgeLines = "";
         weyekinText.append("digraph {\n");
 
-        //If edges are empty (happens when no assembly is necessary)
-        if (edges.isEmpty()) {
-            nodeMap.put(this.getRootNode().getUUID(), this.getRootNode().getComposition().toString() + this.getRootNode().getLOverhang() + this.getRootNode().getROverhang());
-        }
+        HashSet<RNode> seenNodes = new HashSet<RNode>();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
+        queue.add(this.getRootNode());
 
-        //Store list of edges
-        String edgeLines = "";
-        for (String edge : edges) {
-            String[] tokens = edge.split("->");
-            Part vertex1 = coll.getPart(tokens[0].trim(), true);
-            Part vertex2 = coll.getPart(tokens[1].trim(), true);
+        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
+        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
+        
+        //Traverse the graph
+        while (!queue.isEmpty()) {
+            RNode current = queue.get(0);
+            seenNodes.add(current);
+            queue.remove(0);
+
+            RVector vector = current.getVector();
+            String vecName = null;
+            if (vector != null) {
+                vecName = vector.getName();
+            }
             
-            //Directionality
-            String direction1 = new String();
-            ArrayList<String> searchTagsV1 = vertex1.getSearchTags();
-            if (!searchTagsV1.isEmpty()) {
-                for (String tag : searchTagsV1) {
-                    if (tag.startsWith("Direction:")) {
-                        direction1 = tag.substring(10);
+            ArrayList<String> composition = current.getComposition();
+            ArrayList<String> type = current.getType();
+            ArrayList<String> scars = current.getScars();
+            ArrayList<String> direction = current.getDirection();
+            String lOverhang = current.getLOverhang();
+            String rOverhang = current.getROverhang();
+            String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
+            StringBuilder pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
+            weyekinText.append(pigeonLine.toString());            
+            
+            //Add PCR edges for level 0 nodes
+            if (current.getStage() == 0) {
+                
+                boolean basicNode = false;
+                String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+                
+                //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
+                if (nodeID.endsWith("null")) {
+                    if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
+                        edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                        pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                        weyekinText.append(pigeonLine.toString());
+                    } else {
+                        basicNode = true;
+                    }
+                } else {
+                    edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                    weyekinText.append(pigeonLine.toString());
+                }
+
+                if (!startPartsLOcompRO.contains(nodeIDB)) {
+                    if (basicNode == true) {
+                        nodeIDB = nodeID;
+                    }
+                    String NnodeID = composition + "|" + direction + "|" + scars;
+                    edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
+                    pigeonLine = generatePigeonCode(composition, type, direction, scars, NnodeID, null, null, null);
+                    weyekinText.append(pigeonLine.toString());
+                }
+            }
+            
+            //Get vector, make an extra edge if a PCR is required
+            if (vector != null) {
+                String vecLO = vector.getLOverhang();
+                String vecRO = vector.getROverhang();
+                int vecL = vector.getLevel();
+                String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
+                edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                pigeonLine = generatePigeonCode(null, null, null, null, vecID, vecLO, vecRO, vecName);
+                weyekinText.append(pigeonLine.toString());
+                
+                if (!startVectorsLOlevelRO.contains(vecID)) {
+                    String NvecID = vecName + "|" + vecL;
+                    edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
+                    pigeonLine = generatePigeonCode(null, null, null, null, NvecID, null, null, vecName);
+                    weyekinText.append(pigeonLine.toString());
+                }                    
+            }
+            
+            //Add unseen neighbors to the queue
+            for (RNode neighbor : current.getNeighbors()) {
+                if (!seenNodes.contains(neighbor)) {
+                    if (!queue.contains(neighbor)) {
+                        queue.add(neighbor);
                     }
                 }
-            }
-            String direction2 = new String();
-            ArrayList<String> searchTagsV2 = vertex2.getSearchTags();
-            if (!searchTagsV2.isEmpty()) {
-                for (String tag : searchTagsV2) {
-                    if (tag.startsWith("Direction:")) {
-                        direction2 = tag.substring(10);
+
+                //If one of the neighbors is a parent, add an edge
+                if (neighbor.getStage() > current.getStage()) {
+                    
+                    RVector vectorN = neighbor.getVector();
+                    String vecNameN = null;
+                    if (vectorN != null) {
+                        vecNameN = vectorN.getName();
                     }
+                    
+                    ArrayList<String> compositionN = neighbor.getComposition();
+                    ArrayList<String> directionN = neighbor.getDirection();
+                    ArrayList<String> scarsN = neighbor.getScars();
+                    String lOverhangN = neighbor.getLOverhang();
+                    String rOverhangN = neighbor.getROverhang();
+                    String nodeIDN = compositionN + "|" + directionN + "|" + scarsN + "|" + lOverhangN + "|" + rOverhangN + "|" + vecNameN;
+                    edgeLines = edgeLines + "\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"" + "\n";
                 }
             }
-            
-            nodeMap.put(vertex1.getUUID(), vertex1.getStringComposition() + direction1 + vertex1.getLeftOverhang() + vertex1.getRightOverhang());
-            nodeMap.put(vertex2.getUUID(), vertex2.getStringComposition() + direction2 + vertex2.getLeftOverhang() + vertex2.getRightOverhang());
-            edgeLines = edgeLines + "\"" + nodeMap.get(vertex2.getUUID()) + "\"" + " -> " + "\"" + nodeMap.get(vertex1.getUUID()) + "\"" + "\n";
-        }
-            
-        for (String uuid : nodeMap.keySet()) {
-            
-            Part part = coll.getPart(uuid, true);
-            ArrayList<Part> composition = part.getComposition();
-            ArrayList<String> strComposition = new ArrayList<String>();
-            ArrayList<String> direction = new ArrayList<String>();
-            ArrayList<String> types = new ArrayList<String>();
-            ArrayList<String> scars = new ArrayList<String>();
-            ArrayList<String> searchTags = part.getSearchTags();
-
-            for (String tag : searchTags) {
-                if (tag.startsWith("Direction:")) {
-                    direction = ClothoReader.parseTags(tag);
-                }
-                if (tag.startsWith("Scars:")) {
-                    scars = ClothoReader.parseTags(tag);
-                }
-            }
-            
-            for (int i = 0; i < composition.size(); i++) {
-                strComposition.add(composition.get(i).getName());
-                types.add(composition.get(i).getType());
-            }
-
-            StringBuilder pigeonLine = generatePigeonCode(strComposition, types, direction, scars, nodeMap.get(uuid), part.getLeftOverhang(), part.getRightOverhang());
-            weyekinText.append(pigeonLine.toString());
         }
 
         //Write edge lines
@@ -704,7 +784,7 @@ public class RGraph {
     }
 
     /** Pigeon code generation **/
-    private StringBuilder generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO) {
+    private StringBuilder generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
         pigeonLine.append("PIGEON_START\n");
@@ -712,69 +792,79 @@ public class RGraph {
 
         //Assign left overhang if it exists                
 //        pigeonLine.append("3 ").append(LO).append("\n");
-        pigeonLine.append("5 ").append(LO).append("\n");
+        if (LO != null) {
+            pigeonLine.append("5 ").append(LO).append("\n");
+        }       
 
-        for (int i = 0; i < composition.size(); i++) {
+        if (composition != null) {
+            for (int i = 0; i < composition.size(); i++) {
 
-            String name = composition.get(i);
-            String type = types.get(i);
-            String dir = "";
+                String name = composition.get(i);
+                String type = types.get(i);
+                String dir = "";
 
-            //Turn direction of glyph in reverse if reverse direction
-            if (!direction.isEmpty()) {
-                dir = direction.get(i);
-                if ("-".equals(dir)) {
-                    pigeonLine.append("<");
+                //Turn direction of glyph in reverse if reverse direction
+                if (!direction.isEmpty()) {
+                    dir = direction.get(i);
+                    if ("-".equals(dir)) {
+                        pigeonLine.append("<");
+                    }
                 }
-            }
 
-            //Write pigeon code line
-            if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
-                pigeonLine.append("P ").append(name).append(" 4" + "\n");
-            } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
-                pigeonLine.append("r ").append(name).append(" 5" + "\n");
-            } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
-                pigeonLine.append("c ").append(name).append(" 1" + "\n");
-            } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
-                pigeonLine.append("c ").append(name).append(" 2" + "\n");
-            } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
-                pigeonLine.append("T ").append(name).append(" 6" + "\n");
-            } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
-                if ("-".equals(dir)) {
-                    pigeonLine.append(" ").append(name).append(" 12" + "\n");
+                //Write pigeon code for a recognized regular part type
+                if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
+                    pigeonLine.append("P ").append(name).append(" 4" + "\n");
+                } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
+                    pigeonLine.append("r ").append(name).append(" 5" + "\n");
+                } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
+                    pigeonLine.append("c ").append(name).append(" 1" + "\n");
+                } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
+                    pigeonLine.append("c ").append(name).append(" 2" + "\n");
+                } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
+                    pigeonLine.append("T ").append(name).append(" 6" + "\n");
+                } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
+                    if ("-".equals(dir)) {
+                        pigeonLine.append(" ").append(name).append(" 12" + "\n");
+                    } else {
+                        pigeonLine.append("> ").append(name).append(" 12" + "\n");
+                    }
+                } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
+                    pigeonLine.append("s ").append(name).append(" 10" + "\n");
+                } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
+                    pigeonLine.append("z ").append(name).append(" 14" + "\n");
+                } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
+                    pigeonLine.append("f1");
+                    String[] fusionParts = name.split("-");
+                    for (int j = 1; j < fusionParts.length; j++) {
+                        int color = j % 13 + 1;
+                        pigeonLine.append("-").append(color);
+                    }
+                    pigeonLine.append(" ").append(name).append("\n");
                 } else {
-                    pigeonLine.append("> ").append(name).append(" 12" + "\n");
+                    pigeonLine.append("c ").append(name).append(" 13" + "\n");
                 }
-            } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
-                pigeonLine.append("s ").append(name).append(" 10" + "\n");
-            } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
-                pigeonLine.append("z ").append(name).append(" 14" + "\n");
-            } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
-                pigeonLine.append("f1");
-                String[] fusionParts = name.split("-");
-                for (int j = 1; j < fusionParts.length; j++) {
-                    int color = j % 13 + 1;
-                    pigeonLine.append("-").append(color);
-                }
-                pigeonLine.append(" ").append(name).append("\n");
-            } else {
-                pigeonLine.append("c ").append(name).append(" 13" + "\n");
-            }
 
-            //Scars
-            if (!scars.isEmpty()) {
-                if (i < composition.size() - 1) {
-                    if (!"_".equals(scars.get(i))) {
-                        pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
+                //Scars
+                if (!scars.isEmpty()) {
+                    if (i < composition.size() - 1) {
+                        if (!"_".equals(scars.get(i))) {
+                            pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
+                        }
                     }
                 }
             }
-        }
+        }        
 
         //Assign right overhang                
-        pigeonLine.append("3 ").append(RO).append("\n");
+        if (RO != null) {
+            pigeonLine.append("3 ").append(RO).append("\n");
+        }       
 //        pigeonLine.append("5 ").append(RO).append("\n");
-        pigeonLine.append("v").append("\n");
+        
+        //Vectors
+        if (vecName != null) {
+            pigeonLine.append("v ").append(vecName).append("\n");
+        }
         pigeonLine.append("# Arcs\n");
         pigeonLine.append("PIGEON_END\n\n");
         return pigeonLine;
@@ -853,7 +943,7 @@ public class RGraph {
 
         //For each file to merge
         for (String graphFile : filesToMerge) {
-//            System.out.println("*******************************\n"+graphFile);
+            
             String[] fileLines = graphFile.split("\n");
             HashSet<String> currentSeenLines = new HashSet<String>();
             boolean keepGoing = false;

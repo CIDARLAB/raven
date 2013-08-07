@@ -4,6 +4,7 @@
  */
 package Communication;
 
+import Controller.algorithms.modasm.RBioBricks;
 import Controller.accessibility.ClothoWriter;
 import Controller.accessibility.ClothoReader;
 import Controller.algorithms.modasm.*;
@@ -249,7 +250,8 @@ public class RavenController {
             String RO = "";
             String LO = "";
             String type = "";
-            ArrayList<String> direction = new ArrayList<String>();
+            ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
+            
             for (int k = 0; k < tags.size(); k++) {
                 if (tags.get(k).startsWith("LO:")) {
                     LO = tags.get(k).substring(4);
@@ -257,9 +259,6 @@ public class RavenController {
                     RO = tags.get(k).substring(4);
                 } else if (tags.get(k).startsWith("Type:")) {
                     type = tags.get(k).substring(6);
-                } else if (tags.get(k).startsWith("Direction:")) {
-                    String dir = tags.get(k);
-                    direction = ClothoReader.parseTags(dir);
                 }
             }
             String composition = "";
@@ -358,14 +357,8 @@ public class RavenController {
                 String bpDir = new String();
                 String bpLO = new String();
                 String bpRO = new String();
-                ArrayList<String> direction = new ArrayList<String>();
-
                 ArrayList<String> tags = p.getSearchTags();
-                for (String tag : tags) {
-                    if (tag.startsWith("Direction:")) {
-                        direction = ClothoReader.parseTags(tag);
-                    }
-                }
+                ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
 
                 if (composition.size() > 1) {
                     for (int i = 0; i < composition.size(); i++) {
@@ -823,7 +816,7 @@ public class RavenController {
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                graphTextFiles.add(result.generateWeyekinFile(_collector, postOrderEdges));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary));
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");

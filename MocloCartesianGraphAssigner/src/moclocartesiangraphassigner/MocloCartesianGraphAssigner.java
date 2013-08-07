@@ -6,6 +6,7 @@ package moclocartesiangraphassigner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -222,6 +223,52 @@ public class MocloCartesianGraphAssigner {
             }
         }
         System.out.println("abstractConcreteHash: "+abstractConcreteHash.toString());
+        
+        
+        //build the graph
+        ArrayList<CartesianNode> previousNodes = null;
+        ArrayList<CartesianNode> rootNodes = new ArrayList();
+        ArrayList<String> sortedAbstractOverhangs = new ArrayList(abstractConcreteHash.keySet());
+        Collections.sort(sortedAbstractOverhangs);
+        int level = 0;
+        for (String abstractOverhang : sortedAbstractOverhangs) {
+            ArrayList<CartesianNode> currentNodes = new ArrayList();
+            HashSet<String> concreteOverhangs = abstractConcreteHash.get(abstractOverhang);
+            for (String overhang : concreteOverhangs) {
+                CartesianNode newNode = new CartesianNode();
+                newNode.setLevel(level);
+                newNode.setAbstractOverhang(abstractOverhang);
+                newNode.setConcreteOverhang(overhang);
+                currentNodes.add(newNode);
+            }
+            if (previousNodes != null) {
+                for (CartesianNode prev : previousNodes) {
+                    for (CartesianNode node : currentNodes) {
+                        if (!prev.getUsedOverhangs().contains(node.getConcreteOverhang())) {
+                            prev.addNeighbor(node);
+                            node.setUsedOverhangs((HashSet) prev.getUsedOverhangs().clone());
+                            node.getUsedOverhangs().add(node.getConcreteOverhang());
+                            System.out.println("linking "+prev.getAbstractOverhang()+"-"+prev.getConcreteOverhang()+" and "+node.getAbstractOverhang()+"-"+node.getConcreteOverhang());
+                        }
+                    }
+                }
+            } else {
+                for (CartesianNode root : currentNodes) {
+                    rootNodes.add(root);
+                }
+            }
+            previousNodes = currentNodes;
+            level++;
+        }
+        
+        
+        //find assignments
+        
+        
+        //score assignments
+        
+        
+        //return best assignment
 
         return null;
     }
@@ -269,8 +316,8 @@ public class MocloCartesianGraphAssigner {
         }
         return toReturn;
     }
+    
     //old single graph method
-
     public static ArrayList<ArrayList<String>> findOptimalAssignment(ArrayList<RGraph> graphs, int targetLength) {
         ArrayList<ArrayList<String>> toReturn = new ArrayList();
         ArrayList<String> currentSolution;
@@ -334,6 +381,8 @@ public class MocloCartesianGraphAssigner {
         }
         return toReturn;
     }
+
+    //fields
     private static HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private static HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private static HashMap<RNode, HashSet<String>> _takenParentOHs;
