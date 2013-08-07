@@ -696,21 +696,16 @@ public class RGraph {
             String lOverhang = current.getLOverhang();
             String rOverhang = current.getROverhang();
             String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-            
-            System.out.println("nodeID: " + nodeID);
-            
             StringBuilder pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
             weyekinText.append(pigeonLine.toString());            
             
-            //Add PCR edges for level 0 nodes with
+            //Add PCR edges for level 0 nodes
             if (current.getStage() == 0) {
                 
                 boolean basicNode = false;
                 String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
                 
-                System.out.println("nodeIDB: " + nodeIDB);
-                System.out.println("nodeID.substring(0, nodeID.length() - 5): " + nodeID.substring(0, nodeID.length() - 5));
-                
+                //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                 if (nodeID.endsWith("null")) {
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
                         edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
@@ -730,9 +725,6 @@ public class RGraph {
                         nodeIDB = nodeID;
                     }
                     String NnodeID = composition + "|" + direction + "|" + scars;
-                    
-                    System.out.println("NnodeID: " + NnodeID);
-                    
                     edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
                     pigeonLine = generatePigeonCode(composition, type, direction, scars, NnodeID, null, null, null);
                     weyekinText.append(pigeonLine.toString());
