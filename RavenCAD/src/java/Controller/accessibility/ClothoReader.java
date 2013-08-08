@@ -205,7 +205,7 @@ public class ClothoReader {
             }
             
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            RNode gp = new RNode(false, false, null, composition, direction, type, scars, 0, 0);
+            RNode gp = new RNode(false, false, composition, direction, type, scars, null, null, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
