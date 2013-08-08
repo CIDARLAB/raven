@@ -816,7 +816,7 @@ public class RavenController {
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, targetRootNodes, scarless));
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");

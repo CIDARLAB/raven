@@ -5,6 +5,7 @@
 package Controller.datastructures;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  *
@@ -34,23 +35,20 @@ public class RNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, int successCnt, int failureCnt) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, String lOverhang, String rOverhang, int successCnt, int failureCnt) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
         _efficiency = 0;
         _successCnt = successCnt;
         _failureCnt = failureCnt;
-        _neighbors = neighbors;
-        if (_neighbors == null) {
-            _neighbors = new ArrayList<RNode>();
-        }
+        _neighbors = new ArrayList<RNode>();
         _scars = scars;
         _composition = composition;
         _direction = direction;
         _type = type;
-        _lOverhang = "";
-        _rOverhang = "";
+        _lOverhang = lOverhang;
+        _rOverhang = rOverhang;
         _name = "";
         _nodeID = _nodeCount;
         _nodeCount++;
@@ -214,6 +212,70 @@ public class RNode {
     /** Get the scars of a part **/
     public ArrayList<String> getScars() {
         return _scars;
+    }
+    
+    /** Get node keys for either forward or reverse direction **/
+    public String getNodeKey(String dir) {
+        
+        //Forward key information
+        ArrayList<String> composition = this._composition;
+        ArrayList<String> direction = this._direction;
+        ArrayList<String> scars = this._scars;
+        String lOverhang = this._lOverhang;
+        String rOverhang = this._rOverhang;
+        
+        if (dir.equals("+")) {           
+            String aPartLOcompRO = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+            return aPartLOcompRO;
+        } else {
+            
+            //Backward key information
+            ArrayList<String> revComp = new ArrayList<String>();
+            revComp.addAll(composition);
+            Collections.reverse(revComp);
+            
+            ArrayList<String> revDir = new ArrayList<String>();
+            ArrayList<String> revDirF = new ArrayList<String>();
+            revDir.addAll(direction);
+            Collections.reverse(revDir);
+            for (String RD : revDir) {
+                if (RD.equals("+")) {
+                    revDirF.add("-");
+                } else if (RD.equals("-")) {
+                    revDirF.add("+");
+                }
+            }
+            
+            ArrayList<String> revScars = new ArrayList<String>();
+            ArrayList<String> revScarsF = new ArrayList<String>();
+            revScars.addAll(scars);
+            Collections.reverse(revScars);
+            for (String aRevScar : revScars) {
+                if (aRevScar.contains("*")) {
+                    aRevScar = aRevScar.replace("*", "");
+                    revScarsF.add(aRevScar);
+                } else {
+                    aRevScar = aRevScar + "*";
+                    revScarsF.add(aRevScar);
+                }
+            }
+
+            String lOverhangR = rOverhang;
+            String rOverhangR = lOverhang;
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+            
+            String aPartCompDirScarLOROR = revComp + "|" + revDirF + "|" + revScarsF + "|" + rOverhangR + "|" + lOverhangR;
+            return aPartCompDirScarLOROR;
+        }
     }
     
     /** Set part as recommended or not required **/

@@ -56,6 +56,9 @@ public class RSLIC extends RGeneral {
             
             RGraph graph = asmGraphs.get(i);
             RNode root = graph.getRootNode();
+            ArrayList<String> composition = root.getComposition();
+            root.setLOverhang(composition.get(composition.size()-1));
+            root.setROverhang(composition.get(0));
             ArrayList<RNode> neighbors = root.getNeighbors();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);

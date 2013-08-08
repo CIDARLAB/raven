@@ -208,7 +208,6 @@ public class RMoClo extends RGeneral {
                 }
 
                 //Determine direction and enter into hash               
-//                l0Node = l0Nodes.get(i);
                 String l0Direction = rootDir.get(0);
                 if (l0Node.getComposition().size() == 1) {
                     ArrayList<String> l0Dir = new ArrayList<String>();

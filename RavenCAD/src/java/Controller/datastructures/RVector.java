@@ -21,16 +21,14 @@ public class RVector {
         _vectorCount++;
     }
 
-//    /** RVector constructor with explicit parameters **/
-//    public RVector(String lOverhang, String rOverhang, boolean recommended, int level) {
-//        _uuid = null;
-//        _lOverhang = lOverhang;
-//        _rOverhang = rOverhang;
-//        _recommended = recommended;
-//        _level = level;
-//        _vectorID = _vectorCount;
-//        _vectorCount++;
-//    }
+    /** RVector constructor with explicit parameters **/
+    public RVector(String lOverhang, String rOverhang, int level, String name) {
+        _lOverhang = lOverhang;
+        _rOverhang = rOverhang;
+        _level = level;
+        _name = name;
+    }
+    
     /**************************************************************************
      * 
      * GETTER AND SETTER METHODS
@@ -74,6 +72,37 @@ public class RVector {
     /** Get vector name **/
     public String getName() {
         return _name;
+    }
+    
+    /** Get vector keys **/
+    public String getVectorKeys(String direction) {
+        
+        //Forward information
+        String lOverhang = this._lOverhang;
+        String rOverhang = this._rOverhang;
+        String name = this._name;
+        int stage = this._level;
+
+        if (direction.equals("+")) {
+            String aVecLOlevelRO = name + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+            return aVecLOlevelRO;
+        } else {
+            String lOverhangR = rOverhang;
+            String rOverhangR = lOverhang;
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+
+            String aVecLOlevelROR = name + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+            return aVecLOlevelROR;
+        }
     }
 
     /** Set Clotho UUID **/
