@@ -3,26 +3,13 @@
 $(document).ready(function() { //don't run javascript until page is loaded
 // FIELDS
     var loaded = false;
-    var data = null;
+    var ravenPart = null;
     var tabResized = true;
     var sequenceHash = {}; //key: composition/name; value: sequence
-
+    var _parts = {}; //key: name, value: part JSON
+    var _partIds = {}; //key: name, value: uuid
 // FUNCTIONS
-    var allTable = $("#allTable").dataTable({
-        "sScrollY": "300px",
-        "bPaginate": false,
-        "bScrollCollapse": true
-    });
-    var partTable = $("#partTable").dataTable({
-        "sScrollY": "300px",
-        "bPaginate": false,
-        "bScrollCollapse": true
-    });
-    var vectorTable = $("#vectorTable").dataTable({
-        "sScrollY": "300px",
-        "bPaginate": false,
-        "bScrollCollapse": true
-    });
+
     function allAddRow(rowData) {
         $('#allTable').dataTable().fnAddData([
             rowData["uuid"],
@@ -80,7 +67,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var allTableBody = "<table id='allTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
         var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr></thead><tbody>";
         var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
-        $.each(data["result"], function() {
+        $.each(ravenPart, function() {
             allTableBody = allTableBody + "<tr><td>"
                     + this["uuid"] + "</td><td>"
                     + this["Name"] + "</td><td>"
@@ -143,54 +130,87 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#errorArea').addClass("hidden");
         });
 
-        if (data["status"] === "bad") {
-            $('#error').html(data["message"]);
-            $('#error').append('<hr/><p>We have uploaded the rest of your parts and vectors</p>');
-            $('#errorArea').removeClass("hidden");
-        }
+
     };
 
 
     var getData = function() {
         $.getJSON("RavenServlet", {"command": "fetch"}, function(json) {
-            data = json;
+            ravenPart = json["result"];
+            if (json["status"] === "bad") {
+                $('#error').html(ravenPart["message"]);
+                $('#error').append('<hr/><p>We have uploaded the rest of your parts and vectors</p>');
+                $('#errorArea').removeClass("hidden");
+            }
             drawTable();
         });
     };
     //EVENT HANDLERS
-    $('button#clotho3').click(function() {
-        if (canSend) {
-            //import basic parts
-            send("query", '{"schema":"BasicPart"}', function(data) {
-                var newParts = {};
-                var newPartsArray = [];
-                $.each(data, function() {
-                    if (newParts[this["name"]] === undefined) {
-                        newParts[this["name"]] = "added";
-                        newPartsArray.push(this);
-                    }
-                });
+    $('#clotho3').click(function() {
+        var basicParts = [];
+        var compositeParts = [];
+        var vectors = [];
+
+
+        $.each(ravenPart, function(index, data) {
+            if (_partIds[data["Name"]] === undefined) {
+                if (data["Type"] === "composite") {
+                    compositeParts.push(data);
+                } else if (data["Type"] === "vector") {
+                    vectors.push(data);
+                } else {
+                    basicParts.push(data);
+                }
+            }
+        });
+        $.each(basicParts, function(index, basicPart) {
+            saveRavenPart(basicPart);
+        });
+        //refresh clotho parts
+        send("query", '{"schema":"BasicPart"}', function(data) {
+            var newParts = {};
+            var newPartsArray = [];
+            $.each(data, function() {
+                if (newParts[this["name"]] === undefined) {
+                    newParts[this["name"]] = "added";
+                    newPartsArray.push(this);
+                }
+                if (_parts[this["name"]] === undefined) {
+                    _parts[this["name"]] = this;
+                    _partIds[this["name"]] = this["id"];
+                }
+            });
 //            alert(JSON.stringify(newPartsArray));
-                $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
-                    //import composite parts
-                    send("query", '{"schema":"CompositePart"}', function(data) {
-                        var newParts = {};
-                        var newPartsArray = [];
-                        $.each(data, function() {
-                            if (newParts[this["name"]] === undefined) {
-                                newParts[this["name"]] = "added";
-                                newPartsArray.push(this);
-                            }
-                        });
-                        $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
-                            refreshData();
-                        });
+            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
+                //import composite parts
+                send("query", '{"schema":"CompositePart"}', function(data) {
+                    var newParts = {};
+                    var newPartsArray = [];
+                    $.each(data, function() {
+                        if (newParts[this["name"]] === undefined) {
+                            newParts[this["name"]] = "added";
+                            newPartsArray.push(this);
+                        }
+                        if (_parts[this["name"]] === undefined) {
+                            _parts[this["name"]] = this;
+                            _partIds[this["name"]] = this["id"];
+                        }
+                    });
+                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+                        refreshData();
                     });
                 });
             });
-        }
-        ;
+        });
+
+        $.each(vectors, function(index, vector) {
+        });
+        $.each(compositeParts, function(index, compositePart) {
+//            alert(JSON.stringify(compositePart));
+            saveRavenPart(compositePart);
+        });
     });
+
     $('.tablink').click(function() {
         tabResized = false;
     });
@@ -270,6 +290,110 @@ $(document).ready(function() { //don't run javascript until page is loaded
         document.cookie = escape(key) + '=;expires=' + date;
     }
 
+    var saveRavenPart = function(part, partId) {
+//        send("create", JSON.stringify(part));
+        if (partId === undefined) {
+            partId = new ObjectId().toString();
+        }
+        var seqId = new ObjectId().toString();
+        if (part["Type"] === "vector") {
+            //not sure I can save vectors yet...
+        } else if (part["Type"] === "composite") {
+            if (_partIds[part["Name"]] === undefined) {
+                //create new part if it doesn't exist already
+                var newPart = {};
+                newPart["schema"] = "BasicPart";
+                newPart["sequence"] = {
+                    _id: seqId,
+                    isRNA: false,
+                    isSingleStranded: false,
+                    sequence: part["Sequence"],
+                    isDegenerate: false,
+                    isLinear: false,
+                    isCircular: false,
+                    isLocked: false
+                };
+                newPart["name"] = part["Name"];
+                newPart["type"] = part["Type"];
+
+                _parts[newPart["name"]] = newPart;
+                _partIds[newPart["name"]] = partId;
+                //gather the composition and sequence of the composite part
+                var partComposition = part["Composition"].substring(1, part["Composition"].length - 1).split(",");
+                var composition = [];
+                var compositeSequence = "";
+                for (var i = 0; i < partComposition.length; i++) {
+                    var basicPartName = partComposition[i].substring(0, partComposition[i].indexOf("|"));
+                    var basicPartId = _partIds[basicPartName];
+                    var basicPart = _parts[basicPartName]
+                    composition.push(basicPartId);
+                    compositeSequence = compositeSequence + basicPart.sequence;
+                }
+
+                //create composite part
+                send("create", JSON.stringify({
+                    schema: "CompositePart",
+                    _id: partId,
+                    author: "51e9579344ae846673a51b0f", //this probably shouldnt be hard coded later...
+                    shortDescription: this["pigeon"],
+                    sequence: {
+                        _id: seqId,
+                        isRNA: false,
+                        isSingleStranded: false,
+                        sequence: compositeSequence,
+                        isDegenerate: false,
+                        isLinear: false,
+                        isCircular: false,
+                        isLocked: false
+                    },
+                    name: newPart["name"],
+                    composition: composition,
+                    format: "FreeForm",
+                    type: "composite",
+                    riskGroup: 0,
+                    showDetail: true
+                }
+                ));
+
+            }
+        } else {
+            //save basic part
+            if (_partIds[part["Name"]] === undefined) {
+                var newPart = {};
+                newPart["schema"] = "BasicPart";
+                newPart["sequence"] = {
+                    _id: seqId,
+                    isRNA: false,
+                    isSingleStranded: false,
+                    sequence: part["Sequence"],
+                    isDegenerate: false,
+                    isLinear: false,
+                    isCircular: false,
+                    isLocked: false
+                };
+                newPart["name"] = part["Name"];
+                newPart["type"] = part["Type"];
+
+                _parts[newPart["name"]] = newPart;
+                _partIds[newPart["name"]] = partId;
+                send("create", JSON.stringify({
+                    schema: "BasicPart",
+                    _id: partId,
+                    author: "51e9579344ae846673a51b0f", //this probably shouldnt be hard coded later...
+                    shortDescription: "",
+                    sequence: newPart["sequence"],
+                    name: newPart["name"],
+                    format: "FreeForm",
+                    type: newPart["type"],
+                    riskGroup: 0,
+                    showDetail: true
+                }
+                ));
+            }
+        }
+    };
+
+
 
     /********Clotho Functions and Variables********/
     var _connection = new WebSocket('ws://localhost:8080/websocket');
@@ -279,7 +403,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
 
     var send = function(channel, data, callback) {
-        if (_connection.readyState === 1) {
+        if (canSend) {
             var message = '{"channel":"' + channel + '", "data":' + data + ',"requestId":"' + _requestID + '"}';
             _requestCommand[channel + _requestID] = callback;
             _connection.send(message);
@@ -313,6 +437,41 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
     _connection.onopen = function(e) {
         canSend = true;
+        send("query", '{"schema":"BasicPart"}', function(data) {
+            var newParts = {};
+            var newPartsArray = [];
+            $.each(data, function() {
+                if (newParts[this["name"]] === undefined) {
+                    newParts[this["name"]] = "added";
+                    newPartsArray.push(this);
+                }
+                if (_parts[this["name"]] === undefined) {
+                    _parts[this["name"]] = this;
+                    _partIds[this["name"]] = this["id"];
+                }
+            });
+//            alert(JSON.stringify(newPartsArray));
+            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
+                //import composite parts
+                send("query", '{"schema":"CompositePart"}', function(data) {
+                    var newParts = {};
+                    var newPartsArray = [];
+                    $.each(data, function() {
+                        if (newParts[this["name"]] === undefined) {
+                            newParts[this["name"]] = "added";
+                            newPartsArray.push(this);
+                        }
+                        if (_parts[this["name"]] === undefined) {
+                            _parts[this["name"]] = this;
+                            _partIds[this["name"]] = this["id"];
+                        }
+                    });
+                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+                        refreshData();
+                    });
+                });
+            });
+        });
     };
 
 
@@ -337,6 +496,20 @@ $(document).ready(function() { //don't run javascript until page is loaded
     }
 
     refreshData();
-
+    var allTable = $("#allTable").dataTable({
+        "sScrollY": "300px",
+        "bPaginate": false,
+        "bScrollCollapse": true
+    });
+    var partTable = $("#partTable").dataTable({
+        "sScrollY": "300px",
+        "bPaginate": false,
+        "bScrollCollapse": true
+    });
+    var vectorTable = $("#vectorTable").dataTable({
+        "sScrollY": "300px",
+        "bPaginate": false,
+        "bScrollCollapse": true
+    });
 
 });
