@@ -1210,7 +1210,6 @@ public class RMoClo extends RGeneral {
 
         if (primerParameters != null) {
             designPrimers = true;
-            //TODO sort 
             oligoNameRoot = primerParameters.get(0);//your oligos will be named olignoNameRoot+Number+F/R (F/R = forward/reverse)
             forwardPrimerPrefix = primerParameters.get(1);//prepended to the 5' end of your forward primer; 
             //your primer sequence will be: forwardPrimerPrefix+forwardEnzymeCutSite+partHomology

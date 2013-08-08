@@ -703,7 +703,7 @@ public class RGraph {
 
                     if (!startVectorsLOlevelRO.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
-                        edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
+                        edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"");
                         imageURLs.put(NvecID, generatePigeonImage(null, null, null, null, null, null, vecName));
                     }
                 }
@@ -724,7 +724,7 @@ public class RGraph {
                             vecNameN = vectorN.getName();
                         }
                         ArrayList<String> scarsN = neighbor.getScars();
-                        String nodeIDN = neighbor.getNodeKey("+")+vecNameN;
+                        String nodeIDN = neighbor.getNodeKey("+")+"|"+vecNameN;
                         edges.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
                     }
                 }
