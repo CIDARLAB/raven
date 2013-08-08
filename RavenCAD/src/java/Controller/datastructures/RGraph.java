@@ -242,8 +242,8 @@ public class RGraph {
      */
     public static void getGraphStats(ArrayList<RGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
 
-        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
-        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
+        HashSet<String> startPartsLOcompRO = ClothoReader.getExistingPartKeys(partLib);
+        HashSet<String> startVectorsLOlevelRO = ClothoReader.getExistingVectorKeys(vectorLib);
         HashSet<String> partsLOcompRO = new HashSet<String>();
         HashSet<String> vectorsLOlevelRO = new HashSet<String>();
         HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
@@ -412,107 +412,6 @@ public class RGraph {
     }
 
     /**
-     * Returns a part library and finds all forward and reverse characteristics
-     * of each part *
-     */
-    public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
-
-        HashSet<String> startPartsLOcompRO = new HashSet<String>();
-
-        //Go through parts library, put all compositions into hash of things that already exist
-        for (Part aPart : partLib) {
-
-            //Get forward and reverse part key string
-            ArrayList<Part> partComp = aPart.getComposition();
-            ArrayList<String> comp = new ArrayList<String>();
-            for (int j = 0; j < partComp.size(); j++) {
-                String name = partComp.get(j).getName();
-                comp.add(name);
-            }
-            ArrayList<String> revComp = new ArrayList<String>();
-            revComp.addAll(comp);
-            Collections.reverse(revComp);
-
-            ArrayList<String> searchTags = aPart.getSearchTags();
-            ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
-            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
-
-            ArrayList<String> revDir = new ArrayList<String>();
-            revDir.addAll(dir);
-            Collections.reverse(revDir);
-            ArrayList<String> revScars = new ArrayList<String>();
-            revScars.addAll(scars);
-            Collections.reverse(revScars);
-            for (String aRevScar : revScars) {
-                if (aRevScar.contains("*")) {
-                    aRevScar = aRevScar.replace("*", "");
-                } else {
-                    aRevScar = aRevScar + "*";
-                }
-            }
-
-            String lOverhang = aPart.getLeftOverhang();
-            String rOverhang = aPart.getRightOverhang();
-            String lOverhangR = aPart.getRightOverhang();
-            String rOverhangR = aPart.getLeftOverhang();
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
-            } else {
-                lOverhangR = lOverhangR + "*";
-            }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
-            } else {
-                rOverhangR = rOverhangR + "*";
-            }
-
-            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
-            startPartsLOcompRO.add(aPartCompDirScarLORO);
-            startPartsLOcompRO.add(aPartCompDirScarLOROR);
-        }
-
-        return startPartsLOcompRO;
-    }
-
-    /**
-     * Returns a part library and finds all forward and reverse characteristics
-     * of each part *
-     */
-    public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
-
-        HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
-
-        //Go through vectors library, put all compositions into hash of things that already exist
-        for (Vector aVec : vectorLib) {
-
-            String lOverhang = aVec.getLeftoverhang();
-            String rOverhang = aVec.getRightOverhang();
-            String lOverhangR = aVec.getRightOverhang();
-            String rOverhangR = aVec.getLeftoverhang();
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
-            } else {
-                lOverhangR = lOverhangR + "*";
-            }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
-            } else {
-                rOverhangR = rOverhangR + "*";
-            }
-            int stage = aVec.getLevel();
-
-            String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
-            String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
-
-            startVectorsLOlevelRO.add(aVecLOlevelRO);
-            startVectorsLOlevelRO.add(aVecLOlevelROR);
-        }
-
-        return startVectorsLOlevelRO;
-    }
-
-    /**
      * ************************************************************************
      *
      * GRAPH EXPORT METHODS
@@ -639,8 +538,8 @@ public class RGraph {
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
         HashMap<String, String> imageURLs = new HashMap();
         HashSet<String> edges = new HashSet();
-        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
-        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
+        HashSet<String> startPartsLOcompRO = ClothoReader.getExistingPartKeys(partLib);
+        HashSet<String> startVectorsLOlevelRO = ClothoReader.getExistingVectorKeys(vectorLib);
         for (RGraph graph : graphs) {
             HashSet<RNode> seenNodes = new HashSet<RNode>();
             ArrayList<RNode> queue = new ArrayList<RNode>();
@@ -697,7 +596,7 @@ public class RGraph {
                     String vecLO = vector.getLOverhang();
                     String vecRO = vector.getROverhang();
                     int vecL = vector.getLevel();
-                    String vecID = vector.getVectorKeys("+");
+                    String vecID = vector.getVectorKey("+");
                     edges.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
                     imageURLs.put(vecID, generatePigeonImage(null, null, null, null, vecLO, vecRO, vecName));
 

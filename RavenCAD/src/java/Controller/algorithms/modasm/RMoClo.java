@@ -1196,107 +1196,201 @@ public class RMoClo extends RGeneral {
     //generates human readable instructions as well as primer sequences
     //primerParameters contains (in this order): 
     //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<String> primerParameters) {
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<String> primerParameters, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
 
         //initialize primer parameters
         String oligoNameRoot = "";
-        String forwardPrimerPrefix = "";
-        String reversePrimerPrefix = "";
-        String forwardEnzymeCutSite = "";
-        String reverseEnzymeCutSite = "";
-        int forwardEnzymeCutDistance = 0;
-        int reverseEnzymeCutDistance = 0;
-        Double meltingTemp = 0.0;
+        String partPrimerPrefix = "nn";
+        String partPrimerSuffix = "nn";
+        String vectorPrimerPrefix = "gttctttactagtg";
+        String vectorPrimerSuffix = "tactagtagcggccgc";
+        String fwdEnzymeRecSite1 = "gaagac";
+        String revEnzymeRecSite1 = "gtcttc";
+        String fwdEnzymeRecSite2 = "ggtctc";
+        String revEnzymeRecSite2 = "gagacc";
+//        int forwardEnzymeCutDistance = 0;
+//        int reverseEnzymeCutDistance = 0;
+        Double meltingTemp = 55.0;
         int targetLength = 20;
 
         boolean designPrimers = false;
 
         if (primerParameters != null) {
             designPrimers = true;
-            //TODO sort 
             oligoNameRoot = primerParameters.get(0);//your oligos will be named olignoNameRoot+Number+F/R (F/R = forward/reverse)
-            forwardPrimerPrefix = primerParameters.get(1);//prepended to the 5' end of your forward primer; 
+//            forwardPartPrimerPrefix = primerParameters.get(1);//prepended to the 5' end of your forward primer; 
             //your primer sequence will be: forwardPrimerPrefix+forwardEnzymeCutSite+partHomology
-            reversePrimerPrefix = primerParameters.get(2);//prepended to the 5' end of your reverse primer; 
+//            reversePartPrimerPrefix = primerParameters.get(2);//prepended to the 5' end of your reverse primer; 
             //your primer sequence will be: reversePrimerPrefix+reverseEnzymeCutSite+partHomology
-            forwardEnzymeCutSite = primerParameters.get(3);//the restriction enzyme cut site that appears in the forward primer
-            reverseEnzymeCutSite = primerParameters.get(4);//the restriction enzyme cut site that appears in the reverse primer
-            forwardEnzymeCutDistance = Integer.parseInt(primerParameters.get(5));//distance from which forward enzyme cuts from its recognition site
-            reverseEnzymeCutDistance = Integer.parseInt(primerParameters.get(6));//distance from which reverse enzyme cuts its recognition site
-            meltingTemp = Double.parseDouble(primerParameters.get(7));//desired melting temperature of your primers; determines homology length
-            targetLength = Integer.parseInt(primerParameters.get(8));
+//            forwardEnzymeRecognitionSite = primerParameters.get(3);//the restriction enzyme cut site that appears in the forward primer
+//            reverseEnzymeRecognitionSite = primerParameters.get(4);//the restriction enzyme cut site that appears in the reverse primer
+//            forwardEnzymeCutDistance = Integer.parseInt(primerParameters.get(5));//distance from which forward enzyme cuts from its recognition site
+//            reverseEnzymeCutDistance = Integer.parseInt(primerParameters.get(6));//distance from which reverse enzyme cuts its recognition site
+            meltingTemp = Double.parseDouble(primerParameters.get(1));//desired melting temperature of your primers; determines homology length
+            targetLength = Integer.parseInt(primerParameters.get(2));
         }
 
         int oligoCount = 0;
-        String toReturn = "";
+        String instructions = "";
 
-        ArrayList<String> oligoNames = new ArrayList();
-        ArrayList<String> oligoSequences = new ArrayList();
-        HashSet<RNode> seenNodes = new HashSet();
+        ArrayList<String> oligoNames = new ArrayList<String>();
+        ArrayList<String> oligoSequences = new ArrayList<String>();
+        HashSet<RNode> seenNodes = new HashSet<RNode>();
+        HashSet<RVector> newVectors = new HashSet<RVector>();
+        HashSet<RNode> newNodes = new HashSet<RNode>();
+        HashSet<String> libraryPartKeys = ClothoReader.getExistingPartKeys(partLib);
+        HashSet<String> libraryVectorKeys = ClothoReader.getExistingVectorKeys(vectorLib);
+        
         for (RNode root : roots) {
 
             //append header for each goal part
-            toReturn = toReturn + "**********************************************"
+            instructions = instructions + "**********************************************"
                     + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
-                    + "\n**********************************************";
-            ArrayList<RNode> queue = new ArrayList();
+                    + "\n**********************************************\n";
+            ArrayList<RNode> queue = new ArrayList<RNode>();
             queue.add(root);
+            
             while (!queue.isEmpty()) {
                 RNode currentNode = queue.get(0);
-
-                queue.remove(0); //queue for traversing graphs (bfs)
+                queue.remove(0); 
 
                 if (!seenNodes.contains(currentNode)) {
+                    
                     //only need to generate instructions for assembling a part that has not already been encountered
                     seenNodes.add(currentNode);
                     Part currentPart = coll.getPart(currentNode.getUUID(), true);
 
-                    if (currentPart.getComposition().size() > 1) {
+                    //If the current node is a step in stage 1 or higher instruct the cloning steps
+                    if (currentNode.getStage() > 0) {
+                        
+                        //If this node has a new vector, there will need to be a PCR added, but this is done at the end of the file
+                        RVector vector = currentNode.getVector();
+                        if (vector != null) {
+                            String vectorKey = vector.getVectorKey("+");
+                            if (!libraryVectorKeys.contains(vectorKey)) {
+                                newVectors.add(vector);
+                            }
+                        }
+                        
                         //append which parts to use for a moclo reaction
-                        toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
+                        instructions = instructions + "\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";
                         for (RNode neighbor : currentNode.getNeighbors()) {
 
-                            if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
-                                toReturn = toReturn + coll.getPart(neighbor.getUUID(), true).getName() + ", ";
+                            if (currentNode.getStage() > neighbor.getStage()) {
+                                Part part = coll.getPart(neighbor.getUUID(), true);
+                                instructions = instructions + part.getName() + "|" + part.getLeftOverhang() + "|" + part.getRightOverhang() + ", ";
                                 if (!seenNodes.contains(neighbor)) {
                                     queue.add(neighbor);
                                 }
                             }
+                            
+                            if (vector != null) {
+                                instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
+                            } else {
+                                instructions = instructions.substring(0, instructions.length()-2) + "\n";
+                            }
                         }
+                        
+                    //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
                     } else {
+                        
+                        String nodeKey = currentNode.getNodeKey("+");
+                        RVector vector = currentNode.getVector();
+                        String vectorKey = new String();
+                        if (vector != null) {
+                            vectorKey = vector.getVectorKey("+");
+                            if (!libraryVectorKeys.contains(vectorKey)) {
+                                newVectors.add(vector);
+                            }
+                        }
 
-                        //design primers
-                        if (designPrimers) {
-                            String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
-                            String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                            String forwardOligoSequence = forwardPrimerPrefix + forwardEnzymeCutSite + PrimerDesign.generateRandomSequence(forwardEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, currentPart.getSeq()));
-                            String reverseOligoSequence = PrimerDesign.reverseComplement(reversePrimerPrefix + reverseEnzymeCutSite + PrimerDesign.generateRandomSequence(reverseEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getROverhang()) + currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, PrimerDesign.reverseComplement(currentPart.getSeq()))));
-                            oligoNames.add(forwardOligoName);
-                            oligoNames.add(reverseOligoName);
-                            oligoSequences.add(forwardOligoSequence);
-                            oligoSequences.add(reverseOligoSequence);
-                            oligoCount++;
-                            toReturn = toReturn + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName;
+                        //Design part primers if this part key is not in the key list, perform asssembly step if the vector or part is not yet PCRed
+                        if (!libraryPartKeys.contains(nodeKey)) {
+                            newNodes.add(currentNode);
+                            
+                            if (vector != null) {
+                                instructions = instructions + "\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";
+                                instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + ", ";
+                                instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
+                            }
+
+                        //If the part key is in the list, determine if a steps is necessary
                         } else {
-                            toReturn = toReturn + "\nPCR " + currentPart.getName() + " to prepend overhang " + currentNode.getLOverhang() + " and append overhang " + currentNode.getROverhang();
+                            if (!libraryVectorKeys.contains(vectorKey)) {
+                                instructions = instructions + "\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";                              
+                            }
                         }
                     }
-
                 }
             }
-            toReturn = toReturn + "\n\n";
+            
+            //Design primers for new level 0 nodes
+            for (RNode node : newNodes) {
+                                
+                Part currentPart = coll.getPart(node.getUUID(), true);
+                
+                if (designPrimers) {
+                    String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
+                    String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
+                    String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, currentPart.getSeq()));
+                    String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, PrimerDesign.reverseComplement(currentPart.getSeq()))) + revEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+                    oligoNames.add(forwardOligoName);
+                    oligoNames.add(reverseOligoName);
+                    oligoSequences.add(forwardOligoSequence);
+                    oligoSequences.add(reverseOligoSequence);
+                    oligoCount++;
+                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                } else {
+                    instructions = instructions + "\nPCR " + currentPart.getName() + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                }
+            } 
+            
+            //Design primers for new vectors
+            for (RVector vector : newVectors) {
+                
+                Vector currentVector = coll.getVector(vector.getUUID(), true);
+                
+                if (designPrimers) {
+                    String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
+                    String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
+                    
+                    //Level 0 and level 2 vectors
+                    String forwardOligoSequence;
+                    String reverseOligoSequence;
+                    if (vector.getLevel() % 3 == 0 || (vector.getLevel() - 2) % 3 == 0) {
+                        forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "n" + _overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
+                        reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite2 + partPrimerSuffix);
+                    
+                    //Level 1 vectors
+                    } else {
+                         forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "n" + _overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
+                        reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "nn" + _overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite1 + partPrimerSuffix);
+                    }
+
+                    oligoNames.add(forwardOligoName);
+                    oligoNames.add(reverseOligoName);
+                    oligoSequences.add(forwardOligoSequence);
+                    oligoSequences.add(reverseOligoSequence);
+                    oligoCount++;
+                    instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
+                } else {
+                    instructions = instructions + "\nPCR " + currentVector.getName() + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
+                }
+            }
+            
+            instructions = instructions + "\n\n";
         }
 
         if (designPrimers) {
 
             //append primer designs
-            toReturn = toReturn + "\n**********************************************\nOLIGOS";
+            instructions = instructions + "\n**********************************************\nOLIGOS";
             for (int i = 0; i < oligoNames.size(); i++) {
-                toReturn = toReturn + "\n>" + oligoNames.get(i);
-                toReturn = toReturn + "\n" + oligoSequences.get(i);
+                instructions = instructions + "\n>" + oligoNames.get(i);
+                instructions = instructions + "\n" + oligoSequences.get(i);
             }
         }
-        return toReturn;
+        return instructions;
     }
     private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node

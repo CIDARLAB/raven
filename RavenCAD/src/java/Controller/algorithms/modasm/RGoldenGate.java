@@ -59,7 +59,7 @@ public class RGoldenGate extends RGeneral {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
         return null;
     }
 }

@@ -59,7 +59,9 @@ public class PrimerDesign {
     
     //calculates the length of homology required for primers based on nearest neighbor calculations
     public static int getPrimerHomologyLength(Double meltingTemp, String sequence) {
-        //TODO write actual code
+        
+        
+        
         return 20;
     }
     
@@ -72,6 +74,114 @@ public class PrimerDesign {
     /** Logic for going from OH variable place holders to actual sequences **/
     private void selectOHseqs() {
         
+    }
+    
+    public double meltingTemp (String sequence) {
+        
+        /* Resources:
+         * http://en.wikipedia.org/wiki/DNA_melting#Nearest-neighbor_method
+         * http://www.basic.northwestern.edu/biotools/oligocalc.html
+         * http://dna.bio.puc.cl/cardex/servers/dnaMATE/tm-pred.html
+         */
+
+        String seq = sequence;
+        int length = sequence.length();
+        double concP = 50 * java.lang.Math.pow(10, -9);
+        double dH = 0;
+        double dS = 0;
+        double R = 1.987;
+        double temp;
+        String pair;
+        seq = seq.toUpperCase();
+
+        // Checks terminal base pairs
+        char init = seq.charAt(0);
+        if (init == 'G' || init == 'C') {
+            dH += 0.1;
+            dS += -2.8;
+        }
+        else if (init == 'A' || init == 'T') {
+            dH += 2.3;
+            dS += 4.1;
+        }
+        init = seq.charAt(length - 1);
+        if (init == 'G' || init == 'C') {
+            dH += 0.1;
+            dS += -2.8;
+        }
+        else if (init == 'A' || init == 'T') {
+            dH += 2.3;
+            dS += 4.1;
+        }
+
+        // Checks nearest neighbor pairs
+        for (int i = 0; i < length - 1; i++) {
+            pair = seq.substring(i,i+2);
+            if (pair.equals("AA") || pair.equals("TT")) {
+                dH += -7.9;
+                dS += -22.2;
+            }
+            else if (pair.equals("AG") || pair.equals("CT")) {
+                dH += -7.8;
+                dS += -21.0;
+            }
+            else if (pair.equals("AT")) {
+                dH += -7.2;
+                dS += -20.4;
+            }
+            else if (pair.equals("AC") || pair.equals("GT") ) {
+                dH += -8.4;
+                dS += -22.4;
+            }
+            else if (pair.equals("GA") || pair.equals("TC")) {
+                dH += -8.2;
+                dS += -22.2;
+            }
+            else if (pair.equals("GG") || pair.equals("CC")) {
+                dH += -8.0;
+                dS += -19.9;
+            }
+            else if (pair.equals("GC")) {
+                dH += -9.8;
+                dS += -24.4;
+            }
+            else if (pair.equals("TA")) {
+                dH += -7.2;
+                dS += -21.3;
+            }
+            else if (pair.equals("TG") || pair.equals("CA")) {
+                dH += -8.5;
+                dS += -22.7;
+            }
+            else if (pair.equals("CG") ) {
+                dH += -10.6;
+                dS += -27.2;
+            }
+        }
+
+        // Checks for self-complementarity
+        int mid;
+        if (length % 2 == 0) {
+            mid = length / 2;
+            if (seq.substring(0, mid).equals("")) {
+                dS += -1.4;
+            }
+        }
+        else {
+            mid = (length - 1) / 2;
+            if (seq.substring(0, mid).equals("")) {
+                dS += -1.4;
+            }
+        }
+
+        // dH is in kCal, dS is in Cal - equilibrating units
+        dH = dH * 1000;
+
+        double logCt = java.lang.Math.log(concP);
+        temp = (dH / (dS + (R * logCt))) - 273.15;
+
+        //return temp;
+        return temp;
     }
     
 }

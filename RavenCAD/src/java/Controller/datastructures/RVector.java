@@ -75,7 +75,7 @@ public class RVector {
     }
     
     /** Get vector keys **/
-    public String getVectorKeys(String direction) {
+    public String getVectorKey(String direction) {
         
         //Forward information
         String lOverhang = this._lOverhang;
@@ -118,17 +118,6 @@ public class RVector {
     /** Set left overhang **/
     public void setLOverhang(String overhang) {
         _lOverhang = overhang;
-    }
-
-    /** Set a vector's resistance **/
-    public void setResistance(int level) {
-//        if (level == 2) {
-//            _resistance = "amp";
-//        } else if (level == 1) {
-//            _resistance = "kan";
-//        } else if (level == 0) {
-//            _resistance = "cam";
-//        }
     }
 
     public void setStringResistance(String s) {
