@@ -267,130 +267,133 @@ public class RMoClo extends RGeneral {
             HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(level);
             HashSet<String> currentLevelOHs = new HashSet<String>();
             HashSet<String> takenOHs;
-
+            
             //Assign nodes in the forward direction first
+            ArrayList<RNode> fwdNodes = new ArrayList<RNode>();
             if (directionHash.containsKey("+")) {
-                ArrayList<RNode> fwdNodes = directionHash.get("+");
-
-                /**
-                 * Assign left overhangs to forward nodes first. *
-                 */
-                for (int j = 0; j < fwdNodes.size(); j++) {
-
-                    RNode fwdNode = fwdNodes.get(j);
-                    String type = fwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(fwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(fwdNode, "Left", "+");
-                    ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
-
-                    //Assign left overhang if it is not selected yet
-                    if (!numberHash.containsKey(fwdNode.getLOverhang())) {
-
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        numberHash.put(fwdNode.getLOverhang(), OH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
-
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the left
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeLeftOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, fwdNode, OH, "Left", "+");
-                    }
-                }
-
-                /**
-                 * Assign right overhangs to forward nodes second. *
-                 */
-                for (int k = 0; k < fwdNodes.size(); k++) {
-
-                    RNode fwdNode = fwdNodes.get(k);
-                    String type = fwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(fwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(fwdNode, "Right", "+");
-                    ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
-
-                    //Assign right overhang if it is not selected yet
-                    if (!numberHash.containsKey(fwdNode.getROverhang())) {
-
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        numberHash.put(fwdNode.getROverhang(), OH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
-
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the right
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeRightOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, fwdNode, OH, "Right", "+");
-                    }
-                }
+                fwdNodes = directionHash.get("+");
             }
 
             //Assign nodes in the backward direction second
+            ArrayList<RNode> bkwdNodes = new ArrayList<RNode>();
             if (directionHash.containsKey("-")) {
-                ArrayList<RNode> bkwdNodes = directionHash.get("-");
+                bkwdNodes = directionHash.get("-");
+            }
 
-                /**
-                 * Assign right overhangs to backwards nodes third. *
-                 */
-                for (int k = bkwdNodes.size() - 1; k > -1; k--) {
+            /**
+             * Assign left overhangs to forward nodes first. *
+             */
+            for (int j = 0; j < fwdNodes.size(); j++) {
 
-                    RNode bkwdNode = bkwdNodes.get(k);
-                    String type = bkwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(bkwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(bkwdNode, "Right", "-");
-                    ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
+                RNode node = fwdNodes.get(j);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Left", "+");
+                ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
 
-                    //Assign right overhang if it is not selected yet
-                    if (!numberHash.containsKey(bkwdNode.getROverhang())) {
+                //Assign left overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getLOverhang())) {
 
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        String hashOH = OH + "*";
-                        numberHash.put(bkwdNode.getROverhang(), hashOH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    numberHash.put(node.getLOverhang(), OH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
 
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the right
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeRightOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, bkwdNode, OH, "Right", "-");
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the left
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeLeftOverhangs.add(OH);
                     }
-                }
-
-                /**
-                 * Assign left overhangs to backward nodes fourth. *
-                 */
-                for (int j = bkwdNodes.size() - 1; j > -1; j--) {
-
-                    RNode bkwdNode = bkwdNodes.get(j);
-                    String type = bkwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(bkwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(bkwdNode, "Left", "-");
-                    ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
-
-                    //Assign left overhang if it is not selected yet
-                    if (!numberHash.containsKey(bkwdNode.getLOverhang())) {
-
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        String hashOH = OH + "*";
-                        numberHash.put(bkwdNode.getLOverhang(), hashOH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
-
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the left
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeLeftOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, bkwdNode, OH, "Left", "-");
-                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Left", "+");
                 }
             }
+
+            /**
+             * Assign right overhangs to forward nodes second. *
+             */
+            for (int k = 0; k < fwdNodes.size(); k++) {
+
+                RNode node = fwdNodes.get(k);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Right", "+");
+                ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
+
+                //Assign right overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getROverhang())) {
+
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    numberHash.put(node.getROverhang(), OH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
+
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the right
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeRightOverhangs.add(OH);
+                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Right", "+");
+                }
+            }
+            
+            /**
+             * Assign right overhangs to backwards nodes third. *
+             */
+            for (int k = bkwdNodes.size() - 1; k > -1; k--) {
+
+                RNode node = bkwdNodes.get(k);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Right", "-");
+                ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
+
+                //Assign right overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getROverhang())) {
+
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    String hashOH = OH + "*";
+                    numberHash.put(node.getROverhang(), hashOH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
+
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the right
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeRightOverhangs.add(OH);
+                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Right", "-");
+                }
+            }
+
+            /**
+             * Assign left overhangs to backward nodes fourth. *
+             */
+            for (int j = bkwdNodes.size() - 1; j > -1; j--) {
+
+                RNode node = bkwdNodes.get(j);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Left", "-");
+                ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
+
+                //Assign left overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getLOverhang())) {
+
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    String hashOH = OH + "*";
+                    numberHash.put(node.getLOverhang(), hashOH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
+
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the left
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeLeftOverhangs.add(OH);
+                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Left", "-");
+                }
+            }
+
 
             //Add all overhangs seen in this level to the taken overhang hash of each node
             allLevelOHs.addAll(currentLevelOHs);
