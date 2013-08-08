@@ -222,7 +222,7 @@ public class RavenController {
 
     //returns json array containing all objects in parts list; generates parts list file
     //input: design number refers to the design number on the client
-    public String generatePartsList(String designNumber) throws Exception {
+    public JSONArray generatePartsList(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
@@ -251,7 +251,7 @@ public class RavenController {
             String LO = "";
             String type = "";
             ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
-            
+
             for (int k = 0; k < tags.size(); k++) {
                 if (tags.get(k).startsWith("LO:")) {
                     LO = tags.get(k).substring(4);
@@ -262,7 +262,7 @@ public class RavenController {
                 }
             }
             String composition = "";
-            
+
             if (p.isBasic()) {
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             } else {
@@ -317,7 +317,7 @@ public class RavenController {
         out.close();
         toReturn = toReturn.substring(0, toReturn.length() - 1);
         toReturn = toReturn + "]";
-        return toReturn;
+        return new JSONArray(toReturn);
     }
 
     //reset collector, all field variales, deletes all files in user's directory
@@ -722,7 +722,7 @@ public class RavenController {
     }
 
     //using parameters from the client, run the algorithm
-    public String run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters) throws Exception {
+    public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters) throws Exception {
         _goalParts = new HashMap();
         _required = required;
         _recommended = recommended;
@@ -816,12 +816,12 @@ public class RavenController {
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary));
             }
         }
+        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
+
         System.out.println("GRAPH AND ARCS FILES CREATED");
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
-        String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
 
         //generate instructions
         if (method.equals("biobrick")) {
@@ -849,17 +849,6 @@ public class RavenController {
         out.write(_instructions);
         out.close();
 
-        //write graph text file
-        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
-        fw = new FileWriter(file);
-        out = new BufferedWriter(fw);
-        out.write(mergedGraphText);
-        out.close();
-
-        //post request to graphviz
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
-
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);
@@ -867,9 +856,8 @@ public class RavenController {
         out.write(mergedArcText);
         out.close();
 
-        String toReturn = "";
-        toReturn = WeyekinPoster.getmGraphVizURI().toString();
-        return toReturn;
+
+        return d3Graph;
     }
 
     //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition
@@ -956,7 +944,7 @@ public class RavenController {
         return "good";
     }
 
-    public String generateStats() throws Exception {
+    public JSONObject generateStats() throws Exception {
         String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
                 + "\",\"steps\":\"" + _statistics.getSteps()
                 + "\",\"stages\":\"" + _statistics.getStages()
@@ -967,7 +955,7 @@ public class RavenController {
                 + "\",\"sharing\":\"" + _statistics.getSharing()
                 + "\",\"time\":\"" + _statistics.getExecutionTime()
                 + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
-        return statString;
+        return new JSONObject(statString);
     }
     private HashMap<Part, ArrayList<Part>> _goalParts = new HashMap();//key: target part, value: composition
     private HashMap<Integer, Double> _efficiency = new HashMap();
