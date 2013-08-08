@@ -17,7 +17,7 @@ public class Main {
 //     */
     public static void main(String[] args) {
         String[] alphabet = {"a", "g", "c", "t"};
-        String[] sequences = OverhangSequenceSelector.generateSequences(2, alphabet);
+        String[] sequences = OverhangSequenceSelector.generateSequences(4, alphabet);
         int[][] scoreMatrix = OverhangSequenceSelector.buildScoreMatrix(sequences);
         System.out.print("    ");
         for (int i = 0; i < sequences.length; i++) {
@@ -25,7 +25,7 @@ public class Main {
         }
         System.out.println();
         OverhangSequenceSelector.printMatrix(scoreMatrix, sequences);
-        String[] selectSequences = OverhangSequenceSelector.selectSequences(5, sequences, scoreMatrix, new String[0]);
+        String[] selectSequences = OverhangSequenceSelector.selectSequences(256, sequences, scoreMatrix, new String[0]);
 
     }
 }

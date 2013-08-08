@@ -5,6 +5,7 @@
 package Controller.datastructures;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  *
@@ -22,11 +23,11 @@ public class RNode {
         _neighbors = new ArrayList<RNode>();
         _composition = new ArrayList<String>();
         _direction = new ArrayList<String>();
+        _scars = new ArrayList<String>();
         _uuid = null;
         _type = new ArrayList<String>();
         _lOverhang = "";
         _rOverhang = "";
-//        _vector = new RVector();
         _name = "";
         _stage = 0;
         _nodeID = _nodeCount;
@@ -34,23 +35,20 @@ public class RNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public RNode(boolean recommended, boolean discouraged, ArrayList<RNode> neighbors, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, int successCnt, int failureCnt) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, String lOverhang, String rOverhang, int successCnt, int failureCnt) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
         _efficiency = 0;
         _successCnt = successCnt;
         _failureCnt = failureCnt;
-        _neighbors = neighbors;
-        if (_neighbors == null) {
-            _neighbors = new ArrayList<RNode>();
-        }
+        _neighbors = new ArrayList<RNode>();
+        _scars = scars;
         _composition = composition;
         _direction = direction;
         _type = type;
-        _lOverhang = "";
-        _rOverhang = "";
-//        _vector = vector;
+        _lOverhang = lOverhang;
+        _rOverhang = rOverhang;
         _name = "";
         _nodeID = _nodeCount;
         _nodeCount++;
@@ -69,6 +67,7 @@ public class RNode {
         clone._rOverhang = this._rOverhang;
         clone._composition = this._composition;
         clone._direction = this._direction;
+        clone._scars = this._scars;
         clone._name = this._name;
         clone._stage = this._stage;
         clone._vector = this._vector;
@@ -81,40 +80,41 @@ public class RNode {
         return clone;
     }
     
-    private void cloneHelper(RNode parentClone, RNode parent, ArrayList<RNode> neighbors) {
+    private void cloneHelper(RNode parentClone, RNode parent, ArrayList<RNode> children) {
         
-        for (int i = 0; i < neighbors.size(); i++) {
+        for (int i = 0; i < children.size(); i++) {
             
-            RNode neighbor = neighbors.get(i);
+            RNode child = children.get(i);
             
-            RNode neighborClone = new RNode();
-            neighborClone._recommended = neighbor._recommended;
-            neighborClone._discouraged = neighbor._discouraged;
-            neighborClone._uuid = neighbor._uuid;
-            neighborClone._type = neighbor._type;
-            neighborClone._lOverhang = neighbor._lOverhang;
-            neighborClone._rOverhang = neighbor._rOverhang;
-            neighborClone._composition = neighbor._composition;
-            neighborClone._direction = neighbor._direction;
-            neighborClone._name = neighbor._name;
-            neighborClone._stage = neighbor._stage;
-            neighborClone._vector = neighbor._vector;
-            neighborClone._efficiency = neighbor._efficiency;
-            neighborClone._successCnt = neighbor._successCnt;
-            neighborClone._failureCnt = neighbor._failureCnt;
+            RNode childClone = new RNode();
+            childClone._recommended = child._recommended;
+            childClone._discouraged = child._discouraged;
+            childClone._uuid = child._uuid;
+            childClone._type = child._type;
+            childClone._lOverhang = child._lOverhang;
+            childClone._rOverhang = child._rOverhang;
+            childClone._composition = child._composition;
+            childClone._direction = child._direction;
+            childClone._scars = child._scars;
+            childClone._name = child._name;
+            childClone._stage = child._stage;
+            childClone._vector = child._vector;
+            childClone._efficiency = child._efficiency;
+            childClone._successCnt = child._successCnt;
+            childClone._failureCnt = child._failureCnt;
             
-            parentClone.addNeighbor(neighborClone);
-            neighborClone.addNeighbor(parentClone);
+            parentClone.addNeighbor(childClone);
+            childClone.addNeighbor(parentClone);
             
-            if (neighbor.getStage() > 0) {
-                ArrayList<RNode> orderedChildren = new ArrayList<RNode>();
-                orderedChildren.addAll(neighbor.getNeighbors());
+            if (child.getStage() > 0) {
+                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
+                grandChildren.addAll(child.getNeighbors());
 
                 //Remove the current parent from the list
-                if (orderedChildren.contains(parent)) {
-                    orderedChildren.remove(parent);
+                if (grandChildren.contains(parent)) {
+                    grandChildren.remove(parent);
                 }
-                cloneHelper(neighborClone, neighbor, orderedChildren);
+                cloneHelper(childClone, child, grandChildren);
             }
         }
     }
@@ -207,6 +207,75 @@ public class RNode {
     /** Get the direction of the node's composition **/
     public ArrayList<String> getDirection() {
         return _direction;
+    }
+    
+    /** Get the scars of a part **/
+    public ArrayList<String> getScars() {
+        return _scars;
+    }
+    
+    /** Get node keys for either forward or reverse direction **/
+    public String getNodeKey(String dir) {
+        
+        //Forward key information
+        ArrayList<String> composition = this._composition;
+        ArrayList<String> direction = this._direction;
+        ArrayList<String> scars = this._scars;
+        String lOverhang = this._lOverhang;
+        String rOverhang = this._rOverhang;
+        
+        if (dir.equals("+")) {           
+            String aPartLOcompRO = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+            return aPartLOcompRO;
+        } else {
+            
+            //Backward key information
+            ArrayList<String> revComp = new ArrayList<String>();
+            revComp.addAll(composition);
+            Collections.reverse(revComp);
+            
+            ArrayList<String> revDir = new ArrayList<String>();
+            ArrayList<String> revDirF = new ArrayList<String>();
+            revDir.addAll(direction);
+            Collections.reverse(revDir);
+            for (String RD : revDir) {
+                if (RD.equals("+")) {
+                    revDirF.add("-");
+                } else if (RD.equals("-")) {
+                    revDirF.add("+");
+                }
+            }
+            
+            ArrayList<String> revScars = new ArrayList<String>();
+            ArrayList<String> revScarsF = new ArrayList<String>();
+            revScars.addAll(scars);
+            Collections.reverse(revScars);
+            for (String aRevScar : revScars) {
+                if (aRevScar.contains("*")) {
+                    aRevScar = aRevScar.replace("*", "");
+                    revScarsF.add(aRevScar);
+                } else {
+                    aRevScar = aRevScar + "*";
+                    revScarsF.add(aRevScar);
+                }
+            }
+
+            String lOverhangR = rOverhang;
+            String rOverhangR = lOverhang;
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+            
+            String aPartCompDirScarLOROR = revComp + "|" + revDirF + "|" + revScarsF + "|" + rOverhangR + "|" + lOverhangR;
+            return aPartCompDirScarLOROR;
+        }
     }
     
     /** Set part as recommended or not required **/
@@ -302,6 +371,11 @@ public class RNode {
         _direction = direction;
     }
     
+    /** Set the scars for a node **/
+    public void setScars(ArrayList<String> scars) {
+        _scars = scars;
+    }
+    
     //FIELDS
     private int _successCnt;
     private int _failureCnt;
@@ -314,6 +388,7 @@ public class RNode {
     private String _uuid;
     private ArrayList<String> _composition;
     private ArrayList<String> _type;
+    private ArrayList<String> _scars;
     private String _lOverhang;
     private String _rOverhang;
     private RVector _vector;
