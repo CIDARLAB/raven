@@ -58,11 +58,36 @@ public class PrimerDesign {
     }
     
     //calculates the length of homology required for primers based on nearest neighbor calculations
-    public static int getPrimerHomologyLength(Double meltingTemp, String sequence) {
+    public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence) {
+ 
+        int length = targetLength;
         
+        //If no melting temp is input, return the given length
+        if (meltingTemp == null) {
+            return length;
+        }
         
+        String candidateSeq = sequence.substring(0, length);
+        double candidateTemp = getMeltingTemp(candidateSeq);
         
-        return 20;
+        //Add base pairs until candidate temp reaches the desired temp if too low
+        if (candidateTemp < meltingTemp) {
+            while (candidateTemp < meltingTemp) {
+                length++;
+                candidateSeq = sequence.substring(0, length);
+                candidateTemp = getMeltingTemp(candidateSeq);
+            }
+        
+        //Remove base pairs until candidate temp reaches the desired temp if too high
+        } else if (candidateTemp < meltingTemp) {
+            while (candidateTemp > meltingTemp) {
+                length--;
+                candidateSeq = sequence.substring(0, length);
+                candidateTemp = getMeltingTemp(candidateSeq);
+            }
+        }
+        
+        return length;
     }
     
     //generates a random DNA sequence with input length
@@ -76,7 +101,7 @@ public class PrimerDesign {
         
     }
     
-    public double meltingTemp (String sequence) {
+    public static double getMeltingTemp (String sequence) {
         
         /* Resources:
          * http://en.wikipedia.org/wiki/DNA_melting#Nearest-neighbor_method

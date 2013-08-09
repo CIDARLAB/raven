@@ -1283,12 +1283,13 @@ public class RMoClo extends RGeneral {
                                     queue.add(neighbor);
                                 }
                             }
-                            
-                            if (vector != null) {
-                                instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
-                            } else {
-                                instructions = instructions.substring(0, instructions.length()-2) + "\n";
-                            }
+                        }
+                      
+                        //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
+                        if (vector != null) {
+                            instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n\n";
+                        } else {
+                            instructions = instructions.substring(0, instructions.length() - 2) + "\n\n";
                         }
                         
                     //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
@@ -1308,16 +1309,17 @@ public class RMoClo extends RGeneral {
                         if (!libraryPartKeys.contains(nodeKey)) {
                             newNodes.add(currentNode);
                             
+                            //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                             if (vector != null) {
                                 instructions = instructions + "\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";
                                 instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + ", ";
-                                instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
+                                instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n\n";
                             }
 
-                        //If the part key is in the list, determine if a steps is necessary
+                        //If the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
                         } else {
                             if (!libraryVectorKeys.contains(vectorKey)) {
-                                instructions = instructions + "\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";                              
+                                instructions = instructions + "\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n\n";                              
                             }
                         }
                     }
@@ -1332,8 +1334,8 @@ public class RMoClo extends RGeneral {
                 if (designPrimers) {
                     String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
                     String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                    String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, currentPart.getSeq()));
-                    String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, PrimerDesign.reverseComplement(currentPart.getSeq()))) + revEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+                    String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq()));
+                    String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()))) + revEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
                     oligoNames.add(forwardOligoName);
                     oligoNames.add(reverseOligoName);
                     oligoSequences.add(forwardOligoSequence);
