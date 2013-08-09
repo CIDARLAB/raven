@@ -146,12 +146,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
     };
     //EVENT HANDLERS
-    $('#clotho3').click(function() {
+    $('#clotho3Import').click(function() {
+        refreshClothoParts();
+    });
+
+    $('#clotho3Export').click(function() {
         var basicParts = [];
         var compositeParts = [];
         var vectors = [];
-
-
         $.each(ravenPart, function(index, data) {
             if (_partIds[data["Name"]] === undefined) {
                 if (data["Type"] === "composite") {
@@ -167,41 +169,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             saveRavenPart(basicPart);
         });
         //refresh clotho parts
-        send("query", '{"schema":"BasicPart"}', function(data) {
-            var newParts = {};
-            var newPartsArray = [];
-            $.each(data, function() {
-                if (newParts[this["name"]] === undefined) {
-                    newParts[this["name"]] = "added";
-                    newPartsArray.push(this);
-                }
-                if (_parts[this["name"]] === undefined) {
-                    _parts[this["name"]] = this;
-                    _partIds[this["name"]] = this["id"];
-                }
-            });
-//            alert(JSON.stringify(newPartsArray));
-            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
-                //import composite parts
-                send("query", '{"schema":"CompositePart"}', function(data) {
-                    var newParts = {};
-                    var newPartsArray = [];
-                    $.each(data, function() {
-                        if (newParts[this["name"]] === undefined) {
-                            newParts[this["name"]] = "added";
-                            newPartsArray.push(this);
-                        }
-                        if (_parts[this["name"]] === undefined) {
-                            _parts[this["name"]] = this;
-                            _partIds[this["name"]] = this["id"];
-                        }
-                    });
-                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
-                        refreshData();
-                    });
-                });
-            });
-        });
+        refreshClothoParts();
 
         $.each(vectors, function(index, vector) {
         });
@@ -301,37 +269,19 @@ $(document).ready(function() { //don't run javascript until page is loaded
         } else if (part["Type"] === "composite") {
             if (_partIds[part["Name"]] === undefined) {
                 //create new part if it doesn't exist already
-                var newPart = {};
-                newPart["schema"] = "BasicPart";
-                newPart["sequence"] = {
-                    _id: seqId,
-                    isRNA: false,
-                    isSingleStranded: false,
-                    sequence: part["Sequence"],
-                    isDegenerate: false,
-                    isLinear: false,
-                    isCircular: false,
-                    isLocked: false
-                };
-                newPart["name"] = part["Name"];
-                newPart["type"] = part["Type"];
 
-                _parts[newPart["name"]] = newPart;
-                _partIds[newPart["name"]] = partId;
                 //gather the composition and sequence of the composite part
                 var partComposition = part["Composition"].substring(1, part["Composition"].length - 1).split(",");
                 var composition = [];
                 var compositeSequence = "";
                 for (var i = 0; i < partComposition.length; i++) {
-                    var basicPartName = partComposition[i].substring(0, partComposition[i].indexOf("|"));
+                    var basicPartName = partComposition[i].substring(0, partComposition[i].indexOf("|")).trim();
                     var basicPartId = _partIds[basicPartName];
-                    var basicPart = _parts[basicPartName]
+                    var basicPart = _parts[basicPartName];
                     composition.push(basicPartId);
-                    compositeSequence = compositeSequence + basicPart.sequence;
+                    compositeSequence = compositeSequence + basicPart.sequence.sequence;
                 }
-
-                //create composite part
-                send("create", JSON.stringify({
+                var newPart = {
                     schema: "CompositePart",
                     _id: partId,
                     author: "51e9579344ae846673a51b0f", //this probably shouldnt be hard coded later...
@@ -346,49 +296,47 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         isCircular: false,
                         isLocked: false
                     },
-                    name: newPart["name"],
+                    name: part["Name"],
                     composition: composition,
                     format: "FreeForm",
                     type: "composite",
                     riskGroup: 0,
                     showDetail: true
-                }
-                ));
+                };
+                _parts[newPart["name"]] = newPart;
+                _partIds[newPart["name"]] = partId;
+
+                //create composite part
+                send("create", JSON.stringify(newPart));
 
             }
         } else {
             //save basic part
             if (_partIds[part["Name"]] === undefined) {
-                var newPart = {};
-                newPart["schema"] = "BasicPart";
-                newPart["sequence"] = {
-                    _id: seqId,
-                    isRNA: false,
-                    isSingleStranded: false,
-                    sequence: part["Sequence"],
-                    isDegenerate: false,
-                    isLinear: false,
-                    isCircular: false,
-                    isLocked: false
-                };
-                newPart["name"] = part["Name"];
-                newPart["type"] = part["Type"];
-
-                _parts[newPart["name"]] = newPart;
-                _partIds[newPart["name"]] = partId;
-                send("create", JSON.stringify({
+                var newPart = {
                     schema: "BasicPart",
                     _id: partId,
                     author: "51e9579344ae846673a51b0f", //this probably shouldnt be hard coded later...
                     shortDescription: "",
-                    sequence: newPart["sequence"],
-                    name: newPart["name"],
+                    sequence: {
+                        _id: seqId,
+                        isRNA: false,
+                        isSingleStranded: false,
+                        sequence: part["Sequence"],
+                        isDegenerate: false,
+                        isLinear: false,
+                        isCircular: false,
+                        isLocked: false
+                    },
+                    name: part["Name"],
                     format: "FreeForm",
-                    type: newPart["type"],
+                    type: part["Type"],
                     riskGroup: 0,
                     showDetail: true
-                }
-                ));
+                };
+                _parts[newPart["name"]] = newPart;
+                _partIds[newPart["name"]] = partId;
+                send("create", JSON.stringify(newPart));
             }
         }
     };
@@ -400,7 +348,44 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var canSend = false;
     var _requestCommand = {}; //key request id, value: callback function
     var _requestID = 0;
+    var refreshClothoParts = function() {
+        send("query", '{"schema":"BasicPart"}', function(data) {
+            var newParts = {};
+            var newPartsArray = [];
+            $.each(data, function() {
+                if (newParts[this["name"]] === undefined) {
+                    newParts[this["name"]] = "added";
+                    newPartsArray.push(this);
+                }
+                if (_parts[this["name"]] === undefined) {
+                    _parts[this["name"]] = this;
+                    _partIds[this["name"]] = this["id"];
+                }
+            });
+//            alert(JSON.stringify(newPartsArray));
+            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
+                //import composite parts
+                send("query", '{"schema":"CompositePart"}', function(data) {
+                    var newParts = {};
+                    var newPartsArray = [];
+                    $.each(data, function() {
+                        if (newParts[this["name"]] === undefined) {
+                            newParts[this["name"]] = "added";
+                            newPartsArray.push(this);
+                        }
+                        if (_parts[this["name"]] === undefined) {
+                            _parts[this["name"]] = this;
+                            _partIds[this["name"]] = this["id"];
+                        }
+                    });
+                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+                        refreshData();
+                    });
+                });
+            });
+        });
 
+    };
 
     var send = function(channel, data, callback) {
         if (canSend) {
@@ -437,41 +422,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
     _connection.onopen = function(e) {
         canSend = true;
-        send("query", '{"schema":"BasicPart"}', function(data) {
-            var newParts = {};
-            var newPartsArray = [];
-            $.each(data, function() {
-                if (newParts[this["name"]] === undefined) {
-                    newParts[this["name"]] = "added";
-                    newPartsArray.push(this);
-                }
-                if (_parts[this["name"]] === undefined) {
-                    _parts[this["name"]] = this;
-                    _partIds[this["name"]] = this["id"];
-                }
-            });
-//            alert(JSON.stringify(newPartsArray));
-            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
-                //import composite parts
-                send("query", '{"schema":"CompositePart"}', function(data) {
-                    var newParts = {};
-                    var newPartsArray = [];
-                    $.each(data, function() {
-                        if (newParts[this["name"]] === undefined) {
-                            newParts[this["name"]] = "added";
-                            newPartsArray.push(this);
-                        }
-                        if (_parts[this["name"]] === undefined) {
-                            _parts[this["name"]] = this;
-                            _partIds[this["name"]] = this["id"];
-                        }
-                    });
-                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
-                        refreshData();
-                    });
-                });
-            });
-        });
     };
 
 
