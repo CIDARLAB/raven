@@ -2,34 +2,37 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controller.algorithms.modasm;
+package Controller.accessibility;
 
-import Controller.accessibility.ClothoReader;
+import Controller.algorithms.modasm.RBioBricks;
+import Controller.algorithms.modasm.RMoClo;
+import Controller.algorithms.nonmodasm.RHomologyPrimerDesign;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
 import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
  *
  * @author evanappleton
  */
-public class RModAsmInstructions {
+public class RInstructions {
     
-    public static String generateInstructions (ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
+    public static String generateInstructions (ArrayList<RNode> roots, HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
         
         int oligoCount = 0;
         String instructions = "";
         String oligoNameRoot = "test_asm";
-        Double meltingTemp = 55.0;
-        int primerLength = 20;
+        Double meltingTemp = 50.0;
+        int primerLength = 24;
         
         if (primerParameters != null) {
             designPrimers = true;
-            oligoNameRoot = primerParameters.get(0);//your oligos will be named olignoNameRoot+Number+F/R (F/R = forward/reverse)
+            oligoNameRoot = primerParameters.get(0);
             meltingTemp = Double.valueOf(primerParameters.get(1));
             primerLength = Integer.valueOf(primerParameters.get(2));
         }
@@ -43,6 +46,8 @@ public class RModAsmInstructions {
         HashSet<String> libraryVectorKeys = ClothoReader.getExistingVectorKeys(vectorLib);
         
         for (RNode root : roots) {
+            
+            ArrayList<RNode> l0Nodes = rootBasicNodeHash.get(root);
 
             //append header for each goal part
             instructions = instructions + "**********************************************"
@@ -112,7 +117,7 @@ public class RModAsmInstructions {
                             
                             //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                             if (vector != null) {
-                                instructions = instructions + "\n\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";
+                                instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";
                                 instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + ", ";
                                 instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n\n";
                             }
@@ -120,7 +125,7 @@ public class RModAsmInstructions {
                         //If the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
                         } else {
                             if (!libraryVectorKeys.contains(vectorKey)) {
-                                instructions = instructions + "\n\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n\n";                              
+                                instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n\n";                              
                             }
                         }
                     }
@@ -137,11 +142,13 @@ public class RModAsmInstructions {
                     String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
                     
                     //Determine which kind of primers to generate
-                    ArrayList<String> oligos = new ArrayList<String>();
+                    ArrayList<String> oligos;
                     if (method.equalsIgnoreCase("MoClo")) {
                         oligos = RMoClo.generatePartPrimers(node, coll, meltingTemp, primerLength);
                     } else if (method.equalsIgnoreCase("BioBricks")) {
                         oligos = RBioBricks.generatePartPrimers(node, coll, meltingTemp, primerLength);
+                    } else {
+                        oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(node, l0Nodes, coll, meltingTemp, primerLength);
                     }
                     
                     oligoNames.add(forwardOligoName);

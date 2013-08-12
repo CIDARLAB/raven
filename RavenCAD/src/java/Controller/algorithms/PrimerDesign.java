@@ -60,7 +60,7 @@ public class PrimerDesign {
     }
     
     //calculates the length of homology required for primers based on nearest neighbor calculations
-    public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence) {
+    public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence, boolean fivePrime) {
  
         int length = targetLength;
         
@@ -69,40 +69,80 @@ public class PrimerDesign {
             return length;
         }
         
+        //If the sequence is under the desired length
         if (sequence.length() < length) {
             return sequence.length();
         }            
         
-        String candidateSeq = sequence.substring(0, length);
-        double candidateTemp = getMeltingTemp(candidateSeq);
-        
-        //Add base pairs until candidate temp reaches the desired temp if too low
-        if (candidateTemp < meltingTemp) {
-            while (candidateTemp < meltingTemp) {
-                length++;
-                if (sequence.length() < length) {
-                    return length;
+        //If determining the homology of the five prime side of a part
+        if (fivePrime) {
+
+            String candidateSeq = sequence.substring(0, length);
+            double candidateTemp = getMeltingTemp(candidateSeq);
+
+//            System.out.println("candidateSeq: " + candidateSeq);
+//            System.out.println("candidateTemp: " + candidateTemp);
+            
+            //Add base pairs until candidate temp reaches the desired temp if too low
+            if (candidateTemp < meltingTemp) {
+                while (candidateTemp < meltingTemp) {
+                    length++;
+                    if (sequence.length() < length) {
+                        return length;
+                    }
+                    candidateSeq = sequence.substring(0, length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
                 }
-                candidateSeq = sequence.substring(0, length);
-                candidateTemp = getMeltingTemp(candidateSeq);
+
+                //Remove base pairs until candidate temp reaches the desired temp if too high
+            } else if (candidateTemp > meltingTemp) {
+                while (candidateTemp > meltingTemp) {
+                    length--;
+                    candidateSeq = sequence.substring(0, length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
+                }
             }
         
-        //Remove base pairs until candidate temp reaches the desired temp if too high
-        } else if (candidateTemp < meltingTemp) {
-            while (candidateTemp > meltingTemp) {
-                length--;
-                candidateSeq = sequence.substring(0, length);
-                candidateTemp = getMeltingTemp(candidateSeq);
+        //If determining the homology length of the three prime side
+        } else {
+
+            String candidateSeq = sequence.substring(sequence.length()-length);
+            double candidateTemp = getMeltingTemp(candidateSeq);
+            
+            //Add base pairs until candidate temp reaches the desired temp if too low
+            if (candidateTemp < meltingTemp) {
+                while (candidateTemp < meltingTemp) {
+                    length++;
+                    if (sequence.length() < length) {
+                        return length;
+                    }
+                    candidateSeq = sequence.substring(sequence.length()-length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
+                }
+
+            //Remove base pairs until candidate temp reaches the desired temp if too high
+            } else if (candidateTemp > meltingTemp) {
+                while (candidateTemp > meltingTemp) {
+                    length--;
+                    candidateSeq = sequence.substring(sequence.length()-length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
+                }
             }
         }
-        
+
         return length;
-    }
-    
-    //generates a random DNA sequence with input length
-    public static String generateRandomSequence(int length) {
-        //TODO write actual code
-        return "agac";
     }
     
     /** Logic for going from OH variable place holders to actual sequences **/

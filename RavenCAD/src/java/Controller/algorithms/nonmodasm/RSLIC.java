@@ -134,13 +134,14 @@ public class RSLIC extends RGeneral {
         }
     }
     
+    /** Get the root basic node hash **/
+    public static HashMap<RNode, ArrayList<RNode>> getRootBasicNodeHash() {
+        return _rootBasicNodeHash;
+    }
+    
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
-        return null;
-    }
-    
-    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
+    private static HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }

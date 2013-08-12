@@ -4,6 +4,7 @@
  */
 package Communication;
 
+import Controller.accessibility.RInstructions;
 import Controller.algorithms.modasm.RBioBricks;
 import Controller.accessibility.ClothoWriter;
 import Controller.accessibility.ClothoReader;
@@ -761,13 +762,16 @@ public class RavenController {
 
         Statistics.start();
         boolean scarless = false;
+        HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
         if (method.equals("biobricks")) {
             _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
+            rootBasicNodeHash = RCPEC.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
+            rootBasicNodeHash = RGibson.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("goldengate")) {
             _assemblyGraphs = runGoldenGate();
@@ -776,6 +780,7 @@ public class RavenController {
             _assemblyGraphs = runMoClo();
         } else if (method.equals("slic")) {
             _assemblyGraphs = runSLIC();
+            rootBasicNodeHash = RSLIC.getRootBasicNodeHash();
             scarless = true;
         }
 
@@ -825,17 +830,17 @@ public class RavenController {
 
         //generate instructions
         if (method.equals("biobricks")) {
-            _instructions = RModAsmInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
         } else if (method.equals("cpec")) {
-            _instructions = RCPEC.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
+            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
         } else if (method.equals("gibson")) {
-            _instructions = RGibson.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
+            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         } else if (method.equals("moclo")) {
-            _instructions = RModAsmInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
         } else if (method.equals("slic")) {
-            _instructions = RSLIC.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
+            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
         }
 
         //write instructions file
