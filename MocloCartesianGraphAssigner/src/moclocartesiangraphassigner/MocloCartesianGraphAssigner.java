@@ -255,10 +255,10 @@ public class MocloCartesianGraphAssigner {
                         if (!prev.getUsedOverhangs().contains(node.getConcreteOverhang())) {
                             prev.addNeighbor(node);
                             node.setUsedOverhangs((HashSet) prev.getUsedOverhangs().clone());
-                            if (node.getConcreteOverhang() != "*") {
+                            if (!node.getConcreteOverhang().equals("*")) {
                                 node.getUsedOverhangs().add(node.getConcreteOverhang());
                             }
-                            System.out.println("linking " + prev.getAbstractOverhang() + ":" + prev.getConcreteOverhang() + " and " + node.getAbstractOverhang() + ":" + node.getConcreteOverhang());
+//                            System.out.println("linking " + prev.getAbstractOverhang() + ":" + prev.getConcreteOverhang() + " and " + node.getAbstractOverhang() + ":" + node.getConcreteOverhang());
                         }
                     }
                 }
@@ -274,7 +274,7 @@ public class MocloCartesianGraphAssigner {
 
         //find assignments
         int targetLength = abstractConcreteHash.keySet().size();
-        System.out.println("looking for this many overhangs: "+targetLength);
+        System.out.println("looking for this many overhangs: " + targetLength);
         ArrayList<ArrayList<String>> toReturn = new ArrayList();
         ArrayList<String> currentSolution;
         HashMap<CartesianNode, CartesianNode> parentHash = new HashMap(); //key: node, value: parent node
@@ -284,23 +284,30 @@ public class MocloCartesianGraphAssigner {
             ArrayList<CartesianNode> stack = new ArrayList();
             stack.add(root);
             boolean toParent = false; // am i returning to a parent node?
-            HashSet<CartesianNode> seenNodes = new HashSet();
+            HashSet<String> seenPaths = new HashSet();
             while (!stack.isEmpty()) {
                 CartesianNode currentNode = stack.get(0);
                 stack.remove(0);
-                seenNodes.add(currentNode);
                 System.out.println("#################\ncurrent: " + currentNode.getAbstractOverhang() + ":" + currentNode.getConcreteOverhang());
+                String currentPath = currentSolution.toString();
+                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->");
                 if (!toParent) {
                     currentSolution.add(currentNode.getConcreteOverhang());
+                    currentPath = currentPath + "->" + currentNode.getConcreteOverhang();
+                    seenPaths.add(currentPath);
                 } else {
                     toParent = false;
                 }
-                System.out.println("current solution: "+currentSolution);
+
+                System.out.println("current solution: " + currentSolution);
                 CartesianNode parent = parentHash.get(currentNode);
 
                 int childrenCount = 0;
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
+                    String edge = currentPath + "->" + neighbor.getConcreteOverhang();
+                    if (!seenPaths.contains(edge)) {
+                        System.out.println("adding edge: " + edge);
+                        seenPaths.add(edge);
                         if (neighbor.getLevel() > currentNode.getLevel()) {
                             System.out.println("adding: " + neighbor.getAbstractOverhang() + ":" + neighbor.getConcreteOverhang());
                             stack.add(0, neighbor);
@@ -337,7 +344,7 @@ public class MocloCartesianGraphAssigner {
 
         //score assignments
         System.out.println("**************************************");
-        for(ArrayList<String> assignment: toReturn ) {
+        for (ArrayList<String> assignment : toReturn) {
             System.out.println(assignment);
         }
         //assign new overhangs
