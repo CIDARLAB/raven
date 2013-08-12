@@ -336,37 +336,16 @@ public class MocloCartesianGraphAssigner {
 
         //score assignments
         System.out.println("**************************************");
-        ArrayList<ArrayList<String>> minStarAssignments = new ArrayList();
-        int minStarCount = 1000000000;
-        //assignments with the least stars, ie new overhangs
-        //looking at the abstract concrete mapping doesn't neccessarily tell what is the best assignment though, and so there is a second scoring step
+
         for (ArrayList<String> assignment : completeAssignments) {
-            int newOverhangCount = 0;
-            for (String overhang : assignment) {
-                if (overhang.equals("*")) {
-                    newOverhangCount++;
-                }
-            }
-            if (newOverhangCount < minStarCount) {
-                //current assignment is better than assignments seen so far
-                minStarCount = newOverhangCount;
-                minStarAssignments.clear();
-                minStarAssignments.add(assignment);
-            } else if (newOverhangCount == minStarCount) {
-                //current assignment is just as good as assignments seen so far
-                minStarAssignments.add(assignment);
-            } else {
-                //current assignment is worse...
-            }
+
             System.out.println(assignment);
         }
 
 
         System.out.println("number of possible assignments: " + completeAssignments.size());
         //find assignments with the lowest score
-        for (ArrayList<String> assignment : minStarAssignments) {
-            System.out.println(assignment);
-        }
+
         //assign new overhangs
         //traverse graph and assign overhangs generate vectors
         //return best assignment
