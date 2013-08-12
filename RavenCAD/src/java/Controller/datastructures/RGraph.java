@@ -451,19 +451,22 @@ public class RGraph {
      *
      *************************************************************************
      */
-    /**
+/**
      * Get all the edges of an SDSGraph in Post Order *
      */
     public ArrayList<String> getPostOrderEdges() {
         ArrayList<String> edges = new ArrayList();
         HashSet<String> seenUUIDs = new HashSet();
         seenUUIDs.add(this._rootNode.getUUID());
-        
+
         //Start at the root node and look at all children
         for (RNode neighbor : this._rootNode.getNeighbors()) {
             seenUUIDs.add(neighbor.getUUID());
             edges = getPostOrderEdgesHelper(neighbor, this._rootNode, edges, seenUUIDs, true);
         }
+        //first edge is the vector
+        edges.add(0, this._rootNode.getUUID() + " -> " + this._rootNode.getVector().getUUID());
+//        edges.add("node -> vector");
         return edges;
     }
 
@@ -487,7 +490,7 @@ public class RGraph {
                         seenUUIDs.add(neighbor.getUUID());
                         edges = getPostOrderEdgesHelper(neighbor, current, edges, seenUUIDs, true);
 
-                    //If this neighbor has been seen, do not recursively call
+                        //If this neighbor has been seen, do not recursively call
                     } else {
                         edges = getPostOrderEdgesHelper(neighbor, current, edges, seenUUIDs, false);
                     }
@@ -500,7 +503,7 @@ public class RGraph {
 
             //Write arc connecting to the parent
             if (neighbor.getComposition().toString().equals(parent.getComposition().toString())) {
-          
+                edgesToAdd.add(current.getUUID() + " -> " + current.getVector().getUUID());
                 //Make the edge going in the direction of the node with the greatest composition, whether this is parent or child
                 if (current.getComposition().size() > neighbor.getComposition().size()) {
                     edgesToAdd.add(current.getUUID() + " -> " + neighbor.getUUID());
@@ -509,14 +512,13 @@ public class RGraph {
                 }
             }
         }
-
-        for (String edge : edgesToAdd) {
-            edges.add(edge);
+        for (String s : edgesToAdd) {
+            edges.add(s);
         }
         return edges;
     }
 
-    /**
+   /**
      * Print edges arc file *
      */
     public String printArcsFile(Collector coll, ArrayList<String> edges, String method) {
@@ -526,7 +528,7 @@ public class RGraph {
         StringBuilder arcsText = new StringBuilder();
         DateFormat dateFormat = new SimpleDateFormat("MMddyyyy@HHmm");
         Date date = new Date();
-        arcsText.append("# AssemblyMethod: "+method+"\n# ").append(" ").append(dateFormat.format(date)).append("\n");
+        arcsText.append("# AssemblyMethod: " + method + "\n# ").append(" ").append(dateFormat.format(date)).append("\n");
         arcsText.append("# ").append(coll.getPart(this._rootNode.getUUID(), true)).append("\n");
         arcsText.append("# ").append(this._rootNode.getUUID()).append("\n\n");
 
@@ -534,11 +536,26 @@ public class RGraph {
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
         for (String s : edges) {
             String[] tokens = s.split("->");
-            Part vertex1 = coll.getPart(tokens[0].trim(), true);
-            Part vertex2 = coll.getPart(tokens[1].trim(), true);
-            nodeMap.put(vertex1.getUUID(), vertex1.getName());
-            nodeMap.put(vertex2.getUUID(), vertex2.getName());
-            arcsText.append("# ").append(vertex1.getName()).append(" -> ").append(vertex2.getName()).append("\n");
+            String vertex1Name = null;
+            String vertex2Name = null;
+            String vertex1UUID = tokens[0].trim();
+            String vertex2UUID = tokens[1].trim();
+
+            if (coll.getPart(vertex1UUID, true) != null) {
+                vertex1Name = coll.getPart(vertex1UUID, true).getName();
+            }
+            if (coll.getPart(vertex2UUID, true) != null) {
+                vertex2Name = coll.getPart(vertex2UUID, true).getName();
+            }
+            if (vertex1Name == null) {
+                vertex1Name = coll.getVector(vertex1UUID, true).getName();
+            }
+            if (vertex2Name == null) {
+                vertex2Name = coll.getVector(vertex2UUID, true).getName();
+            }
+            nodeMap.put(vertex1UUID, vertex1Name);
+            nodeMap.put(vertex2UUID, vertex2Name);
+            arcsText.append("# ").append(vertex1Name).append(" -> ").append(vertex2Name).append("\n");
             arcsText.append(s).append("\n");
         }
 
@@ -551,6 +568,9 @@ public class RGraph {
             RNode current = stack.pop();
             seenNodes.add(current);
             compositionHash.put(current.getUUID(), current.getComposition().toString());
+            if (current.getVector() != null) {
+                compositionHash.put(current.getVector().getUUID(), current.getVector().getName());
+            }
             for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     stack.add(neighbor);
@@ -566,6 +586,7 @@ public class RGraph {
         }
         return arcsText.toString();
     }
+
 
     /**
      * Generate a Weyekin image file for a this graph *
