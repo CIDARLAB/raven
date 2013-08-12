@@ -2,56 +2,37 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controller.algorithms.nonmodasm;
+package Controller.algorithms.modasm;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.PrimerDesign;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
 import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**
  *
  * @author evanappleton
  */
-public class RHomologyPrimerDesign {
+public class RModAsmInstructions {
     
-    //generates human readable instructions as well as primer sequences
-    //primerParameters contains (in this order): 
-    //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<String> primerParameters, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
-
-        //initialize primer parameters
-        String oligoNameRoot = "test_asm";
-        String partPrimerPrefix = "nn";
-        String partPrimerSuffix = "nn";
-        String vectorPrimerPrefix = "gttctttactagtg";
-        String vectorPrimerSuffix = "tactagtagcggccgc";
-        String fwdEnzymeRecSite1 = "gaagac";
-        String revEnzymeRecSite1 = "gtcttc";
-        String fwdEnzymeRecSite2 = "ggtctc";
-        String revEnzymeRecSite2 = "gagacc";
-//        int forwardEnzymeCutDistance = 0;
-//        int reverseEnzymeCutDistance = 0;
-        Double meltingTemp = 55.0;
-        int targetLength = 20;
-
-        boolean designPrimers = true;
-
-//        if (primerParameters != null) {
-//            designPrimers = true;
-//            oligoNameRoot = primerParameters.get(0);//your oligos will be named olignoNameRoot+Number+F/R (F/R = forward/reverse)
-//            meltingTemp = Double.parseDouble(primerParameters.get(1));//desired melting temperature of your primers; determines homology length
-//            targetLength = Integer.parseInt(primerParameters.get(2));
-//        }
-
+    public static String generateInstructions (ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
+        
         int oligoCount = 0;
         String instructions = "";
+        String oligoNameRoot = "test_asm";
+        Double meltingTemp = 55.0;
+        int primerLength = 20;
+        
+        if (primerParameters != null) {
+            designPrimers = true;
+            oligoNameRoot = primerParameters.get(0);//your oligos will be named olignoNameRoot+Number+F/R (F/R = forward/reverse)
+            meltingTemp = Double.valueOf(primerParameters.get(1));
+            primerLength = Integer.valueOf(primerParameters.get(2));
+        }
 
         ArrayList<String> oligoNames = new ArrayList<String>();
         ArrayList<String> oligoSequences = new ArrayList<String>();
@@ -154,12 +135,11 @@ public class RHomologyPrimerDesign {
                 if (designPrimers) {
                     String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
                     String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                    String forwardOligoSequence = "";
-                    String reverseOligoSequence = "";
+                    ArrayList<String> oligos = RMoClo.generatePartPrimers(node, coll, meltingTemp, primerLength);
                     oligoNames.add(forwardOligoName);
                     oligoNames.add(reverseOligoName);
-                    oligoSequences.add(forwardOligoSequence);
-                    oligoSequences.add(reverseOligoSequence);
+                    oligoSequences.add(oligos.get(0));
+                    oligoSequences.add(oligos.get(1));
                     oligoCount++;
                     instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
                 } else {
@@ -174,25 +154,12 @@ public class RHomologyPrimerDesign {
                 
                 if (designPrimers) {
                     String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
-                    String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                    
-                    //Level 0 and level 2 vectors
-                    String forwardOligoSequence;
-                    String reverseOligoSequence;
-                    if (vector.getLevel() % 3 == 0 || (vector.getLevel() - 2) % 3 == 0) {
-                        forwardOligoSequence = "";
-                        reverseOligoSequence = "";
-                    
-                    //Level 1 vectors
-                    } else {
-                        forwardOligoSequence = "";
-                        reverseOligoSequence = "";
-                    }
-
+                    String reverseOligoName = (oligoNameRoot + oligoCount) + "R";                    
+                    ArrayList<String> oligos = RMoClo.generateVectorPrimers(vector, coll);
                     oligoNames.add(forwardOligoName);
                     oligoNames.add(reverseOligoName);
-                    oligoSequences.add(forwardOligoSequence);
-                    oligoSequences.add(reverseOligoSequence);
+                    oligoSequences.add(oligos.get(0));
+                    oligoSequences.add(oligos.get(1));
                     oligoCount++;
                     instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
                 } else {
@@ -213,6 +180,7 @@ public class RHomologyPrimerDesign {
             }
         }
         return instructions;
-    }
+        
+    }        
     
 }

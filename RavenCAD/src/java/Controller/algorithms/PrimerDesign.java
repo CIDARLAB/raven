@@ -67,6 +67,10 @@ public class PrimerDesign {
             return length;
         }
         
+        if (sequence.length() < length) {
+            return sequence.length();
+        }            
+        
         String candidateSeq = sequence.substring(0, length);
         double candidateTemp = getMeltingTemp(candidateSeq);
         
@@ -74,6 +78,9 @@ public class PrimerDesign {
         if (candidateTemp < meltingTemp) {
             while (candidateTemp < meltingTemp) {
                 length++;
+                if (sequence.length() < length) {
+                    return length;
+                }
                 candidateSeq = sequence.substring(0, length);
                 candidateTemp = getMeltingTemp(candidateSeq);
             }
