@@ -20,17 +20,6 @@ public class MocloCartesianGraphAssigner {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-//        Methods calls for old cartesian assignment
-//        HashMap<String, ArrayList<String>> compositionOverhangHash = new HashMap();
-//        ArrayList<String> composition = new ArrayList(Arrays.asList(new String[]{"partA", "partB", "partC", "partD"}));
-//        compositionOverhangHash.put("partA", new ArrayList(Arrays.asList(new String[]{"B|C", "A|B", "C|D", "D|E", "X|Y"})));
-//        compositionOverhangHash.put("partB", new ArrayList(Arrays.asList(new String[]{"A|B", "B|C", "C|D", "D|E", "Y|A", "Y|C", "| | |"})));
-//        compositionOverhangHash.put("partC", new ArrayList(Arrays.asList(new String[]{"A|B", "B|C", "C|D", "D|E"})));
-//        compositionOverhangHash.put("partD", new ArrayList(Arrays.asList(new String[]{"A|B", "B|C", "C|D", "D|E", "E|G", "| | |"})));
-//        ArrayList<SRSGraph> assignFinalOverhangs = assignFinalOverhangs(composition, compositionOverhangHash);
-//        for (ArrayList<String> solution : findOptimalAssignment(assignFinalOverhangs, composition.size())) {
-//            System.out.println("assignment: " + solution);
-//        }
         //build example
         ArrayList<RGraph> optimalGraphs = new ArrayList();
         //part ABC
@@ -353,115 +342,6 @@ public class MocloCartesianGraphAssigner {
 
 
         return rootNodes;
-    }
-
-    public void findOptimalAssignment(ArrayList<RGraph> optimalGraphs, ArrayList<CartesianNode> rootNodes, int targetLength) {
-    }
-
-    //old single graph method
-    public static ArrayList<RGraph> buildCartesianGraph(ArrayList<String> composition, HashMap<String, ArrayList<String>> compositionOverhangHash) {
-        ArrayList<RNode> previousNodes = null;
-        ArrayList<RGraph> toReturn = new ArrayList();
-        int stage = 0;
-        for (String part : composition) {
-            ArrayList<RNode> currentNodes = new ArrayList();
-            ArrayList<String> existingOverhangs = compositionOverhangHash.get(part);
-            for (String overhangPair : existingOverhangs) {
-                String[] tokens = overhangPair.split("\\|");
-                String leftOverhang = tokens[0];
-                String rightOverhang = tokens[1];
-                RNode newNode = new RNode();
-                newNode.setName(part);
-                newNode.setLOverhang(leftOverhang);
-                newNode.setROverhang(rightOverhang);
-                newNode.setStage(stage);
-//                System.out.println("creating node: " + part + "|" + leftOverhang + "|" + rightOverhang);
-                currentNodes.add(newNode);
-            }
-            if (previousNodes != null) {
-                for (RNode prev : previousNodes) {
-                    for (RNode curr : currentNodes) {
-                        if (prev.getROverhang().equals(curr.getLOverhang())) {
-                            prev.addNeighbor(curr);
-//                            System.out.println("linking " + prev.getName() + "|" + prev.getLOverhang() + "|" + prev.getROverhang() + " and " + curr.getName() + "|" + curr.getLOverhang() + "|" + curr.getROverhang());
-                        }
-                    }
-                }
-            } else {
-                for (RNode root : currentNodes) {
-                    toReturn.add(new RGraph(root));
-                }
-            }
-            previousNodes = currentNodes;
-            stage++;
-
-        }
-        return toReturn;
-    }
-
-    //old single graph method
-    public static ArrayList<ArrayList<String>> findOptimalAssignment(ArrayList<RGraph> graphs, int targetLength) {
-        ArrayList<ArrayList<String>> toReturn = new ArrayList();
-        ArrayList<String> currentSolution;
-        HashMap<RNode, RNode> parentHash = new HashMap(); //key: node, value: parent node
-        for (RGraph graph : graphs) {
-            System.out.println("**********************");
-            currentSolution = new ArrayList();
-            RNode root = graph.getRootNode();
-            ArrayList<RNode> stack = new ArrayList();
-            stack.add(root);
-            boolean toParent = false; // am i returning to a parent node?
-            HashSet<RNode> seenNodes = new HashSet();
-            while (!stack.isEmpty()) {
-                RNode currentNode = stack.get(0);
-                stack.remove(0);
-                seenNodes.add(currentNode);
-                System.out.println("#################\ncurrent: " + currentNode.getName() + "|" + currentNode.getLOverhang() + "|" + currentNode.getROverhang());
-                if (!toParent) {
-                    currentSolution.add(currentNode.getLOverhang() + "|" + currentNode.getROverhang());
-                } else {
-                    toParent = false;
-                }
-                System.out.println(currentSolution);
-                RNode parent = parentHash.get(currentNode);
-
-                int childrenCount = 0;
-                for (RNode neighbor : currentNode.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
-                        if (neighbor.getStage() > currentNode.getStage()) {
-                            System.out.println("adding: " + neighbor.getName() + "|" + neighbor.getLOverhang() + "|" + neighbor.getROverhang());
-                            stack.add(0, neighbor);
-                            parentHash.put(neighbor, currentNode);
-                            childrenCount++;
-                        }
-                    }
-                }
-                if (childrenCount == 0) {
-                    //no children means we've reached the end of a branch
-                    if (currentSolution.size() == targetLength) {
-                        //yay complete assignment
-                        System.out.println("ADDING SOLUTION");
-                        toReturn.add((ArrayList<String>) currentSolution.clone());
-
-                    } else {
-                        //incomplete assignment
-                    }
-                    if (currentSolution.size() > 0) {
-                        currentSolution.remove(currentSolution.size() - 1);
-                    }
-                    if (parent != null) {
-//                        parent.getNeighbors().remove(currentNode);
-//                        System.out.println("removing: " +currentNode.getName()+"|"+currentNode.getLOverhang()+"|"+currentNode.getROverhang()+" from "+ parent.getName() + "|" + parent.getLOverhang() + "|" + parent.getROverhang());
-                        toParent = true;
-                        System.out.println("readding: " + parent.getName() + "|" + parent.getLOverhang() + "|" + parent.getROverhang());
-                        stack.add(0, parent);
-                    }
-                }
-
-            }
-
-        }
-        return toReturn;
     }
     //fields
     private static HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
