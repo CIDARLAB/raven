@@ -74,7 +74,7 @@ public class RModAsmInstructions {
                         }
                         
                         //append which parts to use for a moclo reaction
-                        instructions = instructions + "\n\nAssemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with:\n";
+                        instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a " + method + " cloning reaction with:\n";
                         for (RNode neighbor : currentNode.getNeighbors()) {
 
                             if (currentNode.getStage() > neighbor.getStage()) {
@@ -135,7 +135,15 @@ public class RModAsmInstructions {
                 if (designPrimers) {
                     String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
                     String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                    ArrayList<String> oligos = RMoClo.generatePartPrimers(node, coll, meltingTemp, primerLength);
+                    
+                    //Determine which kind of primers to generate
+                    ArrayList<String> oligos = new ArrayList<String>();
+                    if (method.equalsIgnoreCase("MoClo")) {
+                        oligos = RMoClo.generatePartPrimers(node, coll, meltingTemp, primerLength);
+                    } else if (method.equalsIgnoreCase("BioBricks")) {
+                        oligos = RBioBricks.generatePartPrimers(node, coll, meltingTemp, primerLength);
+                    }
+                    
                     oligoNames.add(forwardOligoName);
                     oligoNames.add(reverseOligoName);
                     oligoSequences.add(oligos.get(0));
@@ -154,8 +162,16 @@ public class RModAsmInstructions {
                 
                 if (designPrimers) {
                     String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
-                    String reverseOligoName = (oligoNameRoot + oligoCount) + "R";                    
-                    ArrayList<String> oligos = RMoClo.generateVectorPrimers(vector, coll);
+                    String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
+                    
+                    //Determine which kind of primers to generate
+                    ArrayList<String> oligos = new ArrayList<String>();
+                    if (method.equalsIgnoreCase("MoClo")) {
+                        oligos = RMoClo.generateVectorPrimers(vector, coll);
+                    } else if (method.equalsIgnoreCase("BioBricks")) {
+                        oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, primerLength);
+                    }
+
                     oligoNames.add(forwardOligoName);
                     oligoNames.add(reverseOligoName);
                     oligoSequences.add(oligos.get(0));
@@ -179,8 +195,6 @@ public class RModAsmInstructions {
                 instructions = instructions + "\n" + oligoSequences.get(i);
             }
         }
-        return instructions;
-        
-    }        
-    
+        return instructions;    
+    }            
 }

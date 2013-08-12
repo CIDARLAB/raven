@@ -4,6 +4,8 @@
  */
 package Controller.algorithms;
 
+import java.util.HashMap;
+
 /**
  *
  * @author evanappleton
@@ -104,8 +106,34 @@ public class PrimerDesign {
     }
     
     /** Logic for going from OH variable place holders to actual sequences **/
-    private void selectOHseqs() {
+    public static HashMap<String, String> getModularOHseqs() {
         
+        HashMap<String, String> overhangVariableSequenceHash = new HashMap<String, String>();
+        overhangVariableSequenceHash.put("A", "ggac");
+        overhangVariableSequenceHash.put("B", "tact");
+        overhangVariableSequenceHash.put("C", "aatg");
+        overhangVariableSequenceHash.put("D", "aggt");
+        overhangVariableSequenceHash.put("E", "gctt");
+        overhangVariableSequenceHash.put("F", "cgct");
+        overhangVariableSequenceHash.put("G", "tgcc");
+        overhangVariableSequenceHash.put("H", "acta");
+        overhangVariableSequenceHash.put("I", "tcta");
+        overhangVariableSequenceHash.put("J", "cgac");
+        overhangVariableSequenceHash.put("X", "cgtt");
+        overhangVariableSequenceHash.put("Y", "tgtg");
+        overhangVariableSequenceHash.put("A*", "gtcc");
+        overhangVariableSequenceHash.put("B*", "agta");
+        overhangVariableSequenceHash.put("C*", "catt");
+        overhangVariableSequenceHash.put("D*", "acct");
+        overhangVariableSequenceHash.put("E*", "aagc");
+        overhangVariableSequenceHash.put("F*", "agcg");
+        overhangVariableSequenceHash.put("G*", "ggca");
+        overhangVariableSequenceHash.put("H*", "tagt");
+        overhangVariableSequenceHash.put("I*", "taga");
+        overhangVariableSequenceHash.put("J*", "gtcg");
+        overhangVariableSequenceHash.put("X*", "aacg");
+        overhangVariableSequenceHash.put("Y*", "caca");
+        return overhangVariableSequenceHash;       
     }
     
     public static double getMeltingTemp (String sequence) {

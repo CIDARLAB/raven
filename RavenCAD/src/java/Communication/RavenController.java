@@ -824,8 +824,8 @@ public class RavenController {
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
 
         //generate instructions
-        if (method.equals("biobrick")) {
-            _instructions = RBioBricks.generateInstructions(targetRootNodes, _collector, null, _partLibrary, _vectorLibrary);
+        if (method.equals("biobricks")) {
+            _instructions = RModAsmInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
         } else if (method.equals("cpec")) {
             _instructions = RCPEC.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         } else if (method.equals("gibson")) {
@@ -833,8 +833,7 @@ public class RavenController {
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         } else if (method.equals("moclo")) {
-//            _instructions = RMoClo.getInstructions(targetRootNodes, _collector, primerParameters);
-            _instructions = RMoClo.getInstructions(targetRootNodes, _collector, null, _partLibrary, _vectorLibrary);
+            _instructions = RModAsmInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
         } else if (method.equals("slic")) {
             _instructions = RSLIC.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         }

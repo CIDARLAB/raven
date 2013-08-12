@@ -1193,62 +1193,29 @@ public class RMoClo extends RGeneral {
         return toReturn;
     }
 
-    //generates human readable instructions as well as primer sequences
-    //primerParameters contains (in this order): 
-    //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
-    public static String getInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<String> primerParameters, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
-
-        boolean designPrimers = true;
-        _overhangVariableSequenceHash = new HashMap<String, String>();
-        _overhangVariableSequenceHash.put("A", "ggac");
-        _overhangVariableSequenceHash.put("B", "tact");
-        _overhangVariableSequenceHash.put("C", "aatg");
-        _overhangVariableSequenceHash.put("D", "aggt");
-        _overhangVariableSequenceHash.put("E", "gctt");
-        _overhangVariableSequenceHash.put("F", "cgct");
-        _overhangVariableSequenceHash.put("G", "tgcc");
-        _overhangVariableSequenceHash.put("H", "acta");
-        _overhangVariableSequenceHash.put("I", "tcta");
-        _overhangVariableSequenceHash.put("J", "cgac");
-        _overhangVariableSequenceHash.put("X", "cgtt");
-        _overhangVariableSequenceHash.put("Y", "tgtg");
-        _overhangVariableSequenceHash.put("A*", "gtcc");
-        _overhangVariableSequenceHash.put("B*", "agta");
-        _overhangVariableSequenceHash.put("C*", "catt");
-        _overhangVariableSequenceHash.put("D*", "acct");
-        _overhangVariableSequenceHash.put("E*", "aagc");
-        _overhangVariableSequenceHash.put("F*", "agcg");
-        _overhangVariableSequenceHash.put("G*", "ggca");
-        _overhangVariableSequenceHash.put("H*", "tagt");
-        _overhangVariableSequenceHash.put("I*", "taga");
-        _overhangVariableSequenceHash.put("J*", "gtcg");
-        _overhangVariableSequenceHash.put("X*", "aacg");
-        _overhangVariableSequenceHash.put("Y*", "caca");
-        
-        String instructions = RModAsmInstructions.generateInstructions (roots, coll, partLib, vectorLib, primerParameters, designPrimers, "MoClo");     
-        return instructions;
-    }
-    
+    /** Generation of new MoClo primers for parts **/
     public static ArrayList<String> generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
-        
-        //initialize primer parameters
-        ArrayList<String> oligos = new ArrayList<String>();
+   
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
+        ArrayList<String> oligos = new ArrayList<String>(2);
         String partPrimerPrefix = "nn";
         String partPrimerSuffix = "nn";
         String fwdEnzymeRecSite1 = "gaagac";
         String revEnzymeRecSite1 = "gtcttc";
                       
         Part currentPart = coll.getPart(node.getUUID(), true);
-        String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq()));
-        String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()))) + revEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+        String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq()));
+        String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()))) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
         
         return oligos;
     }
     
+    /** Generation of new MoClo primers for parts **/
     public static ArrayList<String> generateVectorPrimers(RVector vector, Collector coll) {
     
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();        
         String vectorPrimerPrefix = "gttctttactagtg";
         String vectorPrimerSuffix = "tactagtagcggccgc";
         String fwdEnzymeRecSite1 = "gaagac";
@@ -1256,19 +1223,19 @@ public class RMoClo extends RGeneral {
         String fwdEnzymeRecSite2 = "ggtctc";
         String revEnzymeRecSite2 = "gagacc";
         
-        ArrayList<String> oligos = new ArrayList<String>();
+        ArrayList<String> oligos = new ArrayList<String>(2);
         
-        //Level 0 and level 2 vectors
+        //Level 0, 2, 4, 6, etc. vectors
         String forwardOligoSequence;
         String reverseOligoSequence;
-        if (vector.getLevel() % 3 == 0 || (vector.getLevel() - 2) % 3 == 0) {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "n" + _overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "nn" + _overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite2 + vectorPrimerSuffix);
+        if (vector.getLevel() % 2 == 0) {
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "n" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite2 + vectorPrimerSuffix);
 
-        //Level 1 vectors
+        //Level 1, 3, 5, 7, etc. vectors
         } else {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "n" + _overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "nn" + _overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite1 + vectorPrimerSuffix);
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "n" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "nn" + overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite1 + vectorPrimerSuffix);
         }
 
         oligos.add(forwardOligoSequence);
@@ -1288,5 +1255,4 @@ public class RMoClo extends RGeneral {
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
-    private static HashMap<String, String> _overhangVariableSequenceHash = new HashMap<String, String>(); //key:variable name, value: sequence associated with that variable
 }
