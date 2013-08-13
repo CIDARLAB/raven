@@ -21,7 +21,7 @@ public class RGibson extends RGeneral {
     /**
      * Clotho part wrapper for Gibson *
      */
-    public ArrayList<RGraph> gibsonClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> gibsonClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -32,6 +32,7 @@ public class RGibson extends RGeneral {
             }
         }
         _maxNeighbors = max;
+        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
@@ -56,6 +57,9 @@ public class RGibson extends RGeneral {
             
             RGraph graph = asmGraphs.get(i);
             RNode root = graph.getRootNode();
+            ArrayList<String> composition = root.getComposition();
+            root.setLOverhang(composition.get(composition.size()-1));
+            root.setROverhang(composition.get(0));
             ArrayList<RNode> neighbors = root.getNeighbors();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
@@ -131,13 +135,15 @@ public class RGibson extends RGeneral {
         }
     }
     
+    /** Get the root basic node hash **/
+    public static HashMap<RNode, ArrayList<RNode>> getRootBasicNodeHash() {
+        return _rootBasicNodeHash;
+    }
+    
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
-        return null;
-    }
-    
-    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
+    //FIELDS
+    private static HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }

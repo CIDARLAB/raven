@@ -5,11 +5,13 @@
 package Controller.algorithms.modasm;
 
 import Controller.accessibility.ClothoReader;
+import Controller.algorithms.PrimerDesign;
 import Controller.algorithms.RGeneral;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import Controller.datastructures.*;
+import java.util.Set;
 
 /**
  *
@@ -20,14 +22,14 @@ public class RBioBricks extends RGeneral {
     /**
      * Clotho part wrapper for BioBricks 3A
      */
-    public ArrayList<RGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> bioBricksClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) throws Exception {
 
         //Try-Catch block around wrapper method
         _maxNeighbors = 2;
+        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
-//        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
@@ -57,6 +59,8 @@ public class RBioBricks extends RGeneral {
 
             RNode root = graph.getRootNode();
             root.setVector(vector);
+            root.setLOverhang("EX");
+            root.setROverhang("SP");
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
             ArrayList<RNode> neighbors = root.getNeighbors();
@@ -188,8 +192,56 @@ public class RBioBricks extends RGeneral {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
-        return null;
+    /** Generation of new BioBricks primers for parts **/
+    public static ArrayList<String> generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
+
+        //initialize primer parameters
+        ArrayList<String> oligos = new ArrayList<String>(2);
+        String partPrimerPrefix = "gaattcgcggccgcttctagag";
+        String partPrimerSuffix = "tactagtagcggccgctgcag";
+        String partPrimerPrefixAlt = "gaattcgcggccgcttctag";
+        String forwardOligoSequence;
+        String reverseOligoSequence;
+        
+        Part currentPart = coll.getPart(node.getUUID(), true);
+        ArrayList<String> type = node.getType();
+        
+        if (type.size() == 1) {
+            if (type.get(0).equals("gene") || type.get(0).equals("reporter")) {
+                forwardOligoSequence = partPrimerPrefixAlt + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
+                reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + partPrimerSuffix);
+            } else {
+                forwardOligoSequence = partPrimerPrefix + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
+                reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + partPrimerSuffix);
+            }
+        } else {
+            forwardOligoSequence = partPrimerPrefix + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + partPrimerSuffix);
+        }
+        
+        oligos.add(forwardOligoSequence);
+        oligos.add(reverseOligoSequence);
+        
+        return oligos;
+    }
+    
+    /** Generation of new BioBricks primers for parts **/
+    public static ArrayList<String> generateVectorPrimers(RVector vector, Collector coll, Double meltingTemp, Integer targetLength) {
+
+        //initialize primer parameters
+        ArrayList<String> oligos = new ArrayList<String>(2);
+        String vectorPrimerPrefix = "gaattcgcggccgcttctagag";
+        String vectorPrimerSuffix = "tactagtagcggccgctgcag";
+        
+        Vector currentVector = coll.getVector(vector.getUUID(), true);
+
+        String forwardOligoSequence = vectorPrimerPrefix + currentVector.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentVector.getSeq(), true));
+        String reverseOligoSequence = PrimerDesign.reverseComplement(currentVector.getSeq().substring(currentVector.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentVector.getSeq()), true)) + vectorPrimerSuffix);
+
+        oligos.add(forwardOligoSequence);
+        oligos.add(reverseOligoSequence);
+
+        return oligos;
     }
     
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to

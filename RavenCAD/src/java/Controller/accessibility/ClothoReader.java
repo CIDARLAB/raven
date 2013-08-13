@@ -11,8 +11,11 @@ import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.*;
 
 /**
@@ -205,11 +208,25 @@ public class ClothoReader {
             }
             
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            RNode gp = new RNode(false, false, null, composition, direction, type, scars, 0, 0);
+            RNode gp = new RNode(false, false, composition, direction, type, scars, null, null, 0, 0);
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
-        return gpsNodes;
+        
+        //Sort nodes by name
+        ArrayList<RNode> orderedGPSNodes = new ArrayList<RNode>();
+        HashMap<String, RNode> partNameHash = new HashMap<String, RNode>();
+        for (RNode gpsNode : gpsNodes) {
+            partNameHash.put(gpsNode.getName(), gpsNode);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            orderedGPSNodes.add(partNameHash.get(partName));
+        }
+        
+        return orderedGPSNodes;
     }
 
     /** Parse Clotho search tags from a string into an ArrayList **/
@@ -225,9 +242,7 @@ public class ClothoReader {
                 
                 //Split any arraylist-like search tag
                 if (ST.charAt(ST.length() - 1) == ']') {
-                    ST = ST.substring(0, ST.length() - 1);
-                    String[] tokens1 = ST.split("\\[");
-                    String splitTag = tokens1[1];
+                    String splitTag = ST.substring(ST.indexOf("[")+1, ST.length() - 1);
                     String[] tokens = splitTag.split(",");
                     ArrayList<String> trimmedTokens = new ArrayList<String>();
 
@@ -247,6 +262,107 @@ public class ClothoReader {
             }
         }                
         return list;
+    }
+    
+    /**
+     * Returns a part library and finds all forward and reverse characteristics
+     * of each part *
+     */
+    public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
+
+        HashSet<String> startPartsLOcompRO = new HashSet<String>();
+
+        //Go through parts library, put all compositions into hash of things that already exist
+        for (Part aPart : partLib) {
+
+            //Get forward and reverse part key string
+            ArrayList<Part> partComp = aPart.getComposition();
+            ArrayList<String> comp = new ArrayList<String>();
+            for (int j = 0; j < partComp.size(); j++) {
+                String name = partComp.get(j).getName();
+                comp.add(name);
+            }
+            ArrayList<String> revComp = new ArrayList<String>();
+            revComp.addAll(comp);
+            Collections.reverse(revComp);
+
+            ArrayList<String> searchTags = aPart.getSearchTags();
+            ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
+            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
+
+            ArrayList<String> revDir = new ArrayList<String>();
+            revDir.addAll(dir);
+            Collections.reverse(revDir);
+            ArrayList<String> revScars = new ArrayList<String>();
+            revScars.addAll(scars);
+            Collections.reverse(revScars);
+            for (String aRevScar : revScars) {
+                if (aRevScar.contains("*")) {
+                    aRevScar = aRevScar.replace("*", "");
+                } else {
+                    aRevScar = aRevScar + "*";
+                }
+            }
+
+            String lOverhang = aPart.getLeftOverhang();
+            String rOverhang = aPart.getRightOverhang();
+            String lOverhangR = aPart.getRightOverhang();
+            String rOverhangR = aPart.getLeftOverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+
+            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
+            startPartsLOcompRO.add(aPartCompDirScarLORO);
+            startPartsLOcompRO.add(aPartCompDirScarLOROR);
+        }
+
+        return startPartsLOcompRO;
+    }
+
+    /**
+     * Returns a part library and finds all forward and reverse characteristics
+     * of each part *
+     */
+    public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
+
+        HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
+
+        //Go through vectors library, put all compositions into hash of things that already exist
+        for (Vector aVec : vectorLib) {
+
+            String lOverhang = aVec.getLeftoverhang();
+            String rOverhang = aVec.getRightOverhang();
+            String lOverhangR = aVec.getRightOverhang();
+            String rOverhangR = aVec.getLeftoverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+            int stage = aVec.getLevel();
+
+            String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+            String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+
+            startVectorsLOlevelRO.add(aVecLOlevelRO);
+            startVectorsLOlevelRO.add(aVecLOlevelROR);
+        }
+
+        return startVectorsLOlevelRO;
     }
     
     //THIS NEXT METHOD USES RESTRICTION ENZYMES WHICH ARE OUTSIDE THE CLOTHO DATA MODEL, UNCLEAR WHERE THIS METHOD SHOULD GO

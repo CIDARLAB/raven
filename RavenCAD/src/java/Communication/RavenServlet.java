@@ -172,16 +172,22 @@ public class RavenServlet extends HttpServlet {
                 }
 
                 String designCount = request.getParameter("designCount");
-                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
-                String partsList = controller.generatePartsList(designCount);
+                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
+                JSONArray partsList = controller.generatePartsList(designCount);
                 String instructions = controller.getInstructions();
-                String statString = controller.generateStats();
+                JSONObject statString = controller.generateStats();
                 System.out.println("Stats: " + statString);
                 instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
                 if (instructions.length() < 1) {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
-                out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":" + partsList + "}");
+                JSONObject toReturn = new JSONObject();
+                toReturn.put("status", "good");
+                toReturn.put("statistics", statString);
+                toReturn.put("instructions", instructions);
+                toReturn.put("partsList", partsList);
+                toReturn.put("graph", graphData);               
+                out.println(toReturn);
 
             } else if (command.equals("save")) {
                 String[] partIDs = request.getParameter("partIDs").split(",");

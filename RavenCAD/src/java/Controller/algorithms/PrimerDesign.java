@@ -4,6 +4,8 @@
  */
 package Controller.algorithms;
 
+import java.util.HashMap;
+
 /**
  *
  * @author evanappleton
@@ -58,20 +60,228 @@ public class PrimerDesign {
     }
     
     //calculates the length of homology required for primers based on nearest neighbor calculations
-    public static int getPrimerHomologyLength(Double meltingTemp, String sequence) {
-        //TODO write actual code
-        return 20;
-    }
-    
-    //generates a random DNA sequence with input length
-    public static String generateRandomSequence(int length) {
-        //TODO write actual code
-        return "agac";
+    public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence, boolean fivePrime) {
+ 
+        int length = targetLength;
+        
+        //If no melting temp is input, return the given length
+        if (meltingTemp == null) {
+            return length;
+        }
+        
+        //If the sequence is under the desired length
+        if (sequence.length() < length) {
+            return sequence.length();
+        }            
+        
+        //If determining the homology of the five prime side of a part
+        if (fivePrime) {
+
+            String candidateSeq = sequence.substring(0, length);
+            double candidateTemp = getMeltingTemp(candidateSeq);
+
+//            System.out.println("candidateSeq: " + candidateSeq);
+//            System.out.println("candidateTemp: " + candidateTemp);
+            
+            //Add base pairs until candidate temp reaches the desired temp if too low
+            if (candidateTemp < meltingTemp) {
+                while (candidateTemp < meltingTemp) {
+                    length++;
+                    if (sequence.length() < length) {
+                        return length;
+                    }
+                    candidateSeq = sequence.substring(0, length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
+                }
+
+                //Remove base pairs until candidate temp reaches the desired temp if too high
+            } else if (candidateTemp > meltingTemp) {
+                while (candidateTemp > meltingTemp) {
+                    length--;
+                    candidateSeq = sequence.substring(0, length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
+                }
+            }
+        
+        //If determining the homology length of the three prime side
+        } else {
+
+            String candidateSeq = sequence.substring(sequence.length()-length);
+            double candidateTemp = getMeltingTemp(candidateSeq);
+            
+            //Add base pairs until candidate temp reaches the desired temp if too low
+            if (candidateTemp < meltingTemp) {
+                while (candidateTemp < meltingTemp) {
+                    length++;
+                    if (sequence.length() < length) {
+                        return length;
+                    }
+                    candidateSeq = sequence.substring(sequence.length()-length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
+                }
+
+            //Remove base pairs until candidate temp reaches the desired temp if too high
+            } else if (candidateTemp > meltingTemp) {
+                while (candidateTemp > meltingTemp) {
+                    length--;
+                    candidateSeq = sequence.substring(sequence.length()-length);
+                    candidateTemp = getMeltingTemp(candidateSeq);
+                    
+//                    System.out.println("candidateSeq: " + candidateSeq);
+//                    System.out.println("candidateTemp: " + candidateTemp);
+                }
+            }
+        }
+
+        return length;
     }
     
     /** Logic for going from OH variable place holders to actual sequences **/
-    private void selectOHseqs() {
+    public static HashMap<String, String> getModularOHseqs() {
         
+        HashMap<String, String> overhangVariableSequenceHash = new HashMap<String, String>();
+        overhangVariableSequenceHash.put("A", "ggac");
+        overhangVariableSequenceHash.put("B", "tact");
+        overhangVariableSequenceHash.put("C", "aatg");
+        overhangVariableSequenceHash.put("D", "aggt");
+        overhangVariableSequenceHash.put("E", "gctt");
+        overhangVariableSequenceHash.put("F", "cgct");
+        overhangVariableSequenceHash.put("G", "tgcc");
+        overhangVariableSequenceHash.put("H", "acta");
+        overhangVariableSequenceHash.put("I", "tcta");
+        overhangVariableSequenceHash.put("J", "cgac");
+        overhangVariableSequenceHash.put("X", "cgtt");
+        overhangVariableSequenceHash.put("Y", "tgtg");
+        overhangVariableSequenceHash.put("A*", "gtcc");
+        overhangVariableSequenceHash.put("B*", "agta");
+        overhangVariableSequenceHash.put("C*", "catt");
+        overhangVariableSequenceHash.put("D*", "acct");
+        overhangVariableSequenceHash.put("E*", "aagc");
+        overhangVariableSequenceHash.put("F*", "agcg");
+        overhangVariableSequenceHash.put("G*", "ggca");
+        overhangVariableSequenceHash.put("H*", "tagt");
+        overhangVariableSequenceHash.put("I*", "taga");
+        overhangVariableSequenceHash.put("J*", "gtcg");
+        overhangVariableSequenceHash.put("X*", "aacg");
+        overhangVariableSequenceHash.put("Y*", "caca");
+        return overhangVariableSequenceHash;       
+    }
+    
+    public static double getMeltingTemp (String sequence) {
+        
+        /* Resources:
+         * http://en.wikipedia.org/wiki/DNA_melting#Nearest-neighbor_method
+         * http://www.basic.northwestern.edu/biotools/oligocalc.html
+         * http://dna.bio.puc.cl/cardex/servers/dnaMATE/tm-pred.html
+         */
+
+        String seq = sequence;
+        int length = sequence.length();
+        double concP = 50 * java.lang.Math.pow(10, -9);
+        double dH = 0;
+        double dS = 0;
+        double R = 1.987;
+        double temp;
+        String pair;
+        seq = seq.toUpperCase();
+
+        // Checks terminal base pairs
+        char init = seq.charAt(0);
+        if (init == 'G' || init == 'C') {
+            dH += 0.1;
+            dS += -2.8;
+        }
+        else if (init == 'A' || init == 'T') {
+            dH += 2.3;
+            dS += 4.1;
+        }
+        init = seq.charAt(length - 1);
+        if (init == 'G' || init == 'C') {
+            dH += 0.1;
+            dS += -2.8;
+        }
+        else if (init == 'A' || init == 'T') {
+            dH += 2.3;
+            dS += 4.1;
+        }
+
+        // Checks nearest neighbor pairs
+        for (int i = 0; i < length - 1; i++) {
+            pair = seq.substring(i,i+2);
+            if (pair.equals("AA") || pair.equals("TT")) {
+                dH += -7.9;
+                dS += -22.2;
+            }
+            else if (pair.equals("AG") || pair.equals("CT")) {
+                dH += -7.8;
+                dS += -21.0;
+            }
+            else if (pair.equals("AT")) {
+                dH += -7.2;
+                dS += -20.4;
+            }
+            else if (pair.equals("AC") || pair.equals("GT") ) {
+                dH += -8.4;
+                dS += -22.4;
+            }
+            else if (pair.equals("GA") || pair.equals("TC")) {
+                dH += -8.2;
+                dS += -22.2;
+            }
+            else if (pair.equals("GG") || pair.equals("CC")) {
+                dH += -8.0;
+                dS += -19.9;
+            }
+            else if (pair.equals("GC")) {
+                dH += -9.8;
+                dS += -24.4;
+            }
+            else if (pair.equals("TA")) {
+                dH += -7.2;
+                dS += -21.3;
+            }
+            else if (pair.equals("TG") || pair.equals("CA")) {
+                dH += -8.5;
+                dS += -22.7;
+            }
+            else if (pair.equals("CG") ) {
+                dH += -10.6;
+                dS += -27.2;
+            }
+        }
+
+        // Checks for self-complementarity
+        int mid;
+        if (length % 2 == 0) {
+            mid = length / 2;
+            if (seq.substring(0, mid).equals("")) {
+                dS += -1.4;
+            }
+        }
+        else {
+            mid = (length - 1) / 2;
+            if (seq.substring(0, mid).equals("")) {
+                dS += -1.4;
+            }
+        }
+
+        // dH is in kCal, dS is in Cal - equilibrating units
+        dH = dH * 1000;
+
+        double logCt = java.lang.Math.log(concP);
+        temp = (dH / (dS + (R * logCt))) - 273.15;
+
+        //return temp;
+        return temp;
     }
     
 }

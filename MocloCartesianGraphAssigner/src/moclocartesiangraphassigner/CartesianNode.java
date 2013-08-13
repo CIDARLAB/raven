@@ -5,6 +5,7 @@
 package moclocartesiangraphassigner;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  *
@@ -15,24 +16,16 @@ public class CartesianNode {
     public CartesianNode() {
         this.neighbors = new ArrayList();
         this.level = 0;
-        this.rightOverhang = null;
-        this.leftOverhang = null;
+        this.concreteOverhang = null;
+        this.usedOverhangs = new HashSet();
     }
 
-    public String getLeftOverhang() {
-        return leftOverhang;
+    public String getConcreteOverhang() {
+        return concreteOverhang;
     }
 
-    public void setLeftOverhang(String leftOverhang) {
-        this.leftOverhang = leftOverhang;
-    }
-
-    public String getRightOverhang() {
-        return rightOverhang;
-    }
-
-    public void setRightOverhang(String rightOverhang) {
-        this.rightOverhang = rightOverhang;
+    public void setConcreteOverhang(String overhang) {
+        this.concreteOverhang = overhang;
     }
 
     public int getLevel() {
@@ -50,8 +43,30 @@ public class CartesianNode {
     public void setNeighbors(ArrayList<CartesianNode> neighbors) {
         this.neighbors = neighbors;
     }
-    public String leftOverhang; //left overhang option specified by this CartesianNode
-    public String rightOverhang; //right overhang option specified by this CartesianNode
+
+    public HashSet getUsedOverhangs() {
+        return usedOverhangs;
+    }
+
+    public void setUsedOverhangs(HashSet usedOverhangs) {
+        this.usedOverhangs = usedOverhangs;
+    }
+
+    void addNeighbor(CartesianNode node) {
+        this.neighbors.add(node);
+    }
+
+    public String getAbstractOverhang() {
+        return abstractOverhang;
+    }
+
+    public void setAbstractOverhang(String abstractOverhang) {
+        this.abstractOverhang = abstractOverhang;
+    }
+    //fields
+    public String concreteOverhang; //right concreteOverhang option specified by this CartesianNode
     public int level; //level of this node
     public ArrayList<CartesianNode> neighbors; //neighbors of this node
+    public HashSet usedOverhangs;
+    public String abstractOverhang;
 }

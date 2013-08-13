@@ -21,16 +21,14 @@ public class RVector {
         _vectorCount++;
     }
 
-//    /** RVector constructor with explicit parameters **/
-//    public RVector(String lOverhang, String rOverhang, boolean recommended, int level) {
-//        _uuid = null;
-//        _lOverhang = lOverhang;
-//        _rOverhang = rOverhang;
-//        _recommended = recommended;
-//        _level = level;
-//        _vectorID = _vectorCount;
-//        _vectorCount++;
-//    }
+    /** RVector constructor with explicit parameters **/
+    public RVector(String lOverhang, String rOverhang, int level, String name) {
+        _lOverhang = lOverhang;
+        _rOverhang = rOverhang;
+        _level = level;
+        _name = name;
+    }
+    
     /**************************************************************************
      * 
      * GETTER AND SETTER METHODS
@@ -75,6 +73,37 @@ public class RVector {
     public String getName() {
         return _name;
     }
+    
+    /** Get vector keys **/
+    public String getVectorKey(String direction) {
+        
+        //Forward information
+        String lOverhang = this._lOverhang;
+        String rOverhang = this._rOverhang;
+        String name = this._name;
+        int stage = this._level;
+
+        if (direction.equals("+")) {
+            String aVecLOlevelRO = name + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+            return aVecLOlevelRO;
+        } else {
+            String lOverhangR = rOverhang;
+            String rOverhangR = lOverhang;
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+
+            String aVecLOlevelROR = name + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+            return aVecLOlevelROR;
+        }
+    }
 
     /** Set Clotho UUID **/
     public void setUUID(String newuuid) {
@@ -89,17 +118,6 @@ public class RVector {
     /** Set left overhang **/
     public void setLOverhang(String overhang) {
         _lOverhang = overhang;
-    }
-
-    /** Set a vector's resistance **/
-    public void setResistance(int level) {
-//        if (level == 2) {
-//            _resistance = "amp";
-//        } else if (level == 1) {
-//            _resistance = "kan";
-//        } else if (level == 0) {
-//            _resistance = "cam";
-//        }
     }
 
     public void setStringResistance(String s) {
