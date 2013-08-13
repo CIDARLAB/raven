@@ -138,28 +138,11 @@ public class MocloCartesianGraphAssigner {
         _partLibrary = coll.getAllParts(true);
 
         //build cartesian graph
-        ArrayList<CartesianNode> buildCartesianGraph = assignFinalOverhangs(optimalGraphs, new HashMap());
-        //traverse cartesian graph to assign overhangs
-
-        //print out overhangs for verification
-        System.out.println("printing out final results");
-        for (RGraph graph : optimalGraphs) {
-            ArrayList<RNode> queue = new ArrayList();
-            queue.add(graph.getRootNode());
-            while (!queue.isEmpty()) {
-                RNode current = queue.get(0);
-                queue.remove(0);
-                System.out.println(current.getComposition() + " " + current.getLOverhang() + "|" + current.getROverhang());
-                for (RNode neighbor : current.getNeighbors()) {
-                    if (current.getStage() > neighbor.getStage()) {
-                        queue.add(neighbor);
-                    }
-                }
-            }
-        }
+        assignFinalOverhangs(optimalGraphs, new HashMap());
+        //traverse cartesian graph to assign overhangs     
     }
 
-    public static ArrayList<CartesianNode> assignFinalOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
+    public static void assignFinalOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
         HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap();
         HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap(); //key: abstract overhang, value: set of all compositions associated with that composition
         HashMap<String, HashSet<String>> abstractRightCompositionHash = new HashMap(); //key: composition, value: set of all abstract overhangs associated with that composition
@@ -227,9 +210,6 @@ public class MocloCartesianGraphAssigner {
             //add "new overhang" denoted by * character
             abstractConcreteHash.get(key).add("*");
         }
-        System.out.println("abstractConcreteHash: " + abstractConcreteHash.toString());
-
-
         //build the graph
         ArrayList<CartesianNode> previousNodes = null;
         ArrayList<CartesianNode> rootNodes = new ArrayList();
@@ -255,7 +235,6 @@ public class MocloCartesianGraphAssigner {
                             if (!node.getConcreteOverhang().equals("*")) {
                                 node.getUsedOverhangs().add(node.getConcreteOverhang());
                             }
-//                            System.out.println("linking " + prev.getAbstractOverhang() + ":" + prev.getConcreteOverhang() + " and " + node.getAbstractOverhang() + ":" + node.getConcreteOverhang());
                         }
                     }
                 }
@@ -267,19 +246,14 @@ public class MocloCartesianGraphAssigner {
             previousNodes = currentNodes;
             level++;
         }
-
-
         //find assignments
         int targetLength = sortedAbstractOverhangs.size(); //number of abstract overhangs
-
         //each value is a potential concrete assignment, 
         //the first value in each assignment corresponds to the first sortedAbstractOverhang
         ArrayList<ArrayList<String>> completeAssignments = new ArrayList();
-
         ArrayList<String> currentSolution;
         HashMap<CartesianNode, CartesianNode> parentHash = new HashMap(); //key: node, value: parent node
         for (CartesianNode root : rootNodes) {
-            System.out.println("**********************");
             currentSolution = new ArrayList();
             ArrayList<CartesianNode> stack = new ArrayList();
             stack.add(root);
@@ -297,18 +271,12 @@ public class MocloCartesianGraphAssigner {
                 } else {
                     toParent = false;
                 }
-//                System.out.println("#################\ncurrent: " + currentNode.getAbstractOverhang() + ":" + currentNode.getConcreteOverhang());
-//                System.out.println("current solution: " + currentSolution);
                 CartesianNode parent = parentHash.get(currentNode);
-
                 int childrenCount = 0;
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
                     String edge = currentPath + "->" + neighbor.getConcreteOverhang();
                     if (!seenPaths.contains(edge)) {
-//                        System.out.println(edge);
-//                        System.out.println("adding edge: " + edge);
                         if (neighbor.getLevel() > currentNode.getLevel()) {
-//                            System.out.println("adding: " + neighbor.getAbstractOverhang() + ":" + neighbor.getConcreteOverhang());
                             stack.add(0, neighbor);
                             parentHash.put(neighbor, currentNode);
                             childrenCount++;
@@ -319,26 +287,18 @@ public class MocloCartesianGraphAssigner {
                     //no children means we've reached the end of a branch
                     if (currentSolution.size() == targetLength) {
                         //yay complete assignment
-//                        System.out.println("ADDING SOLUTION");
                         completeAssignments.add((ArrayList<String>) currentSolution.clone());
-
-                    } else {
-                        //incomplete assignment
                     }
                     if (currentSolution.size() > 0) {
                         currentSolution.remove(currentSolution.size() - 1);
                     }
                     if (parent != null) {
                         toParent = true;
-//                        System.out.println("re-adding: " + parent.getAbstractOverhang() + "|" + parent.getConcreteOverhang());
                         stack.add(0, parent);
                     }
                 }
-
             }
-
         }
-
         //score assignments
         ArrayList<RNode> basicNodes = new ArrayList();
         for (RNode key : _rootBasicNodeHash.keySet()) {
@@ -348,7 +308,6 @@ public class MocloCartesianGraphAssigner {
                 }
             }
         }
-        System.out.println("**************************************");
         int bestScore = 1000000000;
         HashMap<String, String> bestAssignment = null;
         for (ArrayList<String> assignment : completeAssignments) {
@@ -369,29 +328,20 @@ public class MocloCartesianGraphAssigner {
                 }
             }
             if (currentScore < bestScore) {
-                System.out.println("this score won: " + currentScore);
-                System.out.println(assignment);
                 bestScore = currentScore;
                 bestAssignment = currentAssignment;
             }
         }
 
-
-        System.out.println("number of possible assignments: " + completeAssignments.size());
-        System.out.println("and the winner is : " + bestAssignment);
         //assign new overhangs
         finalOverhangHash = bestAssignment;
-        System.out.println("finalOverhangHash: " + finalOverhangHash);
         //traverse graph and assign overhangs generate vectors
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, neomycin, puromycin, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
-
         for (Vector v : _vectorLibrary) {
-
             if (!existingAntibiotics.contains(v.getResistance())) {
                 existingAntibiotics.add(v.getResistance());
-
                 if (existingAntibioticsHash.get(v.getLevel()) == null) {
                     existingAntibioticsHash.put(v.getLevel(), new ArrayList());
                 }
@@ -408,12 +358,9 @@ public class MocloCartesianGraphAssigner {
                 maxStage = graph.getStages();
             }
         }
-
         for (int i = 0; i <= maxStage; i++) {
             String resistance = "";
-
             if (existingAntibioticsHash.get(i) != null) {
-
                 if (existingAntibioticsHash.get(i).size() > 0) {
                     resistance = existingAntibioticsHash.get(i).get(0);
                     existingAntibioticsHash.get(i).remove(0);
@@ -435,7 +382,6 @@ public class MocloCartesianGraphAssigner {
                 seenNodes.add(current);
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
-
                 if (finalOverhangHash.containsKey(currentLeftOverhang)) {
                     current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
                 }
@@ -458,11 +404,6 @@ public class MocloCartesianGraphAssigner {
                 }
             }
         }
-
-        //return best assignment
-
-
-        return rootNodes;
     }
     //fields
     private static HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
