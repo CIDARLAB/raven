@@ -135,7 +135,7 @@ public class MocloCartesianGraphAssigner {
         _partLibrary = coll.getAllParts(true);
 
         //build cartesian graph
-        ArrayList<CartesianNode> buildCartesianGraph = assignFinalOverhangs(optimalGraphs);
+        ArrayList<CartesianNode> buildCartesianGraph = assignFinalOverhangs(optimalGraphs, new HashMap());
         //traverse cartesian graph to assign overhangs
 
         //print out overhangs for verification
@@ -156,13 +156,13 @@ public class MocloCartesianGraphAssigner {
         }
     }
 
-    public static ArrayList<CartesianNode> assignFinalOverhangs(ArrayList<RGraph> graphs) {
-        //build abstractConcreteHash
+    public static ArrayList<CartesianNode> assignFinalOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> abstractFinalHash) {
         HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap();
         HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap(); //key: abstract overhang, value: set of all compositions associated with that composition
         HashMap<String, HashSet<String>> abstractRightCompositionHash = new HashMap(); //key: composition, value: set of all abstract overhangs associated with that composition
         HashMap<String, HashSet<String>> compositionLeftConcreteHash = new HashMap();
         HashMap<String, HashSet<String>> compositionRightConcreteHash = new HashMap();
+        HashSet<String> compositionOverhangDirections = new HashSet(); //concatentation of compositionOverhang and direction seen in the partLibrary
         for (RGraph graph : graphs) {
             for (RNode current : _rootBasicNodeHash.get(graph.getRootNode())) {
                 if (!abstractConcreteHash.containsKey(current.getLOverhang())) {
@@ -186,9 +186,9 @@ public class MocloCartesianGraphAssigner {
                     abstractRightCompositionHash.put(current.getROverhang(), toAddRight);
                 }
             }
-
         }
         for (Part p : _partLibrary) {
+            compositionOverhangDirections.add(p.getStringComposition() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + p.getDirections());
             //populate compositionConcreteHash's
             String currentComposition = p.getStringComposition().toString();
             if (compositionLeftConcreteHash.containsKey(currentComposition)) {
@@ -335,17 +335,46 @@ public class MocloCartesianGraphAssigner {
         }
 
         //score assignments
+        ArrayList<RNode> basicNodes = new ArrayList();
+        for (RNode key : _rootBasicNodeHash.keySet()) {
+            for (RNode basicNode : _rootBasicNodeHash.get(key)) {
+                if (!basicNodes.contains(basicNode)) {
+                    basicNodes.add(basicNode);
+                }
+            }
+        }
         System.out.println("**************************************");
-
+        int bestScore = 1000000000;
+        HashMap<String, String> bestAssignment = null;
         for (ArrayList<String> assignment : completeAssignments) {
+            HashMap<String, String> currentAssignment = new HashMap();
+            int currentScore = 0;
+            for (int i = 0; i < sortedAbstractOverhangs.size(); i++) {
+                String currentAbstractOverhang = sortedAbstractOverhangs.get(i);
+                if (abstractFinalHash.containsKey(currentAbstractOverhang)) {
+                    currentAssignment.put(currentAbstractOverhang, abstractFinalHash.get(currentAbstractOverhang));
+                } else {
+                    currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
+                }
+            }
+            for (RNode basicNode : basicNodes) {
+                String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
+                if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
+                    currentScore++;
+                }
+            }
+            if (currentScore < bestScore) {
+                System.out.println("this score won: " + currentScore);
+                bestScore = currentScore;
+                bestAssignment = currentAssignment;
+            }
 
             System.out.println(assignment);
         }
 
 
         System.out.println("number of possible assignments: " + completeAssignments.size());
-        //find assignments with the lowest score
-
+        System.out.println("and the winner is : " + bestAssignment);
         //assign new overhangs
         //traverse graph and assign overhangs generate vectors
         //return best assignment
