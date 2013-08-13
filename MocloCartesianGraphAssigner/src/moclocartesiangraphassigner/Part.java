@@ -5,6 +5,7 @@
 package moclocartesiangraphassigner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
@@ -117,6 +118,16 @@ public class Part {
         for (String tag : this.searchTags) {
             if (tag.startsWith("Type:")) {
                 toReturn = tag.substring(6);
+            }
+        }
+        return toReturn;
+    }
+    
+    public ArrayList<String> getDirections() {
+        ArrayList<String> toReturn = new ArrayList();
+        for (String tag : this.searchTags) {
+            if (tag.startsWith("Direction:")) {
+                toReturn = new ArrayList(Arrays.asList(tag.substring(12,tag.length()-1).split(",")));
             }
         }
         return toReturn;
