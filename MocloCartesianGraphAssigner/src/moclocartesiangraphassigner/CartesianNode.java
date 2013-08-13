@@ -16,6 +16,7 @@ public class CartesianNode {
     public CartesianNode() {
         this.neighbors = new ArrayList();
         this.level = 0;
+        this.abstractOverhang = null;
         this.concreteOverhang = null;
         this.usedOverhangs = new HashSet();
     }
