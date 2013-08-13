@@ -7,6 +7,7 @@ package Controller.algorithms.nonmodasm;
 import Controller.algorithms.PrimerDesign;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
+import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
 import java.util.ArrayList;
 
@@ -17,6 +18,9 @@ import java.util.ArrayList;
 public class RHomologyPrimerDesign {
     
     public static ArrayList<String> homologousRecombinationPrimers(RNode node, ArrayList<RNode> l0Nodes, Collector coll, Double meltingTemp, Integer targetLength) {
+        
+        System.out.println("node.getComposition(): " + node.getComposition());
+        System.out.println("l0Nodes.size(): " + l0Nodes.size());
         
         //initialize primer parameters
         ArrayList<String> oligos = new ArrayList<String>(2);
@@ -59,4 +63,8 @@ public class RHomologyPrimerDesign {
         return oligos;
     }
     
+    /** Traverses graphs and looks for parts that are too small for homologous recombination and merges them with their neighbor(s) **/
+    public void smallPartHomologyGraphMerge (ArrayList<RGraph> optimalGraphs) {
+        
+    }
 }

@@ -135,11 +135,13 @@ public class RavenController {
     //input: design number refers to the design number on the client
     public JSONArray generatePartsList(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
+        
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
         for (RGraph result : _assemblyGraphs) {
             for (Part p : result.getPartsInGraph(_collector)) {
+                
                 if (!usedParts.contains(p)) {
                     usedParts.add(p);
                 }
@@ -150,6 +152,7 @@ public class RavenController {
                 }
             }
         }
+        
         //extract information from parts and write file
         String partList = "[";
         FileWriter fw = new FileWriter(file);
@@ -172,16 +175,30 @@ public class RavenController {
                     type = tags.get(k).substring(6);
                 }
             }
+            
+            System.out.println("name: " + p.getName());
+            System.out.println("tags: " + tags);
+            
             String composition = "";
 
             if (p.isBasic()) {
+                composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             } else {
-                composition = "";
                 type = "composite";
                 for (int i = 0; i < p.getComposition().size(); i++) {
                     Part subpart = p.getComposition().get(i);
-                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(i);
+
+                    ArrayList<String> searchTags = subpart.getSearchTags();
+                    ArrayList<String> subPartDirection = ClothoReader.parseTags(searchTags, "Direction:");
+                    for (int k = 0; k < tags.size(); k++) {
+                        if (tags.get(k).startsWith("LO:")) {
+                            LO = tags.get(k).substring(4);
+                        } else if (tags.get(k).startsWith("RO:")) {
+                            RO = tags.get(k).substring(4);
+                        } 
+                    }
+                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + subPartDirection.get(0);
                 }
 
                 composition = composition.substring(1);
@@ -644,8 +661,8 @@ public class RavenController {
         _forbidden = forbidden;
         _discouraged = discouraged;
         _statistics = new Statistics();
-        _vectorLibrary = new ArrayList();
-        _partLibrary = new ArrayList();
+        _vectorLibrary = new ArrayList<Vector>();
+        _partLibrary = new ArrayList<Part>();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
