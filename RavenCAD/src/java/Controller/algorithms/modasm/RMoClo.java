@@ -47,7 +47,6 @@ public class RMoClo extends RGeneral {
 
             //Create hashMem parameter for createAsmGraph_sgp() call
             HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
-            ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
@@ -74,7 +73,7 @@ public class RMoClo extends RGeneral {
             valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nsecond pass: " + valid);
             HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
-            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
+            assignFinalOverhangs(optimalGraphs, finalOverhangHash);
             valid = validateOverhangs(optimalGraphs);
             System.out.println("##############################\nfinal pass: " + valid);
             assignScars(optimalGraphs);
@@ -92,7 +91,7 @@ public class RMoClo extends RGeneral {
      * First step of overhang assignment - enforce numeric place holders for
      * overhangs, ie no overhang redundancy in any step *
      */
-        private void enforceOverhangRules(ArrayList<RGraph> optimalGraphs) {
+    private void enforceOverhangRules(ArrayList<RGraph> optimalGraphs) {
 
         //Initialize fields that record information to save complexity for future steps
         _encounteredCompositions = new HashSet<String>();
@@ -146,10 +145,10 @@ public class RMoClo extends RGeneral {
                     ArrayList<String> l0Dir = new ArrayList<String>();
                     l0Dir.add(l0Direction);
                     l0Node.setDirection(l0Dir);
-                }               
+                }
                 int size = l0Node.getDirection().size();
                 rootDir.subList(0, size).clear();
-                
+
                 HashMap<String, ArrayList<RNode>> directionHash;
                 ArrayList<RNode> nodeList;
 
@@ -711,251 +710,221 @@ public class RMoClo extends RGeneral {
     //concurrent optimizes vector assignment based on vector assignment
     //prioritize existing parts with correct overhangs
     //next priority is overhangs that vectors already have
-    private void optimizeOverhangVectors(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet, HashMap<String, String> finalOverhangHash) {
-        ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
-        //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za
+    public void assignFinalOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
+        HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap();
+        HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap(); //key: abstract overhang, value: set of all compositions associated with that composition
+        HashMap<String, HashSet<String>> abstractRightCompositionHash = new HashMap(); //key: composition, value: set of all abstract overhangs associated with that composition
+        HashMap<String, HashSet<String>> compositionLeftConcreteHash = new HashMap();
+        HashMap<String, HashSet<String>> compositionRightConcreteHash = new HashMap();
+        HashSet<String> compositionOverhangDirections = new HashSet(); //concatentation of compositionOverhang and direction seen in the partLibrary
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
-        HashMap<String, Integer> concreteOverhangFrequencyHash = new HashMap(); //key: concrete overhang pair, value: how often does that overhang pair appear
-        allOverhangs.removeAll(finalOverhangHash.values());
-        HashSet<String> vectorOverhangPairs = new HashSet();
 
-        //gather all overhangs for existing vectors
-        HashMap<Integer, ArrayList<String>> vectorOverhangHash = new HashMap(); //key: level, value: overhangs for that level
-        ArrayList<Vector> allVectors = _vectorLibrary;
-
-        for (Vector v : allVectors) {
-            String overhangString = v.getLeftoverhang() + "|" + v.getRightOverhang();
-            vectorOverhangPairs.add(overhangString);
-            ArrayList<String> levelOverhangs = vectorOverhangHash.get(v.getLevel());
-
-            if (levelOverhangs != null) {
-                if (!levelOverhangs.contains(overhangString)) {
-                    levelOverhangs.add(overhangString);
+        for (RGraph graph : graphs) {
+            for (RNode current : _rootBasicNodeHash.get(graph.getRootNode())) {
+                if (!abstractConcreteHash.containsKey(current.getLOverhang())) {
+                    abstractConcreteHash.put(current.getLOverhang(), new HashSet());
+                }
+                if (!abstractConcreteHash.containsKey(current.getROverhang())) {
+                    abstractConcreteHash.put(current.getROverhang(), new HashSet());
+                }
+                if (abstractLeftCompositionHash.containsKey(current.getLOverhang())) {
+                    abstractLeftCompositionHash.get(current.getLOverhang()).add(current.getComposition().toString());
+                } else {
+                    HashSet<String> toAddLeft = new HashSet();
+                    toAddLeft.add(current.getComposition().toString());
+                    abstractLeftCompositionHash.put(current.getLOverhang(), toAddLeft);
+                }
+                if (abstractRightCompositionHash.containsKey(current.getROverhang())) {
+                    abstractRightCompositionHash.get(current.getROverhang()).add(current.getComposition().toString());
+                } else {
+                    HashSet<String> toAddRight = new HashSet();
+                    toAddRight.add(current.getComposition().toString());
+                    abstractRightCompositionHash.put(current.getROverhang(), toAddRight);
+                }
+            }
+        }
+        for (Part p : _partLibrary) {
+            if (p.getDirections().isEmpty()) {
+                //TODO shouldn't need this once part import is fixed
+                p.addSearchTag("Direction: [+]");
+            }
+            compositionOverhangDirections.add(p.getStringComposition() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + p.getDirections());
+            //populate compositionConcreteHash's
+            String currentComposition = p.getStringComposition().toString();
+            if (compositionLeftConcreteHash.containsKey(currentComposition)) {
+                compositionLeftConcreteHash.get(currentComposition).add(p.getLeftOverhang());
+                compositionRightConcreteHash.get(currentComposition).add(p.getRightOverhang());
+            } else {
+                HashSet<String> toAddLeft = new HashSet();
+                HashSet<String> toAddRight = new HashSet();
+                toAddLeft.add(p.getLeftOverhang());
+                toAddRight.add(p.getRightOverhang());
+                compositionLeftConcreteHash.put(currentComposition, toAddLeft);
+                compositionRightConcreteHash.put(currentComposition, toAddRight);
+            }
+            //keep track of existing overhang pairs
+        }
+        for (String key : abstractLeftCompositionHash.keySet()) {
+            for (String composition : abstractLeftCompositionHash.get(key)) {
+                for (String concreteLeftOverhang : compositionLeftConcreteHash.get(composition)) {
+                    abstractConcreteHash.get(key).add(concreteLeftOverhang);
+                }
+            }
+            //add "new overhang" denoted by * character
+            abstractConcreteHash.get(key).add("*");
+        }
+        for (String key : abstractRightCompositionHash.keySet()) {
+            for (String composition : abstractRightCompositionHash.get(key)) {
+                for (String concreteRightOverhang : compositionRightConcreteHash.get(composition)) {
+                    abstractConcreteHash.get(key).add(concreteRightOverhang);
+                }
+            }
+            //add "new overhang" denoted by * character
+            abstractConcreteHash.get(key).add("*");
+        }
+        //build the graph
+        ArrayList<CartesianNode> previousNodes = null;
+        ArrayList<CartesianNode> rootNodes = new ArrayList();
+        ArrayList<String> sortedAbstractOverhangs = new ArrayList(abstractConcreteHash.keySet());
+        Collections.sort(sortedAbstractOverhangs);
+        int level = 0;
+        for (String abstractOverhang : sortedAbstractOverhangs) {
+            ArrayList<CartesianNode> currentNodes = new ArrayList();
+            HashSet<String> concreteOverhangs = abstractConcreteHash.get(abstractOverhang);
+            for (String overhang : concreteOverhangs) {
+                CartesianNode newNode = new CartesianNode();
+                newNode.setLevel(level);
+                newNode.setAbstractOverhang(abstractOverhang);
+                newNode.setConcreteOverhang(overhang);
+                currentNodes.add(newNode);
+            }
+            if (previousNodes != null) {
+                for (CartesianNode prev : previousNodes) {
+                    for (CartesianNode node : currentNodes) {
+                        if (!prev.getUsedOverhangs().contains(node.getConcreteOverhang())) {
+                            prev.addNeighbor(node);
+                            node.setUsedOverhangs((HashSet) prev.getUsedOverhangs().clone());
+                            if (!node.getConcreteOverhang().equals("*")) {
+                                node.getUsedOverhangs().add(node.getConcreteOverhang());
+                            }
+                        }
+                    }
                 }
             } else {
-                levelOverhangs = new ArrayList();
-                levelOverhangs.add(overhangString);
-                vectorOverhangHash.put(v.getLevel(), levelOverhangs);
-            }
-            if (concreteOverhangFrequencyHash.containsKey(overhangString)) {
-                concreteOverhangFrequencyHash.put(overhangString, concreteOverhangFrequencyHash.get(overhangString) + 1);
-            } else {
-                concreteOverhangFrequencyHash.put(overhangString, 1);
-            }
-        }
-
-        //gather all overhangs for existing parts
-        ArrayList<Part> allParts = _partLibrary;
-        HashMap<String, ArrayList<String>> compositionConcreteOverhangHash = new HashMap(); //key: part composition, value: arrayList of concrete overhangs that appear for that compositiong
-        HashMap<String, ArrayList<String>> reservedLeftFinalHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
-        HashMap<String, ArrayList<String>> reservedRightFinalHash = new HashMap(); //key: string composition, value: arrayList of abstract overhangs 'reserved' for that composition
-
-        for (Part p : allParts) {
-
-            if (p.getLeftOverhang().length() > 0 && p.getRightOverhang().length() > 0) {
-                String composition = p.getStringComposition().toString();
-
-                if (_encounteredCompositions.contains(composition)) {
-                    allOverhangs.remove(p.getLeftOverhang());
-                    allOverhangs.remove(p.getRightOverhang());
-                    ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get("[" + p.getType().toLowerCase() + "]");
-                    ArrayList<String> reservedRightOverhangs = reservedRightFinalHash.get("[" + p.getType().toLowerCase() + "]");
-
-                    if (reservedLeftOverhangs != null) {
-
-                        if (!reservedLeftOverhangs.contains(p.getLeftOverhang())) {
-                            reservedLeftOverhangs.add(p.getLeftOverhang());
-                        }
-                    } else {
-                        reservedLeftOverhangs = new ArrayList();
-                        reservedLeftFinalHash.put("[" + p.getType().toLowerCase() + "]", reservedLeftOverhangs);
-
-                        if (!reservedLeftOverhangs.contains(p.getLeftOverhang())) {
-                            reservedLeftOverhangs.add(p.getLeftOverhang());
-                        }
-                    }
-
-                    if (reservedRightOverhangs != null) {
-
-                        if (!reservedRightOverhangs.contains(p.getRightOverhang())) {
-                            reservedRightOverhangs.add(p.getRightOverhang());
-                        }
-                    } else {
-                        reservedRightOverhangs = new ArrayList();
-                        reservedRightFinalHash.put("[" + p.getType().toLowerCase() + "]", reservedRightOverhangs);
-
-                        if (!reservedRightOverhangs.contains(p.getRightOverhang())) {
-                            reservedRightOverhangs.add(p.getRightOverhang());
-                        }
-                    }
+                for (CartesianNode root : currentNodes) {
+                    rootNodes.add(root);
                 }
             }
+            previousNodes = currentNodes;
+            level++;
         }
-
-        //pick overhangs
-        for (RGraph graph : optimalGraphs) {
-            ArrayList<RNode> compositionNodes = _rootBasicNodeHash.get(graph.getRootNode());
-            for (RNode currentNode : compositionNodes) {
-                ArrayList<String> freeLeftOverhangs = (ArrayList<String>) allOverhangs.clone();
-                ArrayList<String> freeRightOverhangs = (ArrayList<String>) allOverhangs.clone();
-                ArrayList<String> reservedLeftOverhangs = reservedLeftFinalHash.get(currentNode.getType().toString().toLowerCase());
-                ArrayList<String> reservedRightOverhangs = reservedRightFinalHash.get(currentNode.getType().toString().toLowerCase());
-                RNode parent = _parentHash.get(currentNode);
-
-                if (reservedLeftOverhangs != null) {
-                    Collections.sort(reservedLeftOverhangs);
-                    freeLeftOverhangs.addAll(0, reservedLeftOverhangs);
+        //find assignments
+        int targetLength = sortedAbstractOverhangs.size(); //number of abstract overhangs
+        //each value is a potential concrete assignment, 
+        //the first value in each assignment corresponds to the first sortedAbstractOverhang
+        ArrayList<ArrayList<String>> completeAssignments = new ArrayList();
+        ArrayList<String> currentSolution;
+        HashMap<CartesianNode, CartesianNode> parentHash = new HashMap(); //key: node, value: parent node
+        for (CartesianNode root : rootNodes) {
+            currentSolution = new ArrayList();
+            ArrayList<CartesianNode> stack = new ArrayList();
+            stack.add(root);
+            boolean toParent = false; // am i returning to a parent node?
+            HashSet<String> seenPaths = new HashSet();
+            while (!stack.isEmpty()) {
+                CartesianNode currentNode = stack.get(0);
+                stack.remove(0);
+                String currentPath = currentSolution.toString();
+                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->");
+                if (!toParent) {
+                    currentSolution.add(currentNode.getConcreteOverhang());
+                    currentPath = currentPath + "->" + currentNode.getConcreteOverhang();
+                    seenPaths.add(currentPath);
                 } else {
-                    reservedLeftOverhangs = new ArrayList();
-                    reservedLeftFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedLeftOverhangs);
+                    toParent = false;
                 }
-
-                if (reservedRightOverhangs != null) {
-                    Collections.sort(reservedRightOverhangs);
-                    freeRightOverhangs.addAll(0, reservedRightOverhangs);
-                } else {
-                    reservedRightOverhangs = new ArrayList();
-                    reservedRightFinalHash.put(currentNode.getType().toString().toLowerCase(), reservedRightOverhangs);
-                }
-
-                //find basic parts position in the composition of its parent
-                int partIndex = -1;
-                ArrayList<String> parentNeighbors = parent.getComposition();
-                for (int i = 0; i < parentNeighbors.size(); i++) {
-                    String compositionString = currentNode.getName();
-                    if (compositionString.equals(parentNeighbors.get(i))) {
-                        partIndex = i;
-                    }
-                }
-
-                if (partIndex == 0 || partIndex == parentNeighbors.size() - 1) {
-                    RNode grandParent = _parentHash.get(parent);
-
-                    if (grandParent != null) {
-
-                        for (RNode uncle : grandParent.getNeighbors()) {
-                            freeLeftOverhangs.remove(finalOverhangHash.get(uncle.getLOverhang()));
-                            freeLeftOverhangs.remove(finalOverhangHash.get(uncle.getROverhang()));
-                            freeRightOverhangs.remove(finalOverhangHash.get(uncle.getLOverhang()));
-                            freeRightOverhangs.remove(finalOverhangHash.get(uncle.getROverhang()));
+                CartesianNode parent = parentHash.get(currentNode);
+                int childrenCount = 0;
+                for (CartesianNode neighbor : currentNode.getNeighbors()) {
+                    String edge = currentPath + "->" + neighbor.getConcreteOverhang();
+                    if (!seenPaths.contains(edge)) {
+                        if (neighbor.getLevel() > currentNode.getLevel()) {
+                            stack.add(0, neighbor);
+                            parentHash.put(neighbor, currentNode);
+                            childrenCount++;
                         }
                     }
                 }
-
-                String currentLeftOverhang = currentNode.getLOverhang();
-                String currentRightOverhang = currentNode.getROverhang();
-
-                //assign left overhang
-                if (!finalOverhangHash.containsKey(currentLeftOverhang)) {
-                    String newOverhang = freeLeftOverhangs.get(0);
-                    int counter = 1;
-
-                    while (newOverhang.equals(finalOverhangHash.get(currentRightOverhang))
-                            || newOverhang.equals(finalOverhangHash.get(parent.getROverhang()))) {
-                        newOverhang = freeLeftOverhangs.get(counter);
-                        counter = counter + 1;
+                if (childrenCount == 0) {
+                    //no children means we've reached the end of a branch
+                    if (currentSolution.size() == targetLength) {
+                        //yay complete assignment
+                        completeAssignments.add((ArrayList<String>) currentSolution.clone());
                     }
-                    //detect and handle inverted overhangs
-                    if (currentLeftOverhang.indexOf("*") > -1) {
-                        String starlessLeftOverhang = currentLeftOverhang.substring(0, currentLeftOverhang.indexOf("*"));
-                        if (finalOverhangHash.containsKey(starlessLeftOverhang)) {
-                            String starlessLeftAssignment = finalOverhangHash.get(starlessLeftOverhang);
-                            if (starlessLeftAssignment.indexOf("*") > -1) {
-                                newOverhang = starlessLeftAssignment.substring(0, starlessLeftOverhang.indexOf("*"));
-                            } else {
-                                newOverhang = starlessLeftAssignment + "*";
-                            }
-
-                        }
-                    } else {
-                        String starredLeftOverhang = currentLeftOverhang + "*";
-                        if (finalOverhangHash.containsKey(starredLeftOverhang)) {
-                            String starredLeftAssignment = finalOverhangHash.get(starredLeftOverhang);
-                            if (starredLeftAssignment.indexOf("*") > -1) {
-                                newOverhang = starredLeftAssignment.substring(0, starredLeftAssignment.indexOf("*"));
-                            } else {
-                                newOverhang = starredLeftAssignment + "*";
-                            }
-
-                        }
+                    if (currentSolution.size() > 0) {
+                        currentSolution.remove(currentSolution.size() - 1);
                     }
-                    finalOverhangHash.put(currentLeftOverhang, newOverhang);
-                    allOverhangs.remove(newOverhang);
-
-                    if (!reservedLeftOverhangs.contains(newOverhang) && !reservedRightOverhangs.contains(newOverhang)) {
-                        reservedLeftOverhangs.add(newOverhang);
-                    }
-                    freeLeftOverhangs.remove(newOverhang);
-                    freeRightOverhangs.remove(newOverhang);
-
-                    for (String type : reservedLeftFinalHash.keySet()) {
-                        reservedLeftFinalHash.get(type).remove(newOverhang);
-                        reservedRightFinalHash.get(type).remove(newOverhang);
-                    }
-                }
-
-                //assign right overhang
-                if (!finalOverhangHash.containsKey(currentRightOverhang)) {
-                    String newOverhang = freeRightOverhangs.get(0);
-                    int counter = 1;
-
-                    while (newOverhang.equals(finalOverhangHash.get(currentLeftOverhang))
-                            || newOverhang.equals(finalOverhangHash.get(parent.getLOverhang()))) {
-                        newOverhang = freeRightOverhangs.get(counter);
-                        counter = counter + 1;
-                    }
-                    //detect and handle inverted overhangs
-                    if (currentRightOverhang.indexOf("*") > -1) {
-                        String starlessRightOverhang = currentRightOverhang.substring(0, currentRightOverhang.indexOf("*"));
-                        if (finalOverhangHash.containsKey(starlessRightOverhang)) {
-                            String starlessRightAssignment = finalOverhangHash.get(starlessRightOverhang);
-                            if (starlessRightAssignment.indexOf("*") > -1) {
-                                newOverhang = starlessRightAssignment.substring(0, starlessRightOverhang.indexOf("*"));
-                            } else {
-                                newOverhang = starlessRightAssignment + "*";
-                            }
-
-                        }
-                    } else {
-                        String starredRightOverhang = currentRightOverhang + "*";
-                        if (finalOverhangHash.containsKey(starredRightOverhang)) {
-                            String starredRightAssignment = finalOverhangHash.get(starredRightOverhang);
-                            if (starredRightAssignment.indexOf("*") > -1) {
-                                newOverhang = starredRightAssignment.substring(0, starredRightAssignment.indexOf("*"));
-                            } else {
-                                newOverhang = starredRightAssignment + "*";
-                            }
-
-                        }
-                    }
-                    finalOverhangHash.put(currentRightOverhang, newOverhang);
-                    allOverhangs.remove(newOverhang);
-
-                    if (!reservedLeftOverhangs.contains(newOverhang) && !reservedRightOverhangs.contains(newOverhang)) {
-                        reservedRightOverhangs.add(newOverhang);
-                    }
-                    freeLeftOverhangs.remove(newOverhang);
-                    freeRightOverhangs.remove(newOverhang);
-
-                    for (String type : reservedLeftFinalHash.keySet()) {
-                        reservedLeftFinalHash.get(type).remove(newOverhang);
-                        reservedRightFinalHash.get(type).remove(newOverhang);
+                    if (parent != null) {
+                        toParent = true;
+                        stack.add(0, parent);
                     }
                 }
             }
         }
-
-        //decide what antibiotic resistance goes with each level
+        //score assignments
+        ArrayList<RNode> basicNodes = new ArrayList();
+        for (RNode key : _rootBasicNodeHash.keySet()) {
+            for (RNode basicNode : _rootBasicNodeHash.get(key)) {
+                if (!basicNodes.contains(basicNode)) {
+                    basicNodes.add(basicNode);
+                }
+            }
+        }
+        int bestScore = 1000000000;
+        HashMap<String, String> bestAssignment = null;
+        for (ArrayList<String> assignment : completeAssignments) {
+            HashMap<String, String> currentAssignment = new HashMap();
+            int currentScore = 0;
+            for (int i = 0; i < sortedAbstractOverhangs.size(); i++) {
+                String currentAbstractOverhang = sortedAbstractOverhangs.get(i);
+                if (finalOverhangHash.containsKey(currentAbstractOverhang)) {
+                    currentAssignment.put(currentAbstractOverhang, finalOverhangHash.get(currentAbstractOverhang));
+                } else {
+                    currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
+                }
+            }
+            for (RNode basicNode : basicNodes) {
+                String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
+                if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
+                    currentScore++;
+                }
+            }
+            if (currentScore < bestScore) {
+                bestScore = currentScore;
+                bestAssignment = currentAssignment;
+            }
+        }
+        //figure out what to do with star overhangs
+        HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
+        int newOverhang = 0;
+        for (String starAbstract : bestAssignment.keySet()) {
+            if (bestAssignment.get(starAbstract).equals("*")) {
+                while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
+                    newOverhang++;
+                }
+                bestAssignment.put(starAbstract, String.valueOf(newOverhang));
+                assignedOverhangs.add(String.valueOf(newOverhang));
+            }
+        }
+        //assign new overhangs
+        finalOverhangHash = bestAssignment;
+        //traverse graph and assign overhangs generate vectors
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, neomycin, puromycin, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
-        allVectors = _vectorLibrary;
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
-
-        for (Vector v : allVectors) {
-
+        for (Vector v : _vectorLibrary) {
             if (!existingAntibiotics.contains(v.getResistance())) {
                 existingAntibiotics.add(v.getResistance());
-
                 if (existingAntibioticsHash.get(v.getLevel()) == null) {
                     existingAntibioticsHash.put(v.getLevel(), new ArrayList());
                 }
@@ -967,17 +936,14 @@ public class RMoClo extends RGeneral {
         }
         int maxStage = 0;
 
-        for (RGraph graph : optimalGraphs) {
+        for (RGraph graph : graphs) {
             if (graph.getStages() > maxStage) {
                 maxStage = graph.getStages();
             }
         }
-
         for (int i = 0; i <= maxStage; i++) {
             String resistance = "";
-
             if (existingAntibioticsHash.get(i) != null) {
-
                 if (existingAntibioticsHash.get(i).size() > 0) {
                     resistance = existingAntibioticsHash.get(i).get(0);
                     existingAntibioticsHash.get(i).remove(0);
@@ -989,22 +955,22 @@ public class RMoClo extends RGeneral {
             levelResistanceHash.put(i, resistance);
         }
 
-        //traverse graphs and assign appropriate overhangs and vectors
-        for (RGraph graph : optimalGraphs) {
-            System.out.println("finalizing: " + graph.getRootNode().getComposition());
-            int reactions = 0;
-            ArrayList<RNode> queue = new ArrayList<RNode>();
+        for (RGraph graph : graphs) {
+            ArrayList<RNode> queue = new ArrayList();
             HashSet<RNode> seenNodes = new HashSet();
             queue.add(graph.getRootNode());
-
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
-                current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
-                current.setROverhang(finalOverhangHash.get(currentRightOverhang));
+                if (finalOverhangHash.containsKey(currentLeftOverhang)) {
+                    current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
+                }
+                if (finalOverhangHash.containsKey(currentRightOverhang)) {
+                    current.setROverhang(finalOverhangHash.get(currentRightOverhang));
+                }
                 currentLeftOverhang = current.getLOverhang();
                 currentRightOverhang = current.getROverhang();
                 RVector newVector = new RVector();
@@ -1014,56 +980,16 @@ public class RMoClo extends RGeneral {
                 newVector.setName("DVL" + current.getStage());
                 newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
                 current.setVector(newVector);
-
                 for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
                     }
                 }
-
-                //count the number of reactions
-                ArrayList<String> overhangOptions = compositionConcreteOverhangHash.get(current.getComposition().toString());
-                String overhangString = currentLeftOverhang + "|" + currentRightOverhang;
-
-                //handle inverted overhangs
-                String invertedLeftOverhang = "";
-                String invertedRightOverhang = "";
-                if (currentLeftOverhang.indexOf("*") > -1) {
-                    invertedLeftOverhang = currentLeftOverhang.substring(0, currentLeftOverhang.indexOf("*"));
-                } else {
-                    invertedLeftOverhang = currentLeftOverhang + "*";
-                }
-                if (currentRightOverhang.indexOf("*") > -1) {
-                    invertedRightOverhang = currentRightOverhang.substring(0, currentRightOverhang.indexOf("*"));
-                } else {
-                    invertedRightOverhang = currentRightOverhang + "*";
-                }
-                String invertedOverhangString = invertedRightOverhang + "|" + invertedLeftOverhang;
-                if (overhangOptions != null) {
-                    if (!overhangOptions.contains(overhangString) && !overhangOptions.contains(invertedOverhangString)) {
-                        reactions = reactions + 1;
-                        overhangOptions.add(overhangString);
-                    }
-                } else {
-                    if (current.getComposition().size() == 1) {
-                        reactions = reactions + 1;
-                    }
-                    ArrayList<String> toAdd = new ArrayList();
-                    toAdd.add(overhangString);
-                    compositionConcreteOverhangHash.put(current.getComposition().toString(), toAdd);
-                }
-                if (!vectorOverhangPairs.contains(overhangString)) {
-                    reactions = reactions + 1;
-                    vectorOverhangPairs.add(overhangString);
-                }
             }
-
-
-            graph.setReactions(reactions);
         }
     }
-
     //sets user specified overhangs before algorithm computes the rest
+
     private HashMap<String, String> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
         for (RGraph graph : optimalGraphs) {

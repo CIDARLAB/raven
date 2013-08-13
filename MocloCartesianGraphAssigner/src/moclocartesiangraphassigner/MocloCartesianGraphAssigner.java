@@ -332,7 +332,18 @@ public class MocloCartesianGraphAssigner {
                 bestAssignment = currentAssignment;
             }
         }
-
+        //figure out what to do with star overhangs
+        HashSet<String> assignedOverhangs= new HashSet(bestAssignment.values());
+        int newOverhang =0;
+        for(String starAbstract:bestAssignment.keySet()) {
+            if(bestAssignment.get(starAbstract).equals("*")) {
+                while(assignedOverhangs.contains(String.valueOf(newOverhang))) {
+                    newOverhang++;
+                }
+                bestAssignment.put(starAbstract, String.valueOf(newOverhang));
+                assignedOverhangs.add(String.valueOf(newOverhang));
+            }                
+        }
         //assign new overhangs
         finalOverhangHash = bestAssignment;
         //traverse graph and assign overhangs generate vectors

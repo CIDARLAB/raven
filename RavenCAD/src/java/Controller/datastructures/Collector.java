@@ -142,7 +142,6 @@ public class Collector {
                         toAdd.add(aPart.getName());
                         partNameRootHash.put(aPart.getName(), toAdd);
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
-                        System.out.println("before: " + partUUIDHash.keySet());
                     } else {
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
                     }
