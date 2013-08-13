@@ -48,7 +48,8 @@ public class RInstructions {
         for (RNode root : roots) {
             
             ArrayList<RNode> l0Nodes = rootBasicNodeHash.get(root);
-
+            System.out.println("root composition: " + root.getComposition());
+            
             //append header for each goal part
             instructions = instructions + "**********************************************"
                     + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
