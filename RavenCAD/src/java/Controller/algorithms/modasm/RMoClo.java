@@ -714,15 +714,12 @@ public class RMoClo extends RGeneral {
         ArrayList<String> allOverhangs = new ArrayList(Arrays.asList("A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z".split(","))); //overhangs that don't exist in part or vector library
         //aa,ba,ca,da,ea,fa,ga,ha,ia,ja,ka,la,ma,na,oa,pa,qa,ra,sa,ta,ua,va,wa,xa,ya,za
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
-        HashMap<String, Integer> concreteOverhangFrequencyHash = new HashMap(); //key: concrete overhang pair, value: how often does that overhang pair appear
         allOverhangs.removeAll(finalOverhangHash.values());
         HashSet<String> vectorOverhangPairs = new HashSet();
 
         //gather all overhangs for existing vectors
         HashMap<Integer, ArrayList<String>> vectorOverhangHash = new HashMap(); //key: level, value: overhangs for that level
-        ArrayList<Vector> allVectors = _vectorLibrary;
-
-        for (Vector v : allVectors) {
+        for (Vector v : _vectorLibrary) {
             String overhangString = v.getLeftoverhang() + "|" + v.getRightOverhang();
             vectorOverhangPairs.add(overhangString);
             ArrayList<String> levelOverhangs = vectorOverhangHash.get(v.getLevel());
@@ -735,11 +732,6 @@ public class RMoClo extends RGeneral {
                 levelOverhangs = new ArrayList();
                 levelOverhangs.add(overhangString);
                 vectorOverhangHash.put(v.getLevel(), levelOverhangs);
-            }
-            if (concreteOverhangFrequencyHash.containsKey(overhangString)) {
-                concreteOverhangFrequencyHash.put(overhangString, concreteOverhangFrequencyHash.get(overhangString) + 1);
-            } else {
-                concreteOverhangFrequencyHash.put(overhangString, 1);
             }
         }
 
@@ -946,11 +938,10 @@ public class RMoClo extends RGeneral {
 
         //decide what antibiotic resistance goes with each level
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, neomycin, puromycin, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
-        allVectors = _vectorLibrary;
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
 
-        for (Vector v : allVectors) {
+        for (Vector v : _vectorLibrary) {
 
             if (!existingAntibiotics.contains(v.getResistance())) {
                 existingAntibiotics.add(v.getResistance());
