@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -785,6 +786,26 @@ public class RavenController {
         out.write(_instructions);
         out.close();
 
+        //write graph file text file
+        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
+        fw = new FileWriter(file);
+        out = new BufferedWriter(fw);
+        JSONArray edges = d3Graph.getJSONArray("edges");
+        JSONObject images = d3Graph.getJSONObject("images");
+        out.write("digraph{\n");
+        Iterator keys = images.keys();
+        while(keys.hasNext() ) {
+            String key = (String) keys.next();
+            out.write("\""+key+"\" [label=\""+images.getString(key)+"\"]\n");
+        }
+        for(int i=0;i<edges.length();i++) {
+            out.write(edges.getString(i)+"\n");
+        }
+        out.write("}");
+        out.close();
+
+        
+        
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);

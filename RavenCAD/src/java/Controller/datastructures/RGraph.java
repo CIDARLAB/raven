@@ -12,9 +12,11 @@ import java.util.HashMap;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -107,7 +109,7 @@ public class RGraph {
      * Return all vectors in this graph *
      */
     public ArrayList<Vector> getVectorsInGraph(Collector coll) {
-        ArrayList<Vector> vectors = new ArrayList<Vector>();
+        ArrayList<Vector> toReturn = new ArrayList<Vector>();
         HashSet<RNode> seenNodes = new HashSet();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
@@ -118,7 +120,7 @@ public class RGraph {
             if (current.getVector() != null) {
                 Vector toAdd = coll.getVector(current.getVector().getUUID(), true);
                 if (toAdd != null) {
-                    vectors.add(toAdd);
+                    toReturn.add(toAdd);
                 }
             }
             for (RNode neighbor : current.getNeighbors()) {
@@ -127,7 +129,7 @@ public class RGraph {
                 }
             }
         }
-        return vectors;
+        return toReturn;
     }
 
     /**
@@ -405,6 +407,107 @@ public class RGraph {
     }
 
     /**
+     * Returns a part library and finds all forward and reverse characteristics
+     * of each part *
+     */
+    public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
+
+        HashSet<String> startPartsLOcompRO = new HashSet<String>();
+
+        //Go through parts library, put all compositions into hash of things that already exist
+        for (Part aPart : partLib) {
+
+            //Get forward and reverse part key string
+            ArrayList<Part> partComp = aPart.getComposition();
+            ArrayList<String> comp = new ArrayList<String>();
+            for (int j = 0; j < partComp.size(); j++) {
+                String name = partComp.get(j).getName();
+                comp.add(name);
+            }
+            ArrayList<String> revComp = new ArrayList<String>();
+            revComp.addAll(comp);
+            Collections.reverse(revComp);
+
+            ArrayList<String> searchTags = aPart.getSearchTags();
+            ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
+            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
+
+            ArrayList<String> revDir = new ArrayList<String>();
+            revDir.addAll(dir);
+            Collections.reverse(revDir);
+            ArrayList<String> revScars = new ArrayList<String>();
+            revScars.addAll(scars);
+            Collections.reverse(revScars);
+            for (String aRevScar : revScars) {
+                if (aRevScar.contains("*")) {
+                    aRevScar = aRevScar.replace("*", "");
+                } else {
+                    aRevScar = aRevScar + "*";
+                }
+            }
+
+            String lOverhang = aPart.getLeftOverhang();
+            String rOverhang = aPart.getRightOverhang();
+            String lOverhangR = aPart.getRightOverhang();
+            String rOverhangR = aPart.getLeftOverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+
+            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
+            startPartsLOcompRO.add(aPartCompDirScarLORO);
+            startPartsLOcompRO.add(aPartCompDirScarLOROR);
+        }
+
+        return startPartsLOcompRO;
+    }
+
+    /**
+     * Returns a part library and finds all forward and reverse characteristics
+     * of each part *
+     */
+    public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
+
+        HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
+
+        //Go through vectors library, put all compositions into hash of things that already exist
+        for (Vector aVec : vectorLib) {
+
+            String lOverhang = aVec.getLeftoverhang();
+            String rOverhang = aVec.getRightOverhang();
+            String lOverhangR = aVec.getRightOverhang();
+            String rOverhangR = aVec.getLeftoverhang();
+            if (lOverhangR.contains("*")) {
+                lOverhangR = lOverhangR.replace("*", "");
+            } else {
+                lOverhangR = lOverhangR + "*";
+            }
+            if (rOverhangR.contains("*")) {
+                rOverhangR = rOverhangR.replace("*", "");
+            } else {
+                rOverhangR = rOverhangR + "*";
+            }
+            int stage = aVec.getLevel();
+
+            String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+            String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+
+            startVectorsLOlevelRO.add(aVecLOlevelRO);
+            startVectorsLOlevelRO.add(aVecLOlevelROR);
+        }
+
+        return startVectorsLOlevelRO;
+    }
+
+    /**
      * ************************************************************************
      *
      * GRAPH EXPORT METHODS
@@ -414,7 +517,7 @@ public class RGraph {
     /**
      * Get all the edges of an SDSGraph in Post Order *
      */
-    public ArrayList<String> getPostOrderEdges() {
+  public ArrayList<String> getPostOrderEdges() {
         ArrayList<String> edges = new ArrayList();
         HashSet<String> seenUUIDs = new HashSet();
         seenUUIDs.add(this._rootNode.getUUID());
@@ -424,6 +527,9 @@ public class RGraph {
             seenUUIDs.add(neighbor.getUUID());
             edges = getPostOrderEdgesHelper(neighbor, this._rootNode, edges, seenUUIDs, true);
         }
+        //first edge is the vector
+        edges.add(0, this._rootNode.getUUID() + " -> " + this._rootNode.getVector().getUUID());
+//        edges.add("node -> vector");
         return edges;
     }
 
@@ -460,7 +566,9 @@ public class RGraph {
 
             //Write arc connecting to the parent
             if (neighbor.getComposition().toString().equals(parent.getComposition().toString())) {
-
+                if (current.getStage() != 0) {
+                    edgesToAdd.add(current.getUUID() + " -> " + current.getVector().getUUID());
+                }
                 //Make the edge going in the direction of the node with the greatest composition, whether this is parent or child
                 if (current.getComposition().size() > neighbor.getComposition().size()) {
                     edgesToAdd.add(current.getUUID() + " -> " + neighbor.getUUID());
@@ -469,9 +577,8 @@ public class RGraph {
                 }
             }
         }
-
-        for (String edge : edgesToAdd) {
-            edges.add(edge);
+        for (String s : edgesToAdd) {
+            edges.add(s);
         }
         return edges;
     }
@@ -494,11 +601,26 @@ public class RGraph {
         HashMap<String, String> nodeMap = new HashMap<String, String>();//key is uuid, value is name
         for (String s : edges) {
             String[] tokens = s.split("->");
-            Part vertex1 = coll.getPart(tokens[0].trim(), true);
-            Part vertex2 = coll.getPart(tokens[1].trim(), true);
-            nodeMap.put(vertex1.getUUID(), vertex1.getName());
-            nodeMap.put(vertex2.getUUID(), vertex2.getName());
-            arcsText.append("# ").append(vertex1.getName()).append(" -> ").append(vertex2.getName()).append("\n");
+            String vertex1Name = null;
+            String vertex2Name = null;
+            String vertex1UUID = tokens[0].trim();
+            String vertex2UUID = tokens[1].trim();
+
+            if (coll.getPart(vertex1UUID, true) != null) {
+                vertex1Name = coll.getPart(vertex1UUID, true).getName();
+            }
+            if (coll.getPart(vertex2UUID, true) != null) {
+                vertex2Name = coll.getPart(vertex2UUID, true).getName();
+            }
+            if (vertex1Name == null) {
+                vertex1Name = coll.getVector(vertex1UUID, true).getName();
+            }
+            if (vertex2Name == null) {
+                vertex2Name = coll.getVector(vertex2UUID, true).getName();
+            }
+            nodeMap.put(vertex1UUID, vertex1Name);
+            nodeMap.put(vertex2UUID, vertex2Name);
+            arcsText.append("# ").append(vertex1Name).append(" -> ").append(vertex2Name).append("\n");
             arcsText.append(s).append("\n");
         }
 
@@ -511,6 +633,9 @@ public class RGraph {
             RNode current = stack.pop();
             seenNodes.add(current);
             compositionHash.put(current.getUUID(), current.getComposition().toString());
+            if (current.getVector() != null) {
+                compositionHash.put(current.getVector().getUUID(), current.getVector().getName());
+            }
             for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     stack.add(neighbor);
@@ -527,12 +652,13 @@ public class RGraph {
         return arcsText.toString();
     }
 
+
     //returns a json string that can be parsed by the client
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
         HashMap<String, String> imageURLs = new HashMap();
         HashSet<String> edges = new HashSet();
-        HashSet<String> startPartsLOcompRO = ClothoReader.getExistingPartKeys(partLib);
-        HashSet<String> startVectorsLOlevelRO = ClothoReader.getExistingVectorKeys(vectorLib);
+        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
+        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
         for (RGraph graph : graphs) {
             HashSet<RNode> seenNodes = new HashSet<RNode>();
             ArrayList<RNode> queue = new ArrayList<RNode>();
@@ -595,7 +721,7 @@ public class RGraph {
 
                     if (!startVectorsLOlevelRO.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
-                        edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
+                        edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"");
                         imageURLs.put(NvecID, generatePigeonImage(null, null, null, null, null, null, vecName));
                     }
                 }
@@ -616,7 +742,7 @@ public class RGraph {
                             vecNameN = vectorN.getName();
                         }
                         ArrayList<String> scarsN = neighbor.getScars();
-                        String nodeIDN = neighbor.getNodeKey("+")+vecNameN;
+                        String nodeIDN = neighbor.getNodeKey("+")+"|"+vecNameN;
                         edges.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
                     }
                 }
@@ -636,8 +762,8 @@ public class RGraph {
     private static String generatePigeonImage(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
-
         //Assign left overhang if it exists                
+//        pigeonLine.append("3 ").append(LO).append("\n");
         if (LO != null) {
             pigeonLine.append("5 ").append(LO).append("\n");
         }
@@ -666,8 +792,6 @@ public class RGraph {
                     pigeonLine.append("c ").append(name).append(" 1" + "\n");
                 } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
                     pigeonLine.append("c ").append(name).append(" 2" + "\n");
-                } else if (type.equalsIgnoreCase("resistance") || type.equalsIgnoreCase("rc")) {
-                    pigeonLine.append("c ").append(name).append(" 7" + "\n");
                 } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
                     pigeonLine.append("T ").append(name).append(" 6" + "\n");
                 } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
@@ -707,6 +831,7 @@ public class RGraph {
         if (RO != null) {
             pigeonLine.append("3 ").append(RO).append("\n");
         }
+//        pigeonLine.append("5 ").append(RO).append("\n");
 
         //Vectors
         if (vecName != null) {
