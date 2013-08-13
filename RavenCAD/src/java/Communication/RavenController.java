@@ -700,11 +700,9 @@ public class RavenController {
             _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
-            rootBasicNodeHash = RCPEC.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
-            rootBasicNodeHash = RGibson.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("goldengate")) {
             _assemblyGraphs = runGoldenGate();
@@ -713,7 +711,6 @@ public class RavenController {
             _assemblyGraphs = runMoClo();
         } else if (method.equals("slic")) {
             _assemblyGraphs = runSLIC();
-            rootBasicNodeHash = RSLIC.getRootBasicNodeHash();
             scarless = true;
         }
 
@@ -752,28 +749,29 @@ public class RavenController {
             for (RGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result);
                 writer.fixCompositeUUIDs(_collector, result);
-                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+//                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+//                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
             }
         }
         JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
 
         System.out.println("GRAPH AND ARCS FILES CREATED");
-        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+//        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+        String mergedArcText = "";
 
         //generate instructions
         if (method.equals("biobricks")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
         } else if (method.equals("cpec")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
         } else if (method.equals("gibson")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         } else if (method.equals("moclo")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
         } else if (method.equals("slic")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
         }
 
         //write instructions file

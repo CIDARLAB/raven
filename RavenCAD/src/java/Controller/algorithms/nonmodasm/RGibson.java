@@ -137,6 +137,19 @@ public class RGibson extends RGeneral {
     
     /** Get the root basic node hash **/
     public static HashMap<RNode, ArrayList<RNode>> getRootBasicNodeHash() {
+        
+//        System.out.println("Retrieving _rootBasicNodeHash ********************");
+//        Set<RNode> keySet = _rootBasicNodeHash.keySet();
+//        for (RNode root : keySet) {
+//            System.out.println("root comp: " + root.getComposition() + " root uuid: " + root.getUUID());
+//            ArrayList<RNode> get = _rootBasicNodeHash.get(root);
+//            for (RNode node : get) {
+//                System.out.println("node comp: " + node.getComposition() + " node uuid: " + node.getUUID() + " node LO: " + node.getLOverhang() + " node RO: " + node.getROverhang());
+//            }
+//            System.out.println("******************************************");
+//        }
+//        System.out.println("Retrieving _rootBasicNodeHash ********************");
+        
         return _rootBasicNodeHash;
     }
     
