@@ -24,68 +24,64 @@ public class RMoClo extends RGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
-        try {
-            _partLibrary = partLibrary;
-            _vectorLibrary = vectorLibrary;
-            if (_partLibrary == null) {
-                _partLibrary = new ArrayList();
+    public ArrayList<RGraph> mocloClothoWrapper(HashMap<Part, Vector> goalPartsVectors, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+
+        _partLibrary = partLibrary;
+        _vectorLibrary = vectorLibrary;
+        if (_partLibrary == null) {
+            _partLibrary = new ArrayList();
+        }
+        if (_vectorLibrary == null) {
+            _vectorLibrary = new ArrayList();
+        }
+
+        //Designate how many parts can be efficiently ligated in one step
+        int max = 0;
+        Set<Integer> keySet = efficiencies.keySet();
+        for (Integer key : keySet) {
+            if (key > max) {
+                max = key;
             }
-            if (_vectorLibrary == null) {
-                _vectorLibrary = new ArrayList();
-            }
+        }
+        _maxNeighbors = max;
+        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
 
-            //Designate how many parts can be efficiently ligated in one step
-            int max = 0;
-            Set<Integer> keySet = efficiencies.keySet();
-            for (Integer key : keySet) {
-                if (key > max) {
-                    max = key;
-                }
-            }
-            _maxNeighbors = max;
+        //Create hashMem parameter for createAsmGraph_sgp() call
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
+        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
-            //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
-            ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+        //Put all parts into hash for mgp algorithm            
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
-            //Put all parts into hash for mgp algorithm            
-            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
-
-            //Positional scoring of transcriptional units
+        //Positional scoring of transcriptional units
 //            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
 //            if (modular) {
 //                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
 //                positionScores = getPositionalScoring(TUs);
 //            }
 
-            //Add single transcriptional units to the required hash
+        //Add single transcriptional units to the required hash
 //            ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, 2);
 //            for (int i = 0; i < reqTUs.size(); i++) {
 //                required.add(reqTUs.get(i).toString());
 //            }
 
-            //Run hierarchical Raven Algorithm
-            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-            enforceOverhangRules(optimalGraphs);
-            boolean valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nfirst pass: " + valid);
-            maximizeOverhangSharing(optimalGraphs);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nsecond pass: " + valid);
-            HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
-            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nfinal pass: " + valid);
-            assignScars(optimalGraphs);
+        //Run hierarchical Raven Algorithm
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
+        enforceOverhangRules(optimalGraphs);
+        boolean valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nfirst pass: " + valid);
+        maximizeOverhangSharing(optimalGraphs);
+        valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nsecond pass: " + valid);
+        HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+        optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
+        valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nfinal pass: " + valid);
+        assignScars(optimalGraphs);
 
+        return optimalGraphs;
 
-            return optimalGraphs;
-        } catch (Exception E) {
-            ArrayList<RGraph> blank = new ArrayList<RGraph>();
-            E.printStackTrace();
-            return blank;
-        }
     }
 
     /**
@@ -267,130 +263,133 @@ public class RMoClo extends RGeneral {
             HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(level);
             HashSet<String> currentLevelOHs = new HashSet<String>();
             HashSet<String> takenOHs;
-
+            
             //Assign nodes in the forward direction first
+            ArrayList<RNode> fwdNodes = new ArrayList<RNode>();
             if (directionHash.containsKey("+")) {
-                ArrayList<RNode> fwdNodes = directionHash.get("+");
-
-                /**
-                 * Assign left overhangs to forward nodes first. *
-                 */
-                for (int j = 0; j < fwdNodes.size(); j++) {
-
-                    RNode fwdNode = fwdNodes.get(j);
-                    String type = fwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(fwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(fwdNode, "Left", "+");
-                    ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
-
-                    //Assign left overhang if it is not selected yet
-                    if (!numberHash.containsKey(fwdNode.getLOverhang())) {
-
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        numberHash.put(fwdNode.getLOverhang(), OH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
-
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the left
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeLeftOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, fwdNode, OH, "Left", "+");
-                    }
-                }
-
-                /**
-                 * Assign right overhangs to forward nodes second. *
-                 */
-                for (int k = 0; k < fwdNodes.size(); k++) {
-
-                    RNode fwdNode = fwdNodes.get(k);
-                    String type = fwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(fwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(fwdNode, "Right", "+");
-                    ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
-
-                    //Assign right overhang if it is not selected yet
-                    if (!numberHash.containsKey(fwdNode.getROverhang())) {
-
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        numberHash.put(fwdNode.getROverhang(), OH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
-
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the right
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeRightOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, fwdNode, OH, "Right", "+");
-                    }
-                }
+                fwdNodes = directionHash.get("+");
             }
 
             //Assign nodes in the backward direction second
+            ArrayList<RNode> bkwdNodes = new ArrayList<RNode>();
             if (directionHash.containsKey("-")) {
-                ArrayList<RNode> bkwdNodes = directionHash.get("-");
+                bkwdNodes = directionHash.get("-");
+            }
 
-                /**
-                 * Assign right overhangs to backwards nodes third. *
-                 */
-                for (int k = bkwdNodes.size() - 1; k > -1; k--) {
+            /**
+             * Assign left overhangs to forward nodes first. *
+             */
+            for (int j = 0; j < fwdNodes.size(); j++) {
 
-                    RNode bkwdNode = bkwdNodes.get(k);
-                    String type = bkwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(bkwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(bkwdNode, "Right", "-");
-                    ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
+                RNode node = fwdNodes.get(j);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Left", "+");
+                ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
 
-                    //Assign right overhang if it is not selected yet
-                    if (!numberHash.containsKey(bkwdNode.getROverhang())) {
+                //Assign left overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getLOverhang())) {
 
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        String hashOH = OH + "*";
-                        numberHash.put(bkwdNode.getROverhang(), hashOH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    numberHash.put(node.getLOverhang(), OH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
 
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the right
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeRightOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, bkwdNode, OH, "Right", "-");
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the left
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeLeftOverhangs.add(OH);
                     }
-                }
-
-                /**
-                 * Assign left overhangs to backward nodes fourth. *
-                 */
-                for (int j = bkwdNodes.size() - 1; j > -1; j--) {
-
-                    RNode bkwdNode = bkwdNodes.get(j);
-                    String type = bkwdNode.getType().toString().toLowerCase();
-                    takenOHs = getTakenAbstractOHs(bkwdNode, allLevelOHs, level);
-                    ArrayList<String> reusableOHs = getReusableAbstractOHs(bkwdNode, "Left", "-");
-                    ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
-                    ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
-
-                    //Assign left overhang if it is not selected yet
-                    if (!numberHash.containsKey(bkwdNode.getLOverhang())) {
-
-                        String OH = selectAbstractOH(reusableOHs, takenOHs);
-                        String hashOH = OH + "*";
-                        numberHash.put(bkwdNode.getLOverhang(), hashOH);
-                        takenOHs.add(OH);
-                        currentLevelOHs.add(OH);
-
-                        //If this overhang is not contained in the part type OHs for right or left, add it to the left
-                        if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
-                            typeLeftOverhangs.add(OH);
-                        }
-                        assignTypeOHNeighbor(roots, bkwdNode, OH, "Left", "-");
-                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Left", "+");
                 }
             }
+
+            /**
+             * Assign right overhangs to forward nodes second. *
+             */
+            for (int k = 0; k < fwdNodes.size(); k++) {
+
+                RNode node = fwdNodes.get(k);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Right", "+");
+                ArrayList<String> typeLeftOverhangs = _typeLOHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeROHHash.get(type);
+
+                //Assign right overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getROverhang())) {
+
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    numberHash.put(node.getROverhang(), OH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
+
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the right
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeRightOverhangs.add(OH);
+                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Right", "+");
+                }
+            }
+            
+            /**
+             * Assign right overhangs to backwards nodes third. *
+             */
+            for (int k = bkwdNodes.size() - 1; k > -1; k--) {
+
+                RNode node = bkwdNodes.get(k);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Right", "-");
+                ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
+
+                //Assign right overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getROverhang())) {
+
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    String hashOH = OH + "*";
+                    numberHash.put(node.getROverhang(), hashOH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
+
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the right
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeRightOverhangs.add(OH);
+                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Right", "-");
+                }
+            }
+
+            /**
+             * Assign left overhangs to backward nodes fourth. *
+             */
+            for (int j = bkwdNodes.size() - 1; j > -1; j--) {
+
+                RNode node = bkwdNodes.get(j);
+                String type = node.getType().toString().toLowerCase();
+                takenOHs = getTakenAbstractOHs(node, allLevelOHs, level);
+                ArrayList<String> reusableOHs = getReusableAbstractOHs(node, "Left", "-");
+                ArrayList<String> typeLeftOverhangs = _typeROHHash.get(type);
+                ArrayList<String> typeRightOverhangs = _typeLOHHash.get(type);
+
+                //Assign left overhang if it is not selected yet
+                if (!numberHash.containsKey(node.getLOverhang())) {
+
+                    String OH = selectAbstractOH(reusableOHs, takenOHs);
+                    String hashOH = OH + "*";
+                    numberHash.put(node.getLOverhang(), hashOH);
+                    takenOHs.add(OH);
+                    currentLevelOHs.add(OH);
+
+                    //If this overhang is not contained in the part type OHs for right or left, add it to the left
+                    if (!typeLeftOverhangs.contains(OH) && !typeRightOverhangs.contains(OH)) {
+                        typeLeftOverhangs.add(OH);
+                    }
+                    assignTypeOHNeighbor(roots, node, OH, "Left", "-");
+                }
+            }
+
 
             //Add all overhangs seen in this level to the taken overhang hash of each node
             allLevelOHs.addAll(currentLevelOHs);
@@ -1190,110 +1189,58 @@ public class RMoClo extends RGeneral {
         return toReturn;
     }
 
-    //generates human readable instructions as well as primer sequences
-    //primerParameters contains (in this order): 
-    //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<String> primerParameters) {
-
-        //initialize primer parameters
-        String oligoNameRoot = "";
-        String forwardPrimerPrefix = "";
-        String reversePrimerPrefix = "";
-        String forwardEnzymeCutSite = "";
-        String reverseEnzymeCutSite = "";
-        int forwardEnzymeCutDistance = 0;
-        int reverseEnzymeCutDistance = 0;
-        Double meltingTemp = 0.0;
-        int targetLength = 20;
-
-        boolean designPrimers = false;
-
-        if (primerParameters != null) {
-            designPrimers = true;
-            oligoNameRoot = primerParameters.get(0);//your oligos will be named olignoNameRoot+Number+F/R (F/R = forward/reverse)
-            forwardPrimerPrefix = primerParameters.get(1);//prepended to the 5' end of your forward primer; 
-            //your primer sequence will be: forwardPrimerPrefix+forwardEnzymeCutSite+partHomology
-            reversePrimerPrefix = primerParameters.get(2);//prepended to the 5' end of your reverse primer; 
-            //your primer sequence will be: reversePrimerPrefix+reverseEnzymeCutSite+partHomology
-            forwardEnzymeCutSite = primerParameters.get(3);//the restriction enzyme cut site that appears in the forward primer
-            reverseEnzymeCutSite = primerParameters.get(4);//the restriction enzyme cut site that appears in the reverse primer
-            forwardEnzymeCutDistance = Integer.parseInt(primerParameters.get(5));//distance from which forward enzyme cuts from its recognition site
-            reverseEnzymeCutDistance = Integer.parseInt(primerParameters.get(6));//distance from which reverse enzyme cuts its recognition site
-            meltingTemp = Double.parseDouble(primerParameters.get(7));//desired melting temperature of your primers; determines homology length
-            targetLength = Integer.parseInt(primerParameters.get(8));
-        }
-
-        int oligoCount = 0;
-        String toReturn = "";
-
-        ArrayList<String> oligoNames = new ArrayList();
-        ArrayList<String> oligoSequences = new ArrayList();
-        HashSet<RNode> seenNodes = new HashSet();
-        for (RNode root : roots) {
-
-            //append header for each goal part
-            toReturn = toReturn + "**********************************************"
-                    + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
-                    + "\n**********************************************";
-            ArrayList<RNode> queue = new ArrayList();
-            queue.add(root);
-            while (!queue.isEmpty()) {
-                RNode currentNode = queue.get(0);
-
-                queue.remove(0); //queue for traversing graphs (bfs)
-
-                if (!seenNodes.contains(currentNode)) {
-                    //only need to generate instructions for assembling a part that has not already been encountered
-                    seenNodes.add(currentNode);
-                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
-
-                    if (currentPart.getComposition().size() > 1) {
-                        //append which parts to use for a moclo reaction
-                        toReturn = toReturn + "\nAssemble " + currentPart.getName() + " by performing a MoClo reaction with: ";
-                        for (RNode neighbor : currentNode.getNeighbors()) {
-
-                            if (currentNode.getComposition().size() > neighbor.getComposition().size()) {
-                                toReturn = toReturn + coll.getPart(neighbor.getUUID(), true).getName() + ", ";
-                                if (!seenNodes.contains(neighbor)) {
-                                    queue.add(neighbor);
-                                }
-                            }
-                        }
-                    } else {
-
-                        //design primers
-                        if (designPrimers) {
-                            String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
-                            String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                            String forwardOligoSequence = forwardPrimerPrefix + forwardEnzymeCutSite + PrimerDesign.generateRandomSequence(forwardEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, currentPart.getSeq()));
-                            String reverseOligoSequence = PrimerDesign.reverseComplement(reversePrimerPrefix + reverseEnzymeCutSite + PrimerDesign.generateRandomSequence(reverseEnzymeCutDistance) + _overhangVariableSequenceHash.get(currentNode.getROverhang()) + currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, PrimerDesign.reverseComplement(currentPart.getSeq()))));
-                            oligoNames.add(forwardOligoName);
-                            oligoNames.add(reverseOligoName);
-                            oligoSequences.add(forwardOligoSequence);
-                            oligoSequences.add(reverseOligoSequence);
-                            oligoCount++;
-                            toReturn = toReturn + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName;
-                        } else {
-                            toReturn = toReturn + "\nPCR " + currentPart.getName() + " to prepend overhang " + currentNode.getLOverhang() + " and append overhang " + currentNode.getROverhang();
-                        }
-                    }
-
-                }
-            }
-            toReturn = toReturn + "\n\n";
-        }
-
-        if (designPrimers) {
-
-            //append primer designs
-            toReturn = toReturn + "\n**********************************************\nOLIGOS";
-            for (int i = 0; i < oligoNames.size(); i++) {
-                toReturn = toReturn + "\n>" + oligoNames.get(i);
-                toReturn = toReturn + "\n" + oligoSequences.get(i);
-            }
-        }
-        return toReturn;
+    /** Generation of new MoClo primers for parts **/
+    public static ArrayList<String> generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
+   
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
+        ArrayList<String> oligos = new ArrayList<String>(2);
+        String partPrimerPrefix = "nn";
+        String partPrimerSuffix = "nn";
+        String fwdEnzymeRecSite1 = "gaagac";
+        String revEnzymeRecSite1 = "gtcttc";
+                      
+        Part currentPart = coll.getPart(node.getUUID(), true);
+        String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
+        String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+        oligos.add(forwardOligoSequence);
+        oligos.add(reverseOligoSequence);
+        
+        return oligos;
     }
+    
+    /** Generation of new MoClo primers for parts **/
+    public static ArrayList<String> generateVectorPrimers(RVector vector, Collector coll) {
+    
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();        
+        String vectorPrimerPrefix = "gttctttactagtg";
+        String vectorPrimerSuffix = "tactagtagcggccgc";
+        String fwdEnzymeRecSite1 = "gaagac";
+        String revEnzymeRecSite1 = "gtcttc";
+        String fwdEnzymeRecSite2 = "ggtctc";
+        String revEnzymeRecSite2 = "gagacc";
+        
+        ArrayList<String> oligos = new ArrayList<String>(2);
+        
+        //Level 0, 2, 4, 6, etc. vectors
+        String forwardOligoSequence;
+        String reverseOligoSequence;
+        if (vector.getLevel() % 2 == 0) {
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "n" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite2 + vectorPrimerSuffix);
+
+        //Level 1, 3, 5, 7, etc. vectors
+        } else {
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "n" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "nn" + overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite1 + vectorPrimerSuffix);
+        }
+
+        oligos.add(forwardOligoSequence);
+        oligos.add(reverseOligoSequence);
+
+        return oligos;
+    }
+    
+    //FIELDS
     private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private HashMap<RNode, HashSet<String>> _takenParentOHs; //key: parent node, value: all overhangs that have been seen in this step
@@ -1304,5 +1251,4 @@ public class RMoClo extends RGeneral {
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
-    private static HashMap<String, String> _overhangVariableSequenceHash = new HashMap(); //key:variable name, value: sequence associated with that variable
 }

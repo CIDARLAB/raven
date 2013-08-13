@@ -21,7 +21,7 @@ public class RSLIC extends RGeneral {
     /**
      * Clotho part wrapper for SLIC *
      */
-    public ArrayList<RGraph> slicClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> slicClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -32,7 +32,8 @@ public class RSLIC extends RGeneral {
             }
         }
         _maxNeighbors = max;
-
+        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
+        
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
 
@@ -134,13 +135,14 @@ public class RSLIC extends RGeneral {
         }
     }
     
+    /** Get the root basic node hash **/
+    public static HashMap<RNode, ArrayList<RNode>> getRootBasicNodeHash() {
+        return _rootBasicNodeHash;
+    }
+    
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }
     
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll) {
-        return null;
-    }
-    
-    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
+    private static HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }
