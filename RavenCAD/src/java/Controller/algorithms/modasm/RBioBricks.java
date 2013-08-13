@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import Controller.datastructures.*;
+import java.util.Set;
 
 /**
  *
@@ -21,14 +22,15 @@ public class RBioBricks extends RGeneral {
     /**
      * Clotho part wrapper for BioBricks 3A
      */
-    public ArrayList<RGraph> bioBricksClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> bioBricksClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) throws Exception {
 
         //Try-Catch block around wrapper method
         _maxNeighbors = 2;
+        Set<Part> keySet1 = goalPartsVectors.keySet();
+        ArrayList<Part> goalParts = new ArrayList<Part>(keySet1);
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
-//        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);

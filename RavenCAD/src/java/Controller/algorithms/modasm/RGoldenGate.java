@@ -21,7 +21,7 @@ public class RGoldenGate extends RGeneral {
     /**
      * Clotho part wrapper for Golden Gate assembly *
      */
-    public ArrayList<RGraph> goldenGateClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> goldenGateClothoWrapper(HashMap<Part, Vector> goalPartsVectors, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -32,6 +32,8 @@ public class RGoldenGate extends RGeneral {
             }
         }
         _maxNeighbors = max;
+        Set<Part> keySet1 = goalPartsVectors.keySet();
+        ArrayList<Part> goalParts = new ArrayList<Part>(keySet1);
 
         //Create hashMem parameter for createAsmGraph_sgp() call
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);

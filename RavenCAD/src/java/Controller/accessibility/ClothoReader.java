@@ -11,9 +11,11 @@ import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.*;
 
 /**
@@ -210,7 +212,21 @@ public class ClothoReader {
             gp.setUUID(goalParts.get(i).getUUID());
             gpsNodes.add(gp);
         }
-        return gpsNodes;
+        
+        //Sort nodes by name
+        ArrayList<RNode> orderedGPSNodes = new ArrayList<RNode>();
+        HashMap<String, RNode> partNameHash = new HashMap<String, RNode>();
+        for (RNode gpsNode : gpsNodes) {
+            partNameHash.put(gpsNode.getName(), gpsNode);
+        }
+        Set<String> keySet1 = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        Collections.sort(partNames);
+        for (String partName : partNames) {
+            orderedGPSNodes.add(partNameHash.get(partName));
+        }
+        
+        return orderedGPSNodes;
     }
 
     /** Parse Clotho search tags from a string into an ArrayList **/

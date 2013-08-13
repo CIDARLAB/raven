@@ -24,68 +24,65 @@ public class RMoClo extends RGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> mocloClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) {
-        try {
-            _partLibrary = partLibrary;
-            _vectorLibrary = vectorLibrary;
-            if (_partLibrary == null) {
-                _partLibrary = new ArrayList();
+    public ArrayList<RGraph> mocloClothoWrapper(HashMap<Part, Vector> goalPartsVectors, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+
+        _partLibrary = partLibrary;
+        _vectorLibrary = vectorLibrary;
+        if (_partLibrary == null) {
+            _partLibrary = new ArrayList();
+        }
+        if (_vectorLibrary == null) {
+            _vectorLibrary = new ArrayList();
+        }
+
+        //Designate how many parts can be efficiently ligated in one step
+        int max = 0;
+        Set<Integer> keySet = efficiencies.keySet();
+        for (Integer key : keySet) {
+            if (key > max) {
+                max = key;
             }
-            if (_vectorLibrary == null) {
-                _vectorLibrary = new ArrayList();
-            }
+        }
+        _maxNeighbors = max;
+        Set<Part> keySet1 = goalPartsVectors.keySet();
+        ArrayList<Part> goalParts = new ArrayList<Part>(keySet1);
 
-            //Designate how many parts can be efficiently ligated in one step
-            int max = 0;
-            Set<Integer> keySet = efficiencies.keySet();
-            for (Integer key : keySet) {
-                if (key > max) {
-                    max = key;
-                }
-            }
-            _maxNeighbors = max;
+        //Create hashMem parameter for createAsmGraph_sgp() call
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
+        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
-            //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
-            ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+        //Put all parts into hash for mgp algorithm            
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
 
-            //Put all parts into hash for mgp algorithm            
-            ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
-
-            //Positional scoring of transcriptional units
+        //Positional scoring of transcriptional units
 //            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
 //            if (modular) {
 //                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
 //                positionScores = getPositionalScoring(TUs);
 //            }
 
-            //Add single transcriptional units to the required hash
+        //Add single transcriptional units to the required hash
 //            ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, 2);
 //            for (int i = 0; i < reqTUs.size(); i++) {
 //                required.add(reqTUs.get(i).toString());
 //            }
 
-            //Run hierarchical Raven Algorithm
-            ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-            enforceOverhangRules(optimalGraphs);
-            boolean valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nfirst pass: " + valid);
-            maximizeOverhangSharing(optimalGraphs);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nsecond pass: " + valid);
-            HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
-            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
-            valid = validateOverhangs(optimalGraphs);
-            System.out.println("##############################\nfinal pass: " + valid);
-            assignScars(optimalGraphs);
+        //Run hierarchical Raven Algorithm
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
+        enforceOverhangRules(optimalGraphs);
+        boolean valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nfirst pass: " + valid);
+        maximizeOverhangSharing(optimalGraphs);
+        valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nsecond pass: " + valid);
+        HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+        optimizeOverhangVectors(optimalGraphs, partHash, vectorSet, finalOverhangHash);
+        valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nfinal pass: " + valid);
+        assignScars(optimalGraphs);
 
+        return optimalGraphs;
 
-            return optimalGraphs;
-        } catch (Exception E) {
-            ArrayList<RGraph> blank = new ArrayList<RGraph>();
-            E.printStackTrace();
-            return blank;
-        }
     }
 
     /**

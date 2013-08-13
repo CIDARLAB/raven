@@ -21,7 +21,7 @@ public class RGibson extends RGeneral {
     /**
      * Clotho part wrapper for Gibson *
      */
-    public ArrayList<RGraph> gibsonClothoWrapper(ArrayList<Part> goalParts, ArrayList<Vector> vectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> gibsonClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -32,6 +32,8 @@ public class RGibson extends RGeneral {
             }
         }
         _maxNeighbors = max;
+        Set<Part> keySet1 = goalPartsVectors.keySet();
+        ArrayList<Part> goalParts = new ArrayList<Part>(keySet1);
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);

@@ -12,11 +12,9 @@ import java.util.HashMap;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -109,7 +107,7 @@ public class RGraph {
      * Return all vectors in this graph *
      */
     public ArrayList<Vector> getVectorsInGraph(Collector coll) {
-        ArrayList<Vector> toReturn = new ArrayList<Vector>();
+        ArrayList<Vector> vectors = new ArrayList<Vector>();
         HashSet<RNode> seenNodes = new HashSet();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
@@ -120,7 +118,7 @@ public class RGraph {
             if (current.getVector() != null) {
                 Vector toAdd = coll.getVector(current.getVector().getUUID(), true);
                 if (toAdd != null) {
-                    toReturn.add(toAdd);
+                    vectors.add(toAdd);
                 }
             }
             for (RNode neighbor : current.getNeighbors()) {
@@ -129,7 +127,7 @@ public class RGraph {
                 }
             }
         }
-        return toReturn;
+        return vectors;
     }
 
     /**
@@ -240,7 +238,7 @@ public class RGraph {
     /**
      * Get graph statistics *
      */
-    public static void getGraphStats(ArrayList<RGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, ArrayList<Part>> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+    public static void getGraphStats(ArrayList<RGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, Vector> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
 
         HashSet<String> startPartsLOcompRO = ClothoReader.getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = ClothoReader.getExistingVectorKeys(vectorLib);
@@ -254,12 +252,7 @@ public class RGraph {
         Set<Part> keySet = goalParts.keySet();
         HashSet<ArrayList<String>> gpComps = new HashSet<ArrayList<String>>();
         for (Part gp : keySet) {
-            ArrayList<String> compStr = new ArrayList<String>();
-            ArrayList<Part> compPart = goalParts.get(gp);
-            for (int i = 0; i < compPart.size(); i++) {
-                Part p = compPart.get(i);
-                compStr.add(p.getName());
-            }
+            ArrayList<String> compStr = gp.getStringComposition();
             gpComps.add(compStr);
         }
 
@@ -643,8 +636,8 @@ public class RGraph {
     private static String generatePigeonImage(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
+
         //Assign left overhang if it exists                
-//        pigeonLine.append("3 ").append(LO).append("\n");
         if (LO != null) {
             pigeonLine.append("5 ").append(LO).append("\n");
         }
@@ -673,6 +666,8 @@ public class RGraph {
                     pigeonLine.append("c ").append(name).append(" 1" + "\n");
                 } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
                     pigeonLine.append("c ").append(name).append(" 2" + "\n");
+                } else if (type.equalsIgnoreCase("resistance") || type.equalsIgnoreCase("rc")) {
+                    pigeonLine.append("c ").append(name).append(" 7" + "\n");
                 } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
                     pigeonLine.append("T ").append(name).append(" 6" + "\n");
                 } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
@@ -712,7 +707,6 @@ public class RGraph {
         if (RO != null) {
             pigeonLine.append("3 ").append(RO).append("\n");
         }
-//        pigeonLine.append("5 ").append(RO).append("\n");
 
         //Vectors
         if (vecName != null) {
