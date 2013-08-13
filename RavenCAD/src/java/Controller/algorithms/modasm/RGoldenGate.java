@@ -32,8 +32,7 @@ public class RGoldenGate extends RGeneral {
             }
         }
         _maxNeighbors = max;
-        Set<Part> keySet1 = goalPartsVectors.keySet();
-        ArrayList<Part> goalParts = new ArrayList<Part>(keySet1);
+        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
 
         //Create hashMem parameter for createAsmGraph_sgp() call
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);

@@ -26,8 +26,7 @@ public class RBioBricks extends RGeneral {
 
         //Try-Catch block around wrapper method
         _maxNeighbors = 2;
-        Set<Part> keySet1 = goalPartsVectors.keySet();
-        ArrayList<Part> goalParts = new ArrayList<Part>(keySet1);
+        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
