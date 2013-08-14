@@ -158,7 +158,7 @@ public class RavenController {
         String partList = "[";
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
-        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
+        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
 
         for (Part p : usedParts) {
             ArrayList<String> tags = p.getSearchTags();
@@ -200,7 +200,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(1);
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,,TODO: addvector," + composition);
             }
             partList = partList
                     + "{\"uuid\":\"" + p.getUUID()
