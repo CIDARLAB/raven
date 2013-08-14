@@ -93,8 +93,10 @@ public class Collector {
 
     public Part getPartByExactName(String name, boolean allowTransient) {
         Part toReturn = partUUIDHash.get(partNameHash.get(name));
-        if (!toReturn.isTransient() || allowTransient) {
-            return toReturn;
+        if (toReturn != null) {
+            if (!toReturn.isTransient() || allowTransient) {
+                return toReturn;
+            }
         }
         return null;
     }
@@ -247,7 +249,7 @@ public class Collector {
         partUUIDHash = new HashMap();
         partNameRootHash = new HashMap();
         vectorNameRootHash = new HashMap();
-        
+
 
     }
 }

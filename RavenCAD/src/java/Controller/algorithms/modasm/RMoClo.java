@@ -649,7 +649,7 @@ public class RMoClo extends RGeneral {
 
             RNode root = graph.getRootNode();
             ArrayList<RNode> children = root.getNeighbors();
-            assignScarsHelper(root, children);
+            root.setScars(assignScarsHelper(root, children));
         }
     }
 
@@ -703,6 +703,7 @@ public class RMoClo extends RGeneral {
         }
 
         parent.setScars(scars);
+        System.out.println(scars);
         return scars;
     }
 
