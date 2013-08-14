@@ -93,8 +93,10 @@ public class Collector {
 
     public Part getPartByExactName(String name, boolean allowTransient) {
         Part toReturn = partUUIDHash.get(partNameHash.get(name));
-        if (!toReturn.isTransient() || allowTransient) {
-            return toReturn;
+        if (toReturn != null) {
+            if (!toReturn.isTransient() || allowTransient) {
+                return toReturn;
+            }
         }
         return null;
     }
@@ -142,7 +144,6 @@ public class Collector {
                         toAdd.add(aPart.getName());
                         partNameRootHash.put(aPart.getName(), toAdd);
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
-                        System.out.println("before: " + partUUIDHash.keySet());
                     } else {
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
                     }
@@ -248,7 +249,7 @@ public class Collector {
         partUUIDHash = new HashMap();
         partNameRootHash = new HashMap();
         vectorNameRootHash = new HashMap();
-        
+
 
     }
 }

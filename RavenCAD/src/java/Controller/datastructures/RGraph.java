@@ -12,11 +12,9 @@ import java.util.HashMap;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -412,7 +410,7 @@ public class RGraph {
      */
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
 
-        HashSet<String> startPartsLOcompRO = new HashSet<String>();
+        HashSet<String> keys = new HashSet<String>();
 
         //Go through parts library, put all compositions into hash of things that already exist
         for (Part aPart : partLib) {
@@ -424,50 +422,14 @@ public class RGraph {
                 String name = partComp.get(j).getName();
                 comp.add(name);
             }
-            ArrayList<String> revComp = new ArrayList<String>();
-            revComp.addAll(comp);
-            Collections.reverse(revComp);
 
             ArrayList<String> searchTags = aPart.getSearchTags();
-            ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
-            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
-
-            ArrayList<String> revDir = new ArrayList<String>();
-            revDir.addAll(dir);
-            Collections.reverse(revDir);
-            ArrayList<String> revScars = new ArrayList<String>();
-            revScars.addAll(scars);
-            Collections.reverse(revScars);
-            for (String aRevScar : revScars) {
-                if (aRevScar.contains("*")) {
-                    aRevScar = aRevScar.replace("*", "");
-                } else {
-                    aRevScar = aRevScar + "*";
-                }
-            }
-
-            String lOverhang = aPart.getLeftOverhang();
-            String rOverhang = aPart.getRightOverhang();
-            String lOverhangR = aPart.getRightOverhang();
-            String rOverhangR = aPart.getLeftOverhang();
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
-            } else {
-                lOverhangR = lOverhangR + "*";
-            }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
-            } else {
-                rOverhangR = rOverhangR + "*";
-            }
-
-            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
-            startPartsLOcompRO.add(aPartCompDirScarLORO);
-            startPartsLOcompRO.add(aPartCompDirScarLOROR);
+            RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0);
+            keys.add(node.getNodeKey("+"));
+            keys.add(node.getNodeKey("-"));
         }
 
-        return startPartsLOcompRO;
+        return keys;
     }
 
     /**
@@ -483,25 +445,11 @@ public class RGraph {
 
             String lOverhang = aVec.getLeftoverhang();
             String rOverhang = aVec.getRightOverhang();
-            String lOverhangR = aVec.getRightOverhang();
-            String rOverhangR = aVec.getLeftoverhang();
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
-            } else {
-                lOverhangR = lOverhangR + "*";
-            }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
-            } else {
-                rOverhangR = rOverhangR + "*";
-            }
             int stage = aVec.getLevel();
-
-            String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
-            String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
-
-            startVectorsLOlevelRO.add(aVecLOlevelRO);
-            startVectorsLOlevelRO.add(aVecLOlevelROR);
+            String name = aVec.getName();
+            RVector vector = new RVector(lOverhang, rOverhang, stage, name);
+            startVectorsLOlevelRO.add(vector.getVectorKey("+"));
+            startVectorsLOlevelRO.add(vector.getVectorKey("-"));
         }
 
         return startVectorsLOlevelRO;
@@ -654,6 +602,7 @@ public class RGraph {
 
 
     //returns a json string that can be parsed by the client
+       //returns a json string that can be parsed by the client
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
         HashMap<String, String> imageURLs = new HashMap();
         HashSet<String> edges = new HashSet();
@@ -759,7 +708,7 @@ public class RGraph {
     /**
      * Pigeon code generation *
      */
-    private static String generatePigeonImage(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
+  private static String generatePigeonImage(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
         //Assign left overhang if it exists                

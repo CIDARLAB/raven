@@ -24,7 +24,7 @@ public class RGraph {
      * SDSGraph constructor, no specified root node *
      */
     public RGraph() {
-        _node = new RNode();
+        _rootNode = new RNode();
         _subGraphs = new ArrayList<RGraph>();
         _stages = 0;
         _steps = 0;
@@ -39,7 +39,7 @@ public class RGraph {
      * SDSGraph constructor, specified root node *
      */
     public RGraph(RNode node) {
-        _node = node;
+        _rootNode = node;
         _subGraphs = new ArrayList<RGraph>();
         _stages = 0;
         _steps = 0;
@@ -56,7 +56,7 @@ public class RGraph {
     @Override
     public RGraph clone() {
         RGraph clone = new RGraph();
-        clone._node = this._node.clone();
+        clone._rootNode = this._rootNode.clone();
         clone._recCnt = this._recCnt;
         clone._disCnt = this._disCnt;
         clone._stages = this._stages;
@@ -185,16 +185,19 @@ public class RGraph {
     /**
      * Get all the edges of an SDSGraph in Post Order *
      */
-    public ArrayList<String> getPostOrderEdges() {
+  public ArrayList<String> getPostOrderEdges() {
         ArrayList<String> edges = new ArrayList();
         HashSet<String> seenUUIDs = new HashSet();
-        seenUUIDs.add(this._node.getUUID());
-        
+        seenUUIDs.add(this._rootNode.getUUID());
+
         //Start at the root node and look at all children
-        for (RNode neighbor : this._node.getNeighbors()) {
+        for (RNode neighbor : this._rootNode.getNeighbors()) {
             seenUUIDs.add(neighbor.getUUID());
-            edges = getPostOrderEdgesHelper(neighbor, this._node, edges, seenUUIDs, true);
+            edges = getPostOrderEdgesHelper(neighbor, this._rootNode, edges, seenUUIDs, true);
         }
+        //first edge is the vector
+        edges.add(0, this._rootNode.getUUID() + " -> " + this._rootNode.getVector().getUUID());
+//        edges.add("node -> vector");
         return edges;
     }
 
@@ -231,7 +234,9 @@ public class RGraph {
 
             //Write arc connecting to the parent
             if (neighbor.getComposition().toString().equals(parent.getComposition().toString())) {
-          
+                if (current.getStage() != 0) {
+                    edgesToAdd.add(current.getUUID() + " -> " + current.getVector().getUUID());
+                }
                 //Make the edge going in the direction of the node with the greatest composition, whether this is parent or child
                 if (current.getComposition().size() > neighbor.getComposition().size()) {
                     edgesToAdd.add(current.getUUID() + " -> " + neighbor.getUUID());
@@ -240,7 +245,6 @@ public class RGraph {
                 }
             }
         }
-
         for (String s : edgesToAdd) {
             edges.add(s);
         }
@@ -443,7 +447,7 @@ public class RGraph {
      * Get graph root node *
      */
     public RNode getRootNode() {
-        return _node;
+        return _rootNode;
     }
 
     /**
@@ -563,7 +567,7 @@ public class RGraph {
      * Set graph root node *
      */
     public void setRootNode(RNode newRoot) {
-        _node = newRoot;
+        _rootNode = newRoot;
     }
 
     /**
@@ -603,7 +607,7 @@ public class RGraph {
     
     //FIELDS
     private ArrayList<RGraph> _subGraphs;
-    private RNode _node;
+    private RNode _rootNode;
     private int _stages;
     private int _steps;
     private int _sharedSteps;

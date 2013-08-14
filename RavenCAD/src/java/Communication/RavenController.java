@@ -158,7 +158,7 @@ public class RavenController {
         String partList = "[";
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
-        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
+        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
 
         for (Part p : usedParts) {
             ArrayList<String> tags = p.getSearchTags();
@@ -166,7 +166,7 @@ public class RavenController {
             String LO = "";
             String type = "";
             ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
-
+            
             for (int k = 0; k < tags.size(); k++) {
                 if (tags.get(k).startsWith("LO:")) {
                     LO = tags.get(k).substring(4);
@@ -176,12 +176,9 @@ public class RavenController {
                     type = tags.get(k).substring(6);
                 }
             }
-            
-            System.out.println("name: " + p.getName());
-            System.out.println("tags: " + tags);
-            
-            String composition = "";
 
+            String composition = "";
+            
             if (p.isBasic()) {
                 composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
@@ -203,7 +200,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(1);
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,,TODO: addvector," + composition);
             }
             partList = partList
                     + "{\"uuid\":\"" + p.getUUID()
@@ -700,11 +697,9 @@ public class RavenController {
             _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
-            rootBasicNodeHash = RCPEC.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
-            rootBasicNodeHash = RGibson.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("goldengate")) {
             _assemblyGraphs = runGoldenGate();
@@ -713,7 +708,6 @@ public class RavenController {
             _assemblyGraphs = runMoClo();
         } else if (method.equals("slic")) {
             _assemblyGraphs = runSLIC();
-            rootBasicNodeHash = RSLIC.getRootBasicNodeHash();
             scarless = true;
         }
 
@@ -757,23 +751,24 @@ public class RavenController {
             }
         }
         JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
-
+        
         System.out.println("GRAPH AND ARCS FILES CREATED");
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+//        String mergedArcText = "";
 
         //generate instructions
         if (method.equals("biobricks")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
         } else if (method.equals("cpec")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
         } else if (method.equals("gibson")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         } else if (method.equals("moclo")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
         } else if (method.equals("slic")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
         }
 
         //write instructions file
@@ -803,9 +798,6 @@ public class RavenController {
         }
         out.write("}");
         out.close();
-
-        
-        
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);
