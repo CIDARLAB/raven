@@ -756,6 +756,7 @@ public class RavenController {
 
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
+            System.out.println(targetIDs.length);
             _goalParts.put(current, ClothoWriter.getComposition(current));
         }
 

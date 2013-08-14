@@ -224,6 +224,7 @@ public class MocloCartesianGraphAssigner {
                 newNode.setLevel(level);
                 newNode.setAbstractOverhang(abstractOverhang);
                 newNode.setConcreteOverhang(overhang);
+                newNode.setUsedOverhangs(new HashSet(Arrays.asList(new String[]{overhang})));
                 currentNodes.add(newNode);
             }
             if (previousNodes != null) {
@@ -274,14 +275,18 @@ public class MocloCartesianGraphAssigner {
                 CartesianNode parent = parentHash.get(currentNode);
                 int childrenCount = 0;
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
-                    String edge = currentPath + "->" + neighbor.getConcreteOverhang();
-                    if (!seenPaths.contains(edge)) {
-                        if (neighbor.getLevel() > currentNode.getLevel()) {
-                            stack.add(0, neighbor);
-                            parentHash.put(neighbor, currentNode);
-                            childrenCount++;
+                    if (currentPath.indexOf(neighbor.getConcreteOverhang()) < 0 || neighbor.getConcreteOverhang().equals("*")) {
+                        String edge = currentPath + "->" + neighbor.getConcreteOverhang();
+                        if (!seenPaths.contains(edge)) {
+                            if (neighbor.getLevel() > currentNode.getLevel()) {
+                                stack.add(0, neighbor);
+                                parentHash.put(neighbor, currentNode);
+                                childrenCount++;
+                            }
                         }
+                    } else {
                     }
+
                 }
                 if (childrenCount == 0) {
                     //no children means we've reached the end of a branch
@@ -321,28 +326,33 @@ public class MocloCartesianGraphAssigner {
                     currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
                 }
             }
+            HashSet<String> matched = new HashSet();
             for (RNode basicNode : basicNodes) {
                 String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
                 if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
                     currentScore++;
+                } else {
+                    matched.add(compositionOverhangDirectionString);
                 }
             }
+            currentScore = currentScore - matched.size();
             if (currentScore < bestScore) {
                 bestScore = currentScore;
                 bestAssignment = currentAssignment;
+                System.out.println("num types matched: " + matched.size());
             }
         }
         //figure out what to do with star overhangs
-        HashSet<String> assignedOverhangs= new HashSet(bestAssignment.values());
-        int newOverhang =0;
-        for(String starAbstract:bestAssignment.keySet()) {
-            if(bestAssignment.get(starAbstract).equals("*")) {
-                while(assignedOverhangs.contains(String.valueOf(newOverhang))) {
+        HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
+        int newOverhang = 0;
+        for (String starAbstract : bestAssignment.keySet()) {
+            if (bestAssignment.get(starAbstract).equals("*")) {
+                while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
                     newOverhang++;
                 }
                 bestAssignment.put(starAbstract, String.valueOf(newOverhang));
                 assignedOverhangs.add(String.valueOf(newOverhang));
-            }                
+            }
         }
         //assign new overhangs
         finalOverhangHash = bestAssignment;
