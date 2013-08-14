@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package moclocartesiangraphassigner;
+package Controller.datastructures;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,15 +12,18 @@ import java.util.HashSet;
  * @author Jenhan Tao <jenhantao@gmail.com>
  */
 public class CartesianNode {
-private static int count = 0;
+
+    private static int count = 0;
     public int id;
+
     public CartesianNode() {
         this.id = count;
         this.neighbors = new ArrayList();
         this.level = 0;
         this.abstractOverhang = null;
         this.concreteOverhang = null;
-        count ++;
+        this.usedOverhangs = new HashSet();
+        count++;
     }
 
     public String getConcreteOverhang() {
@@ -47,7 +50,15 @@ private static int count = 0;
         this.neighbors = neighbors;
     }
 
-    void addNeighbor(CartesianNode node) {
+    public HashSet getUsedOverhangs() {
+        return usedOverhangs;
+    }
+
+    public void setUsedOverhangs(HashSet usedOverhangs) {
+        this.usedOverhangs = usedOverhangs;
+    }
+
+    public void addNeighbor(CartesianNode node) {
         this.neighbors.add(node);
     }
 
@@ -62,5 +73,6 @@ private static int count = 0;
     public String concreteOverhang; //right concreteOverhang option specified by this CartesianNode
     public int level; //level of this node
     public ArrayList<CartesianNode> neighbors; //neighbors of this node
+    public HashSet usedOverhangs;
     public String abstractOverhang;
 }

@@ -151,8 +151,10 @@ public class MocloCartesianGraphAssigner {
         HashSet<String> compositionOverhangDirections = new HashSet(); //concatentation of compositionOverhang and direction seen in the partLibrary
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
 
+
         for (RGraph graph : graphs) {
             for (RNode current : _rootBasicNodeHash.get(graph.getRootNode())) {
+                System.out.println(current.getComposition() + "|" + current.getLOverhang() + "|" + current.getROverhang());
                 if (!abstractConcreteHash.containsKey(current.getLOverhang())) {
                     abstractConcreteHash.put(current.getLOverhang(), new HashSet());
                 }
@@ -176,10 +178,14 @@ public class MocloCartesianGraphAssigner {
             }
         }
         for (Part p : _partLibrary) {
+            if (p.getDirections().isEmpty()) {
+                //TODO shouldn't need this once part import is fixed
+                p.addSearchTag("Direction: [+]");
+            }
             compositionOverhangDirections.add(p.getStringComposition() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + p.getDirections());
             //populate compositionConcreteHash's
             String currentComposition = p.getStringComposition().toString();
-            if (compositionLeftConcreteHash.containsKey(currentComposition)) {
+            if (compositionLeftConcreteHash.containsKey(currentComposition) || compositionRightConcreteHash.containsKey(currentComposition)) {
                 compositionLeftConcreteHash.get(currentComposition).add(p.getLeftOverhang());
                 compositionRightConcreteHash.get(currentComposition).add(p.getRightOverhang());
             } else {
@@ -210,12 +216,21 @@ public class MocloCartesianGraphAssigner {
             //add "new overhang" denoted by * character
             abstractConcreteHash.get(key).add("*");
         }
+
+
+        System.out.println("abstractConcreteHash: " + abstractConcreteHash);
+        System.out.println("abstractLeftCompositionHash: " + abstractLeftCompositionHash);
+        System.out.println("abstractRightCompositionHash: " + abstractRightCompositionHash);
+        System.out.println("compositionLeftConcreteHash: " + compositionLeftConcreteHash);
+        System.out.println("compositionRightConcreteHash: " + compositionRightConcreteHash);
+        System.out.println("compositionOverhangDirections: " + compositionOverhangDirections);
         //build the graph
         ArrayList<CartesianNode> previousNodes = null;
         ArrayList<CartesianNode> rootNodes = new ArrayList();
         ArrayList<String> sortedAbstractOverhangs = new ArrayList(abstractConcreteHash.keySet());
         Collections.sort(sortedAbstractOverhangs);
         int level = 0;
+        System.out.println("digraph{");
         for (String abstractOverhang : sortedAbstractOverhangs) {
             ArrayList<CartesianNode> currentNodes = new ArrayList();
             HashSet<String> concreteOverhangs = abstractConcreteHash.get(abstractOverhang);
@@ -223,18 +238,15 @@ public class MocloCartesianGraphAssigner {
                 CartesianNode newNode = new CartesianNode();
                 newNode.setLevel(level);
                 newNode.setAbstractOverhang(abstractOverhang);
-                newNode.setConcreteOverhang(overhang);
+                newNode.setConcreteOverhang(overhang.trim());
                 currentNodes.add(newNode);
             }
             if (previousNodes != null) {
                 for (CartesianNode prev : previousNodes) {
-                    for (CartesianNode node : currentNodes) {
-                        if (!prev.getUsedOverhangs().contains(node.getConcreteOverhang())) {
-                            prev.addNeighbor(node);
-                            node.setUsedOverhangs((HashSet) prev.getUsedOverhangs().clone());
-                            if (!node.getConcreteOverhang().equals("*")) {
-                                node.getUsedOverhangs().add(node.getConcreteOverhang());
-                            }
+                    for (CartesianNode current : currentNodes) {
+                        if (!prev.getConcreteOverhang().equals(current.getConcreteOverhang()) || current.getConcreteOverhang().equals("*")) {
+                            System.out.println("\"" + prev.id + ": " + prev.getAbstractOverhang() + "-" + prev.getConcreteOverhang() + "\" -> \"" + current.id + ": " + current.getAbstractOverhang() + "-" + current.getConcreteOverhang() + "\"");
+                            prev.addNeighbor(current);
                         }
                     }
                 }
@@ -246,6 +258,7 @@ public class MocloCartesianGraphAssigner {
             previousNodes = currentNodes;
             level++;
         }
+        System.out.println("}");
         //find assignments
         int targetLength = sortedAbstractOverhangs.size(); //number of abstract overhangs
         //each value is a potential concrete assignment, 
@@ -263,7 +276,7 @@ public class MocloCartesianGraphAssigner {
                 CartesianNode currentNode = stack.get(0);
                 stack.remove(0);
                 String currentPath = currentSolution.toString();
-                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->");
+                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->").replaceAll(" ", "");
                 if (!toParent) {
                     currentSolution.add(currentNode.getConcreteOverhang());
                     currentPath = currentPath + "->" + currentNode.getConcreteOverhang();
@@ -274,14 +287,21 @@ public class MocloCartesianGraphAssigner {
                 CartesianNode parent = parentHash.get(currentNode);
                 int childrenCount = 0;
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
-                    String edge = currentPath + "->" + neighbor.getConcreteOverhang();
-                    if (!seenPaths.contains(edge)) {
-                        if (neighbor.getLevel() > currentNode.getLevel()) {
-                            stack.add(0, neighbor);
-                            parentHash.put(neighbor, currentNode);
-                            childrenCount++;
+                    if (currentPath.indexOf(neighbor.getConcreteOverhang()) < 0 || neighbor.getConcreteOverhang().equals("*")) {
+                        String edge = currentPath + "->" + neighbor.getConcreteOverhang();
+                        if (!seenPaths.contains(edge)) {
+//                            System.out.println("good: " + edge);
+                            if (neighbor.getLevel() > currentNode.getLevel()) {
+                                stack.add(0, neighbor);
+                                parentHash.put(neighbor, currentNode);
+                                childrenCount++;
+                            }
                         }
+                    } else {
+                        String edge = currentPath + "->" + neighbor.getConcreteOverhang();
+//                        System.out.println("bad: " + edge);
                     }
+
                 }
                 if (childrenCount == 0) {
                     //no children means we've reached the end of a branch
@@ -321,18 +341,34 @@ public class MocloCartesianGraphAssigner {
                     currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
                 }
             }
+            HashSet<String> matched = new HashSet();
             for (RNode basicNode : basicNodes) {
                 String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
                 if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
                     currentScore++;
+                } else {
+                    matched.add(compositionOverhangDirectionString);
                 }
             }
+            currentScore = currentScore - matched.size();
             if (currentScore < bestScore) {
                 bestScore = currentScore;
                 bestAssignment = currentAssignment;
+                System.out.println("num types matched: " + matched.size());
             }
         }
-
+        //figure out what to do with star overhangs
+        HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
+        int newOverhang = 0;
+        for (String starAbstract : bestAssignment.keySet()) {
+            if (bestAssignment.get(starAbstract).equals("*")) {
+                while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
+                    newOverhang++;
+                }
+                bestAssignment.put(starAbstract, String.valueOf(newOverhang));
+                assignedOverhangs.add(String.valueOf(newOverhang));
+            }
+        }
         //assign new overhangs
         finalOverhangHash = bestAssignment;
         //traverse graph and assign overhangs generate vectors
