@@ -263,7 +263,7 @@ public class RMoClo extends RGeneral {
             HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(level);
             HashSet<String> currentLevelOHs = new HashSet<String>();
             HashSet<String> takenOHs;
-            
+
             //Assign nodes in the forward direction first
             ArrayList<RNode> fwdNodes = new ArrayList<RNode>();
             if (directionHash.containsKey("+")) {
@@ -331,7 +331,7 @@ public class RMoClo extends RGeneral {
                     assignTypeOHNeighbor(roots, node, OH, "Right", "+");
                 }
             }
-            
+
             /**
              * Assign right overhangs to backwards nodes third. *
              */
@@ -703,7 +703,6 @@ public class RMoClo extends RGeneral {
         }
 
         parent.setScars(scars);
-        System.out.println(scars);
         return scars;
     }
 
@@ -765,16 +764,19 @@ public class RMoClo extends RGeneral {
         for (String key : abstractLeftCompositionHash.keySet()) {
             for (String composition : abstractLeftCompositionHash.get(key)) {
                 for (String concreteLeftOverhang : compositionLeftConcreteHash.get(composition)) {
-                    abstractConcreteHash.get(key).add(concreteLeftOverhang);
+                    if (!concreteLeftOverhang.equals("")) {
+                        abstractConcreteHash.get(key).add(concreteLeftOverhang);
+                    }
                 }
             }
-            //add "new overhang" denoted by * character
             abstractConcreteHash.get(key).add("*");
         }
         for (String key : abstractRightCompositionHash.keySet()) {
             for (String composition : abstractRightCompositionHash.get(key)) {
                 for (String concreteRightOverhang : compositionRightConcreteHash.get(composition)) {
-                    abstractConcreteHash.get(key).add(concreteRightOverhang);
+                    if (!concreteRightOverhang.equals("")) {
+                        abstractConcreteHash.get(key).add(concreteRightOverhang);
+                    }
                 }
             }
             //add "new overhang" denoted by * character
@@ -836,6 +838,9 @@ public class RMoClo extends RGeneral {
                 currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->").replaceAll(" ", "");
                 if (!toParent) {
                     currentSolution.add(currentNode.getConcreteOverhang());
+//                    if (currentNode.getConcreteOverhang().equals("")) {
+//                        System.out.println("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
+//                    }
                     currentPath = currentPath + "->" + currentNode.getConcreteOverhang();
                     seenPaths.add(currentPath);
                 } else {
@@ -853,7 +858,7 @@ public class RMoClo extends RGeneral {
                                 childrenCount++;
                             }
                         }
-                    } 
+                    }
 
                 }
                 if (childrenCount == 0) {
@@ -909,7 +914,7 @@ public class RMoClo extends RGeneral {
                 bestAssignment = currentAssignment;
             } else {
                 //just to save memory
-                assignment.clear();
+//                assignment.clear();
             }
         }
         //figure out what to do with star overhangs
@@ -973,12 +978,8 @@ public class RMoClo extends RGeneral {
                 seenNodes.add(current);
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
-                if (finalOverhangHash.containsKey(currentLeftOverhang)) {
-                    current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
-                }
-                if (finalOverhangHash.containsKey(currentRightOverhang)) {
-                    current.setROverhang(finalOverhangHash.get(currentRightOverhang));
-                }
+                current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
+                current.setROverhang(finalOverhangHash.get(currentRightOverhang));
                 currentLeftOverhang = current.getLOverhang();
                 currentRightOverhang = current.getROverhang();
                 RVector newVector = new RVector();
@@ -1124,38 +1125,42 @@ public class RMoClo extends RGeneral {
         return toReturn;
     }
 
-    /** Generation of new MoClo primers for parts **/
+    /**
+     * Generation of new MoClo primers for parts *
+     */
     public static ArrayList<String> generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
-   
+
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
         ArrayList<String> oligos = new ArrayList<String>(2);
         String partPrimerPrefix = "nn";
         String partPrimerSuffix = "nn";
         String fwdEnzymeRecSite1 = "gaagac";
         String revEnzymeRecSite1 = "gtcttc";
-                      
+
         Part currentPart = coll.getPart(node.getUUID(), true);
         String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
         String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
-        
+
         return oligos;
     }
-    
-    /** Generation of new MoClo primers for parts **/
+
+    /**
+     * Generation of new MoClo primers for parts *
+     */
     public static ArrayList<String> generateVectorPrimers(RVector vector, Collector coll) {
-    
-        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();        
+
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
         String vectorPrimerPrefix = "gttctttactagtg";
         String vectorPrimerSuffix = "tactagtagcggccgc";
         String fwdEnzymeRecSite1 = "gaagac";
         String revEnzymeRecSite1 = "gtcttc";
         String fwdEnzymeRecSite2 = "ggtctc";
         String revEnzymeRecSite2 = "gagacc";
-        
+
         ArrayList<String> oligos = new ArrayList<String>(2);
-        
+
         //Level 0, 2, 4, 6, etc. vectors
         String forwardOligoSequence;
         String reverseOligoSequence;
@@ -1163,7 +1168,7 @@ public class RMoClo extends RGeneral {
             forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "n" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
             reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite2 + vectorPrimerSuffix);
 
-        //Level 1, 3, 5, 7, etc. vectors
+            //Level 1, 3, 5, 7, etc. vectors
         } else {
             forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "n" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "nn" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
             reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "nn" + overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite1 + vectorPrimerSuffix);
@@ -1174,7 +1179,6 @@ public class RMoClo extends RGeneral {
 
         return oligos;
     }
-    
     //FIELDS
     private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node

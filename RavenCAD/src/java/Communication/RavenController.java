@@ -176,10 +176,7 @@ public class RavenController {
                     type = tags.get(k).substring(6);
                 }
             }
-            
-            System.out.println("name: " + p.getName());
-            System.out.println("tags: " + tags);
-            
+
             String composition = "";
             
             if (p.isBasic()) {
