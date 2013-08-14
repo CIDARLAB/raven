@@ -213,11 +213,12 @@ public class ClothoReader {
             gpsNodes.add(gp);
         }
         
-        //Sort nodes by name
+        //Sort nodes by part size and then composition name
         ArrayList<RNode> orderedGPSNodes = new ArrayList<RNode>();
         HashMap<String, RNode> partNameHash = new HashMap<String, RNode>();
+        
         for (RNode gpsNode : gpsNodes) {
-            partNameHash.put(gpsNode.getName(), gpsNode);
+            partNameHash.put(gpsNode.getComposition().size() + gpsNode.getComposition().toString(), gpsNode);
         }
         Set<String> keySet1 = partNameHash.keySet();
         ArrayList<String> partNames = new ArrayList<String>(keySet1);

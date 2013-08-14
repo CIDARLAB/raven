@@ -22,7 +22,7 @@ import java.util.HashSet;
  */
 public class RInstructions {
     
-    public static String generateInstructions (ArrayList<RNode> roots, HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
+    public static String generateInstructions (ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
         
         int oligoCount = 0;
         String instructions = "";
@@ -47,8 +47,6 @@ public class RInstructions {
         
         for (RNode root : roots) {
             
-            ArrayList<RNode> l0Nodes = rootBasicNodeHash.get(root);
-
             //append header for each goal part
             instructions = instructions + "**********************************************"
                     + "\nAssembly Instructions for target part: " + coll.getPart(root.getUUID(), true).getName()
@@ -148,7 +146,7 @@ public class RInstructions {
                     } else if (method.equalsIgnoreCase("BioBricks")) {
                         oligos = RBioBricks.generatePartPrimers(node, coll, meltingTemp, primerLength);
                     } else {
-                        oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(node, l0Nodes, coll, meltingTemp, primerLength);
+                        oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(node, root, coll, meltingTemp, primerLength);
                     }
                     
                     oligoNames.add(forwardOligoName);

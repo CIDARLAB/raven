@@ -136,11 +136,13 @@ public class RavenController {
     //input: design number refers to the design number on the client
     public JSONArray generatePartsList(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
+        
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
         for (RGraph result : _assemblyGraphs) {
             for (Part p : result.getPartsInGraph(_collector)) {
+                
                 if (!usedParts.contains(p)) {
                     usedParts.add(p);
                 }
@@ -151,6 +153,7 @@ public class RavenController {
                 }
             }
         }
+        
         //extract information from parts and write file
         String partList = "[";
         FileWriter fw = new FileWriter(file);
@@ -173,16 +176,30 @@ public class RavenController {
                     type = tags.get(k).substring(6);
                 }
             }
+            
+            System.out.println("name: " + p.getName());
+            System.out.println("tags: " + tags);
+            
             String composition = "";
 
             if (p.isBasic()) {
+                composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
             } else {
-                composition = "";
                 type = "composite";
                 for (int i = 0; i < p.getComposition().size(); i++) {
                     Part subpart = p.getComposition().get(i);
-                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(i);
+
+                    ArrayList<String> searchTags = subpart.getSearchTags();
+                    ArrayList<String> subPartDirection = ClothoReader.parseTags(searchTags, "Direction:");
+                    for (int k = 0; k < tags.size(); k++) {
+                        if (tags.get(k).startsWith("LO:")) {
+                            LO = tags.get(k).substring(4);
+                        } else if (tags.get(k).startsWith("RO:")) {
+                            RO = tags.get(k).substring(4);
+                        } 
+                    }
+                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + subPartDirection.get(0);
                 }
 
                 composition = composition.substring(1);
@@ -645,8 +662,8 @@ public class RavenController {
         _forbidden = forbidden;
         _discouraged = discouraged;
         _statistics = new Statistics();
-        _vectorLibrary = new ArrayList();
-        _partLibrary = new ArrayList();
+        _vectorLibrary = new ArrayList<Vector>();
+        _partLibrary = new ArrayList<Part>();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
@@ -683,11 +700,9 @@ public class RavenController {
             _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
             _assemblyGraphs = runCPEC();
-            rootBasicNodeHash = RCPEC.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("gibson")) {
             _assemblyGraphs = runGibson();
-            rootBasicNodeHash = RGibson.getRootBasicNodeHash();
             scarless = true;
         } else if (method.equals("goldengate")) {
             _assemblyGraphs = runGoldenGate();
@@ -696,7 +711,6 @@ public class RavenController {
             _assemblyGraphs = runMoClo();
         } else if (method.equals("slic")) {
             _assemblyGraphs = runSLIC();
-            rootBasicNodeHash = RSLIC.getRootBasicNodeHash();
             scarless = true;
         }
 
@@ -735,28 +749,29 @@ public class RavenController {
             for (RGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result);
                 writer.fixCompositeUUIDs(_collector, result);
-                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+//                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+//                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
             }
         }
         JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
 
         System.out.println("GRAPH AND ARCS FILES CREATED");
-        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+//        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+        String mergedArcText = "";
 
         //generate instructions
         if (method.equals("biobricks")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
         } else if (method.equals("cpec")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
         } else if (method.equals("gibson")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         } else if (method.equals("moclo")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
         } else if (method.equals("slic")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, rootBasicNodeHash, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
         }
 
         //write instructions file
