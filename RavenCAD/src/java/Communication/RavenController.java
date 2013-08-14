@@ -159,7 +159,7 @@ public class RavenController {
         String partList = "[";
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
-        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Composition");
+        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
 
         for (Part p : usedParts) {
             ArrayList<String> tags = p.getSearchTags();
@@ -167,7 +167,7 @@ public class RavenController {
             String LO = "";
             String type = "";
             ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
-
+            
             for (int k = 0; k < tags.size(); k++) {
                 if (tags.get(k).startsWith("LO:")) {
                     LO = tags.get(k).substring(4);
@@ -177,12 +177,9 @@ public class RavenController {
                     type = tags.get(k).substring(6);
                 }
             }
-            
-            System.out.println("name: " + p.getName());
-            System.out.println("tags: " + tags);
-            
-            String composition = "";
 
+            String composition = "";
+            
             if (p.isBasic()) {
                 composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
@@ -204,7 +201,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(1);
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,,TODO: addvector," + composition);
             }
             partList = partList
                     + "{\"uuid\":\"" + p.getUUID()
@@ -750,15 +747,15 @@ public class RavenController {
             for (RGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result);
                 writer.fixCompositeUUIDs(_collector, result);
-//                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-//                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
             }
         }
         JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
-
+        
         System.out.println("GRAPH AND ARCS FILES CREATED");
-//        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
-        String mergedArcText = "";
+        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+//        String mergedArcText = "";
 
         //generate instructions
         if (method.equals("biobricks")) {
@@ -802,9 +799,6 @@ public class RavenController {
         }
         out.write("}");
         out.close();
-
-        
-        
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);

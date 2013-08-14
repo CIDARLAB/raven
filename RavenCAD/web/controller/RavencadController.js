@@ -324,7 +324,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
                         '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
                         '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                        '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>' +
                         '<p><a id="downloadArcs' + designCount + '">Download Puppeteer Arcs File</a></p>'
 
                         );
@@ -420,8 +419,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     alert(JSON.stringify(data));
                     if (data["status"] === "good") {
                         //render image
+//                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
+//                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+       
                         $.each(data["graph"]["images"], function(key, value) {
-//                            window.open(value,key);
+                            window.open(value,key);
                         })
 
                         $('#instructionArea' + designCount).html('<div>' + data["instructions"] + '</div>');
@@ -924,6 +926,5 @@ $(document).ready(function() { //don't run javascript until page is loaded
     }
 
 });
-
 
 
