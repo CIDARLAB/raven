@@ -893,11 +893,13 @@ public class RMoClo extends RGeneral {
                     currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
                 }
             }
+            HashSet<String> matched = new HashSet();
             for (RNode basicNode : basicNodes) {
                 String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
                 if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
                     currentScore++;
                 } else {
+                    matched.add(compositionOverhangDirectionString);
                 }
             }
             currentScore = currentScore - matched.size();
