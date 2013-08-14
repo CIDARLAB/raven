@@ -706,10 +706,6 @@ public class RMoClo extends RGeneral {
         return scars;
     }
 
-    //optimizes overhang assignment based on frequency of a parts appearance and the availability of existing overhangs
-    //concurrent optimizes vector assignment based on vector assignment
-    //prioritize existing parts with correct overhangs
-    //next priority is overhangs that vectors already have
     public void assignFinalOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
         HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap();
         HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap(); //key: abstract overhang, value: set of all compositions associated with that composition
@@ -784,19 +780,13 @@ public class RMoClo extends RGeneral {
             abstractConcreteHash.get(key).add("*");
         }
 
-
-        System.out.println("abstractConcreteHash: "+ abstractConcreteHash);
-        System.out.println("abstractLeftCompositionHash: "+ abstractLeftCompositionHash);
-        System.out.println("abstractRightCompositionHash: "+ abstractRightCompositionHash);
-        System.out.println("compositionLeftConcreteHash: "+ compositionLeftConcreteHash);
-        System.out.println("compositionRightConcreteHash: "+ compositionRightConcreteHash);
-        System.out.println("compositionOverhangDirections: "+ compositionOverhangDirections);
         //build the graph
         ArrayList<CartesianNode> previousNodes = null;
         ArrayList<CartesianNode> rootNodes = new ArrayList();
         ArrayList<String> sortedAbstractOverhangs = new ArrayList(abstractConcreteHash.keySet());
         Collections.sort(sortedAbstractOverhangs);
         int level = 0;
+//        System.out.println("digraph{");
         for (String abstractOverhang : sortedAbstractOverhangs) {
             ArrayList<CartesianNode> currentNodes = new ArrayList();
             HashSet<String> concreteOverhangs = abstractConcreteHash.get(abstractOverhang);
@@ -804,22 +794,15 @@ public class RMoClo extends RGeneral {
                 CartesianNode newNode = new CartesianNode();
                 newNode.setLevel(level);
                 newNode.setAbstractOverhang(abstractOverhang);
-                newNode.setConcreteOverhang(overhang);
-                if (!overhang.equals("*")) {
-                    newNode.setUsedOverhangs(new HashSet(Arrays.asList(new String[]{overhang})));
-                }
+                newNode.setConcreteOverhang(overhang.trim());
                 currentNodes.add(newNode);
             }
             if (previousNodes != null) {
                 for (CartesianNode prev : previousNodes) {
                     for (CartesianNode current : currentNodes) {
-                        if (!prev.getUsedOverhangs().contains(current.getConcreteOverhang())) {
+                        if (!prev.getConcreteOverhang().equals(current.getConcreteOverhang()) || current.getConcreteOverhang().equals("*")) {
+//                            System.out.println("\"" + prev.id + ": " + prev.getAbstractOverhang() + "-" + prev.getConcreteOverhang() + "\" -> \"" + current.id + ": " + current.getAbstractOverhang() + "-" + current.getConcreteOverhang() + "\"");
                             prev.addNeighbor(current);
-                            current.setUsedOverhangs((HashSet) prev.getUsedOverhangs().clone());
-                            if (!current.getConcreteOverhang().equals("*")) {
-//                                System.out.println("linking " + prev.getAbstractOverhang() + ":" + prev.getConcreteOverhang() + " and " + current.getAbstractOverhang() + ":" + current.getConcreteOverhang());
-                                current.getUsedOverhangs().add(current.getConcreteOverhang());
-                            }
                         }
                     }
                 }
@@ -831,6 +814,7 @@ public class RMoClo extends RGeneral {
             previousNodes = currentNodes;
             level++;
         }
+//        System.out.println("}");
         //find assignments
         int targetLength = sortedAbstractOverhangs.size(); //number of abstract overhangs
         //each value is a potential concrete assignment, 
@@ -848,7 +832,7 @@ public class RMoClo extends RGeneral {
                 CartesianNode currentNode = stack.get(0);
                 stack.remove(0);
                 String currentPath = currentSolution.toString();
-                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->");
+                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->").replaceAll(" ", "");
                 if (!toParent) {
                     currentSolution.add(currentNode.getConcreteOverhang());
                     currentPath = currentPath + "->" + currentNode.getConcreteOverhang();
@@ -868,8 +852,7 @@ public class RMoClo extends RGeneral {
                                 childrenCount++;
                             }
                         }
-                    } else {
-                    }
+                    } 
 
                 }
                 if (childrenCount == 0) {
@@ -910,20 +893,20 @@ public class RMoClo extends RGeneral {
                     currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
                 }
             }
-            HashSet<String> matched = new HashSet();
             for (RNode basicNode : basicNodes) {
                 String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
                 if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
                     currentScore++;
                 } else {
-                    matched.add(compositionOverhangDirectionString);
                 }
             }
             currentScore = currentScore - matched.size();
             if (currentScore < bestScore) {
                 bestScore = currentScore;
                 bestAssignment = currentAssignment;
-                System.out.println("num types matched: " + matched.size());
+            } else {
+                //just to save memory
+                assignment.clear();
             }
         }
         //figure out what to do with star overhangs
@@ -1010,8 +993,8 @@ public class RMoClo extends RGeneral {
             }
         }
     }
-    //sets user specified overhangs before algorithm computes the rest
 
+    //sets user specified overhangs before algorithm computes the rest
     private HashMap<String, String> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
         for (RGraph graph : optimalGraphs) {

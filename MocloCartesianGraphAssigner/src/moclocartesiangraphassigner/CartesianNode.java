@@ -12,13 +12,15 @@ import java.util.HashSet;
  * @author Jenhan Tao <jenhantao@gmail.com>
  */
 public class CartesianNode {
-
+private static int count = 0;
+    public int id;
     public CartesianNode() {
+        this.id = count;
         this.neighbors = new ArrayList();
         this.level = 0;
         this.abstractOverhang = null;
         this.concreteOverhang = null;
-        this.usedOverhangs = new HashSet();
+        count ++;
     }
 
     public String getConcreteOverhang() {
@@ -45,14 +47,6 @@ public class CartesianNode {
         this.neighbors = neighbors;
     }
 
-    public HashSet getUsedOverhangs() {
-        return usedOverhangs;
-    }
-
-    public void setUsedOverhangs(HashSet usedOverhangs) {
-        this.usedOverhangs = usedOverhangs;
-    }
-
     void addNeighbor(CartesianNode node) {
         this.neighbors.add(node);
     }
@@ -68,6 +62,5 @@ public class CartesianNode {
     public String concreteOverhang; //right concreteOverhang option specified by this CartesianNode
     public int level; //level of this node
     public ArrayList<CartesianNode> neighbors; //neighbors of this node
-    public HashSet usedOverhangs;
     public String abstractOverhang;
 }

@@ -13,12 +13,17 @@ import java.util.HashSet;
  */
 public class CartesianNode {
 
+    private static int count = 0;
+    public int id;
+
     public CartesianNode() {
+        this.id = count;
         this.neighbors = new ArrayList();
         this.level = 0;
         this.abstractOverhang = null;
         this.concreteOverhang = null;
         this.usedOverhangs = new HashSet();
+        count++;
     }
 
     public String getConcreteOverhang() {
