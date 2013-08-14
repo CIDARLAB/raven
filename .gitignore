@@ -10,3 +10,10 @@
 # Build folders #
 /RavenCAD/build/
 /RavenCAD/dist/
+/OverhangSequenceSelector/nbproject/private/
+/OverhangSequenceSelector/build/
+/MocloCartesianGraphAssigner/nbproject/private/
+/MocloCartesianGraphAssigner/build/
+/OverhangSequenceSelector/dist/
+/MocloCartesianGraphAssigner/nbproject/private/
+/MocloCartesianGraphAssigner/dist/

@@ -5,6 +5,7 @@
 package Controller.datastructures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
@@ -21,7 +22,7 @@ public class Part {
         newComposite.sequence = sequence;
         newComposite.composition = newComposition;
         newComposite.name = name;
-        newComposite.uuid = "part_"+String.valueOf(UUID);
+        newComposite.uuid = "part_" + String.valueOf(UUID);
         newComposite.isComposite = true;
         newComposite._transient = true;
         return newComposite;
@@ -29,7 +30,7 @@ public class Part {
 
     private Part() {
         UUID++;
-        this.uuid = "part_"+String.valueOf(UUID);
+        this.uuid = "part_" + String.valueOf(UUID);
     }
 
     public static Part retrieveByExactName(Collector coll, String name, boolean allowTransient) {
@@ -132,6 +133,20 @@ public class Part {
 
     public void setComposition(ArrayList<Part> comp) {
         this.composition = comp;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public ArrayList<String> getDirections() {
+        ArrayList<String> toReturn = new ArrayList();
+        for (String tag : this.searchTags) {
+            if (tag.startsWith("Direction:")) {
+                toReturn = new ArrayList(Arrays.asList(tag.substring(12, tag.length() - 1).split(",")));
+            }
+        }
+        return toReturn;
     }
     //Fields
     private ArrayList<Part> composition;

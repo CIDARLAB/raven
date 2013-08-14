@@ -21,6 +21,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -39,13 +41,13 @@ public class RavenServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processGetRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
+
         RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
         PrintWriter out = response.getWriter();
         String command = request.getParameter("command");
         String user = getUser(request).toLowerCase();
         RavenController controller = _controllerHash.get(user);
-        
+
         try {
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
@@ -63,7 +65,7 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "loaded data";
                 controller.saveNewDesign(request.getParameter("designCount"));
                 out.write(responseString);
-            
+
             } else if (command.equals("logout")) {
                 response.setContentType("text/html;charset=UTF-8");
                 RavenLogger.logSessionOut(user, request.getRemoteAddr());
@@ -71,19 +73,19 @@ public class RavenServlet extends HttpServlet {
                 _controllerHash.remove(user);
                 controller.clearData();
                 out.write(responseString);
-            
+
             } else if (command.equals("fetch")) {
                 response.setContentType("application/json");
                 String responseString = "";
                 responseString = controller.fetchData();
                 out.write(responseString);
-            
+
             } else if (command.equals("purge")) {
                 response.setContentType("test/plain");
                 String responseString = "purged";
                 controller.clearData();
                 out.write(responseString);
-            
+
             } else if (command.equals("delete")) {
                 String[] partIDs = request.getParameter("parts").split(",");
                 String[] vectorIDs = request.getParameter("vectors").split(",");
@@ -93,7 +95,6 @@ public class RavenServlet extends HttpServlet {
                 for (int i = 0; i < vectorIDs.length; i++) {
                     controller._collector.removeVector(partIDs[i]);
                 }
-            
             } else if (command.equals("run")) {
                 response.setContentType("application/json");
                 String[] targetIDs = request.getParameter("targets").split(",");
@@ -104,6 +105,7 @@ public class RavenServlet extends HttpServlet {
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
                 String[] discouragedArray = request.getParameter("discouraged").split(";");
                 String[] efficiencyArray = request.getParameter("efficiency").split(",");
+                JSONObject primerParam = new JSONObject(request.getParameter("primer"));
                 String method = request.getParameter("method");
                 HashSet<String> required = new HashSet();
                 HashSet<String> recommended = new HashSet();
@@ -111,52 +113,82 @@ public class RavenServlet extends HttpServlet {
                 HashSet<String> discouraged = new HashSet();
                 HashMap<Integer, Double> efficiencyHash = new HashMap();
 
+                //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
+                ArrayList<String> primerParameters = new ArrayList();
+                primerParameters.add(primerParam.getString("oligoNameRoot"));
+                primerParameters.add(primerParam.getString("forwardPrefix"));
+                primerParameters.add(primerParam.getString("reversePrefix"));
+                primerParameters.add(primerParam.getString("forwardCutSite"));
+                primerParameters.add(primerParam.getString("reverseCutSite"));
+                primerParameters.add(primerParam.getString("forwardCutDistance"));
+                primerParameters.add(primerParam.getString("reverseCutDistance"));
+                primerParameters.add(primerParam.getString("meltingTemperature"));
+                primerParameters.add(primerParam.getString("targetLength"));
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {
-                            recommended.add(recArray[i]);
+                            String rcA = recArray[i];
+                            rcA = rcA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
+                            recommended.add(rcA);
                         }
                     }
                 }
+
                 if (reqArray.length > 0) {
                     for (int i = 0; i < reqArray.length; i++) {
                         if (reqArray[i].length() > 0) {
-                            required.add(reqArray[i]);
+                            String rqA = reqArray[i];
+                            rqA = rqA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
+                            required.add(rqA);
                         }
                     }
                 }
+
                 if (forbiddenArray.length > 0) {
                     for (int i = 0; i < forbiddenArray.length; i++) {
                         if (forbiddenArray[i].length() > 0) {
-                            forbidden.add(forbiddenArray[i]);
+                            String fA = forbiddenArray[i];
+                            fA = fA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
+                            forbidden.add(fA);
                         }
                     }
                 }
+
                 if (discouragedArray.length > 0) {
                     for (int i = 0; i < discouragedArray.length; i++) {
                         if (discouragedArray[i].length() > 0) {
-                            discouraged.add(discouragedArray[i]);
+                            String dA = discouragedArray[i];
+                            dA = dA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
+                            discouraged.add(dA);
                         }
                     }
                 }
+
                 //generate efficiency hash
                 if (efficiencyArray.length > 0) {
                     for (int i = 0; i < efficiencyArray.length; i++) {
                         efficiencyHash.put(i + 2, Double.parseDouble(efficiencyArray[i]));
                     }
                 }
+
                 String designCount = request.getParameter("designCount");
-                String image = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash);
-                String partsList = controller.generatePartsList(designCount);
+                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
+                JSONArray partsList = controller.generatePartsList(designCount);
                 String instructions = controller.getInstructions();
-                String statString = controller.generateStats();
+                JSONObject statString = controller.generateStats();
                 System.out.println("Stats: " + statString);
                 instructions = instructions.replaceAll("[\r\n\t]+", "<br/>");
                 if (instructions.length() < 1) {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
-                out.println("{\"result\":\"" + image + "\",\"statistics\":" + statString + ",\"instructions\":\"" + instructions + "\",\"status\":\"good\",\"partsList\":" + partsList + "}");
-            
+                JSONObject toReturn = new JSONObject();
+                toReturn.put("status", "good");
+                toReturn.put("statistics", statString);
+                toReturn.put("instructions", instructions);
+                toReturn.put("partsList", partsList);
+                toReturn.put("graph", graphData);               
+                out.println(toReturn);
+
             } else if (command.equals("save")) {
                 String[] partIDs = request.getParameter("partIDs").split(",");
                 String[] vectorIDs = request.getParameter("vectorIDs").split(",");
@@ -166,7 +198,7 @@ public class RavenServlet extends HttpServlet {
                 String responseString = "failed save data";
                 responseString = controller.save(partIDs, vectorIDs, writeSQL);
                 out.write(responseString);
-            
+
             } else if (command.equals("mail")) {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             }
@@ -194,46 +226,57 @@ public class RavenServlet extends HttpServlet {
      *
      */
     protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (!ServletFileUpload.isMultipartContent(request)) {
-            throw new IllegalArgumentException("Request is not multipart, please 'multipart/form-data' enctype for your form.");
-        }
-        ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
         PrintWriter writer = response.getWriter();
-        response.setContentType("text/plain");
-        response.sendRedirect("import.html");
-        String user = getUser(request);
-        RavenController controller = _controllerHash.get(user);
-        if (controller == null) {
-            String path = this.getServletContext().getRealPath("/") + "/data/";
-            _controllerHash.put(user, new RavenController(path, user));
-            controller = _controllerHash.get(user);
-        }
         try {
-            List<FileItem> items = uploadHandler.parseRequest(request);
-            String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
-            RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
-            new File(uploadFilePath).mkdir();
-            ArrayList<File> toLoad = new ArrayList();
-            for (FileItem item : items) {
-                File file;
-                if (!item.isFormField()) {
-                    String fileName = item.getName();
-                    if (fileName.equals("")) {
-                        System.out.println("You forgot to choose a file.");
-                    }
-                    if (fileName.lastIndexOf("\\") >= 0) {
-                        file = new File(uploadFilePath + fileName.substring(fileName.lastIndexOf("\\")));
-                    } else {
-                        file = new File(uploadFilePath + fileName.substring(fileName.lastIndexOf("\\") + 1));
-                    }
-                    item.write(file);
-                    toLoad.add(file);
+            if (!ServletFileUpload.isMultipartContent(request)) {
+                String command = request.getParameter("command");
+                String user = getUser(request).toLowerCase();
+                RavenController controller = _controllerHash.get(user);
+                if (command.equals("importClotho")) {
+                    response.setContentType("application/json");
+                    String data = request.getParameter("data");
+                    JSONArray devices = new JSONArray(data);
+                    String toReturn = controller.importClotho(devices);
+                    writer.write("{\"result\":\"" + toReturn + "\",\"status\":\"" + toReturn + "\"}");
                 }
-                writer.write("{\"result\":\"good\",\"status\":\"good\"}");
+
+
+            } else {
+                ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
+                response.setContentType("text/plain");
+                response.sendRedirect("import.html");
+                String user = getUser(request);
+                RavenController controller = _controllerHash.get(user);
+                if (controller == null) {
+                    String path = this.getServletContext().getRealPath("/") + "/data/";
+                    _controllerHash.put(user, new RavenController(path, user));
+                    controller = _controllerHash.get(user);
+                }
+                List<FileItem> items = uploadHandler.parseRequest(request);
+                String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
+                RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
+                new File(uploadFilePath).mkdir();
+                ArrayList<File> toLoad = new ArrayList();
+                for (FileItem item : items) {
+                    File file;
+                    if (!item.isFormField()) {
+                        String fileName = item.getName();
+                        if (fileName.equals("")) {
+                            System.out.println("You forgot to choose a file.");
+                        }
+                        if (fileName.lastIndexOf("\\") >= 0) {
+                            file = new File(uploadFilePath + fileName.substring(fileName.lastIndexOf("\\")));
+                        } else {
+                            file = new File(uploadFilePath + fileName.substring(fileName.lastIndexOf("\\") + 1));
+                        }
+                        item.write(file);
+                        toLoad.add(file);
+                    }
+                    writer.write("{\"result\":\"good\",\"status\":\"good\"}");
+                }
+                controller.loadUploadedFiles(toLoad);
+
             }
-            controller.loadUploadedFiles(toLoad);
-        } catch (FileUploadException e) {
-            throw new RuntimeException(e);
         } catch (Exception e) {
             e.printStackTrace();
             StringWriter stringWriter = new StringWriter();
@@ -241,7 +284,6 @@ public class RavenServlet extends HttpServlet {
             e.printStackTrace(printWriter);
             String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
             writer.write("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
-
         } finally {
             writer.close();
 
@@ -259,7 +301,8 @@ public class RavenServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         processGetRequest(request, response);
     }
 
@@ -273,7 +316,8 @@ public class RavenServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         processPostRequest(request, response);
     }
 
@@ -287,7 +331,9 @@ public class RavenServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
-    /** Get session user **/
+    /**
+     * Get session user *
+     */
     private String getUser(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String user = "default";
@@ -300,7 +346,6 @@ public class RavenServlet extends HttpServlet {
         }
         return user;
     }
-    
     //FIELDS
     private HashMap<String, RavenController> _controllerHash = new HashMap(); //key:user, value: collector assocaited with that user
 }

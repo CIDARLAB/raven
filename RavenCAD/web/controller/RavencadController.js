@@ -324,7 +324,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
                         '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
                         '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                        '<p><a id="downloadPigeon' + designCount + '">Download Pigeon File</a></p>' +
                         '<p><a id="downloadArcs' + designCount + '">Download Puppeteer Arcs File</a></p>'
 
                         );
@@ -348,7 +347,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $('#selectedIntermediates div div div ul#recommendedList li').each(function() {
                     rec = rec + $(this).text() + ";";
                 });
-                $('#selectedIntermediates div div div ul#forbidden li').each(function() {
+                $('#selectedIntermediates div div div ul#forbiddenList li').each(function() {
                     forbid = forbid + $(this).text() + ";";
                 });
                 $('#selectedIntermediates div div div ul#discouragedList li').each(function() {
@@ -362,15 +361,72 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 targets = targets.substring(0, targets.length - 1);
                 partLibrary = partLibrary.substring(0, partLibrary.length - 1);
                 method = method.toLowerCase().replace(/\s+/g, '');
-                var requestInput = {"command": "run", "designCount": "" + designCount, "targets": "" + targets, "method": ""
-                            + method, "partLibrary": "" + partLibrary, "vectorLibrary": "" + vectorLibrary, "recommended": ""
-                            + rec, "required": "" + req, "forbidden": "" + forbid, "discouraged": "" + discourage, "efficiency": "" + efficiencyArray, "writeSQL": ""};
+
+                //primer parameters
+                var oligoNameRoot = $('input#oligoNameRoot').val();
+                var meltingTemperature = $('input#meltingTemperature').val();
+                var targetLength = $('input#targetLength').val();
+                var forwardPrefix = $('input#forwardPrefix').val();
+                var forwardCutSite = $('input#forwardCutSite').val();
+                var forwardCutDistance = $('input#forwardCutDistance').val();
+                var reversePrefix = $('input#reversePrefix').val();
+                var reverseCutSite = $('input#reverseCutSite').val();
+                var reverseCutDistance = $('input#reverseCutDistance').val();
+                //if they are primer parameters are not filled in, use defaults
+
+                if (oligoNameRoot === undefined) {
+                    oligoNameRoot = $('input#oligoNameRoot').attr("placeholder");
+                }
+                if (meltingTemperature === undefined) {
+                    meltingTemperature = $('input#meltingTemperature').attr("placeholder");
+                }
+                if (targetLength === undefined) {
+                    targetLength = $('input#targetLength').attr("placeholder");
+                }
+                if (forwardPrefix === undefined) {
+                    forwardPrefix = $('input#forwardPrefix').attr("placeholder");
+                }
+                if (forwardCutSite === undefined) {
+                    forwardCutSite = $('input#forwardCutSite').attr("placeholder");
+                }
+                if (forwardCutDistance === undefined) {
+                    forwardCutDistance = $('input#forwardCutDistance').attr("placeholder");
+                }
+                if (reversePrefix === undefined) {
+                    reversePrefix = $('input#reversePrefix').attr("placeholder");
+                }
+                if (reverseCutSite === undefined) {
+                    reverseCutSite = $('input#reverseCutSite').attr("placeholder");
+                }
+                if (reverseCutDistance === undefined) {
+                    reverseCutDistance = $('input#reverseCutDistance').attr("placeholder");
+                }
+                var requestInput = {command: "run", designCount: "" + designCount, targets: "" + targets, method: ""
+                            + method, partLibrary: "" + partLibrary, vectorLibrary: "" + vectorLibrary, recommended: ""
+                            + rec, required: "" + req, forbidden: "" + forbid, discouraged: "" + discourage,
+                    efficiency: "" + efficiencyArray,
+                    "primer": JSON.stringify({oligoNameRoot: "",
+                        meltingTemperature: "meltingTemperature",
+                        targetLength: "targetLength",
+                        forwardPrefix: "forwardPrefix",
+                        forwardCutSite: "forwardCutSite",
+                        forwardCutDistance: "forwardCutDistance",
+                        reversePrefix: "reversePrefix",
+                        reverseCutSite: "reverseCutSite",
+                        reverseCutDistance: "reverseCutDistance"
+                    })};
                 $.get("RavenServlet", requestInput, function(data) {
+                    alert(JSON.stringify(data));
                     if (data["status"] === "good") {
                         //render image
-                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
-                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-                        $('#instructionArea' + designCount).html('<div class="alert alert-danger">' + data["instructions"] + '</div>');
+//                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
+//                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+       
+                        $.each(data["graph"]["images"], function(key, value) {
+                            window.open(value,key);
+                        })
+
+                        $('#instructionArea' + designCount).html('<div>' + data["instructions"] + '</div>');
                         var status = '';
                         var saveButtons = '';
                         if (data["statistics"]["valid"] === "true") {
@@ -470,12 +526,20 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     } else {
                         //display error
                         $("#designTab" + designCount).html('<div class="alert alert-danger">' +
+                                '<button class="btn" id="discardButton' + designCount + '" name="' + designCount + '">Dismiss</button><hr/>' +
                                 '<strong>Oops, an error occurred while generating your assembly plan</strong>' +
                                 '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
                                 '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
                                 '<li>A brief summary of what you were trying to do</li></ul>' +
                                 '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
                                 + data["result"] + '</div>');
+                        $('#discardButton' + designCount).click(function() {
+                            var designNumber = $(this).attr("name");
+                            $('#designTabHeader' + designNumber).remove();
+                            $('#designTab' + designNumber).remove();
+                            $('#designTabHeader a:first').tab('show');
+                            refreshData();
+                        });
                     }
                 });
             } else {
@@ -635,7 +699,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             "bPaginate": false,
             "bScrollCollapse": true
         });
-   
+
     };
     var updateSummary = function() {
         var pattern = /^[\d]+\.[\d]+/;
@@ -862,6 +926,5 @@ $(document).ready(function() { //don't run javascript until page is loaded
     }
 
 });
-
 
 

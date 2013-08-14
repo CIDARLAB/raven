@@ -93,8 +93,10 @@ public class Collector {
 
     public Part getPartByExactName(String name, boolean allowTransient) {
         Part toReturn = partUUIDHash.get(partNameHash.get(name));
-        if (!toReturn.isTransient() || allowTransient) {
-            return toReturn;
+        if (toReturn != null) {
+            if (!toReturn.isTransient() || allowTransient) {
+                return toReturn;
+            }
         }
         return null;
     }
@@ -129,11 +131,9 @@ public class Collector {
         Part sameNamePart = this.getPartByName(aPart.getName(), true);
         if (sameNamePart != null) {
             if (sameNamePart.getLeftOverhang().equals(aPart.getLeftOverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
-//                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
                 int selValue = JOptionPane.OK_OPTION;
                 //TODO figure out error handling here
                 if (selValue == JOptionPane.OK_OPTION) {
-//                    basicPartNameHash.put(aPart.getName(), aPart.getUUID());
                     partUUIDHash.remove(partNameHash.get(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang()));
                     partNameHash.put(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
                     partUUIDHash.put(aPart.getUUID(), aPart);
@@ -142,7 +142,6 @@ public class Collector {
                         toAdd.add(aPart.getName());
                         partNameRootHash.put(aPart.getName(), toAdd);
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
-                        System.out.println("before: " + partUUIDHash.keySet());
                     } else {
                         partNameRootHash.get(aPart.getName()).add(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang());
                     }
@@ -248,7 +247,7 @@ public class Collector {
         partUUIDHash = new HashMap();
         partNameRootHash = new HashMap();
         vectorNameRootHash = new HashMap();
-        
+
 
     }
 }

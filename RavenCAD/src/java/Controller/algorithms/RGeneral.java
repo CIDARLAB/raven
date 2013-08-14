@@ -19,25 +19,20 @@ import java.util.Set;
 public class RGeneral extends Modularity {
 
     /** Find assembly graph for multiple goal parts **/
-    protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<String, RGraph> partHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, boolean sharing) {
-
+    protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiencies, boolean sharing) throws Exception {
+        
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
         for (int i = 0; i < gps.size(); i++) {
             RNode gp = gps.get(i);
-            try {
-                conflictSearchRequired(gp, required);
-            } catch (Exception ex) {
-
-                //Return a new graph if there is an exception
-                ArrayList<RGraph> blank = new ArrayList<RGraph>();
-                return blank;
-            }
+            conflictSearchRequired(gp, required);
         }
 
+        HashSet<String> libCompDir = new HashSet(partHash.keySet());
+        
         //Run algorithm for all goal parts separately, find the max stages
         HashMap<String, RGraph> slackLibrary = new HashMap<String, RGraph>();
         slackLibrary.putAll(partHash);
-        int slack = determineSlack(gps, required, recommended, forbidden, slackLibrary);
+        int slack = determineSlack(gps, slackLibrary, libCompDir, required, recommended, forbidden);
         System.gc();
 
         //Compute sharing scores for all goal parts
@@ -56,19 +51,19 @@ public class RGeneral extends Modularity {
 
             //Reinitialize memoization hash with part library and pinned graphs each with zero cost
             HashMap<String, RGraph> hashMem = new HashMap<String, RGraph>();
-            if (partHash != null) {
-                hashMem.putAll(partHash);
-                hashMem.putAll(pinnedPartHash);
-            }
+            hashMem.putAll(partHash);
+            hashMem.putAll(pinnedPartHash);
 
             //Call single-goal-part algorithm for each goal part and determine which of the graphs to pin
             int index = 0;
             RGraph pinnedGraph = null;
             for (int j = 0; j < gps.size(); j++) {
                 RNode gp = gps.get(j);
-                RGraph newGraph = createAsmGraph_sgp(gp, hashMem, partHash, required, recommended, forbidden, discouraged, slack, sharingHash, modularityHash, efficiencies);
+                RGraph newGraph = createAsmGraph_sgp(gp, hashMem, libCompDir, required, recommended, forbidden, discouraged, slack, sharingHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
 
+//                System.out.println("current gp: " + gp.getComposition() + " sharing factor: " + newGraph.getModularityFactor());
+                
                 //Pin graph if no existing pinned graph
                 if (pinnedGraph == null) {
                     pinnedGraph = newGraph;
@@ -92,17 +87,23 @@ public class RGeneral extends Modularity {
 
                 //If no recommended parts, pin the graph with the most sharing
                 } else {
-                    if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
+                    if (newGraph.getSharing() > pinnedGraph.getSharing()) {
+                        pinnedGraph = newGraph;
+                        index = j;
+                    } else if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
                         pinnedGraph = newGraph;
                         index = j;
                     }
                 }
             }
 
+//            System.out.println("pinnedGraph root: " + pinnedGraph.getRootNode().getComposition());
+            
             //Add pinned graph and graph for each intermediate part to our hash of pinned graphs
             //Also search through the subgraphs of the bestGraph to see if it has any basic parts
             boolean cantMake = true;
-            pinnedPartHash.put(pinnedGraph.getRootNode().getComposition().toString(), pinnedGraph.clone());
+            RNode pinnedRoot = pinnedGraph.getRootNode();
+            pinnedPartHash.put(pinnedRoot.getComposition().toString() + pinnedRoot.getDirection().toString(), pinnedGraph.clone());
             
             if (!pinnedGraph.getSubGraphs().isEmpty()) {
                 cantMake = false;
@@ -112,7 +113,8 @@ public class RGeneral extends Modularity {
                 RGraph subGraph = pinnedGraph.getSubGraphs().get(k);
                 RGraph subGraphClone = subGraph.clone();
                 subGraphClone.pin();
-                pinnedPartHash.put(subGraph.getRootNode().getComposition().toString(), subGraphClone);
+                RNode subGraphRoot = subGraph.getRootNode();
+                pinnedPartHash.put(subGraphRoot.getComposition().toString() + subGraphRoot.getDirection().toString(), subGraphClone);
 
                 //If a basic part is seen in the solution graph
                 if (subGraph.getRootNode().getStage() > 0) {
@@ -136,14 +138,14 @@ public class RGeneral extends Modularity {
     }
 
     /** Find assembly graph for a single goal part factoring in slack and sharing **/
-    protected RGraph createAsmGraph_sgp(RNode goalPartNode, HashMap<String, RGraph> partsHash, HashMap<String, RGraph> libHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, int slack, HashMap<String, Integer> sharingHash, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies) {
+    protected RGraph createAsmGraph_sgp(RNode goalPartNode, HashMap<String, RGraph> partsHash, HashSet<String> libCompDir, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, int slack, HashMap<String, Integer> sharingHash, HashMap<Integer, Double> efficiencies) {
 
         //If any of the parameters is null, must be set to a new object to avoid null pointer issues
         if (partsHash == null) {
             partsHash = new HashMap<String, RGraph>();
         }
-        if (libHash == null) {
-            libHash = new HashMap<String, RGraph>();
+        if (libCompDir == null) {
+            libCompDir = new HashSet<String>();
         }
         if (sharingHash == null) {
             sharingHash = new HashMap<String, Integer>();
@@ -163,19 +165,17 @@ public class RGeneral extends Modularity {
         if (efficiencies == null) {
             efficiencies = new HashMap<Integer, Double>();
         }
-        if (modularityHash == null) {
-            modularityHash = new HashMap<Integer, HashMap<String, Double>>();
-        }
-
-//        System.out.println("************* gpComp: " + goalPartNode.getComposition().toString() + "********************");
         
-        //Memoization Case - If graph already exists for this composition. This is the case for all basic parts and library parts
-        if (partsHash.containsKey(goalPartNode.getComposition().toString())) {
-//            System.out.println("THIS PART EXISTS IN THE LIBRARY, RETURNED SCORE OF ZERO");
-            return partsHash.get(goalPartNode.getComposition().toString());
+        //Memoization Case - If graph already exists for this composition and direction. This is always the case for basic parts and library parts
+        if (goalPartNode.getComposition().size() == 1) {
+            if (partsHash.containsKey(goalPartNode.getComposition().toString() + "[]")) {
+                return partsHash.get(goalPartNode.getComposition().toString() + "[]");
+            }
+        } else {
+            if (partsHash.containsKey(goalPartNode.getComposition().toString() + goalPartNode.getDirection().toString())) {
+                return partsHash.get(goalPartNode.getComposition().toString() + goalPartNode.getDirection().toString());
+            }
         }
-        
-//        System.out.println("THIS NODE DOES NOT YET EXIST, MUST SEARCH HOW TO BUILD IT");
         
         RGraph bestGraph = new RGraph(goalPartNode);
 
@@ -183,7 +183,8 @@ public class RGeneral extends Modularity {
         int gpSize = goalPartNode.getComposition().size();
         ArrayList<String> gpComp = goalPartNode.getComposition();
         ArrayList<String> gpType = goalPartNode.getType();
-
+        ArrayList<String> gpDir = goalPartNode.getDirection();
+        
         //Create idexes for goal part
         ArrayList<Integer> indexes = new ArrayList<Integer>();
         for (int i = 1; i < gpSize; i++) {
@@ -206,8 +207,7 @@ public class RGeneral extends Modularity {
             }
         }
         
-        //Have a new partition set if library parts already physically exist
-        Set<String> libSet = libHash.keySet();
+        //Create an additional partition set if library parts already exist to explore more design space that includes library parts
         ArrayList<ArrayList<Integer>> libIndexes = new ArrayList<ArrayList<Integer>>();
         libIndexes.add(indexes);
 
@@ -218,7 +218,8 @@ public class RGeneral extends Modularity {
                 }
                 ArrayList<String> gpSub = new ArrayList<String>();
                 gpSub.addAll(gpComp.subList(startL, endL));
-                if (libSet.contains(gpSub.toString())) {
+                
+                if (libCompDir.contains(gpSub.toString())) {
                     ArrayList<Integer> aLibIndexes = new ArrayList<Integer>(indexes);
                     for (int j = startL + 1; j < endL; j++) {
                         aLibIndexes.remove(new Integer(j));
@@ -282,15 +283,20 @@ public class RGeneral extends Modularity {
                 for (int n = 0; n < (thisPartition.length + 1); n++) {
                     ArrayList<String> type = new ArrayList<String>();
                     ArrayList<String> comp = new ArrayList<String>();
+                    ArrayList<String> dir = new ArrayList<String>();
+                    
                     if (n == 0) {
                         type.addAll(gpType.subList(0, thisPartition[n]));
                         comp.addAll(gpComp.subList(0, thisPartition[n]));
+                        dir.addAll(gpDir.subList(0, thisPartition[n]));
                     } else if (n == thisPartition.length) {
                         type.addAll(gpType.subList(thisPartition[n - 1], gpSize));
                         comp.addAll(gpComp.subList(thisPartition[n - 1], gpSize));
+                        dir.addAll(gpDir.subList(thisPartition[n - 1], gpSize));
                     } else {
                         type.addAll(gpType.subList(thisPartition[n - 1], thisPartition[n]));
                         comp.addAll(gpComp.subList(thisPartition[n - 1], thisPartition[n]));
+                        dir.addAll(gpDir.subList(thisPartition[n - 1], thisPartition[n]));
                     }
 
                     //If any of the compositions is in the forbidden hash, this partition will not work
@@ -303,7 +309,7 @@ public class RGeneral extends Modularity {
                     //If not, make the new RNode
                     boolean rec = recommended.contains(comp.toString());
                     boolean dis = discouraged.contains(comp.toString());
-                    RNode aSubPart = new RNode(rec, dis, null, comp, null, type, 0, 0);
+                    RNode aSubPart = new RNode(rec, dis, comp, dir, type, null, null, null, 0, 0);
                     allSubParts.add(aSubPart);
                 }
 
@@ -312,12 +318,16 @@ public class RGeneral extends Modularity {
                 if (canPartitionThis) {
                     canPartitionAny = true;
                     ArrayList<RGraph> toCombine = new ArrayList<RGraph>();
+                    ArrayList<String> combineDirection = new ArrayList<String>();
+                    
+                    //Recursive call
                     for (int o = 0; o < allSubParts.size(); o++) {
-                        RGraph solution = createAsmGraph_sgp(allSubParts.get(o), partsHash, null, required, recommended, forbidden, discouraged, slack - 1, sharingHash, modularityHash, efficiencies);
+                        RNode oneSubPart = allSubParts.get(o);
+                        RGraph solution = createAsmGraph_sgp(oneSubPart, partsHash, libCompDir, required, recommended, forbidden, discouraged, slack - 1, sharingHash, efficiencies);
                         toCombine.add(solution);
+                        combineDirection.addAll(oneSubPart.getDirection());
                     }
-
-                    RGraph newGraph = combineGraphsModEff(toCombine, recommended, discouraged, sharingHash, modularityHash, efficiencies, partsHash);
+                    RGraph newGraph = combineGraphsModEff(toCombine, combineDirection, recommended, discouraged, sharingHash, efficiencies);
 
                     //Edge case: best graph does not exist yet
                     if (bestGraph.getRootNode().getNeighbors().isEmpty()) {
@@ -340,7 +350,8 @@ public class RGeneral extends Modularity {
         }        
         
         //Save best graph for this intermediate
-        partsHash.put(bestGraph.getRootNode().getComposition().toString(), bestGraph);
+        RNode bestGraphRoot = bestGraph.getRootNode();
+        partsHash.put(bestGraphRoot.getComposition().toString() + bestGraphRoot.getDirection().toString(), bestGraph);
 
         //Return best graph for the initial goal part
         return bestGraph;
@@ -348,10 +359,10 @@ public class RGeneral extends Modularity {
 
     /** Combine multiple graphs, including efficiency and modularity scoring **/
     //Currently, it is assumed that efficiencies are additive and not multiplicative
-    protected RGraph combineGraphsModEff(ArrayList<RGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharing, HashMap<Integer, HashMap<String, Double>> modularityHash, HashMap<Integer, Double> efficiencies, HashMap<String, RGraph> partsHash) {
+    protected RGraph combineGraphsModEff(ArrayList<RGraph> graphs, ArrayList<String> direction, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash, HashMap<Integer, Double> efficiencies) {
         
         //Call method without efficiency and modularity first
-        RGraph combineGraphsME = combineGraphsShareRecDis(graphs, recommended, discouraged, sharing);
+        RGraph combineGraphsME = combineGraphsShareRecDis(graphs, direction, recommended, discouraged, sharingHash);
         RNode root = combineGraphsME.getRootNode();
 
         //Get effiency of subgraphs
@@ -374,10 +385,10 @@ public class RGeneral extends Modularity {
     }
 
     /** Combine multiple graphs, including sharing and recommended **/
-    protected RGraph combineGraphsShareRecDis(ArrayList<RGraph> graphs, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> modularity) {
+    protected RGraph combineGraphsShareRecDis(ArrayList<RGraph> graphs, ArrayList<String> direction, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash) {
 
         //Call method without sharing first
-        RGraph combineGraphsSRD = combineGraphsStageStep(graphs);
+        RGraph combineGraphsSRD = combineGraphsStageStep(graphs, direction);
         RNode root = combineGraphsSRD.getRootNode();
 
         //Look in sharing and recommended hash to set sharing and recommended
@@ -390,10 +401,10 @@ public class RGeneral extends Modularity {
             disCount = graphs.get(i).getDiscouragedCount() + disCount;
         }
 
-        //If modularity hash contains the root's composition and sharing hash is not empty
-        if (!modularity.isEmpty()) {
-            if (modularity.containsKey(root.getComposition().toString())) {
-                combineGraphsSRD.setModularityFactor(graphSharing + modularity.get(root.getComposition().toString()));
+        //If sharing hash contains the root's composition and sharing hash is not empty
+        if (!sharingHash.isEmpty()) {
+            if (sharingHash.containsKey(root.getComposition().toString())) {
+                combineGraphsSRD.setModularityFactor(graphSharing + sharingHash.get(root.getComposition().toString()));
             } else {
                 combineGraphsSRD.setModularityFactor(graphSharing);
             }
@@ -416,10 +427,12 @@ public class RGeneral extends Modularity {
     }
 
     /** Combine multiple graphs, ignoring sharing and recommended **/
-    protected RGraph combineGraphsStageStep(ArrayList<RGraph> graphs) {
+    protected RGraph combineGraphsStageStep(ArrayList<RGraph> graphs, ArrayList<String> direction) {
         RNode newRoot = new RNode();
         ArrayList<String> mergerComposition = new ArrayList<String>();
         ArrayList<String> mergerType = new ArrayList<String>();
+        
+        //Get all the children types, compositions and directions
         for (int i = 0; i < graphs.size(); i++) {
             RNode currentNeighbor = graphs.get(i).getRootNode();
             mergerComposition.addAll(currentNeighbor.getComposition());
@@ -427,7 +440,8 @@ public class RGeneral extends Modularity {
         }
         newRoot.setComposition(mergerComposition);
         newRoot.setType(mergerType);
-
+        newRoot.setDirection(direction);
+        
         //Clone all the nodes from graphs being combined and then add to new root node
         for (int j = 0; j < graphs.size(); j++) {
             RNode toAdd = graphs.get(j).getRootNode().clone();
@@ -550,11 +564,11 @@ public class RGeneral extends Modularity {
     }
 
     /** Find the maximum amount of stages for a set of goal parts with a library. This determines a mgp assembly slack factor **/
-    protected int determineSlack(ArrayList<RNode> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashMap<String, RGraph> library) {
+    protected int determineSlack(ArrayList<RNode> gps, HashMap<String, RGraph> library, HashSet<String> libCompDir, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden) {
         int slack = 0;
         for (int i = 0; i < gps.size(); i++) {
             RNode gp = gps.get(i);
-            RGraph graph = createAsmGraph_sgp(gp, library, library, required, null, forbidden, null, 0, null, null, null);
+            RGraph graph = createAsmGraph_sgp(gp, library, libCompDir, required, null, forbidden, null, 0, null, null);
             if (graph.getStages() > slack) {
                 slack = graph.getStages();
             }
