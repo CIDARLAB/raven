@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -419,7 +420,7 @@ public class RavenController {
             if (tokenCount > 7) {
 
                 try {
-                    String[] trimmedTokens = new String[tokenCount];
+                    String[] trimmedTokens = new String[tokenCount];                    
                     System.arraycopy(tokens, 0, trimmedTokens, 0, tokenCount);
                     compositePartTokens.add(trimmedTokens);
                 } catch (Exception e) {

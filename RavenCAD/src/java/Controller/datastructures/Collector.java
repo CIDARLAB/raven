@@ -131,11 +131,9 @@ public class Collector {
         Part sameNamePart = this.getPartByName(aPart.getName(), true);
         if (sameNamePart != null) {
             if (sameNamePart.getLeftOverhang().equals(aPart.getLeftOverhang()) && sameNamePart.getRightOverhang().equals(aPart.getRightOverhang())) {
-//                int selValue = JOptionPane.showConfirmDialog(null, "Part: " + aPart.getName() + " is already imported!\n Do you want to overrwrite it?");
                 int selValue = JOptionPane.OK_OPTION;
                 //TODO figure out error handling here
                 if (selValue == JOptionPane.OK_OPTION) {
-//                    basicPartNameHash.put(aPart.getName(), aPart.getUUID());
                     partUUIDHash.remove(partNameHash.get(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang()));
                     partNameHash.put(aPart.getName() + "|" + aPart.getLeftOverhang() + "|" + aPart.getRightOverhang(), aPart.getUUID());
                     partUUIDHash.put(aPart.getUUID(), aPart);
