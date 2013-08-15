@@ -136,13 +136,13 @@ public class RavenController {
     //input: design number refers to the design number on the client
     public JSONArray generatePartsList(String designNumber) throws Exception {
         File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
-        
+
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
         for (RGraph result : _assemblyGraphs) {
             for (Part p : result.getPartsInGraph(_collector)) {
-                
+
                 if (!usedParts.contains(p)) {
                     usedParts.add(p);
                 }
@@ -153,7 +153,7 @@ public class RavenController {
                 }
             }
         }
-        
+
         //extract information from parts and write file
         String partList = "[";
         FileWriter fw = new FileWriter(file);
@@ -166,7 +166,7 @@ public class RavenController {
             String LO = "";
             String type = "";
             ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
-            
+
             for (int k = 0; k < tags.size(); k++) {
                 if (tags.get(k).startsWith("LO:")) {
                     LO = tags.get(k).substring(4);
@@ -178,7 +178,7 @@ public class RavenController {
             }
 
             String composition = "";
-            
+
             if (p.isBasic()) {
                 composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
@@ -194,7 +194,7 @@ public class RavenController {
                             LO = tags.get(k).substring(4);
                         } else if (tags.get(k).startsWith("RO:")) {
                             RO = tags.get(k).substring(4);
-                        } 
+                        }
                     }
                     composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + subPartDirection.get(0);
                 }
@@ -426,7 +426,7 @@ public class RavenController {
                     badLines.add(line);
                 }
 
-            //Vectors - read and generate new vector
+                //Vectors - read and generate new vector
             } else if (tokenCount == 7) {
 
                 try {
@@ -447,15 +447,15 @@ public class RavenController {
                     newVector.addSearchTag("Level: " + level);
                     newVector.addSearchTag("Resistance: " + resistance);
                     newVector.setTransientStatus(false);
-                    Boolean toBreak = !newVector.saveDefault(_collector);
-                    if (toBreak) {
+                    Vector toBreak = newVector.saveDefault(_collector);
+                    if (toBreak == null) {
                         break;
                     }
                 } catch (Exception e) {
                     badLines.add(line);
                 }
 
-            //Basic part - read and generate new part
+                //Basic part - read and generate new part
             } else if (tokenCount == 5) {
 
                 try {
@@ -468,9 +468,9 @@ public class RavenController {
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
-                    Boolean toBreak = !newBasicPart.saveDefault(_collector);
+                    Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
-                    if (toBreak) {
+                    if (toBreak == null) {
                         break;
                     }
                 } catch (Exception e) {
@@ -532,11 +532,16 @@ public class RavenController {
                     }
 
                     directions.add(bpDirection);
-                    composition.add(_collector.getPartByName(basicPartName, true));
+                    composition.add(_collector.getAllPartsWithName(basicPartName, true).get(0));
                 }
 
                 Part newComposite = Part.generateComposite(composition, name);
-                Vector vector = _collector.getVectorByName(vectorName, true);
+                Vector vector = null;
+                ArrayList<Vector> vectors = _collector.getAllVectorsWithName(vectorName, true);
+                if (vectors.size() > 0) {
+                    //TODO do we need an exact match?
+                    vector = vectors.get(0);
+                }
                 _compPartsVectors.put(newComposite, vector);
                 newComposite.addSearchTag("Direction: " + directions);
                 newComposite.addSearchTag("LO: " + leftOverhang);
@@ -751,24 +756,24 @@ public class RavenController {
             }
         }
         JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
-        
+
         System.out.println("GRAPH AND ARCS FILES CREATED");
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
 //        String mergedArcText = "";
 
         //generate instructions
         if (method.equals("biobricks")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
+            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
         } else if (method.equals("cpec")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
+            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
         } else if (method.equals("gibson")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
+            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
         } else if (method.equals("golden gate")) {
             _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
         } else if (method.equals("moclo")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
+            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
         } else if (method.equals("slic")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
+            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
         }
 
         //write instructions file
@@ -789,12 +794,12 @@ public class RavenController {
         JSONObject images = d3Graph.getJSONObject("images");
         out.write("digraph{\n");
         Iterator keys = images.keys();
-        while(keys.hasNext() ) {
+        while (keys.hasNext()) {
             String key = (String) keys.next();
-            out.write("\""+key+"\" [label=\""+images.getString(key)+"\"]\n");
+            out.write("\"" + key + "\" [label=\"" + images.getString(key) + "\"]\n");
         }
-        for(int i=0;i<edges.length();i++) {
-            out.write(edges.getString(i)+"\n");
+        for (int i = 0; i < edges.length(); i++) {
+            out.write(edges.getString(i) + "\n");
         }
         out.write("}");
         out.close();
@@ -906,7 +911,6 @@ public class RavenController {
                 + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
         return new JSONObject(statString);
     }
-    
     //FIELDS
     private HashMap<Part, Vector> _goalParts = new HashMap<Part, Vector>();//key: target part, value: composition
     private HashMap<Part, Vector> _compPartsVectors = new HashMap<Part, Vector>();

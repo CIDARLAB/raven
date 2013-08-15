@@ -1086,7 +1086,7 @@ public class RMoClo extends RGeneral {
         if (requiredOverhangs != null) {
             _forcedOverhangHash = new HashMap();
             for (String key : requiredOverhangs.keySet()) {
-                Part part = coll.getPartByName(key, false);
+                Part part = coll.getAllPartsWithName(key, false).get(0);
                 if (part != null) {
                     _forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
                 }

@@ -182,7 +182,7 @@ public class ClothoWriter {
         //If a new composite part needs to be made
         ArrayList<Part> newComposition = new ArrayList<Part>();
         for (String component : composition) {
-            newComposition.add(coll.getPartByName(component, true));
+            newComposition.add(coll.getAllPartsWithName(component, true).get(0));
         }
         Part newPart = Part.generateComposite(newComposition, name);
         if (!LO.isEmpty()) {

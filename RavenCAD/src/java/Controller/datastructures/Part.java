@@ -33,9 +33,6 @@ public class Part {
         this.uuid = "part_" + String.valueOf(UUID);
     }
 
-    public static Part retrieveByExactName(Collector coll, String name, boolean allowTransient) {
-        return coll.getPartByName(name, allowTransient);
-    }
 
     public static Part generateBasic(String name, String sequence) {
         Part newBasic = new Part();
@@ -89,7 +86,8 @@ public class Part {
         return toReturn;
     }
 
-    public Boolean saveDefault(Collector col) {
+    //returns this part, or an exact match
+    public Part saveDefault(Collector col) {
         return col.addPart(this);
     }
 
