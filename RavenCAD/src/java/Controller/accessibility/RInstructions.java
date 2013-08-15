@@ -170,11 +170,14 @@ public class RInstructions {
                             oligoSequences.addAll(oligos);
                             nodeOligoHash.put(l0Node.getName() + "|" + l0Node.getLOverhang() + "|" + l0Node.getROverhang(), oligoHash);
                             oligoCount++;
-                            
-                            if (anneal) {
-                                instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();                       
-                            } else {
-                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+
+                            //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
+                            if (!oligos.isEmpty()) {
+                                if (anneal) {
+                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                } else {
+                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                }
                             }
 
                         } else {

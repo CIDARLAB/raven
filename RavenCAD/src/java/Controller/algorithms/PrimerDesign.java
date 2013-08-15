@@ -97,7 +97,13 @@ public class PrimerDesign {
 
             //Remove base pairs until candidate temp reaches the desired temp if too high
             } else if (candidateTemp > meltingTemp) {                
-                while (candidateTemp > meltingTemp) {
+                if (forceLength) {
+                    if (length == meltingTemp) {
+                        return length;
+                    }
+                }
+                
+                while (candidateTemp > meltingTemp) {                                  
                     length--;
                     candidateSeq = sequence.substring(0, length);
                     candidateTemp = getMeltingTemp(candidateSeq);
@@ -123,6 +129,12 @@ public class PrimerDesign {
 
             //Remove base pairs until candidate temp reaches the desired temp if too high
             } else if (candidateTemp > meltingTemp) {
+                if (forceLength) {
+                    if (length == meltingTemp) {
+                        return length;
+                    }
+                }
+                
                 while (candidateTemp > meltingTemp) {
                     length--;
                     candidateSeq = sequence.substring(sequence.length()-length);
