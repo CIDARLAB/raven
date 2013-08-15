@@ -18,8 +18,8 @@ public class RNode {
         _recommended = false;
         _discouraged = false;
         _efficiency = 0;
-//        _successCnt = 0;
-//        _failureCnt = 0;
+        _successCnt = 0;
+        _failureCnt = 0;
         _neighbors = new ArrayList<RNode>();
         _composition = new ArrayList<String>();
         _direction = new ArrayList<String>();
@@ -35,7 +35,7 @@ public class RNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public RNode(boolean recommended, boolean discouraged, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, String lOverhang, String rOverhang, int successCnt, int failureCnt) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, String lOverhang, String rOverhang, int successCnt, int failureCnt, RVector vector) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
@@ -49,6 +49,7 @@ public class RNode {
         _type = type;
         _lOverhang = lOverhang;
         _rOverhang = rOverhang;
+        _vector = vector;
         _name = "";
         _nodeID = _nodeCount;
         _nodeCount++;

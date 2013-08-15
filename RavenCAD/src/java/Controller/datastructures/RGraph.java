@@ -292,13 +292,11 @@ public class RGraph {
                 }
 
                 ArrayList<String> composition = current.getComposition();
-                String lOverhang = current.getLOverhang();
-                String rOverhang = current.getROverhang();
                 String aPartLOcompRO = current.getNodeKey("+");
 
                 String aVecLOlevelRO = new String();
                 if (current.getVector() != null) {
-                    aVecLOlevelRO = current.getVector().getName() + "|" + lOverhang + "|" + current.getStage() + "|" + rOverhang;
+                    aVecLOlevelRO = current.getVector().getVectorKey("+");
                 }
 
                 //PCR Reactions for scarless assembly
@@ -424,7 +422,7 @@ public class RGraph {
             }
 
             ArrayList<String> searchTags = aPart.getSearchTags();
-            RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0);
+            RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0, null);
             keys.add(node.getNodeKey("+"));
             keys.add(node.getNodeKey("-"));
         }
@@ -788,8 +786,9 @@ public class RGraph {
         }
         pigeonLine.append("# Arcs\n");
         WeyekinPoster.setPigeonText(pigeonLine.toString());
-        WeyekinPoster.postMyBird();
-        return WeyekinPoster.getmPigeonURI().toString();
+//        WeyekinPoster.postMyBird();
+//        return WeyekinPoster.getmPigeonURI().toString();
+        return "";
     }
 
     /**

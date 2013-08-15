@@ -27,13 +27,17 @@ public class ClothoWriter {
     /**
      * Generate Clotho parts with uuids from intermediates without uuids *
      */
-    //This method could probably be better written and condensed 
     public void nodesToClothoPartsVectors(Collector coll, RGraph graph) throws Exception {
         String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
+
+        ArrayList<RNode> basicNodes = new ArrayList<RNode>();
+        ArrayList<RNode> stepNodes = new ArrayList<RNode>();
+        ArrayList<ArrayList<RNode>> nodeOrder = new ArrayList<ArrayList<RNode>>();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         HashSet<RNode> seenNodes = new HashSet<RNode>();
         queue.add(graph.getRootNode());
 
+        //Find all the level 0 nodes and step nodes... the new level 0 nodes need to be made first
         while (!queue.isEmpty()) {
             RNode currentNode = queue.get(0);
             seenNodes.add(currentNode);
@@ -45,96 +49,185 @@ public class ClothoWriter {
                 }
             }
 
-            //If the node has no uuid, make a new part
-            //This is pretty much only the case for composite parts
-            if (currentNode.getUUID() == null) {
+            if (currentNode.getStage() == 0) {
+                basicNodes.add(currentNode);
+            } else {
+                stepNodes.add(currentNode);
+            }
+        }
+        nodeOrder.add(basicNodes);
+        nodeOrder.add(stepNodes);
 
-                //Get new intermediate name
-                String partName = nameRoot + "_intermediate" + Math.random() * 999999999;
-                partName = partName.replaceAll("\\.", "");
-                if (partName.length() > 255) {
-                    partName = partName.substring(0, 255);
-                }
+        for (ArrayList<RNode> nodes : nodeOrder) {
+            for (RNode currentNode : nodes) {
 
-                //Get new intermediate overhangs
+
+//                System.out.println("*************************");
+//                System.out.println("currentNode.getUUID(): " + currentNode.getUUID());
+//                System.out.println("currentNode.getName(): " + currentNode.getName());
+//                System.out.println("currentNode.getComposition(): " + currentNode.getComposition());
+//                System.out.println("currentNode.getDirection(): " + currentNode.getDirection());
+//                System.out.println("currentNode.getScars(): " + currentNode.getScars());
+//                System.out.println("LO: " + currentNode.getLOverhang());
+//                System.out.println("RO: " + currentNode.getROverhang());
+                
+                ArrayList<String> scars = currentNode.getScars();
+                ArrayList<String> direction = currentNode.getDirection();
+                ArrayList<String> composition = currentNode.getComposition();
                 String LO = currentNode.getLOverhang();
                 String RO = currentNode.getROverhang();
 
-                //If there's overhangs, add search tags
-                Part newPart = generateNewClothoCompositePart(coll, partName, "", currentNode.getComposition(), currentNode.getDirection(), currentNode.getScars(), LO, RO);
-                newPart.addSearchTag("Type: composite");
-                currentNode.setName(partName);
-                newPart.saveDefault(coll);
-                currentNode.setUUID(newPart.getUUID());
+                //If the node has no uuid, make a new part
+                //This is pretty much only the case for composite parts
+                if (currentNode.getUUID() == null) {
 
-            } else {
-
-                //If a part with this composition and overhangs does not exist, a new part is needed
-                Part currentPart = coll.getPart(currentNode.getUUID(), true);
-                boolean createNewPart = false;
-                if (!currentNode.getLOverhang().equals(currentPart.getLeftOverhang()) || !currentNode.getROverhang().equals(currentPart.getRightOverhang())) {
-                    createNewPart = true;
-                }
-
-                //A new part must be created if one with the same composition and overhangs does not exist
-                if (createNewPart) {
-
-                    //If a new part must be created
-                    Part newPart;
-                    if (currentPart.isBasic()) {
-                        newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
-                    } else {
-                        newPart = Part.generateComposite(currentPart.getComposition(), currentPart.getName());
+                    //Get new intermediate name
+                    String partName = nameRoot + "_intermediate" + Math.random() * 999999999;
+                    partName = partName.replaceAll("\\.", "");
+                    if (partName.length() > 255) {
+                        partName = partName.substring(0, 255);
                     }
-
-                    newPart.addSearchTag("LO: " + currentNode.getLOverhang());
-                    newPart.addSearchTag("RO: " + currentNode.getROverhang());
-                    newPart.addSearchTag("Direction: " + currentNode.getDirection().toString());
-
-                    String type = currentNode.getType().toString();
-                    type = type.substring(1, type.length() - 1);
-
-                    if (currentNode.getComposition().size() > 1) {
-                        type = "composite";
-                    }
-
-                    if (!currentNode.getScars().isEmpty()) {
-                        newPart.addSearchTag("Scars: " + currentNode.getScars().toString());
-                    }
-
-                    newPart.addSearchTag("Type: " + type);
+                    
+                    //If there's overhangs, add search tags
+                    Part newPart = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
+                    newPart.addSearchTag("Type: composite");
+                    currentNode.setName(partName);
                     newPart.saveDefault(coll);
                     currentNode.setUUID(newPart.getUUID());
-                }
-            }
 
-            //Get the vector and save a new vector if it does not have a uuid
-            RVector vector = currentNode.getVector();
-            if (vector != null) {
+                } else {
 
-                //Get new intermediate name
-                String vecName = vector.getName();
-                if (vecName == null) {
-                    vecName = (nameRoot + "_vector" + Math.random() * 999999999);
-                    vecName = vecName.replaceAll("\\.", "");
-                    if (vecName.length() > 255) {
-                        vecName = vecName.substring(0, 255);
+                    //If a part with this composition and overhangs does not exist, a new part is needed
+                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
+//                    System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
+                    
+                    ArrayList<String> sTags = currentPart.getSearchTags();
+                    ArrayList<String> existingPartDir = parseTags(sTags, "Direction:");
+                    String currentPartLO = "";
+                    String currentPartRO = "";
+                    for (int k = 0; k < sTags.size(); k++) {
+                        if (sTags.get(k).startsWith("LO:")) {
+                            currentPartLO = sTags.get(k).substring(4);
+                        } else if (sTags.get(k).startsWith("RO:")) {
+                            currentPartRO = sTags.get(k).substring(4);
+                        }
+                    }
+                    //
+                    boolean createNewPart = false;
+                    if (!currentNode.getLOverhang().equals(currentPartLO) || !currentNode.getROverhang().equals(currentPartRO) || !currentNode.getDirection().equals(existingPartDir)) {
+                        createNewPart = true;
+                    }
+
+                    //A new part must be created if one with the same composition and overhangs does not exist
+                    if (createNewPart) {
+
+                        //If a new part must be created
+                        Part newPart;
+                        if (currentPart.isBasic()) {
+//                            System.out.println("<<Making a new basic part>>");
+                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
+//                            System.out.println("newPart.getUUID(): " + newPart.getUUID());
+                            
+                        } else {
+                 
+                            //If a new composite part needs to be made
+                            ArrayList<Part> newComposition = new ArrayList<Part>();
+                            
+                            for (int i = 0; i < composition.size(); i++) {
+                                String componentName = composition.get(i);
+                                String cLO;
+                                String cRO;
+
+                                //Get internal overhangs from scars if there are any
+                                if (!scars.isEmpty()) {
+                                    if (i == 0) {
+                                        cLO = LO;
+                                        cRO = scars.get(i);
+                                    } else if (i == composition.size() - 1) {
+                                        cLO = scars.get(composition.size() - 2);
+                                        cRO = RO;
+                                    } else {
+                                        cLO = scars.get(i - 1);
+                                        cRO = scars.get(i);
+                                    }
+                                } else {
+                                    if (i == 0) {
+                                        cLO = LO;
+                                        cRO = composition.get(1);
+                                    } else if (i == composition.size() - 1) {
+                                        cLO = composition.get(composition.size() - 2);
+                                        cRO = RO;
+                                    } else {
+                                        cLO = composition.get(i - 1);
+                                        cRO = composition.get(i + 1);
+                                    }
+                                }
+
+                                //BioBricks scars
+                                if (cLO.equals("BB") || cRO.equals("BB")) {
+                                    cLO = "EX";
+                                    cRO = "SP";
+                                }
+                                componentName = componentName + "|" + cLO + "|" + cRO;
+                                
+//                                System.out.println("componentName: " + componentName);
+                                
+                                newComposition.add(coll.getPartByExactName(componentName, true));
+                            }
+                            
+                            newPart = Part.generateComposite(newComposition, currentPart.getName());
+                        }
+
+                        newPart.addSearchTag("LO: " + currentNode.getLOverhang());
+                        newPart.addSearchTag("RO: " + currentNode.getROverhang());
+                        newPart.addSearchTag("Direction: " + currentNode.getDirection().toString());
+
+                        String type = currentNode.getType().toString();
+                        type = type.substring(1, type.length() - 1);
+
+                        if (currentNode.getComposition().size() > 1) {
+                            type = "composite";
+                        }
+
+                        if (!currentNode.getScars().isEmpty()) {
+                            newPart.addSearchTag("Scars: " + currentNode.getScars().toString());
+                        }
+
+                        newPart.addSearchTag("Type: " + type);
+                        newPart.saveDefault(coll);
+                        
+//                        currentPart = coll.getPart(currentNode.getUUID(), true);
+//                        System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
+                        currentNode.setUUID(newPart.getUUID());
                     }
                 }
-                //Get vector overhangs
-                String LO = vector.getLOverhang();
-                String RO = vector.getROverhang();
-                String resistance = vector.getResistance();
-                int level = vector.getLevel();
-                Vector newVector = generateNewClothoVector(coll, vecName, "", LO, RO, resistance, level);
-                newVector.saveDefault(coll);
-                vector.setName(newVector.getName());
-                vector.setUUID(newVector.getUUID());
-                currentNode.setVector(vector);
-            }
-            seenNodes.add(currentNode);
-        }
 
+                //Get the vector and save a new vector if it does not have a uuid
+                RVector vector = currentNode.getVector();
+                if (vector != null) {
+
+                    //Get new intermediate name
+                    String vecName = vector.getName();
+                    if (vecName == null) {
+                        vecName = (nameRoot + "_vector" + Math.random() * 999999999);
+                        vecName = vecName.replaceAll("\\.", "");
+                        if (vecName.length() > 255) {
+                            vecName = vecName.substring(0, 255);
+                        }
+                    }
+                    
+                    //Get vector overhangs
+                    String resistance = vector.getResistance();
+                    int level = vector.getLevel();
+                    Vector newVector = generateNewClothoVector(coll, vecName, "", LO, RO, resistance, level);
+                    newVector.saveDefault(coll);
+                    vector.setName(newVector.getName());
+                    vector.setUUID(newVector.getUUID());
+                    currentNode.setVector(vector);
+                }
+                seenNodes.add(currentNode);
+            }
+        }
     }
 
     /**
@@ -155,7 +248,6 @@ public class ClothoWriter {
             String existingPartLO = "";
             String existingPartRO = "";
             ArrayList<String> existingPartDir = parseTags(sTags, "Direction:");
-            ArrayList<String> existingScars = parseTags(sTags, "Scars:");
 
             for (int k = 0; k < sTags.size(); k++) {
                 if (sTags.get(k).startsWith("LO:")) {
@@ -172,7 +264,7 @@ public class ClothoWriter {
             }
 
             //If the composition and overhangs of the new part is the same as an existing composite part, return that part
-            if (composition.equals(existingPartComp) && direction.equals(existingPartDir) && scars.equals(existingScars)) {
+            if (composition.equals(existingPartComp) && direction.equals(existingPartDir)) {
                 if (existingPartLO.equals(LO) && existingPartRO.equals(RO)) {
                     return existingPart;
                 }
@@ -181,9 +273,45 @@ public class ClothoWriter {
 
         //If a new composite part needs to be made
         ArrayList<Part> newComposition = new ArrayList<Part>();
-        for (String component : composition) {
-            newComposition.add(coll.getAllPartsWithName(component, true).get(0));
+        for (int i = 0; i < composition.size(); i++) {
+            String componentName = composition.get(i);
+            String cLO;
+            String cRO;
+
+            //Get internal overhangs from scars if there are any
+            if (!scars.isEmpty()) {
+                if (i == 0) {
+                    cLO = LO;
+                    cRO = scars.get(i);
+                } else if (i == composition.size() - 1) {
+                    cLO = scars.get(composition.size() - 2);
+                    cRO = RO;
+                } else {
+                    cLO = scars.get(i - 1);
+                    cRO = scars.get(i);
+                }
+            } else {
+                if (i == 0) {
+                    cLO = LO;
+                    cRO = composition.get(1);
+                } else if (i == composition.size() - 1) {
+                    cLO = composition.get(composition.size() - 2);
+                    cRO = RO;
+                } else {
+                    cLO = composition.get(i - 1);
+                    cRO = composition.get(i+1);
+                }
+            }
+
+            //BioBricks scars
+            if (cLO.equals("BB") || cRO.equals("BB")) {
+                cLO = "EX";
+                cRO = "SP";
+            }
+            componentName = componentName + "|" + cLO + "|" + cRO;
+            newComposition.add(coll.getPartByExactName(componentName, true));
         }
+        
         Part newPart = Part.generateComposite(newComposition, name);
         if (!LO.isEmpty()) {
             newPart.addSearchTag("LO: " + LO);
@@ -197,6 +325,7 @@ public class ClothoWriter {
         if (!scars.isEmpty()) {
             newPart.addSearchTag("Scars: " + scars);
         }
+        newPart.saveDefault(coll);
         return newPart;
     }
 

@@ -48,10 +48,9 @@ public class RMoClo extends RGeneral {
 
         //Create hashMem parameter for createAsmGraph_sgp() call
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
-        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
         //Put all parts into hash for mgp algorithm            
-        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, false);
 
         //Positional scoring of transcriptional units
 //            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
@@ -965,7 +964,7 @@ public class RMoClo extends RGeneral {
         for (String invertedOverhang : invertedOverhangs) {
             if (bestAssignment.get(invertedOverhang).equals("*")) {
                 String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
-                bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang)+"*");
+                bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
             }
         }
         //assign new overhangs
@@ -1037,6 +1036,7 @@ public class RMoClo extends RGeneral {
         }
     }
     //sets user specified overhangs before algorithm computes the rest
+
     private HashMap<String, String> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
         for (RGraph graph : optimalGraphs) {
@@ -1176,11 +1176,17 @@ public class RMoClo extends RGeneral {
         String revEnzymeRecSite1 = "gtcttc";
 
         Part currentPart = coll.getPart(node.getUUID(), true);
-        String forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
-        String reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+        String forwardOligoSequence;
+        String reverseOligoSequence;
+        if (currentPart.getSeq().length() > 24) {
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true, false));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true, false)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+        } else {
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq() + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
+            reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+        }
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
-
         return oligos;
     }
 
