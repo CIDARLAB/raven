@@ -30,6 +30,7 @@ public class RInstructions {
 //        Double meltingTemp = 55.0;
         Double meltingTemp = null;
         int primerLength = 24;
+        int minLength = 30;
         
         if (primerParameters != null) {
             designPrimers = true;
@@ -140,6 +141,12 @@ public class RInstructions {
                 if (newNodes.contains(l0Node)) {
                     if (designPrimers) {
                         
+                        //For small part, just order annealing primers
+                        boolean anneal = false;
+                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= 24) {
+                            anneal = true;
+                        }
+                        
                         //If primers for this node have not yet been created (seen in the hash), create them
                         if (!nodeOligoHash.containsKey(l0Node.getName() + "|" + l0Node.getLOverhang() + "|" + l0Node.getROverhang())) {
                             
@@ -156,7 +163,7 @@ public class RInstructions {
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
                             } else {
-                                oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength);
+                                oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength, minLength);
                             }
 
                             oligoNames.add(forwardOligoName);
@@ -164,18 +171,27 @@ public class RInstructions {
                             oligoSequences.addAll(oligos);
                             nodeOligoHash.put(l0Node.getName() + "|" + l0Node.getLOverhang() + "|" + l0Node.getROverhang(), oligoHash);
                             oligoCount++;
-                            instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
-                        
-                        } else {                            
+                            
+                            if (anneal) {
+                                instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();                       
+                            } else {
+                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                            }
+
+                        } else {
                             ArrayList<String> oligoHash = nodeOligoHash.get(l0Node.getName() + "|" + l0Node.getLOverhang() + "|" + l0Node.getROverhang());
-                            instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                            if (anneal) {
+                                instructions = instructions + "\nAnneal oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                            } else {
+                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                            }
                         }
                     } else {
                         instructions = instructions + "\nPCR " + currentPart.getName() + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
                     }
                 }
-            } 
-            
+            }
+
             //Look at all vectors for this root
             for (RVector vector : vectorsThisRoot) {
 

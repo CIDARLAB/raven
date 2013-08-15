@@ -208,6 +208,7 @@ public class RBioBricks extends RGeneral {
         
         if (type.size() == 1) {
             if (type.get(0).equals("gene") || type.get(0).equals("reporter")) {
+                
                 forwardOligoSequence = partPrimerPrefixAlt + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
                 reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + partPrimerSuffix);
             } else {

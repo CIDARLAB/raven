@@ -62,14 +62,14 @@ public class ClothoWriter {
             for (RNode currentNode : nodes) {
 
 
-                System.out.println("*************************");
-                System.out.println("currentNode.getUUID(): " + currentNode.getUUID());
-                System.out.println("currentNode.getName(): " + currentNode.getName());
-                System.out.println("currentNode.getComposition(): " + currentNode.getComposition());
-                System.out.println("currentNode.getDirection(): " + currentNode.getDirection());
-                System.out.println("currentNode.getScars(): " + currentNode.getScars());
-                System.out.println("LO: " + currentNode.getLOverhang());
-                System.out.println("RO: " + currentNode.getROverhang());
+//                System.out.println("*************************");
+//                System.out.println("currentNode.getUUID(): " + currentNode.getUUID());
+//                System.out.println("currentNode.getName(): " + currentNode.getName());
+//                System.out.println("currentNode.getComposition(): " + currentNode.getComposition());
+//                System.out.println("currentNode.getDirection(): " + currentNode.getDirection());
+//                System.out.println("currentNode.getScars(): " + currentNode.getScars());
+//                System.out.println("LO: " + currentNode.getLOverhang());
+//                System.out.println("RO: " + currentNode.getROverhang());
                 
                 ArrayList<String> scars = currentNode.getScars();
                 ArrayList<String> direction = currentNode.getDirection();
@@ -99,7 +99,7 @@ public class ClothoWriter {
 
                     //If a part with this composition and overhangs does not exist, a new part is needed
                     Part currentPart = coll.getPart(currentNode.getUUID(), true);
-                    System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
+//                    System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
                     
                     ArrayList<String> sTags = currentPart.getSearchTags();
                     ArrayList<String> existingPartDir = parseTags(sTags, "Direction:");
@@ -124,9 +124,9 @@ public class ClothoWriter {
                         //If a new part must be created
                         Part newPart;
                         if (currentPart.isBasic()) {
-                            System.out.println("<<Making a new basic part>>");
+//                            System.out.println("<<Making a new basic part>>");
                             newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
-                            System.out.println("newPart.getUUID(): " + newPart.getUUID());
+//                            System.out.println("newPart.getUUID(): " + newPart.getUUID());
                             
                         } else {
                  
@@ -138,6 +138,7 @@ public class ClothoWriter {
                                 String cLO;
                                 String cRO;
 
+                                //Get internal overhangs from scars if there are any
                                 if (!scars.isEmpty()) {
                                     if (i == 0) {
                                         cLO = LO;
@@ -162,9 +163,14 @@ public class ClothoWriter {
                                     }
                                 }
 
+                                //BioBricks scars
+                                if (cLO.equals("BB") || cRO.equals("BB")) {
+                                    cLO = "EX";
+                                    cRO = "SP";
+                                }
                                 componentName = componentName + "|" + cLO + "|" + cRO;
                                 
-                                System.out.println("componentName: " + componentName);
+//                                System.out.println("componentName: " + componentName);
                                 
                                 newComposition.add(coll.getPartByExactName(componentName, true));
                             }
@@ -190,8 +196,8 @@ public class ClothoWriter {
                         newPart.addSearchTag("Type: " + type);
                         newPart.saveDefault(coll);
                         
-                        currentPart = coll.getPart(currentNode.getUUID(), true);
-                        System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
+//                        currentPart = coll.getPart(currentNode.getUUID(), true);
+//                        System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
                         currentNode.setUUID(newPart.getUUID());
                     }
                 }
@@ -272,6 +278,7 @@ public class ClothoWriter {
             String cLO;
             String cRO;
 
+            //Get internal overhangs from scars if there are any
             if (!scars.isEmpty()) {
                 if (i == 0) {
                     cLO = LO;
@@ -296,6 +303,11 @@ public class ClothoWriter {
                 }
             }
 
+            //BioBricks scars
+            if (cLO.equals("BB") || cRO.equals("BB")) {
+                cLO = "EX";
+                cRO = "SP";
+            }
             componentName = componentName + "|" + cLO + "|" + cRO;
             newComposition.add(coll.getPartByExactName(componentName, true));
         }

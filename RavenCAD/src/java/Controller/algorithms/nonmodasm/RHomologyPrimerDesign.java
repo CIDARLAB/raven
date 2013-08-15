@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class RHomologyPrimerDesign {
     
-    public static ArrayList<String> homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static ArrayList<String> homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength) {
         
         //initialize primer parameters
         ArrayList<String> oligos = new ArrayList<String>(2);
@@ -42,13 +42,18 @@ public class RHomologyPrimerDesign {
             rightNeighborSeq = composition.get(indexOf + 1).getSeq();
         }
 
-        int leftNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, leftNeighborSeq, false);
-        int rightNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rightNeighborSeq), false);
-        int currentPartLeftHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true);
-        int currentPartRightHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true);  
+        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, leftNeighborSeq, false);
+        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rightNeighborSeq), false);
+        int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true);
+        int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true);
         
-        forwardOligoSequence = leftNeighborSeq.substring(leftNeighborSeq.length() - leftNeighborHomologyLength) + currentPart.getSeq().substring(0, currentPartLeftHomologyLength);
-        reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - currentPartRightHomologyLength) + rightNeighborSeq.substring(0, rightNeighborHomologyLength));
+        //If the homology of this part is the full length of this part, 
+        if (currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) {
+            return oligos;
+        }
+        
+        forwardOligoSequence = leftNeighborSeq.substring(leftNeighborSeq.length() - lNeighborHomologyLength) + currentPart.getSeq().substring(0, currentPartLHomologyLength);
+        reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - currentPartRHomologyLength) + rightNeighborSeq.substring(0, rNeighborHomologyLength));
 
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);

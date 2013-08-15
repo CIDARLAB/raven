@@ -217,9 +217,16 @@ public class ClothoReader {
         ArrayList<RNode> orderedGPSNodes = new ArrayList<RNode>();
         HashMap<String, RNode> partNameHash = new HashMap<String, RNode>();
         
+        System.out.println("gpsNodes.size(): " + gpsNodes.size());
+        
         for (RNode gpsNode : gpsNodes) {
-            partNameHash.put(gpsNode.getComposition().size() + gpsNode.getComposition().toString(), gpsNode);
+            String key = gpsNode.getComposition().size() + gpsNode.getUUID();
+            
+            System.out.println("key: " + key);
+            partNameHash.put(key, gpsNode);
         }
+        
+        System.out.println("partNameHash.size(): "+partNameHash.size());
         Set<String> keySet1 = partNameHash.keySet();
         ArrayList<String> partNames = new ArrayList<String>(keySet1);
         Collections.sort(partNames);

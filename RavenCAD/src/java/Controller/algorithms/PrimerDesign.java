@@ -83,9 +83,6 @@ public class PrimerDesign {
 
             String candidateSeq = sequence.substring(0, length);
             double candidateTemp = getMeltingTemp(candidateSeq);
-
-//            System.out.println("candidateSeq: " + candidateSeq);
-//            System.out.println("candidateTemp: " + candidateTemp);
             
             //Add base pairs until candidate temp reaches the desired temp if too low
             if (candidateTemp < meltingTemp) {
@@ -96,20 +93,14 @@ public class PrimerDesign {
                     }
                     candidateSeq = sequence.substring(0, length);
                     candidateTemp = getMeltingTemp(candidateSeq);
-                    
-//                    System.out.println("candidateSeq: " + candidateSeq);
-//                    System.out.println("candidateTemp: " + candidateTemp);
                 }
 
-                //Remove base pairs until candidate temp reaches the desired temp if too high
+            //Remove base pairs until candidate temp reaches the desired temp if too high
             } else if (candidateTemp > meltingTemp) {
                 while (candidateTemp > meltingTemp) {
                     length--;
                     candidateSeq = sequence.substring(0, length);
                     candidateTemp = getMeltingTemp(candidateSeq);
-                    
-//                    System.out.println("candidateSeq: " + candidateSeq);
-//                    System.out.println("candidateTemp: " + candidateTemp);
                 }
             }
         
@@ -128,9 +119,6 @@ public class PrimerDesign {
                     }
                     candidateSeq = sequence.substring(sequence.length()-length);
                     candidateTemp = getMeltingTemp(candidateSeq);
-                    
-//                    System.out.println("candidateSeq: " + candidateSeq);
-//                    System.out.println("candidateTemp: " + candidateTemp);
                 }
 
             //Remove base pairs until candidate temp reaches the desired temp if too high
@@ -139,9 +127,6 @@ public class PrimerDesign {
                     length--;
                     candidateSeq = sequence.substring(sequence.length()-length);
                     candidateTemp = getMeltingTemp(candidateSeq);
-                    
-//                    System.out.println("candidateSeq: " + candidateSeq);
-//                    System.out.println("candidateTemp: " + candidateTemp);
                 }
             }
         }
