@@ -209,15 +209,15 @@ public class RBioBricks extends RGeneral {
         if (type.size() == 1) {
             if (type.get(0).equals("gene") || type.get(0).equals("reporter")) {
                 
-                forwardOligoSequence = partPrimerPrefixAlt + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
-                reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + partPrimerSuffix);
+                forwardOligoSequence = partPrimerPrefixAlt + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true, false));
+                reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true, false)) + partPrimerSuffix);
             } else {
-                forwardOligoSequence = partPrimerPrefix + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
-                reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + partPrimerSuffix);
+                forwardOligoSequence = partPrimerPrefix + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true, false));
+                reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true, false)) + partPrimerSuffix);
             }
         } else {
-            forwardOligoSequence = partPrimerPrefix + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
-            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + partPrimerSuffix);
+            forwardOligoSequence = partPrimerPrefix + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true, false));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true, false)) + partPrimerSuffix);
         }
         
         oligos.add(forwardOligoSequence);
@@ -236,8 +236,8 @@ public class RBioBricks extends RGeneral {
         
         Vector currentVector = coll.getVector(vector.getUUID(), true);
 
-        String forwardOligoSequence = vectorPrimerPrefix + currentVector.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentVector.getSeq(), true));
-        String reverseOligoSequence = PrimerDesign.reverseComplement(currentVector.getSeq().substring(currentVector.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentVector.getSeq()), true)) + vectorPrimerSuffix);
+        String forwardOligoSequence = vectorPrimerPrefix + currentVector.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentVector.getSeq(), true, false));
+        String reverseOligoSequence = PrimerDesign.reverseComplement(currentVector.getSeq().substring(currentVector.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentVector.getSeq()), true, false)) + vectorPrimerSuffix);
 
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);

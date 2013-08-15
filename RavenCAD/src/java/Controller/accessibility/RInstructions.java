@@ -30,7 +30,6 @@ public class RInstructions {
 //        Double meltingTemp = 55.0;
         Double meltingTemp = null;
         int primerLength = 24;
-        int minLength = 30;
         
         if (primerParameters != null) {
             designPrimers = true;
@@ -163,7 +162,7 @@ public class RInstructions {
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
                             } else {
-                                oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength, minLength);
+                                oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength);
                             }
 
                             oligoNames.add(forwardOligoName);

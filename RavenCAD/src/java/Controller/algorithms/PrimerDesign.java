@@ -60,7 +60,7 @@ public class PrimerDesign {
     }
     
     //calculates the length of homology required for primers based on nearest neighbor calculations
-    public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence, boolean fivePrime) {
+    public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence, boolean fivePrime, boolean forceLength) {
  
         int length = targetLength;
 
@@ -96,7 +96,7 @@ public class PrimerDesign {
                 }
 
             //Remove base pairs until candidate temp reaches the desired temp if too high
-            } else if (candidateTemp > meltingTemp) {
+            } else if (candidateTemp > meltingTemp) {                
                 while (candidateTemp > meltingTemp) {
                     length--;
                     candidateSeq = sequence.substring(0, length);

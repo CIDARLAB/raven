@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class RHomologyPrimerDesign {
     
-    public static ArrayList<String> homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength) {
+    public static ArrayList<String> homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
         
         //initialize primer parameters
         ArrayList<String> oligos = new ArrayList<String>(2);
@@ -32,32 +32,38 @@ public class RHomologyPrimerDesign {
         ArrayList<Part> composition = rootPart.getComposition();
         int indexOf = composition.indexOf(currentPart);
         
-        //Get the seqeunces of the neighbors
-        
-        while (leftNeighborSeqLength < minLength) {
+        //Keep getting the sequences of the leftmost neighbors until the min sequence size is satisfied
+        while (leftNeighborSeqLength < targetLength) {
             if (indexOf == 0) {
-                leftNeighborSeq = composition.get(composition.size() - 1).getSeq();
-            } else if (indexOf == composition.size() - 1) {
-                leftNeighborSeq = composition.get(indexOf - 1).getSeq();
+                leftNeighborSeq = leftNeighborSeq + composition.get(composition.size() - 1).getSeq();
+                leftNeighborSeqLength = leftNeighborSeq.length();
+                indexOf = composition.size() - 1;
             } else {
-                leftNeighborSeq = composition.get(indexOf - 1).getSeq();
+                leftNeighborSeq = leftNeighborSeq + composition.get(indexOf - 1).getSeq();
+                leftNeighborSeqLength = leftNeighborSeq.length();
+                indexOf--;
             }
         }
-        
-        if (indexOf == 0) {
-            rightNeighborSeq = composition.get(1).getSeq();
-        } else if (indexOf == composition.size() - 1) {
-            rightNeighborSeq = composition.get(0).getSeq();
-        } else {
-            rightNeighborSeq = composition.get(indexOf + 1).getSeq();
+
+        //Keep getting the sequences of the righttmost neighbors until the min sequence size is satisfied
+        while (rightNeighborSeqLength < targetLength) {
+            if (indexOf == composition.size() - 1) {
+                rightNeighborSeq = rightNeighborSeq + composition.get(0).getSeq();
+                rightNeighborSeqLength = rightNeighborSeq.length();
+                indexOf = 0;
+            } else {
+                rightNeighborSeq = rightNeighborSeq + composition.get(indexOf + 1).getSeq();
+                rightNeighborSeqLength = rightNeighborSeq.length();
+                indexOf++;
+            }
         }
 
-        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, leftNeighborSeq, false);
-        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rightNeighborSeq), false);
-        int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true);
-        int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true);
+        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, leftNeighborSeq, false, true);
+        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rightNeighborSeq), false, true);
+        int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true, true);
+        int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true, true);
         
-        //If the homology of this part is the full length of this part, 
+        //If the homology of this part is the full length of this part, return blank oligos... other longer oligos will cover this span
         if (currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) {
             return oligos;
         }

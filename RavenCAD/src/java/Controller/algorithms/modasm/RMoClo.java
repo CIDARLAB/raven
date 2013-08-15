@@ -1179,8 +1179,8 @@ public class RMoClo extends RGeneral {
         String forwardOligoSequence;
         String reverseOligoSequence;
         if (currentPart.getSeq().length() > 24) {
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true));
-            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true, false));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true, false)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
         } else {
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq() + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
             reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);      
