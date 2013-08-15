@@ -48,7 +48,7 @@ public class RMoClo extends RGeneral {
 
         //Create hashMem parameter for createAsmGraph_sgp() call
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
-//        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
+        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
@@ -714,29 +714,39 @@ public class RMoClo extends RGeneral {
         HashMap<String, HashSet<String>> compositionRightConcreteHash = new HashMap();
         HashSet<String> compositionOverhangDirections = new HashSet(); //concatentation of compositionOverhang and direction seen in the partLibrary
         HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
-
+        HashSet<String> invertedOverhangs = new HashSet();
 
         for (RGraph graph : graphs) {
             for (RNode current : _rootBasicNodeHash.get(graph.getRootNode())) {
-                if (!abstractConcreteHash.containsKey(current.getLOverhang())) {
-                    abstractConcreteHash.put(current.getLOverhang(), new HashSet());
-                }
-                if (!abstractConcreteHash.containsKey(current.getROverhang())) {
-                    abstractConcreteHash.put(current.getROverhang(), new HashSet());
-                }
-                if (abstractLeftCompositionHash.containsKey(current.getLOverhang())) {
-                    abstractLeftCompositionHash.get(current.getLOverhang()).add(current.getComposition().toString());
+                String currentLeftOverhang = current.getLOverhang();
+                String currentRightOverhang = current.getROverhang();
+                if (currentLeftOverhang.indexOf("*") < 0) { //ignore inverted overhangs
+                    if (!abstractConcreteHash.containsKey(currentLeftOverhang)) {
+                        abstractConcreteHash.put(currentLeftOverhang, new HashSet());
+                    }
+                    if (abstractLeftCompositionHash.containsKey(currentLeftOverhang)) {
+                        abstractLeftCompositionHash.get(currentLeftOverhang).add(current.getComposition().toString());
+                    } else {
+                        HashSet<String> toAddLeft = new HashSet();
+                        toAddLeft.add(current.getComposition().toString());
+                        abstractLeftCompositionHash.put(currentLeftOverhang, toAddLeft);
+                    }
                 } else {
-                    HashSet<String> toAddLeft = new HashSet();
-                    toAddLeft.add(current.getComposition().toString());
-                    abstractLeftCompositionHash.put(current.getLOverhang(), toAddLeft);
+                    invertedOverhangs.add(currentLeftOverhang);
                 }
-                if (abstractRightCompositionHash.containsKey(current.getROverhang())) {
-                    abstractRightCompositionHash.get(current.getROverhang()).add(current.getComposition().toString());
+                if (currentRightOverhang.indexOf("*") < 0) { //ignore inverted overhangs
+                    if (!abstractConcreteHash.containsKey(currentRightOverhang)) {
+                        abstractConcreteHash.put(currentRightOverhang, new HashSet());
+                    }
+                    if (abstractRightCompositionHash.containsKey(currentRightOverhang)) {
+                        abstractRightCompositionHash.get(currentRightOverhang).add(current.getComposition().toString());
+                    } else {
+                        HashSet<String> toAddRight = new HashSet();
+                        toAddRight.add(current.getComposition().toString());
+                        abstractRightCompositionHash.put(currentRightOverhang, toAddRight);
+                    }
                 } else {
-                    HashSet<String> toAddRight = new HashSet();
-                    toAddRight.add(current.getComposition().toString());
-                    abstractRightCompositionHash.put(current.getROverhang(), toAddRight);
+                    invertedOverhangs.add(currentRightOverhang);
                 }
             }
         }
@@ -838,9 +848,6 @@ public class RMoClo extends RGeneral {
                 currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->").replaceAll(" ", "");
                 if (!toParent) {
                     currentSolution.add(currentNode.getConcreteOverhang());
-//                    if (currentNode.getConcreteOverhang().equals("")) {
-//                        System.out.println("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
-//                    }
                     currentPath = currentPath + "->" + currentNode.getConcreteOverhang();
                     seenPaths.add(currentPath);
                 } else {
@@ -891,12 +898,37 @@ public class RMoClo extends RGeneral {
         for (ArrayList<String> assignment : completeAssignments) {
             HashMap<String, String> currentAssignment = new HashMap();
             int currentScore = 0;
+            //handle forced overhangs
             for (int i = 0; i < sortedAbstractOverhangs.size(); i++) {
                 String currentAbstractOverhang = sortedAbstractOverhangs.get(i);
                 if (finalOverhangHash.containsKey(currentAbstractOverhang)) {
                     currentAssignment.put(currentAbstractOverhang, finalOverhangHash.get(currentAbstractOverhang));
                 } else {
                     currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
+                }
+            }
+            //handle inverted overhangs
+            for (String invertedOverhang : invertedOverhangs) {
+                if (finalOverhangHash.containsKey(invertedOverhang)) {
+                    currentAssignment.put(invertedOverhang, finalOverhangHash.get(invertedOverhang));
+                } else {
+                    String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
+                    if (currentAssignment.containsKey(uninvertedOverhang)) {
+                        String uninvertedOverhangAssignment = currentAssignment.get(uninvertedOverhang);
+                        String invertedOverhangAssignment = "";
+                        if (uninvertedOverhangAssignment.equals("*")) {
+                            currentAssignment.put(invertedOverhang, "*");
+                        } else {
+                            if (uninvertedOverhangAssignment.indexOf("*") > -1) {
+                                invertedOverhangAssignment = uninvertedOverhangAssignment.substring(0, uninvertedOverhangAssignment.indexOf("*"));
+                            } else {
+                                invertedOverhangAssignment = uninvertedOverhangAssignment + "*";
+                            }
+                            currentAssignment.put(invertedOverhang, invertedOverhangAssignment);
+                        }
+                    } else {
+                        currentAssignment.put(invertedOverhang, "*");
+                    }
                 }
             }
             HashSet<String> matched = new HashSet();
@@ -917,16 +949,23 @@ public class RMoClo extends RGeneral {
 //                assignment.clear();
             }
         }
-        //figure out what to do with star overhangs
+        //generate new overhangs
         HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
         int newOverhang = 0;
-        for (String starAbstract : bestAssignment.keySet()) {
+        for (String starAbstract : sortedAbstractOverhangs) {
             if (bestAssignment.get(starAbstract).equals("*")) {
                 while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
                     newOverhang++;
                 }
                 bestAssignment.put(starAbstract, String.valueOf(newOverhang));
                 assignedOverhangs.add(String.valueOf(newOverhang));
+            }
+        }
+        //generate matching new overhangs for inverted overhans
+        for (String invertedOverhang : invertedOverhangs) {
+            if (bestAssignment.get(invertedOverhang).equals("*")) {
+                String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
+                bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang)+"*");
             }
         }
         //assign new overhangs
@@ -997,7 +1036,6 @@ public class RMoClo extends RGeneral {
             }
         }
     }
-
     //sets user specified overhangs before algorithm computes the rest
     private HashMap<String, String> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method

@@ -23,22 +23,32 @@ public class RHomologyPrimerDesign {
         ArrayList<String> oligos = new ArrayList<String>(2);
         String forwardOligoSequence;
         String reverseOligoSequence;
-        String leftNeighborSeq;
-        String rightNeighborSeq;
+        String leftNeighborSeq = "";
+        String rightNeighborSeq = "";
+        int rightNeighborSeqLength = 0;
+        int leftNeighborSeqLength = 0;
         Part currentPart = coll.getPart(node.getUUID(), true);
         Part rootPart = coll.getPart(root.getUUID(), true);
         ArrayList<Part> composition = rootPart.getComposition();
         int indexOf = composition.indexOf(currentPart);
         
         //Get the seqeunces of the neighbors
+        
+        while (leftNeighborSeqLength < minLength) {
+            if (indexOf == 0) {
+                leftNeighborSeq = composition.get(composition.size() - 1).getSeq();
+            } else if (indexOf == composition.size() - 1) {
+                leftNeighborSeq = composition.get(indexOf - 1).getSeq();
+            } else {
+                leftNeighborSeq = composition.get(indexOf - 1).getSeq();
+            }
+        }
+        
         if (indexOf == 0) {
-            leftNeighborSeq = composition.get(composition.size()-1).getSeq();
             rightNeighborSeq = composition.get(1).getSeq();
         } else if (indexOf == composition.size() - 1) {
-            leftNeighborSeq = composition.get(indexOf - 1).getSeq();
             rightNeighborSeq = composition.get(0).getSeq();
         } else {
-            leftNeighborSeq = composition.get(indexOf - 1).getSeq();
             rightNeighborSeq = composition.get(indexOf + 1).getSeq();
         }
 
