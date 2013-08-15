@@ -788,8 +788,9 @@ public class RGraph {
         }
         pigeonLine.append("# Arcs\n");
         WeyekinPoster.setPigeonText(pigeonLine.toString());
-        WeyekinPoster.postMyBird();
-        return WeyekinPoster.getmPigeonURI().toString();
+//        WeyekinPoster.postMyBird();
+//        return WeyekinPoster.getmPigeonURI().toString();
+        return "";
     }
 
     /**
