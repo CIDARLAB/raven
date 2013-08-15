@@ -5,6 +5,7 @@
 package Controller.accessibility;
 
 import Controller.algorithms.modasm.RBioBricks;
+import Controller.algorithms.modasm.RGoldenGate;
 import Controller.algorithms.modasm.RMoClo;
 import Controller.algorithms.nonmodasm.RHomologyPrimerDesign;
 import Controller.datastructures.Collector;
@@ -161,6 +162,8 @@ public class RInstructions {
                                 oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
+                            } else if (method.equalsIgnoreCase("GoldenGate")) {
+                                oligos = RGoldenGate.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
                             } else {
                                 oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength);
                             }
@@ -173,6 +176,8 @@ public class RInstructions {
 
                             //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
                             if (!oligos.isEmpty()) {
+                                
+                                //If the primers are small and therefore annealing primers
                                 if (anneal) {
                                     instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
                                 } else {

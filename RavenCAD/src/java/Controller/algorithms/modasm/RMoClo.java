@@ -1195,6 +1195,9 @@ public class RMoClo extends RGeneral {
         }
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
+        
+        System.out.println("node.getUUID(): " + node.getUUID());
+        System.out.println();
 
         return oligos;
     }
@@ -1232,6 +1235,7 @@ public class RMoClo extends RGeneral {
 
         return oligos;
     }
+    
     //FIELDS
     private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node

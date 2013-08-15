@@ -781,24 +781,11 @@ public class RavenController {
         String mergedArcText = "";
 
         //generate instructions
-        if (method.equals("biobricks")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "BioBricks");
-        } else if (method.equals("cpec")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "CPEC");
-        } else if (method.equals("gibson")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
-        } else if (method.equals("golden gate")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "GoldenGate");
-        } else if (method.equals("moclo")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
-        } else if (method.equals("slic")) {
-            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "SLIC");
-        }
-
-        //write instructions file
+        _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, method);        
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
         }
+        
         File file = new File(_path + _user + "/instructions" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
