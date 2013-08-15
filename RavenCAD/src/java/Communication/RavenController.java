@@ -17,12 +17,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -417,7 +414,7 @@ public class RavenController {
             }
 
             //Composite parts - read, but do not generate
-            if (tokenCount > 7) {
+            if (tokenCount > 9) {
 
                 try {
                     String[] trimmedTokens = new String[tokenCount];                    
@@ -456,7 +453,7 @@ public class RavenController {
                     badLines.add(line);
                 }
 
-            //Basic part - read and generate new part
+            //Basic parts with no overhangs or direction
             } else if (tokenCount == 5) {
 
                 try {
@@ -469,6 +466,33 @@ public class RavenController {
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
+                    Boolean toBreak = !newBasicPart.saveDefault(_collector);
+                    newBasicPart.setTransientStatus(false);
+                    if (toBreak) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    badLines.add(line);
+                }
+
+            //Basic parts with direction and overhangs
+            } else if (tokenCount == 9) {
+
+                try {
+                    String name = tokens[0].trim();
+                    String sequence = tokens[1].trim();
+                    String leftOverhang = tokens[2].trim();
+                    String rightOverhang = tokens[3].trim();
+                    String type = tokens[4].trim();
+                    String vectorName = tokens[7].trim();
+                    String composition = tokens[8].trim();
+                    Part newBasicPart = Part.generateBasic(name, sequence);
+                    newBasicPart.addSearchTag("LO: " + leftOverhang);
+                    newBasicPart.addSearchTag("RO: " + rightOverhang);
+                    newBasicPart.addSearchTag("Direction: [" + composition.substring(composition.length()-1) + "]");
+                    newBasicPart.addSearchTag("Type: " + type);
+                    Vector vector = _collector.getVectorByName(vectorName, true);
+                    _compPartsVectors.put(newBasicPart, vector);
                     Boolean toBreak = !newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
                     if (toBreak) {
@@ -693,7 +717,6 @@ public class RavenController {
 
         Statistics.start();
         boolean scarless = false;
-        HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
         if (method.equals("biobricks")) {
             _assemblyGraphs = runBioBricks();
         } else if (method.equals("cpec")) {
