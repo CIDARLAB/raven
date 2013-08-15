@@ -747,15 +747,15 @@ public class RavenController {
             for (RGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result);
                 writer.fixCompositeUUIDs(_collector, result);
-                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+//                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+//                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
             }
         }
         JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
         
         System.out.println("GRAPH AND ARCS FILES CREATED");
-        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
-//        String mergedArcText = "";
+//        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+        String mergedArcText = "";
 
         //generate instructions
         if (method.equals("biobricks")) {
