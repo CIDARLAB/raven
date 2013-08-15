@@ -50,7 +50,7 @@ public class RMoClo extends RGeneral {
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
 
         //Put all parts into hash for mgp algorithm            
-        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors);
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, false);
 
         //Positional scoring of transcriptional units
 //            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();

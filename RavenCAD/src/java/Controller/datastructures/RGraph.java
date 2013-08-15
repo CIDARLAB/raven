@@ -292,13 +292,11 @@ public class RGraph {
                 }
 
                 ArrayList<String> composition = current.getComposition();
-                String lOverhang = current.getLOverhang();
-                String rOverhang = current.getROverhang();
                 String aPartLOcompRO = current.getNodeKey("+");
 
                 String aVecLOlevelRO = new String();
                 if (current.getVector() != null) {
-                    aVecLOlevelRO = current.getVector().getName() + "|" + lOverhang + "|" + current.getStage() + "|" + rOverhang;
+                    aVecLOlevelRO = current.getVector().getVectorKey("+");
                 }
 
                 //PCR Reactions for scarless assembly

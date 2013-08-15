@@ -31,32 +31,34 @@ public class RBioBricks extends RGeneral {
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
 
         //Put all parts into hash for mgp algorithm            
-        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors);
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
-        assignBioBricksOverhangs(optimalGraphs, null);
+        assignBioBricksOverhangs(optimalGraphs);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
     }
     
     /** First step of overhang assignment - enforce numeric place holders for overhangs, ie no overhang redundancy in any step **/
-    private void assignBioBricksOverhangs (ArrayList<RGraph> optimalGraphs, RVector vector) {
+    private void assignBioBricksOverhangs (ArrayList<RGraph> optimalGraphs) {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
-        if (vector == null) {
-            vector = new RVector();           
-        }
-        vector.setLOverhang("EX");
-        vector.setROverhang("SP");
-        vector.setName("BBa_Vector");
         
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
 
             RNode root = graph.getRootNode();
+            RVector vector = root.getVector();
+            if (vector == null) {
+                vector = new RVector();
+                vector.setName("BBa_Vector");
+            }
+            vector.setLOverhang("EX");
+            vector.setROverhang("SP");
+
             root.setVector(vector);
             root.setLOverhang("EX");
             root.setROverhang("SP");
@@ -100,8 +102,6 @@ public class RBioBricks extends RGeneral {
             RNode child = children.get(i);
             
             //Give biobricks overhangs
-            child.setLOverhang("EX");
-            child.setROverhang("SP");
             child.setVector(vector);
 
             //Make recursive call
@@ -186,9 +186,43 @@ public class RBioBricks extends RGeneral {
         parent.setScars(scars);       
         return scars;
     }
-    
+
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
-        return true;
+        
+        boolean valid = true;
+        
+        for (RGraph graph : graphs) {
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
+            RNode root = graph.getRootNode();
+            queue.add(root);
+            while (!queue.isEmpty()) {
+                RNode current = queue.get(0);
+                queue.remove(0);
+                seenNodes.add(current);
+                
+                if (!("EX".equals(current.getLOverhang()) && "SP".equals(current.getROverhang()))) {
+                    valid = false;
+                }
+                RVector vector = current.getVector();
+                if (vector == null) {
+                    valid = false;
+                } else {
+                    if (!("EX".equals(vector.getLOverhang()) && "SP".equals(vector.getROverhang()))) {
+                        valid = false;
+                    }
+                }
+                
+                ArrayList<RNode> neighbors = current.getNeighbors();
+                for (RNode neighbor : neighbors) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+        
+        return valid;
     }
     
     /** Generation of new BioBricks primers for parts **/

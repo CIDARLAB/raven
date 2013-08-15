@@ -38,7 +38,7 @@ public class RGoldenGate extends RGeneral {
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
 
         //Put all parts into hash for mgp algorithm            
-        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors);
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
