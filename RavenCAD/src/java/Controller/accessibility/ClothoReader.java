@@ -131,63 +131,56 @@ public class ClothoReader {
         return library;
     }
 
-    /** Given a vector library, create vectorHash **/
-    public static ArrayList<RVector> vectorImportClotho(ArrayList<Vector> vectorLibrary) {
-
-        //Initialize vector library
-        ArrayList<RVector> library = new ArrayList<RVector>();
+    /* 
+     * Given a vector, convert it to an RVector *
+     */
+    public static RVector vectorImportClotho(Vector vector) {
 
         //Provided there is an input vector library
-        if (vectorLibrary != null) {
-            if (vectorLibrary.size() > 0) {
-                for (Vector aVector : vectorLibrary) {
+        RVector rVector = null;
+        if (vector != null) {
+            
+            String name = vector.getName();
+            String LO = new String();
+            String RO = new String();
+            String resistance = new String();
+            int level = -1;
+            
+            //If there's search tags, find overhangs
+            if (vector.getSearchTags() != null) {
+                ArrayList<String> sTags = vector.getSearchTags();
 
-                    //Initialize a new vector
-                    RVector vector = new RVector();
-
-                    //If there's search tags, find overhangs
-                    if (aVector.getSearchTags() != null) {
-                        ArrayList<String> sTags = aVector.getSearchTags();
-                        String LO = new String();
-                        String RO = new String();
-                        String resistance = new String();
-                        int level = -1;
-                        for (int i = 0; i < sTags.size(); i++) {
-                            if (sTags.get(i).startsWith("LO:")) {
-                                LO = sTags.get(i).substring(4);
-                            } else if (sTags.get(i).startsWith("RO:")) {
-                                RO = sTags.get(i).substring(4);
-                            } else if (sTags.get(i).startsWith("Level:")) {
-                                String aLevel = sTags.get(i).substring(7);
-                                level = Integer.parseInt(aLevel);
-                            } else if (sTags.get(i).startsWith("Resistance:")) {
-                                resistance = sTags.get(i).substring(12);
-                            }
-                        }
-                        vector.setLOverhang(LO);
-                        vector.setROverhang(RO);
-                        vector.setStringResistance(resistance);
-                        vector.setLevel(level);
+                for (int i = 0; i < sTags.size(); i++) {
+                    if (sTags.get(i).startsWith("LO:")) {
+                        LO = sTags.get(i).substring(4);
+                    } else if (sTags.get(i).startsWith("RO:")) {
+                        RO = sTags.get(i).substring(4);
+                    } else if (sTags.get(i).startsWith("Level:")) {
+                        String aLevel = sTags.get(i).substring(7);
+                        level = Integer.parseInt(aLevel);
+                    } else if (sTags.get(i).startsWith("Resistance:")) {
+                        resistance = sTags.get(i).substring(12);
                     }
-
-                    vector.setName(aVector.getName());
-                    vector.setUUID(aVector.getUUID());
-
-                    library.add(vector);
                 }
             }
+
+            //Initialize a new vector
+            rVector = new RVector(LO, RO, level, name);
+            rVector.setStringResistance(resistance);
+            rVector.setName(name);
+            rVector.setUUID(vector.getUUID());
         }
-        return library;
+        return rVector;
     }
 
     /** Convert goal parts into SRS nodes for the algorithm **/
-    public static ArrayList<RNode> gpsToNodesClotho(ArrayList<Part> goalParts) throws Exception {
+    public static ArrayList<RNode> gpsToNodesClotho(HashMap<Part, Vector> goalPartsVectors) throws Exception {
         
         ArrayList<RNode> gpsNodes = new ArrayList<RNode>();
-        for (int i = 0; i < goalParts.size(); i++) {
+        Set<Part> goalParts = goalPartsVectors.keySet();
+        for (Part goalPart : goalParts) {
             
             //Get goal part's composition and type (part description type)
-            Part goalPart = goalParts.get(i);
             ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
             ArrayList<String> searchTags = goalPart.getSearchTags();
             ArrayList<String> composition = new ArrayList<String>();
@@ -207,28 +200,28 @@ public class ClothoReader {
                 type.addAll(parseTags(sTags, "Type:"));
             }
             
+            //Assign vector to the root node if it exists in the hash
+            RVector vector = null;
+            if (goalPartsVectors.get(goalPart) != null) {
+                Vector clothoVector = goalPartsVectors.get(goalPart);
+                vector = vectorImportClotho(clothoVector);
+            }
+            
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            RNode gp = new RNode(false, false, composition, direction, type, scars, null, null, 0, 0);
-            gp.setUUID(goalParts.get(i).getUUID());
+            RNode gp = new RNode(false, false, composition, direction, type, scars, null, null, 0, 0, vector);
+            gp.setUUID(goalPart.getUUID());
             gpsNodes.add(gp);
         }
         
         //Sort nodes by part size and then composition name
         ArrayList<RNode> orderedGPSNodes = new ArrayList<RNode>();
         HashMap<String, RNode> partNameHash = new HashMap<String, RNode>();
-        
-        System.out.println("gpsNodes.size(): " + gpsNodes.size());
-        
         for (RNode gpsNode : gpsNodes) {
-            String key = gpsNode.getComposition().size() + gpsNode.getUUID();
-            
-            System.out.println("key: " + key);
+            String key = gpsNode.getComposition().size() + gpsNode.getNodeKey("+");
             partNameHash.put(key, gpsNode);
-        }
-        
-        System.out.println("partNameHash.size(): "+partNameHash.size());
-        Set<String> keySet1 = partNameHash.keySet();
-        ArrayList<String> partNames = new ArrayList<String>(keySet1);
+        }        
+        Set<String> keySet = partNameHash.keySet();
+        ArrayList<String> partNames = new ArrayList<String>(keySet);
         Collections.sort(partNames);
         for (String partName : partNames) {
             orderedGPSNodes.add(partNameHash.get(partName));

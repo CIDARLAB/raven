@@ -36,14 +36,13 @@ public class RGoldenGate extends RGeneral {
 
         //Create hashMem parameter for createAsmGraph_sgp() call
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
-        ArrayList<RVector> vectorSet = ClothoReader.vectorImportClotho(vectorLibrary);
 
         //Put all parts into hash for mgp algorithm            
-        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalParts);
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors);
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-        optimalGraphs = assignOverhangs(optimalGraphs, partHash, vectorSet);
+        optimalGraphs = assignOverhangs(optimalGraphs);
 
         return optimalGraphs;
     }
@@ -52,15 +51,11 @@ public class RGoldenGate extends RGeneral {
      * Optimize overhang assignments based on available parts and vectors with
      * overhangs *
      */
-    private ArrayList<RGraph> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, RGraph> partHash, ArrayList<RVector> vectorSet) {
+    private ArrayList<RGraph> assignOverhangs(ArrayList<RGraph> optimalGraphs) {
         return optimalGraphs;
     }
 
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
-    }
-    
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) {
-        return null;
     }
 }

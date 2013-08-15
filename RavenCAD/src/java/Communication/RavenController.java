@@ -788,7 +788,7 @@ public class RavenController {
         } else if (method.equals("gibson")) {
             _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "Gibson");
         } else if (method.equals("golden gate")) {
-            _instructions = RGoldenGate.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary);
+            _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "GoldenGate");
         } else if (method.equals("moclo")) {
             _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, "MoClo");
         } else if (method.equals("slic")) {
