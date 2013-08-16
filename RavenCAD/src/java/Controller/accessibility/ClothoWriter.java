@@ -179,9 +179,7 @@ public class ClothoWriter {
                                 cSearchTags.add("LO: " + cLO);
                                 cSearchTags.add("Type: " + cType);
                                 cSearchTags.add("Direction: [" + cDir + "]");
-                                
-                                System.out.println("cName: " + cName + " cSeq: " + cSeq + " cSearchTags: " + cSearchTags);
-                                
+                                                                
                                 Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 newComposition.add(exactPart);
                             }
@@ -205,9 +203,6 @@ public class ClothoWriter {
                         }
 
                         newPart.addSearchTag("Type: " + type);
-                        
-                        System.out.println("newPart.getUUID(): " + newPart.getUUID() + " newPart.getName(): " + newPart.getName());
-                        System.out.println("newPart.getSearchTags(): " + newPart.getSearchTags());
                         
                         newPart = newPart.saveDefault(coll);
                         currentNode.setUUID(newPart.getUUID());

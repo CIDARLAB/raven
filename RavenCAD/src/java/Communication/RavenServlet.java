@@ -172,7 +172,7 @@ public class RavenServlet extends HttpServlet {
                 }
 
                 String designCount = request.getParameter("designCount");
-                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
+                String graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
                 JSONArray partsList = controller.generatePartsList(designCount);
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();
