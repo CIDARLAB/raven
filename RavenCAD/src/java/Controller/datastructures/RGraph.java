@@ -463,7 +463,7 @@ public class RGraph {
     /**
      * Get all the edges of an SDSGraph in Post Order *
      */
-  public ArrayList<String> getPostOrderEdges() {
+    public ArrayList<String> getPostOrderEdges() {
         ArrayList<String> edges = new ArrayList();
         HashSet<String> seenUUIDs = new HashSet();
         seenUUIDs.add(this._rootNode.getUUID());
@@ -474,7 +474,9 @@ public class RGraph {
             edges = getPostOrderEdgesHelper(neighbor, this._rootNode, edges, seenUUIDs, true);
         }
         //first edge is the vector
-        edges.add(0, this._rootNode.getUUID() + " -> " + this._rootNode.getVector().getUUID());
+        if (this._rootNode.getVector() != null) {
+            edges.add(0, this._rootNode.getUUID() + " -> " + this._rootNode.getVector().getUUID());
+        }
 //        edges.add("node -> vector");
         return edges;
     }
@@ -513,7 +515,9 @@ public class RGraph {
             //Write arc connecting to the parent
             if (neighbor.getComposition().toString().equals(parent.getComposition().toString())) {
                 if (current.getStage() != 0) {
-                    edgesToAdd.add(current.getUUID() + " -> " + current.getVector().getUUID());
+                    if (current.getVector() != null) {
+                        edgesToAdd.add(current.getUUID() + " -> " + current.getVector().getUUID());
+                    }
                 }
                 //Make the edge going in the direction of the node with the greatest composition, whether this is parent or child
                 if (current.getComposition().size() > neighbor.getComposition().size()) {
@@ -598,9 +602,8 @@ public class RGraph {
         return arcsText.toString();
     }
 
-
     //returns a json string that can be parsed by the client
-       //returns a json string that can be parsed by the client
+    //returns a json string that can be parsed by the client
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
         HashMap<String, String> imageURLs = new HashMap();
         HashSet<String> edges = new HashSet();
@@ -689,7 +692,7 @@ public class RGraph {
                             vecNameN = vectorN.getName();
                         }
                         ArrayList<String> scarsN = neighbor.getScars();
-                        String nodeIDN = neighbor.getNodeKey("+")+"|"+vecNameN;
+                        String nodeIDN = neighbor.getNodeKey("+") + "|" + vecNameN;
                         edges.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
                     }
                 }
@@ -706,7 +709,7 @@ public class RGraph {
     /**
      * Pigeon code generation *
      */
-  private static String generatePigeonImage(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
+    private static String generatePigeonImage(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
         //Assign left overhang if it exists                
