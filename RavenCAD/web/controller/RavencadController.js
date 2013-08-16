@@ -213,35 +213,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
             if (targets.length > 1) {
                 designCount = designCount + 1;
-                $('#designTabHeader').append('<li><a id="designTabHeader' + designCount + '" href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount +
-                        '</a></li>');
-                $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">');
-                $('#designTabHeader a:last').tab('show'); //TODO figure out how to show new tab
+                addDesignTab(designCount);
 
-                //generate main skeleton
-                $('#designTab' + designCount).append('<div class="row-fluid"><div class="span12"><div class="tabbable" id="resultTabs' + designCount +
-                        '"></div></div></div>' +
-                        '<div class="row-fluid"><div class="span8"><div class="well" id="stat' + designCount +
-                        '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + designCount + '"></div></div></div>');
-                //add menu
-                $('#resultTabs' + designCount).append('<ul id="resultTabsHeader' + designCount + '" class="nav nav-tabs">' +
-                        '<li class="active"><a href="#imageTab' + designCount + '" data-toggle="tab" >Image</a></li>' +
-                        '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
-                        '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
-                        '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
-                        '<li><a href="#discardDialog' + designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + designCount + '" name="' + designCount + '">Discard Design</a></li>' +
-                        '</ul>');
-                //append modal dialog
-                $('#resultTabs' + designCount).append('<div id="discardDialog' + designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + designCount + '" aria-hidden="true">'
-                        + '<div class="modal-header">'
-                        + '<h4 id="discardDialogLabel' + designCount + '">Save Parts?</h4></div>'
-                        + '<div class="modal-body">There are parts in this design that have not been saved. Do you want to save them?</div>'
-                        + '<div class="modal-footer">'
-                        + '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" id="modalDiscardButton' + designCount + '" val="' + designCount + '">Discard Parts</button>'
-                        + '<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" id="modalSaveButton' + designCount + '" val="' + designCount + '">Save</button>'
-                        + '<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>'
-                        + "</div></div>"
-                        );
                 //event handler for discard modal dialog
                 $('#discardButton' + designCount).click(function() {
                     var designNumber = $(this).attr("name");
@@ -255,6 +228,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         refreshData();
                     }
                 });
+                //event handle for the redesign button
+                $('#redesignButton' + designCount).click(function() {
+                    var designNumber = $(this).attr("name");
+                    redesign(designNumber);
+                })
                 $('#modalSaveButton' + designCount).click(function() {
                     var designNumber = $(this).attr("val");
                     var partIDs = [];
@@ -311,23 +289,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $('#designTabHeader a:first').tab('show');
                     refreshData();
                 });
-                //add tab content
-                $('#resultTabs' + designCount).append(
-                        '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
-                        '<div class="tab-pane active" id="imageTab' + designCount + '"><div class="well" id="resultImage' + designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                        '<div class="tab-pane" id="instructionTab' + designCount + '"><div class="well" id="instructionArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                        '<div class="tab-pane" id="partsListTab' + designCount + '"><div id="partsListArea' + designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                        '<div class="tab-pane" id="summaryTab' + designCount + '"><div class="well" id="summaryArea' + designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
-                        '</div>');
-                //add download buttons and bind events to them
-                $('#download' + designCount).append('<h4>Download Options</h4>' +
-                        '<p><small>Please use right-click, then save as to download the files</small></p>' +
-                        '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
-                        '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
-                        '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                        '<p><a id="downloadArcs' + designCount + '">Download Puppeteer Arcs File</a></p>'
-
-                        );
                 var partLibrary = ""; //parts to use in library
                 var vectorLibrary = ""; //vectors to use in library
                 var rec = ""; //recommended intermediates
@@ -416,6 +377,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         reverseCutSite: "reverseCutSite",
                         reverseCutDistance: "reverseCutDistance"
                     })};
+                runParameters[designCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {
                     alert(JSON.stringify(data));
                     if (data["status"] === "good") {
@@ -925,6 +887,58 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#libraryVectorList').append(items[i]);
         }
     }
+    var redesign = function(designCount) {
+
+    };
+
+    var addDesignTab = function(designCount) {
+        $('#designTabHeader').append('<li><a id="designTabHeader' + designCount + '" href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount +
+                '</a></li>');
+        $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">');
+        $('#designTabHeader a:last').tab('show');
+
+        //generate main skeleton
+        $('#designTab' + designCount).append('<div class="row-fluid"><div class="span12"><div class="tabbable" id="resultTabs' + designCount +
+                '"></div></div></div>' +
+                '<div class="row-fluid"><div class="span8"><div class="well" id="stat' + designCount +
+                '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + designCount + '"></div></div></div>');
+        //add menu
+        $('#resultTabs' + designCount).append('<ul id="resultTabsHeader' + designCount + '" class="nav nav-tabs">' +
+                '<li class="active"><a href="#imageTab' + designCount + '" data-toggle="tab" >Image</a></li>' +
+                '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
+                '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
+                '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
+                '<li><a href="#discardDialog' + designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + designCount + '" name="' + designCount + '">Discard Design</a></li>' +
+                '<li><a class="btn" role="button" id="redesignButton' + designCount + '" name="' + designCount + '">Redesign</a></li>' +
+                '</ul>');
+        //append modal dialog
+        $('#resultTabs' + designCount).append('<div id="discardDialog' + designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + designCount + '" aria-hidden="true">'
+                + '<div class="modal-header">'
+                + '<h4 id="discardDialogLabel' + designCount + '">Save Parts?</h4></div>'
+                + '<div class="modal-body">There are parts in this design that have not been saved. Do you want to save them?</div>'
+                + '<div class="modal-footer">'
+                + '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" id="modalDiscardButton' + designCount + '" val="' + designCount + '">Discard Parts</button>'
+                + '<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" id="modalSaveButton' + designCount + '" val="' + designCount + '">Save</button>'
+                + '<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>'
+                + "</div></div>"
+                );
+        $('#resultTabs' + designCount).append(
+                '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
+                '<div class="tab-pane active" id="imageTab' + designCount + '"><div class="well" id="resultImage' + designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="instructionTab' + designCount + '"><div class="well" id="instructionArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="partsListTab' + designCount + '"><div id="partsListArea' + designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="summaryTab' + designCount + '"><div class="well" id="summaryArea' + designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
+                '</div>');
+        //add download buttons and bind events to them
+        $('#download' + designCount).append('<h4>Download Options</h4>' +
+                '<p><small>Please use right-click, then save as to download the files</small></p>' +
+                '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
+                '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
+                '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
+                '<p><a id="downloadArcs' + designCount + '">Download Puppeteer Arcs File</a></p>'
+
+                );
+    };
 
 });
 
