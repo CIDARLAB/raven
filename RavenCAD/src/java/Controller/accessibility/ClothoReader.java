@@ -5,18 +5,15 @@
 package Controller.accessibility;
 
 import Controller.datastructures.Part;
-import Controller.datastructures.RestrictionEnzyme;
 import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.*;
 
 /**
  *

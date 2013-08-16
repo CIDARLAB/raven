@@ -53,11 +53,8 @@ public class RBioBricks extends RGeneral {
             RNode root = graph.getRootNode();
             RVector vector = root.getVector();
             if (vector == null) {
-                vector = new RVector();
-                vector.setName("BBa_Vector");
+                vector = new RVector("EX", "SP", -1, "BBa_Vector");
             }
-            vector.setLOverhang("EX");
-            vector.setROverhang("SP");
 
             root.setVector(vector);
             root.setLOverhang("EX");
@@ -103,6 +100,8 @@ public class RBioBricks extends RGeneral {
             
             //Give biobricks overhangs
             child.setVector(vector);
+            child.setLOverhang("EX");
+            child.setROverhang("SP");
 
             //Make recursive call
             if (child.getStage() > 0) {
