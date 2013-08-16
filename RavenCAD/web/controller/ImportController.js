@@ -138,7 +138,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $.getJSON("RavenServlet", {"command": "fetch"}, function(json) {
             ravenPart = json["result"];
             if (json["status"] === "bad") {
-                $('#error').html(ravenPart["message"]);
+                $('#error').html(json["message"]);
                 $('#error').append('<hr/><p>We have uploaded the rest of your parts and vectors</p>');
                 $('#errorArea').removeClass("hidden");
             }

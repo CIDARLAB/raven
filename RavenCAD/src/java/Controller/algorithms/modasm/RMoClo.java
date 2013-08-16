@@ -964,15 +964,7 @@ public class RMoClo extends RGeneral {
         for (String invertedOverhang : invertedOverhangs) {
             if (bestAssignment.get(invertedOverhang).equals("*")) {
                 String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
-                if (bestAssignment.containsKey(uninvertedOverhang)) {
-                    bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
-                } else {
-                    while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
-                        newOverhang++;
-                    }
-                    bestAssignment.put(invertedOverhang, String.valueOf(newOverhang));
-                    assignedOverhangs.add(String.valueOf(newOverhang));
-                }
+                bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
             }
         }
         //assign new overhangs
@@ -1094,7 +1086,7 @@ public class RMoClo extends RGeneral {
         if (requiredOverhangs != null) {
             _forcedOverhangHash = new HashMap();
             for (String key : requiredOverhangs.keySet()) {
-                Part part = coll.getPartByName(key, false);
+                Part part = coll.getAllPartsWithName(key, false).get(0);
                 if (part != null) {
                     _forcedOverhangHash.put(part.getStringComposition().toString(), requiredOverhangs.get(key));
                 }
@@ -1195,10 +1187,6 @@ public class RMoClo extends RGeneral {
         }
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
-        
-        System.out.println("node.getUUID(): " + node.getUUID());
-        System.out.println();
-
         return oligos;
     }
 
@@ -1235,7 +1223,6 @@ public class RMoClo extends RGeneral {
 
         return oligos;
     }
-    
     //FIELDS
     private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node

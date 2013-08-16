@@ -33,9 +33,6 @@ public class Vector {
         return newVector;
     }
 
-    public static Vector retrieveByName(Collector coll, String name,boolean allowTransient) {
-        return coll.getVectorByName(name, allowTransient);
-    }
 
     public String getUUID() {
         return this.uuid;
@@ -49,8 +46,8 @@ public class Vector {
         this.searchTags.add(string);
     }
 
-    //adds vector to collector hash
-    public Boolean saveDefault(Collector coll) {
+    //returns this vector or an exact match
+    public Vector saveDefault(Collector coll) {
         return coll.addVector(this);
     }
 
