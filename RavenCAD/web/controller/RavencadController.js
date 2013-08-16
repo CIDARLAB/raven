@@ -6,6 +6,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
     var canRun = true;
     var efficiencyArray = [];
+    var runParameters = {};
     /********************EVENT HANDLERS********************/
     $('button#requireButton').click(function() {
         var toRequire = $.trim($("#intermediatesTypeAhead").val());
@@ -421,9 +422,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         //render image
 //                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
 //                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-       
+
                         $.each(data["graph"]["images"], function(key, value) {
-                            window.open(value,key);
+                            window.open(value, key);
                         })
 
                         $('#instructionArea' + designCount).html('<div>' + data["instructions"] + '</div>');
@@ -541,11 +542,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             refreshData();
                         });
                     }
+                    canRun = true;
                 });
             } else {
                 $('#selectTargetModal').modal();
             }
-            canRun = true;
         } else {
             $('#waitModal').modal();
         }
