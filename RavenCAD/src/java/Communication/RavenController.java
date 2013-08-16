@@ -577,7 +577,7 @@ public class RavenController {
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
                 newComposite.addSearchTag("Type: composite");
-                newComposite.saveDefault(_collector);
+                newComposite = newComposite.saveDefault(_collector);
                 newComposite.setTransientStatus(false);
             } catch (NullPointerException e) {
                 String badLine = "";
@@ -899,7 +899,7 @@ public class RavenController {
                     }
                     newBasicPart.addSearchTag("Type: " + type);
                     newBasicPart.setUuid(currentPart.getString("id"));
-                    newBasicPart.saveDefault(_collector);
+                    newBasicPart = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
                 } else if (currentPart.getString("schema").equals("CompositePart")) {
                     JSONArray compositionArray = currentPart.getJSONArray("composition");
@@ -913,7 +913,7 @@ public class RavenController {
                     newComposite.setUuid(currentPart.getString("id"));
                     newComposite.addSearchTag("Type: composite");
                     newComposite.addSearchTag("Direction: " + direction);
-                    newComposite.saveDefault(_collector);
+                    newComposite = newComposite.saveDefault(_collector);
                     newComposite.setTransientStatus(false);
                 }
 

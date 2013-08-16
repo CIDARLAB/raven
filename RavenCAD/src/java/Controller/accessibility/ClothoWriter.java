@@ -92,7 +92,7 @@ public class ClothoWriter {
                     Part newPart = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
                     newPart.addSearchTag("Type: composite");
                     currentNode.setName(partName);
-                    newPart.saveDefault(coll);
+                    newPart= newPart.saveDefault(coll);
                     currentNode.setUUID(newPart.getUUID());
 
                 } else {
@@ -168,11 +168,11 @@ public class ClothoWriter {
                                     cLO = "EX";
                                     cRO = "SP";
                                 }
-                                componentName = componentName + "|" + cLO + "|" + cRO;
+//                                componentName = componentName + "|" + cLO + "|" + cRO;
                                 
 //                                System.out.println("componentName: " + componentName);
                                 
-                                newComposition.add(coll.getPartByExactName(componentName, true));
+                                newComposition.add(coll.getAllPartsWithName(componentName, true).get(0));
                             }
                             
                             newPart = Part.generateComposite(newComposition, currentPart.getName());
@@ -194,7 +194,7 @@ public class ClothoWriter {
                         }
 
                         newPart.addSearchTag("Type: " + type);
-                        newPart.saveDefault(coll);
+                        newPart = newPart.saveDefault(coll);
                         
 //                        currentPart = coll.getPart(currentNode.getUUID(), true);
 //                        System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
@@ -220,7 +220,7 @@ public class ClothoWriter {
                     String resistance = vector.getResistance();
                     int level = vector.getLevel();
                     Vector newVector = generateNewClothoVector(coll, vecName, "", LO, RO, resistance, level);
-                    newVector.saveDefault(coll);
+                    newVector = newVector.saveDefault(coll);
                     vector.setName(newVector.getName());
                     vector.setUUID(newVector.getUUID());
                     currentNode.setVector(vector);
@@ -308,8 +308,8 @@ public class ClothoWriter {
                 cLO = "EX";
                 cRO = "SP";
             }
-            componentName = componentName + "|" + cLO + "|" + cRO;
-            newComposition.add(coll.getPartByExactName(componentName, true));
+//            componentName = componentName + "|" + cLO + "|" + cRO;
+            newComposition.add(coll.getAllPartsWithName(componentName, true).get(0));
         }
         
         Part newPart = Part.generateComposite(newComposition, name);
@@ -325,7 +325,7 @@ public class ClothoWriter {
         if (!scars.isEmpty()) {
             newPart.addSearchTag("Scars: " + scars);
         }
-        newPart.saveDefault(coll);
+        newPart = newPart.saveDefault(coll);
         return newPart;
     }
 
