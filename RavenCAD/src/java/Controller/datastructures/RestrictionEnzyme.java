@@ -82,7 +82,7 @@ public class RestrictionEnzyme {
         }
         
         _fwdRecSeq = regExRecSeqs.get(0);
-        _revRecSeq = regExRecSeqs.get(0);
+        _revRecSeq = regExRecSeqs.get(1);
         _fwdCutSites = cutSites;
         _revCutSites = revCutSites;
         _reID = _reCount;
@@ -147,6 +147,26 @@ public class RestrictionEnzyme {
         return partEnzResSeqs;
     }
 
+    /** Generate the enzymes that are relevant for BioBricks, MoClo and GoldenGate reactions **/
+    public static ArrayList<RestrictionEnzyme> getBBGGMoCloEnzymes() {
+        
+        ArrayList<RestrictionEnzyme> enzymes = new ArrayList<RestrictionEnzyme>();
+        RestrictionEnzyme BbsI = new RestrictionEnzyme("BbsI", "gaagac", null, null, null, null);
+        RestrictionEnzyme BsaI = new RestrictionEnzyme("BsaI", "ggtctc", null, null, null, null);
+        RestrictionEnzyme EcoRI = new RestrictionEnzyme("EcoRI", "gaattc", null, null, null, null);
+        RestrictionEnzyme SpeI = new RestrictionEnzyme("SpeI", "actagt", null, null, null, null);
+        RestrictionEnzyme XbaI = new RestrictionEnzyme("XbaI", "tctaga", null, null, null, null);
+        RestrictionEnzyme PstI = new RestrictionEnzyme("PstI", "ctgcag", null, null, null, null);
+        enzymes.add(BbsI);
+        enzymes.add(BsaI);
+        enzymes.add(EcoRI);
+        enzymes.add(SpeI);
+        enzymes.add(XbaI);
+        enzymes.add(PstI);
+        
+        return enzymes;
+    }
+    
     /** Get name **/
     public String getName() {
         return _name;

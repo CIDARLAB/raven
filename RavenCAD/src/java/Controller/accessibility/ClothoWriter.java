@@ -60,16 +60,6 @@ public class ClothoWriter {
 
         for (ArrayList<RNode> nodes : nodeOrder) {
             for (RNode currentNode : nodes) {
-
-
-//                System.out.println("*************************");
-//                System.out.println("currentNode.getUUID(): " + currentNode.getUUID());
-//                System.out.println("currentNode.getName(): " + currentNode.getName());
-//                System.out.println("currentNode.getComposition(): " + currentNode.getComposition());
-//                System.out.println("currentNode.getDirection(): " + currentNode.getDirection());
-//                System.out.println("currentNode.getScars(): " + currentNode.getScars());
-//                System.out.println("LO: " + currentNode.getLOverhang());
-//                System.out.println("RO: " + currentNode.getROverhang());
                 
                 ArrayList<String> scars = currentNode.getScars();
                 ArrayList<String> direction = currentNode.getDirection();
@@ -124,11 +114,10 @@ public class ClothoWriter {
 
                     //A new part must be created if one with the same composition and overhangs does not exist
                     if (createNewPart) {
-
+                        
                         //If a new part must be created
                         Part newPart;
                         if (currentPart.isBasic()) {
-                            System.out.println("<<Making a new basic part>>");
                             newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());                           
                         } else {
                  
@@ -179,9 +168,6 @@ public class ClothoWriter {
                                 cSearchTags.add("LO: " + cLO);
                                 cSearchTags.add("Type: " + cType);
                                 cSearchTags.add("Direction: [" + cDir + "]");
-                                
-                                System.out.println("cName: " + cName + " cSeq: " + cSeq + " cSearchTags: " + cSearchTags);
-                                
                                 Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 newComposition.add(exactPart);
                             }
@@ -205,10 +191,6 @@ public class ClothoWriter {
                         }
 
                         newPart.addSearchTag("Type: " + type);
-                        
-                        System.out.println("newPart.getUUID(): " + newPart.getUUID() + " newPart.getName(): " + newPart.getName());
-                        System.out.println("newPart.getSearchTags(): " + newPart.getSearchTags());
-                        
                         newPart = newPart.saveDefault(coll);
                         currentNode.setUUID(newPart.getUUID());
                     }
