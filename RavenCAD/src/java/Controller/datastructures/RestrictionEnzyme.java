@@ -6,6 +6,9 @@ package Controller.datastructures;
 
 import Controller.algorithms.PrimerDesign;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -85,6 +88,63 @@ public class RestrictionEnzyme {
         _reID = _reCount;
         _reCount++;
         _uuid = null;
+    }
+    
+    //THIS NEXT METHOD USES RESTRICTION ENZYMES WHICH ARE OUTSIDE THE CLOTHO DATA MODEL, UNCLEAR WHERE THIS METHOD SHOULD GO
+    
+    /** Scan a set of parts for restriction sites **/
+    //HashMap<Part, HashMap<Restriction Enzyme name, ArrayList<ArrayList<Start site, End site>>>>
+    public static HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>> reSeqScan(ArrayList<Part> parts, ArrayList<RestrictionEnzyme> enzymes) {
+        
+        HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>> partEnzResSeqs = new HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>>();
+        
+        //For all parts
+        for (int i = 0; i < parts.size(); i++) {
+            Part part = parts.get(i);
+            String name = part.getName();
+            String seq = part.getSeq();
+            HashMap<String, ArrayList<ArrayList<Integer>>> detectedResSeqs = new HashMap<String, ArrayList<ArrayList<Integer>>>();
+            
+            //Look at each enzyme's cut sites
+            for (int j = 0; j < enzymes.size(); j++) {
+                ArrayList<ArrayList<Integer>> matchSites = new ArrayList<ArrayList<Integer>>();
+                RestrictionEnzyme enzyme = enzymes.get(j);
+                String enzName = enzyme.getName();
+                String fwdRec = enzyme.getFwdRecSeq();
+                String revRec = enzyme.getRevRecSeq();
+                
+                //Compile regular expressions
+                Pattern compileFwdRec = Pattern.compile(fwdRec, Pattern.CASE_INSENSITIVE);
+                Pattern compileRevRec = Pattern.compile(revRec, Pattern.CASE_INSENSITIVE);
+                Matcher matcherFwdRec = compileFwdRec.matcher(seq);
+                Matcher matcherRevRec = compileRevRec.matcher(seq);
+                
+                //Find matches of forward sequence
+                while (matcherFwdRec.find()) {
+                    ArrayList<Integer> matchIndexes = new ArrayList<Integer>(2);
+                    int start = matcherFwdRec.start();
+                    int end = matcherFwdRec.end();
+                    matchIndexes.add(start);
+                    matchIndexes.add(end);
+                    matchSites.add(matchIndexes);
+                }
+                
+                //Find matches of reverse sequence
+                while (matcherRevRec.find()) {
+                    ArrayList<Integer> matchIndexes = new ArrayList<Integer>(2);
+                    int start = matcherRevRec.start();
+                    int end = matcherRevRec.end();
+                    matchIndexes.add(start);
+                    matchIndexes.add(end);
+                    matchSites.add(matchIndexes);
+                }
+                
+                detectedResSeqs.put(enzName, matchSites);
+            }
+            partEnzResSeqs.put(part, detectedResSeqs);
+        }
+        
+        return partEnzResSeqs;
     }
 
     /** Get name **/

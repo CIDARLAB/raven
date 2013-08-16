@@ -150,30 +150,30 @@ public class PrimerDesign {
     public static HashMap<String, String> getModularOHseqs() {
         
         HashMap<String, String> overhangVariableSequenceHash = new HashMap<String, String>();
-        overhangVariableSequenceHash.put("1", "ggac");
-        overhangVariableSequenceHash.put("2", "tact");
-        overhangVariableSequenceHash.put("3", "aatg");
-        overhangVariableSequenceHash.put("4", "aggt");
-        overhangVariableSequenceHash.put("5", "gctt");
-        overhangVariableSequenceHash.put("6", "cgct");
-        overhangVariableSequenceHash.put("7", "tgcc");
-        overhangVariableSequenceHash.put("8", "acta");
-        overhangVariableSequenceHash.put("9", "tcta");
-        overhangVariableSequenceHash.put("10", "cgac");
-        overhangVariableSequenceHash.put("11", "cgtt");
-        overhangVariableSequenceHash.put("12", "tgtg");
-        overhangVariableSequenceHash.put("1*", "gtcc");
-        overhangVariableSequenceHash.put("2*", "agta");
-        overhangVariableSequenceHash.put("3*", "catt");
-        overhangVariableSequenceHash.put("4*", "acct");
-        overhangVariableSequenceHash.put("5*", "aagc");
-        overhangVariableSequenceHash.put("6*", "agcg");
-        overhangVariableSequenceHash.put("7*", "ggca");
-        overhangVariableSequenceHash.put("8*", "tagt");
-        overhangVariableSequenceHash.put("9*", "taga");
-        overhangVariableSequenceHash.put("10*", "gtcg");
-        overhangVariableSequenceHash.put("11*", "aacg");
-        overhangVariableSequenceHash.put("12*", "caca");
+        overhangVariableSequenceHash.put("0", "ggac");
+        overhangVariableSequenceHash.put("1", "tact");
+        overhangVariableSequenceHash.put("2", "aatg");
+        overhangVariableSequenceHash.put("3", "aggt");
+        overhangVariableSequenceHash.put("4", "gctt");
+        overhangVariableSequenceHash.put("5", "cgct");
+        overhangVariableSequenceHash.put("6", "tgcc");
+        overhangVariableSequenceHash.put("7", "acta");
+        overhangVariableSequenceHash.put("8", "tcta");
+        overhangVariableSequenceHash.put("9", "cgac");
+        overhangVariableSequenceHash.put("10", "cgtt");
+        overhangVariableSequenceHash.put("11", "tgtg");
+        overhangVariableSequenceHash.put("0*", "gtcc");
+        overhangVariableSequenceHash.put("1*", "agta");
+        overhangVariableSequenceHash.put("2*", "catt");
+        overhangVariableSequenceHash.put("3*", "acct");
+        overhangVariableSequenceHash.put("4*", "aagc");
+        overhangVariableSequenceHash.put("5*", "agcg");
+        overhangVariableSequenceHash.put("6*", "ggca");
+        overhangVariableSequenceHash.put("7*", "tagt");
+        overhangVariableSequenceHash.put("8*", "taga");
+        overhangVariableSequenceHash.put("9*", "gtcg");
+        overhangVariableSequenceHash.put("10*", "aacg");
+        overhangVariableSequenceHash.put("11*", "caca");
         return overhangVariableSequenceHash;       
     }
     

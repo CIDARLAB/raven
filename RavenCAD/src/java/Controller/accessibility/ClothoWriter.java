@@ -74,6 +74,7 @@ public class ClothoWriter {
                 ArrayList<String> scars = currentNode.getScars();
                 ArrayList<String> direction = currentNode.getDirection();
                 ArrayList<String> composition = currentNode.getComposition();
+                ArrayList<String> nodeType = currentNode.getType();
                 String LO = currentNode.getLOverhang();
                 String RO = currentNode.getROverhang();
 
@@ -98,11 +99,11 @@ public class ClothoWriter {
                 } else {
 
                     //If a part with this composition and overhangs does not exist, a new part is needed
-                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
-//                    System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
-                    
+                    Part currentPart = coll.getPart(currentNode.getUUID(), true);                    
                     ArrayList<String> sTags = currentPart.getSearchTags();
-                    ArrayList<String> existingPartDir = parseTags(sTags, "Direction:");
+                    ArrayList<String> stringComposition = currentPart.getStringComposition();
+                    ArrayList<String> currentPartDir = parseTags(sTags, "Direction:");
+                    ArrayList<String> currentPartScars = parseTags(sTags, "Scars:");
                     String currentPartLO = "";
                     String currentPartRO = "";
                     for (int k = 0; k < sTags.size(); k++) {
@@ -110,11 +111,14 @@ public class ClothoWriter {
                             currentPartLO = sTags.get(k).substring(4);
                         } else if (sTags.get(k).startsWith("RO:")) {
                             currentPartRO = sTags.get(k).substring(4);
-                        }
+                        } 
                     }
-                    //
+                    String currentPartKey = stringComposition + "|" + currentPartDir + "|" + currentPartScars + "|" + currentPartLO + "|" + currentPartRO;
+                    String nodeKey = currentNode.getNodeKey("+");
+                    
+                    //If the current node key and the pulled part ID do not match
                     boolean createNewPart = false;
-                    if (!currentNode.getLOverhang().equals(currentPartLO) || !currentNode.getROverhang().equals(currentPartRO) || !currentNode.getDirection().equals(existingPartDir)) {
+                    if (!currentPartKey.equals(nodeKey)) {
                         createNewPart = true;
                     }
 
@@ -124,17 +128,19 @@ public class ClothoWriter {
                         //If a new part must be created
                         Part newPart;
                         if (currentPart.isBasic()) {
-//                            System.out.println("<<Making a new basic part>>");
-                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
-//                            System.out.println("newPart.getUUID(): " + newPart.getUUID());
-                            
+                            System.out.println("<<Making a new basic part>>");
+                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());                           
                         } else {
                  
                             //If a new composite part needs to be made
                             ArrayList<Part> newComposition = new ArrayList<Part>();
                             
                             for (int i = 0; i < composition.size(); i++) {
-                                String componentName = composition.get(i);
+                                ArrayList<String> cSearchTags = new ArrayList<String>();
+                                String cSeq = currentPart.getComposition().get(i).getSeq();
+                                String cName = composition.get(i);
+                                String cDir = direction.get(i);
+                                String cType = nodeType.get(i);
                                 String cLO;
                                 String cRO;
 
@@ -168,11 +174,16 @@ public class ClothoWriter {
                                     cLO = "EX";
                                     cRO = "SP";
                                 }
-//                                componentName = componentName + "|" + cLO + "|" + cRO;
                                 
-//                                System.out.println("componentName: " + componentName);
+                                cSearchTags.add("RO: " + cRO);
+                                cSearchTags.add("LO: " + cLO);
+                                cSearchTags.add("Type: " + cType);
+                                cSearchTags.add("Direction: [" + cDir + "]");
                                 
-                                newComposition.add(coll.getAllPartsWithName(componentName, true).get(0));
+                                System.out.println("cName: " + cName + " cSeq: " + cSeq + " cSearchTags: " + cSearchTags);
+                                
+                                Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                newComposition.add(exactPart);
                             }
                             
                             newPart = Part.generateComposite(newComposition, currentPart.getName());
@@ -194,10 +205,11 @@ public class ClothoWriter {
                         }
 
                         newPart.addSearchTag("Type: " + type);
-                        newPart = newPart.saveDefault(coll);
                         
-//                        currentPart = coll.getPart(currentNode.getUUID(), true);
-//                        System.out.println("currentPart.getUUID(): " + currentPart.getUUID());
+                        System.out.println("newPart.getUUID(): " + newPart.getUUID() + " newPart.getName(): " + newPart.getName());
+                        System.out.println("newPart.getSearchTags(): " + newPart.getSearchTags());
+                        
+                        newPart = newPart.saveDefault(coll);
                         currentNode.setUUID(newPart.getUUID());
                     }
                 }
@@ -274,7 +286,11 @@ public class ClothoWriter {
         //If a new composite part needs to be made
         ArrayList<Part> newComposition = new ArrayList<Part>();
         for (int i = 0; i < composition.size(); i++) {
-            String componentName = composition.get(i);
+            ArrayList<String> cSearchTags = new ArrayList<String>();
+            String cName = composition.get(i);
+            String cSeq = coll.getAllPartsWithName(cName, true).get(0).getSeq();            
+            String cDir = direction.get(i);
+            String cType = coll.getAllPartsWithName(cName, true).get(0).getType();
             String cLO;
             String cRO;
 
@@ -308,8 +324,14 @@ public class ClothoWriter {
                 cLO = "EX";
                 cRO = "SP";
             }
-//            componentName = componentName + "|" + cLO + "|" + cRO;
-            newComposition.add(coll.getAllPartsWithName(componentName, true).get(0));
+            
+            cSearchTags.add("RO: " + cRO);
+            cSearchTags.add("LO: " + cLO);
+            cSearchTags.add("Type: " + cType);
+            cSearchTags.add("Direction: [" + cDir + "]");
+
+            Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+            newComposition.add(exactPart);
         }
         
         Part newPart = Part.generateComposite(newComposition, name);
