@@ -577,7 +577,7 @@ public class RavenController {
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
                 newComposite.addSearchTag("Type: composite");
-                newComposite.saveDefault(_collector);
+                newComposite = newComposite.saveDefault(_collector);
                 newComposite.setTransientStatus(false);
             } catch (NullPointerException e) {
                 String badLine = "";
@@ -791,11 +791,10 @@ public class RavenController {
         String mergedArcText = "";
 
         //generate instructions
-        _instructions = RInstructions.generateInstructions (targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, method);        
+        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, method);
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
         }
-        
         File file = new File(_path + _user + "/instructions" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
@@ -886,7 +885,7 @@ public class RavenController {
                     }
                     newBasicPart.addSearchTag("Type: " + type);
                     newBasicPart.setUuid(currentPart.getString("id"));
-                    newBasicPart.saveDefault(_collector);
+                    newBasicPart = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
                 } else if (currentPart.getString("schema").equals("CompositePart")) {
                     JSONArray compositionArray = currentPart.getJSONArray("composition");
@@ -900,7 +899,7 @@ public class RavenController {
                     newComposite.setUuid(currentPart.getString("id"));
                     newComposite.addSearchTag("Type: composite");
                     newComposite.addSearchTag("Direction: " + direction);
-                    newComposite.saveDefault(_collector);
+                    newComposite = newComposite.saveDefault(_collector);
                     newComposite.setTransientStatus(false);
                 }
 

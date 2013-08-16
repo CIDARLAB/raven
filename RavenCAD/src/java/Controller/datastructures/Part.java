@@ -31,6 +31,7 @@ public class Part {
     private Part() {
         UUID++;
         this.uuid = "part_" + String.valueOf(UUID);
+        System.out.println(this.uuid);
     }
 
 
@@ -88,7 +89,11 @@ public class Part {
 
     //returns this part, or an exact match
     public Part saveDefault(Collector col) {
-        return col.addPart(this);
+        Part toReturn =  col.addPart(this);
+        if(!this.equals(toReturn)) {
+            UUID--;
+        }
+        return toReturn;
     }
 
     public String getLeftOverhang() {
@@ -154,5 +159,5 @@ public class Part {
     private String uuid;
     private ArrayList<String> searchTags = new ArrayList();
     private boolean _transient = true;
-    protected static int UUID = 0;
+    private static int UUID = 0;
 }

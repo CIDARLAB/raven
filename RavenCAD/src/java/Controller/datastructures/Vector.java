@@ -48,7 +48,11 @@ public class Vector {
 
     //returns this vector or an exact match
     public Vector saveDefault(Collector coll) {
-        return coll.addVector(this);
+        Vector toReturn =  coll.addVector(this);
+        if(!this.equals(toReturn)) {
+            UUID--;
+        }
+        return toReturn;
     }
 
     public String getName() {

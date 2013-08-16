@@ -168,14 +168,14 @@ public class RInstructions {
                                 oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength);
                             }
 
-                            oligoNames.add(forwardOligoName);
-                            oligoNames.add(reverseOligoName);
-                            oligoSequences.addAll(oligos);
-                            nodeOligoHash.put(l0Node.getNodeKey("+"), oligoHash);
-                            oligoCount++;
-
                             //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
                             if (!oligos.isEmpty()) {
+                                
+                                oligoNames.add(forwardOligoName);
+                                oligoNames.add(reverseOligoName);
+                                oligoSequences.addAll(oligos);
+                                nodeOligoHash.put(l0Node.getNodeKey("+"), oligoHash);
+                                oligoCount++;
                                 
                                 //If the primers are small and therefore annealing primers
                                 if (anneal) {
