@@ -1,12 +1,12 @@
 $(document).ready(function() { //don't run javascript until page is loaded
-    var designCount = 0;
-    var loaded = false;
-    var data = null;
-    var method = "BioBricks";
+    var _designCount = 0;
+    var _loaded = false;
+    var _data = null;
+    var _method = "BioBricks";
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
     var canRun = true;
     var efficiencyArray = [];
-    var runParameters = {};
+    var _runParameters = {};
     /********************EVENT HANDLERS********************/
     $('button#requireButton').click(function() {
         var toRequire = $.trim($("#intermediatesTypeAhead").val());
@@ -89,7 +89,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         refreshData();
     });
     $('#methodTabHeader li').click(function() {
-        method = $(this).text();
+        _method = $(this).text();
         updateSummary();
     });
     $('.addEfficiencyButton').click(function() {
@@ -212,83 +212,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 targets = targets + $(this).attr("id") + ",";
             });
             if (targets.length > 1) {
-                designCount = designCount + 1;
-                addDesignTab(designCount);
+                var currentDesignCount = addDesignTab();
 
-                //event handler for discard modal dialog
-                $('#discardButton' + designCount).click(function() {
-                    var designNumber = $(this).attr("name");
-                    if ($(this).attr("val") === "notSaved") {
-                        $('#discardDialog' + designNumber).modal('show');
-                    } else {
-                        $('#discardDialog' + designNumber).modal('hide');
-                        $('#designTabHeader' + designNumber).remove();
-                        $('#designTab' + designNumber).remove();
-                        $('#designTabHeader a:first').tab('show');
-                        refreshData();
-                    }
-                });
-                //event handle for the redesign button
-                $('#redesignButton' + designCount).click(function() {
-                    var designNumber = $(this).attr("name");
-                    redesign(designNumber);
-                })
-                $('#modalSaveButton' + designCount).click(function() {
-                    var designNumber = $(this).attr("val");
-                    var partIDs = [];
-                    var vectorIDs = [];
-                    var writeSQL = false;
-                    if ($('#sqlCheckbox' + designNumber).attr("checked")) {
-                        writeSQL = true;
-                    }
-                    $('#partsListTable' + designNumber + ' tbody tr').each(function() {
-                        var tokens = $(this).attr("val").split("|");
-                        if (tokens[0].toLowerCase() === "vector") {
-                            vectorIDs.push(tokens[1]);
-                        } else {
-                            partIDs.push(tokens[1]);
-                        }
-                    });
-                    $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
-                        if (result === "saved data") {
-                            $('#discardButton' + designCount).attr("val", "saved");
-                            $('#saveButton' + designNumber).prop('disabled', true);
-                            $('#saveButton' + designNumber).text("Successful Save");
-                            refreshData();
-                        } else {
-                            alert("Failed to save parts");
-                            $('#saveButton' + designNumber).text("Report Error");
-                            $('#saveButton' + designNumber).removeClass('btn-success');
-                            $('#saveButton' + designNumber).addClass('btn-danger');
-                            $('#saveButton' + designNumber).click(function() {
-                                alert('this feature will be coming soon');
-                            });
-                        }
-                    });
-                });
-                $('#modalDiscardButton' + designCount).click(function() {
-                    var designNumber = $(this).attr("val");
-                    if ($('#discardButton' + designNumber).attr("val") === "notSaved") {
-                        var toDeleteVectors = [];
-                        var toDeleteParts = [];
-                        $('#partsListTable' + designNumber + ' tr').each(function() {
-                            var toSplit = $(this).attr("val");
-                            if (typeof toSplit !== "undefined") {
-                                var tokens = $(this).attr("val").split("|");
-                                if (tokens[0].toLowerCase() === "vector" && tokens[0].toLowerCase() !== "undefined") {
-                                    toDeleteVectors.push(tokens[1]);
-                                } else {
-                                    toDeleteParts.push(tokens[1]);
-                                }
-                            }
-                        });
-                    }
-                    $('#discardDialog' + designNumber).modal('hide');
-                    $('#designTabHeader' + designNumber).remove();
-                    $('#designTab' + designNumber).remove();
-                    $('#designTabHeader a:first').tab('show');
-                    refreshData();
-                });
+
                 var partLibrary = ""; //parts to use in library
                 var vectorLibrary = ""; //vectors to use in library
                 var rec = ""; //recommended intermediates
@@ -322,7 +248,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 rec = rec.substring(0, rec.length - 1);
                 targets = targets.substring(0, targets.length - 1);
                 partLibrary = partLibrary.substring(0, partLibrary.length - 1);
-                method = method.toLowerCase().replace(/\s+/g, '');
+                _method = _method.toLowerCase().replace(/\s+/g, '');
 
                 //primer parameters
                 var oligoNameRoot = $('input#oligoNameRoot').val();
@@ -363,8 +289,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 if (reverseCutDistance === undefined) {
                     reverseCutDistance = $('input#reverseCutDistance').attr("placeholder");
                 }
-                var requestInput = {command: "run", designCount: "" + designCount, targets: "" + targets, method: ""
-                            + method, partLibrary: "" + partLibrary, vectorLibrary: "" + vectorLibrary, recommended: ""
+                var requestInput = {command: "run", designCount: "" + currentDesignCount, targets: "" + targets, method: ""
+                            + _method, partLibrary: "" + partLibrary, vectorLibrary: "" + vectorLibrary, recommended: ""
                             + rec, required: "" + req, forbidden: "" + forbid, discouraged: "" + discourage,
                     efficiency: "" + efficiencyArray,
                     "primer": JSON.stringify({oligoNameRoot: "",
@@ -377,45 +303,44 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         reverseCutSite: "reverseCutSite",
                         reverseCutDistance: "reverseCutDistance"
                     })};
-                runParameters[designCount] = requestInput;
+                _runParameters[currentDesignCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {
-                    alert(JSON.stringify(data));
                     if (data["status"] === "good") {
                         //render image
 //                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
 //                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
 
-                        $.each(data["graph"]["images"], function(key, value) {
-                            window.open(value, key);
-                        })
+//                        $.each(data["graph"]["images"], function(key, value) {
+//                            window.open(value, key);
+//                        })
 
-                        $('#instructionArea' + designCount).html('<div>' + data["instructions"] + '</div>');
+                        $('#instructionArea' + currentDesignCount).html('<div>' + data["instructions"] + '</div>');
                         var status = '';
                         var saveButtons = '';
                         if (data["statistics"]["valid"] === "true") {
                             status = '<span class="label label-success">Graph structure verified!</span>';
-                            saveButtons = '<p><button id="reportButton' + designCount +
+                            saveButtons = '<p><button id="reportButton' + currentDesignCount +
                                     '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
-                                    '<p><button class="btn btn-success" style="width:100%" id="saveButton' + designCount + '" val="' + designCount + '">Save to working library</button></p>';
+                                    '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
                             if (user === "admin") {
-                                saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + designCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
+                                saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + currentDesignCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
                             } else {
-                                saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + designCount + '" type="checkbox" checked=false/></p>';
+                                saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + currentDesignCount + '" type="checkbox" checked=false/></p>';
                             }
-                            $('#download' + designCount).prepend(saveButtons);
-                            $('#reportButton' + designCount).click(function() {
+                            $('#download' + currentDesignCount).prepend(saveButtons);
+                            $('#reportButton' + currentDesignCount).click(function() {
                                 alert("this feature will be coming soon");
                             });
                         } else {
                             status = '<span class="label label-warning">Graph Structure Invalid!</span>';
-                            saveButtons = '<p><button id="reportButton' + designCount + '" class ="btn btn-danger">Report Error</button></p>';
-                            $('#download' + designCount).prepend(saveButtons);
-                            $('#reportButton' + designCount).click(function() {
+                            saveButtons = '<p><button id="reportButton' + currentDesignCount + '" class ="btn btn-danger">Report Error</button></p>';
+                            $('#download' + currentDesignCount).prepend(saveButtons);
+                            $('#reportButton' + currentDesignCount).click(function() {
                                 alert("this feature will be coming soon");
                             });
                         }
                         //prepend status badge and report button
-                        $('#saveButton' + designCount).click(function() {
+                        $('#saveButton' + currentDesignCount).click(function() {
                             var designNumber = $(this).attr("val");
                             var partIDs = [];
                             var vectorIDs = [];
@@ -433,7 +358,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             });
                             $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
                                 if (result === "saved data") {
-                                    $('#discardButton' + designCount).attr("val", "saved");
+                                    $('#discardButton' + currentDesignCount).attr("val", "saved");
                                     $('#saveButton' + designNumber).prop('disabled', true);
                                     $('#saveButton' + designNumber).text("Successful Save");
                                     refreshData();
@@ -449,7 +374,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             });
                         });
                         //render stats
-                        $('#stat' + designCount).html('<h4>Assembly Statistics ' + status + '</h4><table class="table">' +
+                        $('#stat' + currentDesignCount).html('<h4>Assembly Statistics ' + status + '</h4><table class="table">' +
                                 '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
                                 '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
                                 '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
@@ -459,15 +384,15 @@ $(document).ready(function() { //don't run javascript until page is loaded
                                 '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
                                 '<tr><td><strong>Parts Shared</strong></td><td>' + data["statistics"]["sharing"] + '</td></tr>' +
                                 '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
-                        $('#downloadImage' + designCount).attr("href", data["result"]);
-                        $('#downloadInstructions' + designCount).attr("href", "data/" + user + "/instructions" + designCount + ".txt");
-                        $('#downloadParts' + designCount).attr("href", "data/" + user + "/partsList" + designCount + ".csv");
-                        $('#downloadPigeon' + designCount).attr("href", "data/" + user + "/pigeon" + designCount + ".txt");
-                        $('#downloadArcs' + designCount).attr("href", "data/" + user + "/arcs" + designCount + ".txt");
+                        $('#downloadImage' + currentDesignCount).attr("href", data["result"]);
+                        $('#downloadInstructions' + currentDesignCount).attr("href", "data/" + user + "/instructions" + currentDesignCount + ".txt");
+                        $('#downloadParts' + currentDesignCount).attr("href", "data/" + user + "/partsList" + currentDesignCount + ".csv");
+                        $('#downloadPigeon' + currentDesignCount).attr("href", "data/" + user + "/pigeon" + currentDesignCount + ".txt");
+                        $('#downloadArcs' + currentDesignCount).attr("href", "data/" + user + "/arcs" + currentDesignCount + ".txt");
 
                         $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
                         //render parts list
-                        var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + designCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
+                        var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + currentDesignCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
                         $.each(data["partsList"], function() {
                             partsListTableBody = partsListTableBody + '<tr val="' + this["Type"] + '|' + this["uuid"] + '"><td>'
                                     + this["uuid"] + "</td><td>"
@@ -480,23 +405,23 @@ $(document).ready(function() { //don't run javascript until page is loaded
                                     + this["Level"] + "</td></tr>";
                         });
                         partsListTableBody = partsListTableBody + '</tbody></table>';
-                        $('#partsListArea' + designCount).html(partsListTableBody);
-                        $("#partsListTable" + designCount).dataTable({
+                        $('#partsListArea' + currentDesignCount).html(partsListTableBody);
+                        $("#partsListTable" + currentDesignCount).dataTable({
                             "sScrollY": "300px",
                             "bPaginate": false,
                             "bScrollCollapse": true
                         });
                     } else {
                         //display error
-                        $("#designTab" + designCount).html('<div class="alert alert-danger">' +
-                                '<button class="btn" id="discardButton' + designCount + '" name="' + designCount + '">Dismiss</button><hr/>' +
+                        $("#designTab" + currentDesignCount).html('<div class="alert alert-danger">' +
+                                '<button class="btn" id="discardButton' + currentDesignCount + '" name="' + currentDesignCount + '">Dismiss</button><hr/>' +
                                 '<strong>Oops, an error occurred while generating your assembly plan</strong>' +
                                 '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
                                 '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
                                 '<li>A brief summary of what you were trying to do</li></ul>' +
                                 '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
                                 + data["result"] + '</div>');
-                        $('#discardButton' + designCount).click(function() {
+                        $('#discardButton' + currentDesignCount).click(function() {
                             var designNumber = $(this).attr("name");
                             $('#designTabHeader' + designNumber).remove();
                             $('#designTab' + designNumber).remove();
@@ -517,10 +442,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var refreshData = function() {
         $.get("RavenServlet", {"command": "dataStatus"}, function(data) {
             if (data === "loaded") {
-                loaded = true;
+                _loaded = true;
                 getData();
             } else {
-                loaded = false;
+                _loaded = false;
                 //TODO add some sort of popup as a guiding hint
             }
         });
@@ -530,7 +455,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var targetListBody = "<select id=\"availableTargetPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
         var libraryPartListBody = "<select id=\"libraryPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
         var libraryVectorListBody = "<select id=\"libraryVectorList\" multiple=\"multiple\" class=\"fixedHeight\">";
-        $.each(data["result"], function() {
+        $.each(_data["result"], function() {
             if (this["Type"] === "composite") {
                 targetListBody = targetListBody + "<option class=\"composite ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
             } else if (this["Type"] === "vector") {
@@ -555,10 +480,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
     var getData = function() {
         $.getJSON("RavenServlet", {"command": "fetch"}, function(json) {
-            data = json;
+            _data = json;
             drawPartVectorLists();
             //generate uuidCompositionHash
-            $.each(data["result"], function() {
+            $.each(_data["result"], function() {
                 if (this["Type"].toLowerCase() !== "vector") {
                     uuidCompositionHash[this["uuid"]] = this["Composition"];
                 }
@@ -676,8 +601,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         } else {
             summary = summary + '<div class="alert alert-danger"><strong>Nothing</strong>. Try selecting some target parts</div>';
         }
-        var tabMethod = method.toLowerCase().replace(/\s+/g, '');
-        summary = summary + '<p>You will be using the <strong>' + method + '</strong> assembly method</p>';
+        var tabMethod = _method.toLowerCase().replace(/\s+/g, '');
+        summary = summary + '<p>You will be using the <strong>' + _method + '</strong> assembly method</p>';
         summary = summary + '<p>You will be using the following efficiency table for your assembly</p>' + $('#' + tabMethod + 'Tab table').parent().html();
         efficiencyArray = [];
         var table = $('#' + tabMethod + 'Tab table').parent();
@@ -887,59 +812,142 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#libraryVectorList').append(items[i]);
         }
     }
-    var redesign = function(designCount) {
 
-    };
 
-    var addDesignTab = function(designCount) {
-        $('#designTabHeader').append('<li><a id="designTabHeader' + designCount + '" href="#designTab' + designCount + '" data-toggle="tab">Design ' + designCount +
+    var addDesignTab = function() {
+        _designCount = _designCount + 1;
+        $('#designTabHeader').append('<li><a id="designTabHeader' + _designCount + '" href="#designTab' + _designCount + '" data-toggle="tab">Design ' + _designCount +
                 '</a></li>');
-        $('#designTabContent').append('<div class="tab-pane" id="designTab' + designCount + '">');
+        $('#designTabContent').append('<div class="tab-pane" id="designTab' + _designCount + '">');
         $('#designTabHeader a:last').tab('show');
 
         //generate main skeleton
-        $('#designTab' + designCount).append('<div class="row-fluid"><div class="span12"><div class="tabbable" id="resultTabs' + designCount +
+        $('#designTab' + _designCount).append('<div class="row-fluid"><div class="span12"><div class="tabbable" id="resultTabs' + _designCount +
                 '"></div></div></div>' +
-                '<div class="row-fluid"><div class="span8"><div class="well" id="stat' + designCount +
-                '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + designCount + '"></div></div></div>');
+                '<div class="row-fluid"><div class="span8"><div class="well" id="stat' + _designCount +
+                '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + _designCount + '"></div></div></div>');
         //add menu
-        $('#resultTabs' + designCount).append('<ul id="resultTabsHeader' + designCount + '" class="nav nav-tabs">' +
-                '<li class="active"><a href="#imageTab' + designCount + '" data-toggle="tab" >Image</a></li>' +
-                '<li><a href="#instructionTab' + designCount + '" data-toggle="tab">Instructions</a></li>' +
-                '<li><a href="#partsListTab' + designCount + '" data-toggle="tab">Parts List</a></li>' +
-                '<li><a href="#summaryTab' + designCount + '" data-toggle="tab">Summary</a></li>' +
-                '<li><a href="#discardDialog' + designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + designCount + '" name="' + designCount + '">Discard Design</a></li>' +
-                '<li><a class="btn" role="button" id="redesignButton' + designCount + '" name="' + designCount + '">Redesign</a></li>' +
+        $('#resultTabs' + _designCount).append('<ul id="resultTabsHeader' + _designCount + '" class="nav nav-tabs">' +
+                '<li class="active"><a href="#imageTab' + _designCount + '" data-toggle="tab" >Image</a></li>' +
+                '<li><a href="#instructionTab' + _designCount + '" data-toggle="tab">Instructions</a></li>' +
+                '<li><a href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
+                '<li><a href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
+                '<li><a href="#discardDialog' + _designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + _designCount + '" name="' + _designCount + '">Discard Design</a></li>' +
+                '<li><a class="btn" role="button" id="redesignButton' + _designCount + '" name="' + _designCount + '">Redesign</a></li>' +
                 '</ul>');
         //append modal dialog
-        $('#resultTabs' + designCount).append('<div id="discardDialog' + designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + designCount + '" aria-hidden="true">'
+        $('#resultTabs' + _designCount).append('<div id="discardDialog' + _designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + _designCount + '" aria-hidden="true">'
                 + '<div class="modal-header">'
-                + '<h4 id="discardDialogLabel' + designCount + '">Save Parts?</h4></div>'
+                + '<h4 id="discardDialogLabel' + _designCount + '">Save Parts?</h4></div>'
                 + '<div class="modal-body">There are parts in this design that have not been saved. Do you want to save them?</div>'
                 + '<div class="modal-footer">'
-                + '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" id="modalDiscardButton' + designCount + '" val="' + designCount + '">Discard Parts</button>'
-                + '<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" id="modalSaveButton' + designCount + '" val="' + designCount + '">Save</button>'
+                + '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" id="modalDiscardButton' + _designCount + '" val="' + _designCount + '">Discard Parts</button>'
+                + '<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" id="modalSaveButton' + _designCount + '" val="' + _designCount + '">Save</button>'
                 + '<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>'
                 + "</div></div>"
                 );
-        $('#resultTabs' + designCount).append(
-                '<div class="tab-content" id="resultTabsContent' + designCount + '">' +
-                '<div class="tab-pane active" id="imageTab' + designCount + '"><div class="well" id="resultImage' + designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                '<div class="tab-pane" id="instructionTab' + designCount + '"><div class="well" id="instructionArea' + designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                '<div class="tab-pane" id="partsListTab' + designCount + '"><div id="partsListArea' + designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                '<div class="tab-pane" id="summaryTab' + designCount + '"><div class="well" id="summaryArea' + designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
+        $('#resultTabs' + _designCount).append(
+                '<div class="tab-content" id="resultTabsContent' + _designCount + '">' +
+                '<div class="tab-pane active" id="imageTab' + _designCount + '"><div class="well" id="resultImage' + _designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="instructionTab' + _designCount + '"><div class="well" id="instructionArea' + _designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="partsListTab' + _designCount + '"><div id="partsListArea' + _designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="summaryTab' + _designCount + '"><div class="well" id="summaryArea' + _designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
                 '</div>');
         //add download buttons and bind events to them
-        $('#download' + designCount).append('<h4>Download Options</h4>' +
+        $('#download' + _designCount).append('<h4>Download Options</h4>' +
                 '<p><small>Please use right-click, then save as to download the files</small></p>' +
-                '<p><a id="downloadImage' + designCount + '">Download Graph Image</a></p>' +
-                '<p><a id="downloadInstructions' + designCount + '">Download Instructions</a></p>' +
-                '<p><a id="downloadParts' + designCount + '">Download Parts/Vectors List</a></p>' +
-                '<p><a id="downloadArcs' + designCount + '">Download Puppeteer Arcs File</a></p>'
+                '<p><a id="downloadImage' + _designCount + '">Download Graph Image</a></p>' +
+                '<p><a id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
+                '<p><a id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
+                '<p><a id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>'
 
                 );
+        //event handler for discard modal dialog
+        $('#discardButton' + _designCount).click(function() {
+            var designNumber = $(this).attr("name");
+            if ($(this).attr("val") === "notSaved") {
+                $('#discardDialog' + designNumber).modal('show');
+            } else {
+                $('#discardDialog' + designNumber).modal('hide');
+                $('#designTabHeader' + designNumber).remove();
+                $('#designTab' + designNumber).remove();
+                $('#designTabHeader a:first').tab('show');
+                refreshData();
+            }
+        });
+        //event handle for the redesign button
+        $('#redesignButton' + _designCount).click(function() {
+            var designNumber = $(this).attr("name");
+            redesign(designNumber);
+        })
+        $('#modalSaveButton' + _designCount).click(function() {
+            var designNumber = $(this).attr("val");
+            var partIDs = [];
+            var vectorIDs = [];
+            var writeSQL = false;
+            if ($('#sqlCheckbox' + designNumber).attr("checked")) {
+                writeSQL = true;
+            }
+            $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                var tokens = $(this).attr("val").split("|");
+                if (tokens[0].toLowerCase() === "vector") {
+                    vectorIDs.push(tokens[1]);
+                } else {
+                    partIDs.push(tokens[1]);
+                }
+            });
+            $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
+                if (result === "saved data") {
+                    $('#discardButton' + designNumber).attr("val", "saved");
+                    $('#saveButton' + designNumber).prop('disabled', true);
+                    $('#saveButton' + designNumber).text("Successful Save");
+                    $('#designTabHeader' + designNumber).remove();
+                    $('#designTab' + designNumber).remove();
+                    $('#designTabHeader a:first').tab('show');
+                    refreshData();
+                } else {
+                    alert("Failed to save parts");
+                    $('#saveButton' + designNumber).text("Report Error");
+                    $('#saveButton' + designNumber).removeClass('btn-success');
+                    $('#saveButton' + designNumber).addClass('btn-danger');
+                    $('#saveButton' + designNumber).click(function() {
+                        alert('this feature will be coming soon');
+                    });
+                }
+            });
+        });
+        $('#modalDiscardButton' + _designCount).click(function() {
+            var designNumber = $(this).attr("val");
+            if ($('#discardButton' + designNumber).attr("val") === "notSaved") {
+                var toDeleteVectors = [];
+                var toDeleteParts = [];
+                $('#partsListTable' + designNumber + ' tr').each(function() {
+                    var toSplit = $(this).attr("val");
+                    if (typeof toSplit !== "undefined") {
+                        var tokens = $(this).attr("val").split("|");
+                        if (tokens[0].toLowerCase() === "vector" && tokens[0].toLowerCase() !== "undefined") {
+                            toDeleteVectors.push(tokens[1]);
+                        } else {
+                            toDeleteParts.push(tokens[1]);
+                        }
+                    }
+                });
+            }
+            $('#discardDialog' + designNumber).modal('hide');
+            $('#designTabHeader' + designNumber).remove();
+            $('#designTab' + designNumber).remove();
+            $('#designTabHeader a:first').tab('show');
+            refreshData();
+        });
+        return _designCount;
     };
 
+    var redesign = function(designNumber) {
+        var redesignInput = _runParameters[designNumber.toString()];
+        alert(JSON.stringify(redesignInput));
+        var currentDesignCount = addDesignTab();
+        $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + (currentDesignCount - 1)).html());
+    };
 });
 
 
