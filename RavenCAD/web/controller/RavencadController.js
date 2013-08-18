@@ -205,13 +205,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
     });
     $('#runButton').click(function() {
         if (canRun) {
-            canRun = false; //can only run one design at once
-            var user = getCookie("user");
             var targets = ""; //goal parts
             $('#targetPartList option').each(function() {
                 targets = targets + $(this).attr("id") + ",";
             });
             if (targets.length > 1) {
+                canRun = false; //can only run one design at once
                 var currentDesignCount = addDesignTab();
 
 
@@ -305,130 +304,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     })};
                 _runParameters[currentDesignCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {
-                    if (data["status"] === "good") {
-                        //render image
-//                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
-//                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-
-//                        $.each(data["graph"]["images"], function(key, value) {
-//                            window.open(value, key);
-//                        })
-
-                        $('#instructionArea' + currentDesignCount).html('<div>' + data["instructions"] + '</div>');
-                        var status = '';
-                        var saveButtons = '';
-                        if (data["statistics"]["valid"] === "true") {
-                            status = '<span class="label label-success">Graph structure verified!</span>';
-                            saveButtons = '<p><button id="reportButton' + currentDesignCount +
-                                    '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
-                                    '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
-                            if (user === "admin") {
-                                saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + currentDesignCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
-                            } else {
-                                saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + currentDesignCount + '" type="checkbox" checked=false/></p>';
-                            }
-                            $('#download' + currentDesignCount).prepend(saveButtons);
-                            $('#reportButton' + currentDesignCount).click(function() {
-                                alert("this feature will be coming soon");
-                            });
-                        } else {
-                            status = '<span class="label label-warning">Graph Structure Invalid!</span>';
-                            saveButtons = '<p><button id="reportButton' + currentDesignCount + '" class ="btn btn-danger">Report Error</button></p>';
-                            $('#download' + currentDesignCount).prepend(saveButtons);
-                            $('#reportButton' + currentDesignCount).click(function() {
-                                alert("this feature will be coming soon");
-                            });
-                        }
-                        //prepend status badge and report button
-                        $('#saveButton' + currentDesignCount).click(function() {
-                            var designNumber = $(this).attr("val");
-                            var partIDs = [];
-                            var vectorIDs = [];
-                            var writeSQL = false;
-                            if ($('#sqlCheckbox' + designNumber).attr("checked")) {
-                                writeSQL = true;
-                            }
-                            $('#partsListTable' + designNumber + ' tbody tr').each(function() {
-                                var tokens = $(this).attr("val").split("|");
-                                if (tokens[0].toLowerCase() === "vector") {
-                                    vectorIDs.push(tokens[1]);
-                                } else {
-                                    partIDs.push(tokens[1]);
-                                }
-                            });
-                            $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
-                                if (result === "saved data") {
-                                    $('#discardButton' + currentDesignCount).attr("val", "saved");
-                                    $('#saveButton' + designNumber).prop('disabled', true);
-                                    $('#saveButton' + designNumber).text("Successful Save");
-                                    refreshData();
-                                } else {
-                                    alert("Failed to save parts");
-                                    $('#saveButton' + designNumber).text("Report Error");
-                                    $('#saveButton' + designNumber).removeClass('btn-success');
-                                    $('#saveButton' + designNumber).addClass('btn-danger');
-                                    $('#saveButton' + designNumber).click(function() {
-                                        alert('this feature will be coming soon');
-                                    });
-                                }
-                            });
-                        });
-                        //render stats
-                        $('#stat' + currentDesignCount).html('<h4>Assembly Statistics ' + status + '</h4><table class="table">' +
-                                '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
-                                '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
-                                '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
-                                '<tr><td><strong>Number of Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
-                                '<tr><td><strong>Number of Recommended Parts</strong></td><td>' + data["statistics"]["recommended"] + '</td></tr>' +
-                                '<tr><td><strong>Number of Discouraged Parts</strong></td><td>' + data["statistics"]["discouraged"] + '</td></tr>' +
-                                '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
-                                '<tr><td><strong>Parts Shared</strong></td><td>' + data["statistics"]["sharing"] + '</td></tr>' +
-                                '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
-                        $('#downloadImage' + currentDesignCount).attr("href", data["result"]);
-                        $('#downloadInstructions' + currentDesignCount).attr("href", "data/" + user + "/instructions" + currentDesignCount + ".txt");
-                        $('#downloadParts' + currentDesignCount).attr("href", "data/" + user + "/partsList" + currentDesignCount + ".csv");
-                        $('#downloadPigeon' + currentDesignCount).attr("href", "data/" + user + "/pigeon" + currentDesignCount + ".txt");
-                        $('#downloadArcs' + currentDesignCount).attr("href", "data/" + user + "/arcs" + currentDesignCount + ".txt");
-
-                        $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
-                        //render parts list
-                        var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + currentDesignCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
-                        $.each(data["partsList"], function() {
-                            partsListTableBody = partsListTableBody + '<tr val="' + this["Type"] + '|' + this["uuid"] + '"><td>'
-                                    + this["uuid"] + "</td><td>"
-                                    + this["Name"] + "</td><td>"
-                                    + this["LO"] + "</td><td>"
-                                    + this["RO"] + "</td><td>"
-                                    + this["Type"] + "</td><td>"
-                                    + this["Composition"] + "</td><td>"
-                                    + this["Resistance"] + "</td><td>"
-                                    + this["Level"] + "</td></tr>";
-                        });
-                        partsListTableBody = partsListTableBody + '</tbody></table>';
-                        $('#partsListArea' + currentDesignCount).html(partsListTableBody);
-                        $("#partsListTable" + currentDesignCount).dataTable({
-                            "sScrollY": "300px",
-                            "bPaginate": false,
-                            "bScrollCollapse": true
-                        });
-                    } else {
-                        //display error
-                        $("#designTab" + currentDesignCount).html('<div class="alert alert-danger">' +
-                                '<button class="btn" id="discardButton' + currentDesignCount + '" name="' + currentDesignCount + '">Dismiss</button><hr/>' +
-                                '<strong>Oops, an error occurred while generating your assembly plan</strong>' +
-                                '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
-                                '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
-                                '<li>A brief summary of what you were trying to do</li></ul>' +
-                                '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
-                                + data["result"] + '</div>');
-                        $('#discardButton' + currentDesignCount).click(function() {
-                            var designNumber = $(this).attr("name");
-                            $('#designTabHeader' + designNumber).remove();
-                            $('#designTab' + designNumber).remove();
-                            $('#designTabHeader a:first').tab('show');
-                            refreshData();
-                        });
-                    }
+                    interpretDesignResult(currentDesignCount, data);
                     canRun = true;
                 });
             } else {
@@ -616,49 +492,37 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         summary = summary + '<p>This is the efficiency matrix that you are using for your assembly</p>';
         var recommended = $('#selectedIntermediates div div div ul#recommendedList li');
-        if (recommended.length > 0) {
-            summary = summary + '<p>The following intermediates are recommended:</p>';
-            summary = summary + '<ul style="max-height:150px;overflow:auto">';
-            recommended.each(function() {
-                summary = summary + '<li>' + $(this).text() + '</li>';
-            });
-            summary = summary + '</ul>';
-        } else {
-            summary = summary + '<p>No intermediates are recommended</p>';
-        }
+        summary = summary + '<p>The following intermediates are recommended:</p>';
+        summary = summary + '<ul class="recommendedList" style="max-height:150px;overflow:auto">';
+        recommended.each(function() {
+            summary = summary + '<li>' + $(this).text() + '</li>';
+        });
+        summary = summary + '</ul>';
+
         var required = $('#selectedIntermediates div div div ul#requiredList li');
-        if (required.length > 0) {
-            summary = summary + '<p>The following intermediates are required:</p>';
-            summary = summary + '<ul style="max-height:150px;overflow:auto">';
-            required.each(function() {
-                summary = summary + '<li>' + $(this).text() + '</li>';
-            });
-            summary = summary + '</ul>';
-        } else {
-            summary = summary + '<p>No intermediates are required</p>';
-        }
+        summary = summary + '<p>The following intermediates are required:</p>';
+        summary = summary + '<ul class="requiredList" style="max-height:150px;overflow:auto">';
+        required.each(function() {
+            summary = summary + '<li>' + $(this).text() + '</li>';
+        });
+        summary = summary + '</ul>';
+
         var forbidden = $('#selectedIntermediates div div div ul#forbiddenList li');
-        if (forbidden.length > 0) {
-            summary = summary + '<p>The following intermediates are forbidden:</p>';
-            summary = summary + '<ul style="max-height:150px;overflow:auto">';
-            forbidden.each(function() {
-                summary = summary + '<li>' + $(this).text() + '</li>';
-            });
-            summary = summary + '</ul>';
-        } else {
-            summary = summary + '<p>No intermediates are forbidden</p>';
-        }
+        summary = summary + '<p>The following intermediates are forbidden:</p>';
+        summary = summary + '<ul class="forbiddenList" style="max-height:150px;overflow:auto">';
+        forbidden.each(function() {
+            summary = summary + '<li>' + $(this).text() + '</li>';
+        });
+        summary = summary + '</ul>';
+
         var discouraged = $('#selectedIntermediates div div div ul#discouragedList li');
-        if (discouraged.length > 0) {
-            summary = summary + '<p>The following intermediates are discouraged:</p>';
-            summary = summary + '<ul>';
-            discouraged.each(function() {
-                summary = summary + '<li>' + $(this).text() + '</li>';
-            });
-            summary = summary + '</ul>';
-        } else {
-            summary = summary + '<p>No intermediates are discouraged</p>';
-        }
+        summary = summary + '<p>The following intermediates are discouraged:</p>';
+        summary = summary + '<ul class="discouragedList">';
+        discouraged.each(function() {
+            summary = summary + '<li>' + $(this).text() + '</li>';
+        });
+        summary = summary + '</ul>';
+
         if ($('#libraryPartList option').length > 0) {
             summary = summary + '<p>Your library includes the following parts:</p>';
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
@@ -879,7 +743,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#redesignButton' + _designCount).click(function() {
             var designNumber = $(this).attr("name");
             redesign(designNumber);
-        })
+        });
         $('#modalSaveButton' + _designCount).click(function() {
             var designNumber = $(this).attr("val");
             var partIDs = [];
@@ -942,11 +806,218 @@ $(document).ready(function() { //don't run javascript until page is loaded
         return _designCount;
     };
 
-    var redesign = function(designNumber) {
-        var redesignInput = _runParameters[designNumber.toString()];
-        alert(JSON.stringify(redesignInput));
+    var interpretDesignResult = function(currentDesignCount, data) {
+        var user = getCookie("user");
+        if (data["status"] === "good") {
+            //render image
+//                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
+//                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+
+//                        $.each(data["graph"]["images"], function(key, value) {
+//                            window.open(value, key);
+//                        })
+
+            $('#instructionArea' + currentDesignCount).html('<div>' + data["instructions"] + '</div>');
+            var status = '';
+            var saveButtons = '';
+            if (data["statistics"]["valid"] === "true") {
+                status = '<span class="label label-success">Graph structure verified!</span>';
+                saveButtons = '<p><button id="reportButton' + currentDesignCount +
+                        '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
+                        '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
+                if (user === "admin") {
+                    saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + currentDesignCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
+                } else {
+                    saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + currentDesignCount + '" type="checkbox" checked=false/></p>';
+                }
+                $('#download' + currentDesignCount).prepend(saveButtons);
+                $('#reportButton' + currentDesignCount).click(function() {
+                    alert("this feature will be coming soon");
+                });
+            } else {
+                status = '<span class="label label-warning">Graph Structure Invalid!</span>';
+                saveButtons = '<p><button id="reportButton' + currentDesignCount + '" class ="btn btn-danger">Report Error</button></p>';
+                $('#download' + currentDesignCount).prepend(saveButtons);
+                $('#reportButton' + currentDesignCount).click(function() {
+                    alert("this feature will be coming soon");
+                });
+            }
+            //prepend status badge and report button
+            $('#saveButton' + currentDesignCount).click(function() {
+                var designNumber = $(this).attr("val");
+                var partIDs = [];
+                var vectorIDs = [];
+                var writeSQL = false;
+                if ($('#sqlCheckbox' + designNumber).attr("checked")) {
+                    writeSQL = true;
+                }
+                $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                    var tokens = $(this).attr("val").split("|");
+                    if (tokens[0].toLowerCase() === "vector") {
+                        vectorIDs.push(tokens[1]);
+                    } else {
+                        partIDs.push(tokens[1]);
+                    }
+                });
+                $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
+                    if (result === "saved data") {
+                        $('#discardButton' + currentDesignCount).attr("val", "saved");
+                        $('#saveButton' + designNumber).prop('disabled', true);
+                        $('#saveButton' + designNumber).text("Successful Save");
+                        refreshData();
+                    } else {
+                        alert("Failed to save parts");
+                        $('#saveButton' + designNumber).text("Report Error");
+                        $('#saveButton' + designNumber).removeClass('btn-success');
+                        $('#saveButton' + designNumber).addClass('btn-danger');
+                        $('#saveButton' + designNumber).click(function() {
+                            alert('this feature will be coming soon');
+                        });
+                    }
+                });
+            });
+            //render stats
+            $('#stat' + currentDesignCount).html('<h4>Assembly Statistics ' + status + '</h4><table class="table">' +
+                    '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
+                    '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
+                    '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
+                    '<tr><td><strong>Number of Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
+                    '<tr><td><strong>Number of Recommended Parts</strong></td><td>' + data["statistics"]["recommended"] + '</td></tr>' +
+                    '<tr><td><strong>Number of Discouraged Parts</strong></td><td>' + data["statistics"]["discouraged"] + '</td></tr>' +
+                    '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
+                    '<tr><td><strong>Parts Shared</strong></td><td>' + data["statistics"]["sharing"] + '</td></tr>' +
+                    '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
+            $('#downloadImage' + currentDesignCount).attr("href", data["result"]);
+            $('#downloadInstructions' + currentDesignCount).attr("href", "data/" + user + "/instructions" + currentDesignCount + ".txt");
+            $('#downloadParts' + currentDesignCount).attr("href", "data/" + user + "/partsList" + currentDesignCount + ".csv");
+            $('#downloadPigeon' + currentDesignCount).attr("href", "data/" + user + "/pigeon" + currentDesignCount + ".txt");
+            $('#downloadArcs' + currentDesignCount).attr("href", "data/" + user + "/arcs" + currentDesignCount + ".txt");
+
+            $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
+            //render parts list
+            var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + currentDesignCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
+            $.each(data["partsList"], function() {
+                partsListTableBody = partsListTableBody + '<tr val="' + this["Type"] + '|' + this["uuid"] + '"><td>'
+                        + this["uuid"] + "</td><td>"
+                        + this["Name"] + "</td><td>"
+                        + this["LO"] + "</td><td>"
+                        + this["RO"] + "</td><td>"
+                        + this["Type"] + "</td><td>"
+                        + this["Composition"] + "</td><td>"
+                        + this["Resistance"] + "</td><td>"
+                        + this["Level"] + "</td></tr>";
+            });
+            partsListTableBody = partsListTableBody + '</tbody></table>';
+            $('#partsListArea' + currentDesignCount).html(partsListTableBody);
+            $("#partsListTable" + currentDesignCount).dataTable({
+                "sScrollY": "300px",
+                "bPaginate": false,
+                "bScrollCollapse": true
+            });
+        } else {
+            //display error
+            $("#designTab" + currentDesignCount).html('<div class="alert alert-danger">' +
+                    '<button class="btn" id="discardButton' + currentDesignCount + '" name="' + currentDesignCount + '">Dismiss</button><hr/>' +
+                    '<strong>Oops, an error occurred while generating your assembly plan</strong>' +
+                    '<p>Please send the following to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>' +
+                    '<ul><li>The error stacktrace shown below</li><li>Your input file. <small>Feel free to remove all of the sequences</small></li>' +
+                    '<li>A brief summary of what you were trying to do</li></ul>' +
+                    '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
+                    + data["result"] + '</div>');
+            $('#discardButton' + currentDesignCount).click(function() {
+                var designNumber = $(this).attr("name");
+                $('#designTabHeader' + designNumber).remove();
+                $('#designTab' + designNumber).remove();
+                $('#designTabHeader a:first').tab('show');
+                refreshData();
+            });
+        }
+    };
+    var redesign = function() {
         var currentDesignCount = addDesignTab();
+        $('#resultTabsHeader' + currentDesignCount).append('<li><button id="redesign' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</button>')
+
+        $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
+        $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
+        $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
+        $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
+        $('div#download' + currentDesignCount).addClass("hidden");
         $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + (currentDesignCount - 1)).html());
+        $('div#imageTab' + currentDesignCount).html($('div#imageTabTab' + (currentDesignCount - 1)).html());
+        $('div#stat' + currentDesignCount).html($('div#stat' + (currentDesignCount - 1)).html());
+        $('div#partsListTab' + currentDesignCount).html();
+        var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr><thead><tbody>';
+        $('#partsListTable' + (currentDesignCount - 1) + ' tbody tr').each(function() {
+//            alert($(this).find('td:nth-child(5)').text().toLowerCase());
+            if ($(this).find('td:nth-child(5)').text().toLowerCase() !== "vector") {
+                redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Click to Require/Forbid</button></td>';
+                $(this).find('td').each(function(key, value) {
+                    if (key < 6) {
+                        redesignPartsList = redesignPartsList + '<td>' + $(this).text() + '</td>';
+                    }
+                });
+                redesignPartsList = redesignPartsList + '</tr>';
+            }
+        });
+        redesignPartsList = redesignPartsList + '</tbody></table>';
+
+        $('#partsListTab' + currentDesignCount).html(redesignPartsList);
+        $("#partsListTable" + currentDesignCount).dataTable({
+            "sScrollY": "300px",
+            "bPaginate": false,
+            "bScrollCollapse": true
+        });
+
+        $('#redesign' + currentDesignCount).click(function() {
+            alert("redesigning")
+            var designNumber = $(this).attr("val");
+            var redesignInput = _runParameters[designNumber.toString()];
+            var forbid="";
+            var req="";
+            $('#selectedIntermediates div div div ul#requiredList li').each(function() {
+                req = req + $(this).text() + ";";
+            });
+            $('#selectedIntermediates div div div ul#forbiddenList li').each(function() {
+                forbid = forbid + $(this).text() + ";";
+            });
+            $('#selectedIntermediates div div div ul').html("");
+            forbid = forbid.substring(0, forbid.length - 1);
+            req = req.substring(0, req.length - 1);
+
+        });
+        $('.reqForbidButton').click(function() {
+            var designNumber = $(this).attr("val");
+            alert(designNumber);
+            if ($(this).attr("name") === "neither") {
+                //add to require
+                $(this).attr("name", "forbidden");
+                $(this).addClass("btn-danger");
+                $(this).text("Forbidden");
+            } else if ($(this).attr("name") === 'forbidden') {
+                //add to forbidden
+                $(this).removeClass("btn-danger");
+                $(this).attr("name", "required");
+                $(this).addClass("btn-success");
+                $(this).text("Required");
+            } else {
+                //return to neither
+                $(this).attr("name", "neither");
+                $(this).removeClass("btn-danger");
+                $(this).text("Click to Require/Forbid");//add to forbidden
+                $(this).removeClass("btn-success");
+            }
+            $('#summaryTab' + designNumber + ' div ul.requiredList').html("");
+            $('#summaryTab' + designNumber + ' div ul.forbiddenList').html("");
+            $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                var forbidRequire = $(this).find('td').first().find("button").attr("name");
+                if (forbidRequire === "forbidden") {
+                    $('#summaryTab' + designNumber + ' div ul.forbiddenList').append('<li>' + $(this).find('td:last').text() + '</li>');
+                } else if (forbidRequire === "required") {
+                    $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');
+                }
+            });
+
+        });
     };
 });
 
