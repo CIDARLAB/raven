@@ -779,7 +779,7 @@ public class RavenController {
         getSolutionStats();
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result);
+                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors);
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));

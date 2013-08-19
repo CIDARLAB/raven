@@ -46,7 +46,7 @@ public class RBioBricks extends RGeneral {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
-        RVector vector = new RVector("EX", "SP", -1, "BBa_Vector");
+        RVector vector = new RVector("EX", "SP", -1, "pSK1A2", null);
         
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
