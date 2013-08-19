@@ -162,7 +162,7 @@ public class ClothoReader {
             }
 
             //Initialize a new vector
-            rVector = new RVector(LO, RO, level, name);
+            rVector = new RVector(LO, RO, level, name, vector.getUUID());
             rVector.setStringResistance(resistance);
             rVector.setName(name);
             rVector.setUUID(vector.getUUID());

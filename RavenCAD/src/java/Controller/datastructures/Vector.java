@@ -60,13 +60,13 @@ public class Vector {
     }
 
     public int getLevel() {
-        int toReturn = -1;
+        int level = -1;
         for (String tag : this.searchTags) {
             if (tag.startsWith("Level:")) {
-                toReturn = Integer.parseInt(tag.substring(7).trim());
+                level = Integer.parseInt(tag.substring(7).trim());
             }
         }
-        return toReturn;
+        return level;
     }
 
     public String getSequence() {

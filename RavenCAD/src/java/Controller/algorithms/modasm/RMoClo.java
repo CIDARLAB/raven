@@ -948,6 +948,7 @@ public class RMoClo extends RGeneral {
 //                assignment.clear();
             }
         }
+        
         //generate new overhangs
         HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
         int newOverhang = 0;
@@ -960,6 +961,7 @@ public class RMoClo extends RGeneral {
                 assignedOverhangs.add(String.valueOf(newOverhang));
             }
         }
+        
         //generate matching new overhangs for inverted overhans
         for (String invertedOverhang : invertedOverhangs) {
             if (bestAssignment.get(invertedOverhang).equals("*")) {
@@ -967,9 +969,9 @@ public class RMoClo extends RGeneral {
                 bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
             }
         }
-        //assign new overhangs
-        finalOverhangHash = bestAssignment;
+        
         //traverse graph and assign overhangs generate vectors
+        finalOverhangHash = bestAssignment;
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, neomycin, puromycin, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
@@ -1006,28 +1008,32 @@ public class RMoClo extends RGeneral {
             levelResistanceHash.put(i, resistance);
         }
 
+        //Assign vectors for all graphs
         for (RGraph graph : graphs) {
             ArrayList<RNode> queue = new ArrayList();
             HashSet<RNode> seenNodes = new HashSet();
             queue.add(graph.getRootNode());
+            
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
+                for (RNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+                
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
                 current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
                 current.setROverhang(finalOverhangHash.get(currentRightOverhang));
                 currentLeftOverhang = current.getLOverhang();
                 currentRightOverhang = current.getROverhang();
-                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), "DVL" + current.getStage());              
+                
+                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), "DVL" + current.getStage(), null);              
                 newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
-                current.setVector(newVector);
-                for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                    }
-                }
+                current.setVector(newVector);          
             }
         }
     }

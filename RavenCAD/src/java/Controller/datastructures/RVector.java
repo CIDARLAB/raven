@@ -11,8 +11,8 @@ package Controller.datastructures;
 public class RVector {
 
     /** RVector constructor with explicit parameters **/
-    public RVector(String lOverhang, String rOverhang, int level, String name) {
-        _uuid = null;
+    public RVector(String lOverhang, String rOverhang, int level, String name, String uuid) {
+        _uuid = uuid;
         _lOverhang = lOverhang;
         _rOverhang = rOverhang;
         _level = level;

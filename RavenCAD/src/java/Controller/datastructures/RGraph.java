@@ -445,7 +445,7 @@ public class RGraph {
             String rOverhang = aVec.getRightOverhang();
             int stage = aVec.getLevel();
             String name = aVec.getName();
-            RVector vector = new RVector(lOverhang, rOverhang, stage, name);
+            RVector vector = new RVector(lOverhang, rOverhang, stage, name, null);
             startVectorsLOlevelRO.add(vector.getVectorKey("+"));
             startVectorsLOlevelRO.add(vector.getVectorKey("-"));
         }

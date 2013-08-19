@@ -46,23 +46,24 @@ public class RBioBricks extends RGeneral {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
+        RVector vector = new RVector("EX", "SP", -1, "pSK1A2", null);
         
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
 
             RNode root = graph.getRootNode();
-            RVector vector = root.getVector();
-            if (vector == null) {
-                vector = new RVector("EX", "SP", -1, "BBa_Vector");
+            RVector rootVector = root.getVector();
+            if (rootVector == null) {
+                rootVector = vector;
             }
 
-            root.setVector(vector);
+            root.setVector(rootVector);
             root.setLOverhang("EX");
             root.setROverhang("SP");
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
             ArrayList<RNode> neighbors = root.getNeighbors();
-            assignBioBricksOverhangsHelper(root, neighbors, root, vector);
+            assignBioBricksOverhangsHelper(root, neighbors, root, rootVector);
         }
 
         //Determine which nodes impact which level to form the stageDirectionAssignHash
