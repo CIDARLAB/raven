@@ -203,6 +203,9 @@ public class RInstructions {
             for (RVector vector : vectorsThisRoot) {
 
                 Vector currentVector = coll.getVector(vector.getUUID(), true);
+                
+                System.out.println("vector.getUUID(): " + vector.getUUID());
+                System.out.println("vector: " + vector);
 
                 //Design primers for new vectors
                 if (newVectors.contains(vector)) {
