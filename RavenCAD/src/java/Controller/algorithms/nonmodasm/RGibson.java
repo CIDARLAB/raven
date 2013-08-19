@@ -39,16 +39,21 @@ public class RGibson extends RGeneral {
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
+        HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
+        for (RNode root : gpsNodes) {
+            String nodeKey = root.getNodeKey("+");
+            keyVectors.put(nodeKey, root.getVector());
+        }
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
-        assignOverhangs(optimalGraphs);
-        
+        assignOverhangs(optimalGraphs, keyVectors);
+
         return optimalGraphs;
     }
-
+    
     /** Assign overhangs for scarless assembly **/
-    private void assignOverhangs(ArrayList<RGraph> asmGraphs) {
+    private void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<String, RVector> keyVectors) {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
@@ -57,6 +62,8 @@ public class RGibson extends RGeneral {
             
             RGraph graph = asmGraphs.get(i);
             RNode root = graph.getRootNode();
+            RVector vector = keyVectors.get(root.getNodeKey("+"));
+            root.setVector(vector);
             ArrayList<String> composition = root.getComposition();
             root.setLOverhang(composition.get(composition.size()-1));
             root.setROverhang(composition.get(0));

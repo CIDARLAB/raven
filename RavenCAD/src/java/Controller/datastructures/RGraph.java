@@ -648,7 +648,10 @@ public class RGraph {
             
             if (scarless) {
                 if (gpComps.contains(composition.toString())) {
-                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, "", "", "");
+                    if (vecName == null) {
+                        vecName = "";
+                    }
+                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, "", "", vecName);
                     weyekinText.append(pigeonLine);
                 } else {
                     pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
