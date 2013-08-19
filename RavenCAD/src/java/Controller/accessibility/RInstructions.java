@@ -29,10 +29,19 @@ public class RInstructions {
         String instructions = "";
 
         designPrimers = true;
-        String oligoNameRoot = primerParameters.get(0);
-        Double meltingTemp = Double.valueOf(primerParameters.get(1));
-        int primerLength = Integer.valueOf(primerParameters.get(2));
+        String oligoNameRoot = "oligo";
+        Double meltingTemp = 55.0;
+        int primerLength = 20;
 
+        try {
+            oligoNameRoot = primerParameters.get(0);
+            meltingTemp = Double.valueOf(primerParameters.get(1));
+            primerLength = Integer.valueOf(primerParameters.get(2));
+        } catch (Exception e) {
+            oligoNameRoot = "oligo";
+            meltingTemp = 55.0;
+            primerLength = 20;
+        }
 
         ArrayList<String> oligoNames = new ArrayList<String>();
         ArrayList<String> oligoSequences = new ArrayList<String>();

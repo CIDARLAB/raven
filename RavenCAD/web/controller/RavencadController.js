@@ -256,13 +256,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 var targetLength = $('input#targetLength').val();
                 //if they are primer parameters are not filled in, use defaults
 
-                if (oligoNameRoot === undefined) {
+                if (oligoNameRoot === "") {
                     oligoNameRoot = $('input#oligoNameRoot').attr("placeholder");
                 }
-                if (meltingTemperature === undefined) {
+                if (meltingTemperature === "") {
                     meltingTemperature = $('input#meltingTemperature').attr("placeholder");
                 }
-                if (targetLength === undefined) {
+                if (targetLength === "") {
                     targetLength = $('input#targetLength').attr("placeholder");
                 }
                 var requestInput = {command: "run", designCount: "" + currentDesignCount, targets: "" + targets, method: ""
