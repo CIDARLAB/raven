@@ -1178,13 +1178,19 @@ public class RMoClo extends RGeneral {
         String revEnzymeRecSite1 = "gtcttc";
 
         Part currentPart = coll.getPart(node.getUUID(), true);
+        String seq = currentPart.getSeq();
+        ArrayList<String> direction = node.getDirection();
+        if ("-".equals(direction.get(0))) {
+            seq = PrimerDesign.reverseComplement(seq);
+        }
+        
         String forwardOligoSequence;
         String reverseOligoSequence;
         if (currentPart.getSeq().length() > 24) {
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentPart.getSeq(), true, false));
-            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentPart.getSeq()), true, false)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + seq.substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
         } else {
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq() + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + seq + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
             reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
         }
         oligos.add(forwardOligoSequence);
@@ -1222,7 +1228,6 @@ public class RMoClo extends RGeneral {
 
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
-
         return oligos;
     }
     //FIELDS

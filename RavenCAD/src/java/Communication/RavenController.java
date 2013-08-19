@@ -425,7 +425,7 @@ public class RavenController {
                 }
 
                 //Vectors - read and generate new vector
-            } else if (tokenCount == 7) {
+            } else if (tokenCount == 7 || tokenCount == 6) {
 
                 try {
                     String name = tokens[0].trim();
@@ -434,11 +434,16 @@ public class RavenController {
                     String rightOverhang = tokens[3].trim();
                     String resistance = tokens[5].toLowerCase().trim();
                     int level;
-                    try {
-                        level = Integer.parseInt(tokens[6]);
-                    } catch (NumberFormatException e) {
+                    if (tokens.length == 7) {
+                        try {
+                            level = Integer.parseInt(tokens[6]);
+                        } catch (NumberFormatException e) {
+                            level = -1;
+                        }
+                    } else {
                         level = -1;
                     }
+                    
                     Vector newVector = Vector.generateVector(name, sequence);
                     newVector.addSearchTag("LO: " + leftOverhang);
                     newVector.addSearchTag("RO: " + rightOverhang);
