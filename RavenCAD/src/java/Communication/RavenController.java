@@ -840,12 +840,23 @@ public class RavenController {
                 RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
-                if (_forbidden.contains(current.getComposition().toString())) {
+                //handle directionality
+                ArrayList<String> direction = current.getDirection();
+                ArrayList<String> composition = current.getComposition();
+                String currentCompositionString = composition.toString();
+                if (direction.size() == composition.size()) {
+                    currentCompositionString ="";
+                    for(int i=0;i<composition.size();i++) {
+                        currentCompositionString = currentCompositionString+composition.get(i)+"||"+direction.get(i)+",";
+                    }
+                }
+                currentCompositionString = "["+currentCompositionString.substring(0,currentCompositionString.length()-1)+"]";
+                if (_forbidden.contains(currentCompositionString)) {
                     toReturn = false;
                     break;
                 }
-                if (_required.contains(current.getComposition().toString())) {
-                    seenRequired.add(current.getComposition().toString());
+                if (_required.contains(currentCompositionString)) {
+                    seenRequired.add(currentCompositionString);
                 }
                 for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {

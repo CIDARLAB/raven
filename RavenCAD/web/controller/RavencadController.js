@@ -399,6 +399,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     //generates typeahead items for input composition
     var generateIntermediateTokens = function(composition) {
         var toSplit = composition.substring(1, composition.length - 1);
+        toSplit = toSplit.replace(/\|[^|]+\|[^|]+\|/g, "|||");
         var toReturn = [];
         var compositionArray = toSplit.split(",");
         var seenIntermediates = {};
@@ -997,6 +998,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             req = req.substring(0, req.length - 1);
             redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
             redesignInput["required"] = redesignInput["required"] + req;
+            _runParameters[designNumber] = redesignInput;
+
             if (canRun) {
                 $.get("RavenServlet", redesignInput, function(data) {
                     interpretDesignResult(designNumber, data);
