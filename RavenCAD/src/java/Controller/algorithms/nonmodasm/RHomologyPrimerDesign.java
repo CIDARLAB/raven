@@ -42,12 +42,23 @@ public class RHomologyPrimerDesign {
         //Keep getting the sequences of the leftmost neighbors until the min sequence size is satisfied
         while (leftNeighborSeqLength < targetLength) {
             if (indexOf == 0) {
-                
-                leftNeighborSeq = leftNeighborSeq + composition.get(composition.size() - 1).getSeq();
+                Part leftNeighbor = composition.get(composition.size() - 1);
+                String seq = leftNeighbor.getSeq();
+                ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
+                if ("-".equals(leftNeighborDirection.get(0))) {
+                    seq = PrimerDesign.reverseComplement(seq);
+                }
+                leftNeighborSeq = leftNeighborSeq + seq;
                 leftNeighborSeqLength = leftNeighborSeq.length();
                 indexOf = composition.size() - 1;
             } else {
-                leftNeighborSeq = leftNeighborSeq + composition.get(indexOf - 1).getSeq();
+                Part leftNeighbor = composition.get(indexOf - 1);
+                String seq = leftNeighbor.getSeq();
+                ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
+                if ("-".equals(leftNeighborDirection.get(0))) {
+                    seq = PrimerDesign.reverseComplement(seq);
+                }
+                leftNeighborSeq = leftNeighborSeq + seq;
                 leftNeighborSeqLength = leftNeighborSeq.length();
                 indexOf--;
             }
@@ -56,11 +67,23 @@ public class RHomologyPrimerDesign {
         //Keep getting the sequences of the righttmost neighbors until the min sequence size is satisfied
         while (rightNeighborSeqLength < targetLength) {
             if (indexOf == composition.size() - 1) {
-                rightNeighborSeq = rightNeighborSeq + composition.get(0).getSeq();
+                Part rightNeighbor = composition.get(0);
+                String seq = rightNeighbor.getSeq();
+                ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
+                if ("-".equals(leftNeighborDirection.get(0))) {
+                    seq = PrimerDesign.reverseComplement(seq);
+                }
+                rightNeighborSeq = rightNeighborSeq + seq;
                 rightNeighborSeqLength = rightNeighborSeq.length();
                 indexOf = 0;
             } else {
-                rightNeighborSeq = rightNeighborSeq + composition.get(indexOf + 1).getSeq();
+                Part rightNeighbor = composition.get(indexOf + 1);
+                String seq = rightNeighbor.getSeq();
+                ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
+                if ("-".equals(leftNeighborDirection.get(0))) {
+                    seq = PrimerDesign.reverseComplement(seq);
+                }
+                rightNeighborSeq = rightNeighborSeq + seq;
                 rightNeighborSeqLength = rightNeighborSeq.length();
                 indexOf++;
             }
