@@ -687,6 +687,7 @@ public class RavenController {
     }
 
     //using parameters from the client, run the algorithm
+    //using parameters from the client, run the algorithm
     public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters) throws Exception {
         _goalParts = new HashMap<Part, Vector>();
         _required = required;
@@ -782,41 +783,33 @@ public class RavenController {
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, targetRootNodes, scarless));
             }
         }
-        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
-
         System.out.println("GRAPH AND ARCS FILES CREATED");
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
-        
+
         //generate instructions
         _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, method);
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
         }
+
+        String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
+
         File file = new File(_path + _user + "/instructions" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
         out.write(_instructions);
         out.close();
 
-        //write graph file text file
+        //write graph text file
         file = new File(_path + _user + "/pigeon" + designCount + ".txt");
         fw = new FileWriter(file);
         out = new BufferedWriter(fw);
-        JSONArray edges = d3Graph.getJSONArray("edges");
-        JSONObject images = d3Graph.getJSONObject("images");
-        out.write("digraph{\n");
-        Iterator keys = images.keys();
-        while (keys.hasNext()) {
-            String key = (String) keys.next();
-            out.write("\"" + key + "\" [label=\"" + images.getString(key) + "\"]\n");
-        }
-        for (int i = 0; i < edges.length(); i++) {
-            out.write(edges.getString(i) + "\n");
-        }
-        out.write("}");
+        out.write(mergedGraphText);
         out.close();
+
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);
@@ -824,8 +817,15 @@ public class RavenController {
         out.write(mergedArcText);
         out.close();
 
-//        return new JSONObject();
-        return d3Graph;
+        //post request to graphviz
+        WeyekinPoster.setDotText(mergedGraphText);
+        WeyekinPoster.postMyVision();
+
+        String imageURL = "";
+        imageURL = WeyekinPoster.getmGraphVizURI().toString();
+        JSONObject toReturn = new JSONObject();
+        toReturn.put("images", imageURL);
+        return toReturn;
     }
 
     //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition

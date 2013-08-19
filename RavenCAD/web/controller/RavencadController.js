@@ -6,8 +6,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
     var canRun = true;
     var efficiencyArray = [];
-    var _runParameters = {}; 
-    var _redesignDesignHash ={}; //key design number of redesign tab, value- design number of original tab
+    var _runParameters = {};
+    var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
     /********************EVENT HANDLERS********************/
     $('button#requireButton').click(function() {
         var toRequire = $.trim($("#intermediatesTypeAhead").val());
@@ -811,8 +811,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var user = getCookie("user");
         if (data["status"] === "good") {
             //render image
-//                        $("#resultImage" + designCount).html("<img src='" + data["result"] + "'/>");
-//                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+            $("#resultImage" + currentDesignCount).html("<img src='" + data["graph"]["images"] + "'/>");
+            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
 
 //                        $.each(data["graph"]["images"], function(key, value) {
 //                            window.open(value, key);
@@ -936,7 +936,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
     var redesign = function(originalDesignNumber) {
         var currentDesignCount = addDesignTab();
-        _redesignDesignHash[currentDesignCount]=originalDesignNumber;
+        _redesignDesignHash[currentDesignCount] = originalDesignNumber;
         $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
         $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
         $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
@@ -962,7 +962,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         redesignPartsList = redesignPartsList + '</tbody></table>';
 
-        $('#partsListTab' + currentDesignCount).html('<div id="partsListArea'+currentDesignCount+'">'+redesignPartsList+'</div>');
+        $('#partsListTab' + currentDesignCount).html('<div id="partsListArea' + currentDesignCount + '">' + redesignPartsList + '</div>');
         $("#partsListTable" + currentDesignCount).dataTable({
             "sScrollY": "300px",
             "bPaginate": false,
@@ -978,7 +978,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('div#download' + currentDesignCount).removeClass("hidden");
 
             var designNumber = $(this).attr("val");
-            var redesignInput = _runParameters[designNumber-1];
+            var redesignInput = _runParameters[designNumber - 1];
             var forbid = "";
             var req = "";
 
