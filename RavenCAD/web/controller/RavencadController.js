@@ -6,7 +6,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var uuidCompositionHash = {}; //really just a json object...key: uuid, value: string composition
     var canRun = true;
     var efficiencyArray = [];
-    var _runParameters = {};
+    var _runParameters = {}; 
+    var _redesignDesignHash ={}; //key design number of redesign tab, value- design number of original tab
     /********************EVENT HANDLERS********************/
     $('button#requireButton').click(function() {
         var toRequire = $.trim($("#intermediatesTypeAhead").val());
@@ -697,7 +698,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<li><a href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
                 '<li><a href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
                 '<li><a href="#discardDialog' + _designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + _designCount + '" name="' + _designCount + '">Discard Design</a></li>' +
-                '<li><a class="btn" role="button" id="redesignButton' + _designCount + '" name="' + _designCount + '">Redesign</a></li>' +
+                '<li><button class="btn btn-primary" id="redesignButton' + _designCount + '" name="' + _designCount + '">Redesign</button></li>' +
                 '</ul>');
         //append modal dialog
         $('#resultTabs' + _designCount).append('<div id="discardDialog' + _designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + _designCount + '" aria-hidden="true">'
@@ -933,21 +934,21 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
         }
     };
-    var redesign = function() {
+    var redesign = function(originalDesignNumber) {
         var currentDesignCount = addDesignTab();
-        $('#resultTabsHeader' + currentDesignCount).append('<li><button id="redesign' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</button>')
-
+        _redesignDesignHash[currentDesignCount]=originalDesignNumber;
         $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
         $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
         $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
         $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
         $('div#download' + currentDesignCount).addClass("hidden");
-        $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + (currentDesignCount - 1)).html());
-        $('div#imageTab' + currentDesignCount).html($('div#imageTabTab' + (currentDesignCount - 1)).html());
-        $('div#stat' + currentDesignCount).html($('div#stat' + (currentDesignCount - 1)).html());
+        $('#resultTabsHeader' + currentDesignCount).append('<li><button id="redesignRun' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</button>');
+        $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + originalDesignNumber).html());
+        $('div#imageTab' + currentDesignCount).html($('div#imageTabTab' + originalDesignNumber).html());
+        $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
         $('div#partsListTab' + currentDesignCount).html();
         var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr><thead><tbody>';
-        $('#partsListTable' + (currentDesignCount - 1) + ' tbody tr').each(function() {
+        $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
 //            alert($(this).find('td:nth-child(5)').text().toLowerCase());
             if ($(this).find('td:nth-child(5)').text().toLowerCase() !== "vector") {
                 redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Click to Require/Forbid</button></td>';
@@ -961,33 +962,49 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         redesignPartsList = redesignPartsList + '</tbody></table>';
 
-        $('#partsListTab' + currentDesignCount).html(redesignPartsList);
+        $('#partsListTab' + currentDesignCount).html('<div id="partsListArea'+currentDesignCount+'">'+redesignPartsList+'</div>');
         $("#partsListTable" + currentDesignCount).dataTable({
             "sScrollY": "300px",
             "bPaginate": false,
             "bScrollCollapse": true
         });
 
-        $('#redesign' + currentDesignCount).click(function() {
-            alert("redesigning")
+        $('#redesignRun' + currentDesignCount).click(function() {
+            $(this).parent().remove();
+            $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').removeClass("hidden");
+            $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').removeClass("hidden");
+            $('#resultTabsHeader' + currentDesignCount + ' li:last').removeClass("hidden");
+            $('#resultTabsHeader' + currentDesignCount + ' li:last').removeClass("hidden");
+            $('div#download' + currentDesignCount).removeClass("hidden");
+
             var designNumber = $(this).attr("val");
-            var redesignInput = _runParameters[designNumber.toString()];
-            var forbid="";
-            var req="";
-            $('#selectedIntermediates div div div ul#requiredList li').each(function() {
-                req = req + $(this).text() + ";";
+            var redesignInput = _runParameters[designNumber-1];
+            var forbid = "";
+            var req = "";
+
+            $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                var forbidRequire = $(this).find('td').first().find("button").attr("name");
+                if (forbidRequire === "forbidden") {
+                    forbid = forbid + $(this).find('td:last').text() + ";";
+                } else if (forbidRequire === "required") {
+                    req = req + $(this).find('td:last').text() + ";";
+                }
             });
-            $('#selectedIntermediates div div div ul#forbiddenList li').each(function() {
-                forbid = forbid + $(this).text() + ";";
-            });
-            $('#selectedIntermediates div div div ul').html("");
             forbid = forbid.substring(0, forbid.length - 1);
             req = req.substring(0, req.length - 1);
+            redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
+            redesignInput["required"] = redesignInput["required"] + req;
+            if (canRun) {
+                $.get("RavenServlet", redesignInput, function(data) {
+                    interpretDesignResult(currentDesignCount, data);
+                    canRun = true;
+                });
+            }
 
         });
         $('.reqForbidButton').click(function() {
             var designNumber = $(this).attr("val");
-            alert(designNumber);
+            var originalDesignNumber = _redesignDesignHash[designNumber];
             if ($(this).attr("name") === "neither") {
                 //add to require
                 $(this).attr("name", "forbidden");
@@ -1006,8 +1023,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $(this).text("Click to Require/Forbid");//add to forbidden
                 $(this).removeClass("btn-success");
             }
-            $('#summaryTab' + designNumber + ' div ul.requiredList').html("");
-            $('#summaryTab' + designNumber + ' div ul.forbiddenList').html("");
+            $('#summaryTab' + designNumber + ' div ul.requiredList').html($('#summaryTab' + originalDesignNumber + ' div ul.requiredList').html());
+            $('#summaryTab' + designNumber + ' div ul.forbiddenList').html($('#summaryTab' + originalDesignNumber + ' div ul.forbiddenList').html());
             $('#partsListTable' + designNumber + ' tbody tr').each(function() {
                 var forbidRequire = $(this).find('td').first().find("button").attr("name");
                 if (forbidRequire === "forbidden") {
