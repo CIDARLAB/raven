@@ -695,6 +695,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<p><a id="downloadImage' + _designCount + '">Download Graph Image</a></p>' +
                 '<p><a id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
                 '<p><a id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
+                                '<p><a id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
                 '<p><a id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>'
 
                 );

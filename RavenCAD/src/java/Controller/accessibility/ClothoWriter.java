@@ -44,16 +44,20 @@ public class ClothoWriter {
             seenNodes.add(currentNode);
             queue.remove(0);
 
-            for (RNode neighbor : currentNode.getNeighbors()) {
-                if (!seenNodes.contains(neighbor)) {
-                    queue.add(neighbor);
-                }
-            }
-
             if (currentNode.getStage() == 0) {
                 basicNodes.add(currentNode);
             } else {
                 stepNodes.add(currentNode);
+            }
+            
+            System.out.println("queue nodekey: " + currentNode.getNodeKey("+"));
+            
+            for (RNode neighbor : currentNode.getNeighbors()) {
+                if (!seenNodes.contains(neighbor)) {
+                    if (!queue.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }                    
+                }
             }
         }
         nodeOrder.add(basicNodes);
@@ -109,6 +113,9 @@ public class ClothoWriter {
 
                     //A new part must be created if one with the same composition and overhangs does not exist
                     if (!currentPartKey.equals(nodeKey)) {
+                        
+                        System.out.println("currentPartKey: " + currentPartKey);
+                        System.out.println("nodeKey: " + nodeKey);
                         
                         //If a new part must be created
                         Part newPart;

@@ -167,7 +167,7 @@ public class RGraph {
                         }
                     }
 
-                    //If it has been seen merge the node in the hash and disconnect this node from solution
+                //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
 
                     RNode finalNode;
@@ -908,7 +908,10 @@ public class RGraph {
                     }
                     pigeonLine.append(" ").append(name).append("\n");
                 } else {
-                    pigeonLine.append("c ").append(name).append(" 13" + "\n");
+                    if ("-".equals(dir)) {
+                        pigeonLine.deleteCharAt(pigeonLine.length()-1);
+                    }
+                    pigeonLine.append("? ").append(name).append(" 13" + "\n");
                 }
 
                 //Scars

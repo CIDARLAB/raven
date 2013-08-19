@@ -274,7 +274,7 @@ public class RNode {
                 rOverhangR = rOverhangR + "*";
             }
             
-            String aPartCompDirScarLOROR = revComp + "|" + revDirF + "|" + revScarsF + "|" + rOverhangR + "|" + lOverhangR;
+            String aPartCompDirScarLOROR = revComp + "|" + revDirF + "|" + revScarsF + "|" + lOverhangR + "|" + rOverhangR;
             return aPartCompDirScarLOROR;
         }
     }
