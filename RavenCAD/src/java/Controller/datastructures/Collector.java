@@ -86,20 +86,27 @@ public class Collector {
     }
 
     public Part getExactPart(String name, String seq, ArrayList<String> tags, boolean allowTransient) {
+//        System.out.println("looking for: " + name);
+//        System.out.println("query: " + new HashSet(tags));
         Part toReturn = null;
+        HashSet<String> queryTags;
+        HashSet<String> currentTags;
         ArrayList<Part> allPartsWithName = this.getAllPartsWithName(name, allowTransient);
         if (allPartsWithName != null) {
             for (Part p : allPartsWithName) {
                 if (allowTransient || !p.isTransient()) {
-                    HashSet<String> queryTags = new HashSet(tags);
-                    HashSet<String> currentTags = new HashSet(p.getSearchTags());
+                    queryTags = new HashSet(tags);
+                    currentTags = new HashSet(p.getSearchTags());
+//                    System.out.println("exist: " + currentTags);
                     if (currentTags.equals(queryTags) && p.getSeq().equals(seq)) {
                         toReturn = p;
+//                        System.out.println("returning: " + toReturn);
                         return toReturn;
                     }
                 }
             }
         }
+//        System.out.println("returning: " + toReturn);
         return toReturn;
     }
 

@@ -33,7 +33,6 @@ public class Part {
         this.uuid = "part_" + String.valueOf(UUID);
     }
 
-
     public static Part generateBasic(String name, String sequence) {
         Part newBasic = new Part();
         newBasic.name = name;
@@ -59,6 +58,10 @@ public class Part {
 
     public ArrayList<String> getSearchTags() {
         return this.searchTags;
+    }
+
+    public void setSearchTags(ArrayList<String> searchTags) {
+        this.searchTags = searchTags;
     }
 
     public void addSearchTag(String string) {
@@ -88,8 +91,8 @@ public class Part {
 
     //returns this part, or an exact match
     public Part saveDefault(Collector col) {
-        Part toReturn =  col.addPart(this);
-        if(!this.equals(toReturn)) {
+        Part toReturn = col.addPart(this);
+        if (!this.equals(toReturn)) {
             UUID--;
         }
         return toReturn;

@@ -288,9 +288,10 @@ public class ClothoWriter {
         for (int i = 0; i < composition.size(); i++) {
             ArrayList<String> cSearchTags = new ArrayList<String>();
             String cName = composition.get(i);
-            String cSeq = coll.getAllPartsWithName(cName, true).get(0).getSeq();            
+            ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, true);
+            String cSeq = allPartsWithName.get(0).getSeq();            
             String cDir = direction.get(i);
-            String cType = coll.getAllPartsWithName(cName, true).get(0).getType();
+            String cType = allPartsWithName.get(0).getType();
             String cLO;
             String cRO;
 
@@ -331,6 +332,11 @@ public class ClothoWriter {
             cSearchTags.add("Direction: [" + cDir + "]");
 
             Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+            if(exactPart == null) {
+                exactPart = Part.generateBasic(cName, cSeq);
+                exactPart.setSearchTags(cSearchTags);
+                exactPart = exactPart.saveDefault(coll);
+            }
             newComposition.add(exactPart);
         }
         
