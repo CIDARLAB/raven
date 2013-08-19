@@ -790,7 +790,7 @@ public class RavenController {
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
 
         //generate instructions
-        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, null, true, method);
+        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, primerParameters, true, method);
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
         }

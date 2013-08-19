@@ -254,12 +254,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 var oligoNameRoot = $('input#oligoNameRoot').val();
                 var meltingTemperature = $('input#meltingTemperature').val();
                 var targetLength = $('input#targetLength').val();
-                var forwardPrefix = $('input#forwardPrefix').val();
-                var forwardCutSite = $('input#forwardCutSite').val();
-                var forwardCutDistance = $('input#forwardCutDistance').val();
-                var reversePrefix = $('input#reversePrefix').val();
-                var reverseCutSite = $('input#reverseCutSite').val();
-                var reverseCutDistance = $('input#reverseCutDistance').val();
                 //if they are primer parameters are not filled in, use defaults
 
                 if (oligoNameRoot === undefined) {
