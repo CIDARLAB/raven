@@ -22,22 +22,17 @@ import java.util.HashSet;
  * @author evanappleton
  */
 public class RInstructions {
-    
-    public static String generateInstructions (ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
-        
+
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
+
         int oligoCount = 0;
         String instructions = "";
-        String oligoNameRoot = "test_asm";
-//        Double meltingTemp = 55.0;
-        Double meltingTemp = null;
-        int primerLength = 24;
-        
-        if (primerParameters != null) {
-            designPrimers = true;
-            oligoNameRoot = primerParameters.get(0);
-            meltingTemp = Double.valueOf(primerParameters.get(1));
-            primerLength = Integer.valueOf(primerParameters.get(2));
-        }
+
+        designPrimers = true;
+        String oligoNameRoot = primerParameters.get(0);
+        Double meltingTemp = Double.valueOf(primerParameters.get(1));
+        int primerLength = Integer.valueOf(primerParameters.get(2));
+
 
         ArrayList<String> oligoNames = new ArrayList<String>();
         ArrayList<String> oligoSequences = new ArrayList<String>();
@@ -131,25 +126,25 @@ public class RInstructions {
                     }
                 }
             }
-            
+
             //Look at all level 0 nodes for this root
             for (RNode l0Node : l0NodesThisRoot) {
-                                
+
                 Part currentPart = coll.getPart(l0Node.getUUID(), true);
-                
+
                 //Design primers for new level 0 nodes
                 if (newNodes.contains(l0Node)) {
                     if (designPrimers) {
-                        
+
                         //For small part, just order annealing primers
                         boolean anneal = false;
                         if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= 24) {
                             anneal = true;
                         }
-                        
+
                         //If primers for this node have not yet been created (seen in the hash), create them
                         if (!nodeOligoHash.containsKey(l0Node.getNodeKey("+"))) {
-                            
+
                             ArrayList<String> oligoHash = new ArrayList<String>();
                             String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
                             String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
@@ -170,13 +165,13 @@ public class RInstructions {
 
                             //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
                             if (!oligos.isEmpty()) {
-                                
+
                                 oligoNames.add(forwardOligoName);
                                 oligoNames.add(reverseOligoName);
                                 oligoSequences.addAll(oligos);
                                 nodeOligoHash.put(l0Node.getNodeKey("+"), oligoHash);
                                 oligoCount++;
-                                
+
                                 //If the primers are small and therefore annealing primers
                                 if (anneal) {
                                     instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
@@ -207,7 +202,7 @@ public class RInstructions {
                 //Design primers for new vectors
                 if (newVectors.contains(vector)) {
                     if (designPrimers) {
-                        
+
                         //If primers for this vector have not yet been created (seen in the hash), create them
                         if (!vectorOligoHash.containsKey(vector.getVectorKey("+"))) {
                             ArrayList<String> oligoHash = new ArrayList<String>();
@@ -230,10 +225,10 @@ public class RInstructions {
                             vectorOligoHash.put(vector.getVectorKey("+"), oligoHash);
                             oligoCount++;
                             instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
-                        
+
                         } else {
                             ArrayList<String> oligoHash = vectorOligoHash.get(vector.getVectorKey("+"));
-                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();                      
+                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
                         }
                     } else {
                         instructions = instructions + "\nPCR " + currentVector.getName() + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
@@ -253,6 +248,6 @@ public class RInstructions {
                 instructions = instructions + "\n" + oligoSequences.get(i);
             }
         }
-        return instructions;    
-    }            
+        return instructions;
+    }
 }

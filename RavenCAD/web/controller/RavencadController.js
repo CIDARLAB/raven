@@ -254,12 +254,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 var oligoNameRoot = $('input#oligoNameRoot').val();
                 var meltingTemperature = $('input#meltingTemperature').val();
                 var targetLength = $('input#targetLength').val();
-                var forwardPrefix = $('input#forwardPrefix').val();
-                var forwardCutSite = $('input#forwardCutSite').val();
-                var forwardCutDistance = $('input#forwardCutDistance').val();
-                var reversePrefix = $('input#reversePrefix').val();
-                var reverseCutSite = $('input#reverseCutSite').val();
-                var reverseCutDistance = $('input#reverseCutDistance').val();
                 //if they are primer parameters are not filled in, use defaults
 
                 if (oligoNameRoot === undefined) {
@@ -399,6 +393,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     //generates typeahead items for input composition
     var generateIntermediateTokens = function(composition) {
         var toSplit = composition.substring(1, composition.length - 1);
+        toSplit = toSplit.replace(/\|[^|]+\|[^|]+\|/g, "|||");
         var toReturn = [];
         var compositionArray = toSplit.split(",");
         var seenIntermediates = {};
@@ -997,6 +992,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             req = req.substring(0, req.length - 1);
             redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
             redesignInput["required"] = redesignInput["required"] + req;
+            _runParameters[designNumber] = redesignInput;
+
             if (canRun) {
                 $.get("RavenServlet", redesignInput, function(data) {
                     interpretDesignResult(designNumber, data);

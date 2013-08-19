@@ -116,19 +116,13 @@ public class RavenServlet extends HttpServlet {
                 //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
                 ArrayList<String> primerParameters = new ArrayList();
                 primerParameters.add(primerParam.getString("oligoNameRoot"));
-                primerParameters.add(primerParam.getString("forwardPrefix"));
-                primerParameters.add(primerParam.getString("reversePrefix"));
-                primerParameters.add(primerParam.getString("forwardCutSite"));
-                primerParameters.add(primerParam.getString("reverseCutSite"));
-                primerParameters.add(primerParam.getString("forwardCutDistance"));
-                primerParameters.add(primerParam.getString("reverseCutDistance"));
                 primerParameters.add(primerParam.getString("meltingTemperature"));
                 primerParameters.add(primerParam.getString("targetLength"));
+
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {
                             String rcA = recArray[i];
-                            rcA = rcA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
                             recommended.add(rcA);
                         }
                     }
@@ -138,7 +132,6 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < reqArray.length; i++) {
                         if (reqArray[i].length() > 0) {
                             String rqA = reqArray[i];
-                            rqA = rqA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
                             required.add(rqA);
                         }
                     }
@@ -148,7 +141,6 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < forbiddenArray.length; i++) {
                         if (forbiddenArray[i].length() > 0) {
                             String fA = forbiddenArray[i];
-                            fA = fA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
                             forbidden.add(fA);
                         }
                     }
@@ -158,7 +150,6 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < discouragedArray.length; i++) {
                         if (discouragedArray[i].length() > 0) {
                             String dA = discouragedArray[i];
-                            dA = dA.replaceAll("\\|\\+", "").replaceAll("\\|-", "");
                             discouraged.add(dA);
                         }
                     }
@@ -186,7 +177,7 @@ public class RavenServlet extends HttpServlet {
                 toReturn.put("statistics", statString);
                 toReturn.put("instructions", instructions);
                 toReturn.put("partsList", partsList);
-                toReturn.put("graph", graphData);               
+                toReturn.put("graph", graphData);
                 out.println(toReturn);
 
             } else if (command.equals("save")) {
