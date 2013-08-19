@@ -944,9 +944,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('div#download' + currentDesignCount).addClass("hidden");
         $('#resultTabsHeader' + currentDesignCount).append('<li><button id="redesignRun' + currentDesignCount + '" class="btn btn-success" val="' + currentDesignCount + '">Run</button>');
         $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + originalDesignNumber).html());
-        $('div#imageTab' + currentDesignCount).html($('div#imageTabTab' + originalDesignNumber).html());
+        $('div#resultImage' + currentDesignCount).html($('div#resultImage' + originalDesignNumber).html());
         $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
         $('div#partsListTab' + currentDesignCount).html();
+        $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+
         var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr><thead><tbody>';
         $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
 //            alert($(this).find('td:nth-child(5)').text().toLowerCase());
@@ -970,15 +972,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
 
         $('#redesignRun' + currentDesignCount).click(function() {
-            $(this).parent().remove();
-            $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').removeClass("hidden");
-            $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').removeClass("hidden");
-            $('#resultTabsHeader' + currentDesignCount + ' li:last').removeClass("hidden");
-            $('#resultTabsHeader' + currentDesignCount + ' li:last').removeClass("hidden");
-            $('div#download' + currentDesignCount).removeClass("hidden");
-
             var designNumber = $(this).attr("val");
-            var redesignInput = _runParameters[designNumber - 1];
+            var originalDesignNumber = _redesignDesignHash[designNumber];
+            $(this).parent().remove();
+            $('#resultTabsHeader' + designNumber + ' li:nth-child(2)').removeClass("hidden");
+            $('#resultsTabCountent' + designNumber + ' li:nth-child(2)').removeClass("hidden");
+            $('#resultTabsHeader' + designNumber + ' li:last').removeClass("hidden");
+            $('#resultTabsHeader' + designNumber + ' li:last').removeClass("hidden");
+            $('div#download' + designNumber).removeClass("hidden");
+
+            var redesignInput = _runParameters[originalDesignNumber];
             var forbid = "";
             var req = "";
 
@@ -996,7 +999,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             redesignInput["required"] = redesignInput["required"] + req;
             if (canRun) {
                 $.get("RavenServlet", redesignInput, function(data) {
-                    interpretDesignResult(currentDesignCount, data);
+                    interpretDesignResult(designNumber, data);
                     canRun = true;
                 });
             }
