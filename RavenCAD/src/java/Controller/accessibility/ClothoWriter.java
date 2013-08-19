@@ -61,7 +61,7 @@ public class ClothoWriter {
 
         for (ArrayList<RNode> nodes : nodeOrder) {
             for (RNode currentNode : nodes) {
-                
+
                 ArrayList<String> scars = currentNode.getScars();
                 ArrayList<String> direction = currentNode.getDirection();
                 ArrayList<String> composition = currentNode.getComposition();
@@ -79,18 +79,18 @@ public class ClothoWriter {
                     if (partName.length() > 255) {
                         partName = partName.substring(0, 255);
                     }
-                    
+
                     //If there's overhangs, add search tags
                     Part newPart = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
                     newPart.addSearchTag("Type: composite");
                     currentNode.setName(partName);
-                    newPart= newPart.saveDefault(coll);
+                    newPart = newPart.saveDefault(coll);
                     currentNode.setUUID(newPart.getUUID());
 
                 } else {
 
                     //If a part with this composition and overhangs does not exist, a new part is needed
-                    Part currentPart = coll.getPart(currentNode.getUUID(), true);                    
+                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
                     ArrayList<String> sTags = currentPart.getSearchTags();
                     ArrayList<String> stringComposition = currentPart.getStringComposition();
                     ArrayList<String> currentPartDir = parseTags(sTags, "Direction:");
@@ -102,23 +102,23 @@ public class ClothoWriter {
                             currentPartLO = sTags.get(k).substring(4);
                         } else if (sTags.get(k).startsWith("RO:")) {
                             currentPartRO = sTags.get(k).substring(4);
-                        } 
+                        }
                     }
                     String currentPartKey = stringComposition + "|" + currentPartDir + "|" + currentPartScars + "|" + currentPartLO + "|" + currentPartRO;
                     String nodeKey = currentNode.getNodeKey("+");
 
                     //A new part must be created if one with the same composition and overhangs does not exist
                     if (!currentPartKey.equals(nodeKey)) {
-                        
+
                         //If a new part must be created
                         Part newPart;
                         if (currentPart.isBasic()) {
-                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());                           
+                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
                         } else {
-                 
+
                             //If a new composite part needs to be made
                             ArrayList<Part> newComposition = new ArrayList<Part>();
-                            
+
                             for (int i = 0; i < composition.size(); i++) {
                                 ArrayList<String> cSearchTags = new ArrayList<String>();
                                 String cSeq = currentPart.getComposition().get(i).getSeq();
@@ -158,15 +158,43 @@ public class ClothoWriter {
                                     cLO = "EX";
                                     cRO = "SP";
                                 }
-                                
+
                                 cSearchTags.add("RO: " + cRO);
                                 cSearchTags.add("LO: " + cLO);
                                 cSearchTags.add("Type: " + cType);
                                 cSearchTags.add("Direction: [" + cDir + "]");
                                 Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                if (exactPart == null) {
+                                    //find the inverted version
+                                    String invertedcRO = cRO;
+                                    if (invertedcRO.contains("*")) {
+                                        invertedcRO = invertedcRO.substring(0, invertedcRO.length() - 1);
+                                    } else {
+                                        invertedcRO = invertedcRO + "*";
+                                    }
+                                    String invertedcLO = cLO;
+                                    if (invertedcLO.contains("*")) {
+                                        invertedcLO = invertedcLO.substring(0, invertedcLO.length() - 1);
+                                    } else {
+                                        invertedcLO = invertedcLO + "*";
+                                    }
+                                    String invertedcDir = cDir;
+                                    if (cDir.equals("+")) {
+                                        invertedcDir = "-";
+                                    } else {
+                                        invertedcDir = "+";
+                                    }
+                                    cSearchTags.clear();
+                                    cSearchTags.add("LO: " + invertedcRO);
+                                    cSearchTags.add("RO: " + invertedcLO);
+                                    cSearchTags.add("Type: " + cType);
+                                    cSearchTags.add("Direction: [" + invertedcDir + "]");
+                                    exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                }
+
                                 newComposition.add(exactPart);
                             }
-                            
+
                             newPart = Part.generateComposite(newComposition, currentPart.getName());
                         }
 
@@ -194,7 +222,7 @@ public class ClothoWriter {
                 //Get the vector and save a new vector if it does not have a uuid
                 RVector vector = currentNode.getVector();
                 if (vector != null) {
-                    
+
                     //Get vector parameters
                     String resistance = vector.getResistance();
                     int level = vector.getLevel();
@@ -210,7 +238,7 @@ public class ClothoWriter {
                     } else if (vector.getName().equals("pSK1A2")) {
                         seq = _pSK1A2;
                     }
-                    
+
                     Part currentPart = coll.getPart(currentNode.getUUID(), true);
                     Vector assignedVec = partVectorHash.get(currentPart);
 
@@ -221,7 +249,7 @@ public class ClothoWriter {
                             vector.setUUID(assignedVec.getUUID());
                             vector.setLevel(assignedVec.getLevel());
 
-                        //Otherwise make a new vector
+                            //Otherwise make a new vector
                         } else {
                             Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
                             newVector = newVector.saveDefault(coll);
@@ -229,7 +257,7 @@ public class ClothoWriter {
                             vector.setUUID(newVector.getUUID());
                         }
 
-                    //Otherwise make a new vector
+                        //Otherwise make a new vector
                     } else {
                         Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
                         newVector = newVector.saveDefault(coll);
@@ -289,7 +317,7 @@ public class ClothoWriter {
             ArrayList<String> cSearchTags = new ArrayList<String>();
             String cName = composition.get(i);
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, true);
-            String cSeq = allPartsWithName.get(0).getSeq();            
+            String cSeq = allPartsWithName.get(0).getSeq();
             String cDir = direction.get(i);
             String cType = allPartsWithName.get(0).getType();
             String cLO;
@@ -316,7 +344,7 @@ public class ClothoWriter {
                     cRO = RO;
                 } else {
                     cLO = composition.get(i - 1);
-                    cRO = composition.get(i+1);
+                    cRO = composition.get(i + 1);
                 }
             }
 
@@ -325,21 +353,43 @@ public class ClothoWriter {
                 cLO = "EX";
                 cRO = "SP";
             }
-            
+
             cSearchTags.add("RO: " + cRO);
             cSearchTags.add("LO: " + cLO);
             cSearchTags.add("Type: " + cType);
             cSearchTags.add("Direction: [" + cDir + "]");
 
             Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
-            if(exactPart == null) {
-                exactPart = Part.generateBasic(cName, cSeq);
-                exactPart.setSearchTags(cSearchTags);
-                exactPart = exactPart.saveDefault(coll);
+            if (exactPart == null) {
+                //find the inverted version
+                String invertedcRO = cRO;
+                if (invertedcRO.contains("*")) {
+                    invertedcRO = invertedcRO.substring(0, invertedcRO.length() - 1);
+                } else {
+                    invertedcRO = invertedcRO + "*";
+                }
+                String invertedcLO = cLO;
+                if (invertedcLO.contains("*")) {
+                    invertedcLO = invertedcLO.substring(0, invertedcLO.length() - 1);
+                } else {
+                    invertedcLO = invertedcLO + "*";
+                }
+                String invertedcDir = cDir;
+                if (cDir.equals("+")) {
+                    invertedcDir = "-";
+                } else {
+                    invertedcDir = "+";
+                }
+                cSearchTags.clear();
+                cSearchTags.add("LO: " + invertedcRO);
+                cSearchTags.add("RO: " + invertedcLO);
+                cSearchTags.add("Type: " + cType);
+                cSearchTags.add("Direction: [" + invertedcDir + "]");
+                exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
             }
             newComposition.add(exactPart);
         }
-        
+
         Part newPart = Part.generateComposite(newComposition, name);
         if (!LO.isEmpty()) {
             newPart.addSearchTag("LO: " + LO);
@@ -362,10 +412,10 @@ public class ClothoWriter {
      * for solution graphs) *
      */
     private Vector generateNewClothoVector(Collector coll, String name, String sequence, String LO, String RO, String resistance, int level) {
-        
+
         _allVectors = coll.getAllVectors(true);
         String thisVecKey = name + "|" + LO + "|" + level + "|" + RO;
-        
+
         //Search all existing vectors to for vectors with same overhangs and level before saving
         for (Vector vector : _allVectors) {
 
@@ -501,7 +551,6 @@ public class ClothoWriter {
             }
         }
     }
-    
     //FIELDS
     ArrayList<Part> _allCompositeParts;
     ArrayList<Part> _allBasicParts;

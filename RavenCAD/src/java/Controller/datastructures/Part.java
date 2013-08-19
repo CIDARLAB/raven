@@ -14,9 +14,13 @@ import java.util.Arrays;
 public class Part {
 
     public static Part generateComposite(ArrayList<Part> newComposition, String name) {
+        System.out.println("creating composite: "+name);
         Part newComposite = new Part();
         String sequence = "";
         for (Part p : newComposition) {
+            if(p==null) {
+                int i=0;
+            }
             sequence = sequence + p.getSeq();
         }
         newComposite.sequence = sequence;
