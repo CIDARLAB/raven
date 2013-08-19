@@ -942,7 +942,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
         $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
         $('div#download' + currentDesignCount).addClass("hidden");
-        $('#resultTabsHeader' + currentDesignCount).append('<li><button id="redesignRun' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</button>');
+        $('#resultTabsHeader' + currentDesignCount).append('<li><button id="redesignRun' + currentDesignCount + '" class="btn btn-success" val="' + currentDesignCount + '">Run</button>');
         $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + originalDesignNumber).html());
         $('div#imageTab' + currentDesignCount).html($('div#imageTabTab' + originalDesignNumber).html());
         $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
