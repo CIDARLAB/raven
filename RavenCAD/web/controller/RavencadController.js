@@ -265,37 +265,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 if (targetLength === undefined) {
                     targetLength = $('input#targetLength').attr("placeholder");
                 }
-                if (forwardPrefix === undefined) {
-                    forwardPrefix = $('input#forwardPrefix').attr("placeholder");
-                }
-                if (forwardCutSite === undefined) {
-                    forwardCutSite = $('input#forwardCutSite').attr("placeholder");
-                }
-                if (forwardCutDistance === undefined) {
-                    forwardCutDistance = $('input#forwardCutDistance').attr("placeholder");
-                }
-                if (reversePrefix === undefined) {
-                    reversePrefix = $('input#reversePrefix').attr("placeholder");
-                }
-                if (reverseCutSite === undefined) {
-                    reverseCutSite = $('input#reverseCutSite').attr("placeholder");
-                }
-                if (reverseCutDistance === undefined) {
-                    reverseCutDistance = $('input#reverseCutDistance').attr("placeholder");
-                }
                 var requestInput = {command: "run", designCount: "" + currentDesignCount, targets: "" + targets, method: ""
                             + _method, partLibrary: "" + partLibrary, vectorLibrary: "" + vectorLibrary, recommended: ""
                             + rec, required: "" + req, forbidden: "" + forbid, discouraged: "" + discourage,
                     efficiency: "" + efficiencyArray,
-                    "primer": JSON.stringify({oligoNameRoot: "",
-                        meltingTemperature: "meltingTemperature",
-                        targetLength: "targetLength",
-                        forwardPrefix: "forwardPrefix",
-                        forwardCutSite: "forwardCutSite",
-                        forwardCutDistance: "forwardCutDistance",
-                        reversePrefix: "reversePrefix",
-                        reverseCutSite: "reverseCutSite",
-                        reverseCutDistance: "reverseCutDistance"
+                    "primer": JSON.stringify({oligoNameRoot: oligoNameRoot,
+                        meltingTemperature: meltingTemperature,
+                        targetLength: targetLength
                     })};
                 _runParameters[currentDesignCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {
