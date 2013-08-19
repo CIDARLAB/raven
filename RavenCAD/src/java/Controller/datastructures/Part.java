@@ -31,7 +31,6 @@ public class Part {
     private Part() {
         UUID++;
         this.uuid = "part_" + String.valueOf(UUID);
-        System.out.println(this.uuid);
     }
 
 

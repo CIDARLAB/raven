@@ -1228,7 +1228,6 @@ public class RMoClo extends RGeneral {
 
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
-
         return oligos;
     }
     //FIELDS

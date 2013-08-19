@@ -84,10 +84,6 @@ public class RGoldenGate extends RGeneral {
         }
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
-        
-        System.out.println("node.getUUID(): " + node.getUUID());
-        System.out.println();
-
         return oligos;
     }
 
