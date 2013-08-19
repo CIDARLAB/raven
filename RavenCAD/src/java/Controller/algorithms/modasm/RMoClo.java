@@ -966,10 +966,17 @@ public class RMoClo extends RGeneral {
         for (String invertedOverhang : invertedOverhangs) {
             if (bestAssignment.get(invertedOverhang).equals("*")) {
                 String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
-                bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
+                if (bestAssignment.containsKey(uninvertedOverhang)) {
+                    bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
+                } else {
+                    while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
+                        newOverhang++;
+                    }
+                    bestAssignment.put(invertedOverhang, String.valueOf(newOverhang));
+                    assignedOverhangs.add(String.valueOf(newOverhang));
+                }
             }
         }
-        
         //traverse graph and assign overhangs generate vectors
         finalOverhangHash = bestAssignment;
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, neomycin, puromycin, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
