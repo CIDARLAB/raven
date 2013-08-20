@@ -94,20 +94,20 @@ public class RestrictionEnzyme {
     
     /** Scan a set of parts for restriction sites **/
     //HashMap<Part, HashMap<Restriction Enzyme name, ArrayList<ArrayList<Start site, End site>>>>
-    public static HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>> reSeqScan(ArrayList<Part> parts, ArrayList<RestrictionEnzyme> enzymes) {
+    public static HashMap<Part, HashMap<String, ArrayList<int[]>>> reSeqScan(ArrayList<Part> parts, ArrayList<RestrictionEnzyme> enzymes) {
         
-        HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>> partEnzResSeqs = new HashMap<Part, HashMap<String, ArrayList<ArrayList<Integer>>>>();
+        HashMap<Part, HashMap<String, ArrayList<int[]>>> partEnzResSeqs = new HashMap<Part, HashMap<String, ArrayList<int[]>>>();
         
         //For all parts
         for (int i = 0; i < parts.size(); i++) {
             Part part = parts.get(i);
             String name = part.getName();
             String seq = part.getSeq();
-            HashMap<String, ArrayList<ArrayList<Integer>>> detectedResSeqs = new HashMap<String, ArrayList<ArrayList<Integer>>>();
+            HashMap<String, ArrayList<int[]>> detectedResSeqs = new HashMap<String, ArrayList<int[]>>();
             
             //Look at each enzyme's cut sites
             for (int j = 0; j < enzymes.size(); j++) {
-                ArrayList<ArrayList<Integer>> matchSites = new ArrayList<ArrayList<Integer>>();
+                ArrayList<int[]> matchSites = new ArrayList<int[]>();
                 RestrictionEnzyme enzyme = enzymes.get(j);
                 String enzName = enzyme.getName();
                 String fwdRec = enzyme.getFwdRecSeq();
@@ -121,21 +121,21 @@ public class RestrictionEnzyme {
                 
                 //Find matches of forward sequence
                 while (matcherFwdRec.find()) {
-                    ArrayList<Integer> matchIndexes = new ArrayList<Integer>(2);
+                    int[] matchIndexes = new int[2];
                     int start = matcherFwdRec.start();
                     int end = matcherFwdRec.end();
-                    matchIndexes.add(start);
-                    matchIndexes.add(end);
+                    matchIndexes[0]=start;
+                    matchIndexes[1]=end;
                     matchSites.add(matchIndexes);
                 }
                 
                 //Find matches of reverse sequence
                 while (matcherRevRec.find()) {
-                    ArrayList<Integer> matchIndexes = new ArrayList<Integer>(2);
+                    int[] matchIndexes = new int[2];
                     int start = matcherRevRec.start();
                     int end = matcherRevRec.end();
-                    matchIndexes.add(start);
-                    matchIndexes.add(end);
+                    matchIndexes[0]=start;
+                    matchIndexes[1]=end;
                     matchSites.add(matchIndexes);
                 }
                 
