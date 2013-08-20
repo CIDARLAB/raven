@@ -126,8 +126,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if ($(this).children('td:eq(1)').text() === "vector") {
                 type = "Vector";
             }
-            $('#editorArea').html('<form class="form-horizontal"><legend>Edit ' + type + '</legend><p>' + 'Name: ' + $(this).children('td:eq(0)').text() + '</p><p>Type: ' + $(this).children('td:eq(1)').text() + '</p></form>');
-            $('#errorArea').addClass("hidden");
+//            $('#editorArea').html('<form class="form-horizontal"><legend>Edit ' + type + '</legend><p>' + 'Name: ' + $(this).children('td:eq(0)').text() + '</p><p>Type: ' + $(this).children('td:eq(1)').text() + '</p></form>');
+//            $('#errorArea').addClass("hidden");
         });
 
 
@@ -221,14 +221,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
             tabResized = true;
         }
     });
-    $('#dataArea').mouseleave(function() {
-        $('#editorArea').addClass("hidden");
-        $('#editorArea').html("");
-    });
-
-    $('#dataArea').mouseenter(function() {
-        $('#editorArea').removeClass("hidden");
-    });
+//    $('#dataArea').mouseleave(function() {
+//        $('#editorArea').addClass("hidden");
+//        $('#editorArea').html("");
+//    });
+//
+//    $('#dataArea').mouseenter(function() {
+//        $('#editorArea').removeClass("hidden");
+//    });
 
 
     function setCookie(c_name, value, exdays) {
