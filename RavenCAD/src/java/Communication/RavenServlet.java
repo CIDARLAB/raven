@@ -123,6 +123,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {
                             String rcA = recArray[i];
+                            rcA = rcA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
                             recommended.add(rcA);
                         }
                     }
@@ -132,6 +133,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < reqArray.length; i++) {
                         if (reqArray[i].length() > 0) {
                             String rqA = reqArray[i];
+                            rqA = rqA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
                             required.add(rqA);
                         }
                     }
@@ -141,6 +143,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < forbiddenArray.length; i++) {
                         if (forbiddenArray[i].length() > 0) {
                             String fA = forbiddenArray[i];
+                            fA = fA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
                             forbidden.add(fA);
                         }
                     }
@@ -150,6 +153,7 @@ public class RavenServlet extends HttpServlet {
                     for (int i = 0; i < discouragedArray.length; i++) {
                         if (discouragedArray[i].length() > 0) {
                             String dA = discouragedArray[i];
+                            dA = dA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
                             discouraged.add(dA);
                         }
                     }

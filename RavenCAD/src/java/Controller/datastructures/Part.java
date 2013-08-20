@@ -14,9 +14,13 @@ import java.util.Arrays;
 public class Part {
 
     public static Part generateComposite(ArrayList<Part> newComposition, String name) {
+        System.out.println("creating composite: "+name);
         Part newComposite = new Part();
         String sequence = "";
         for (Part p : newComposition) {
+            if(p==null) {
+                int i=0;
+            }
             sequence = sequence + p.getSeq();
         }
         newComposite.sequence = sequence;
@@ -32,7 +36,6 @@ public class Part {
         UUID++;
         this.uuid = "part_" + String.valueOf(UUID);
     }
-
 
     public static Part generateBasic(String name, String sequence) {
         Part newBasic = new Part();
@@ -59,6 +62,10 @@ public class Part {
 
     public ArrayList<String> getSearchTags() {
         return this.searchTags;
+    }
+
+    public void setSearchTags(ArrayList<String> searchTags) {
+        this.searchTags = searchTags;
     }
 
     public void addSearchTag(String string) {
@@ -88,8 +95,8 @@ public class Part {
 
     //returns this part, or an exact match
     public Part saveDefault(Collector col) {
-        Part toReturn =  col.addPart(this);
-        if(!this.equals(toReturn)) {
+        Part toReturn = col.addPart(this);
+        if (!this.equals(toReturn)) {
             UUID--;
         }
         return toReturn;
