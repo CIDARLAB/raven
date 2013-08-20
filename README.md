@@ -14,7 +14,7 @@ Version History
 
 License and Disclaimer
 ======================
-Permission is hereby granted, without written agreement and without license or royalty fees, to use this software and its documentation for any purpose, provided that the software is not distributed for a trial period of no more than 180 days. This trial period may be terminated prior to the expiration of the 180 days with no prior warning. The developers, Jenhan Tao and Evan Appleton are hereafter referred to as, the developers.
+Permission is hereby granted, without written agreement and without license or royalty fees, to use this software and its documentation for any purpose, provided that the software is not distributed for a trial period of no more than 180 days. This trial period may be terminated prior to the expiration of the 180 days with no prior warning. The developers, Jenhan Tao, Evan Appleton, and Douglas Densmore are hereafter referred to as, the developers.
  
 IN NO EVENT SHALL THE DEVELOPERS BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE DEVELOPERS HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
