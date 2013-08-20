@@ -1186,6 +1186,10 @@ public class RMoClo extends RGeneral {
 
         Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = currentPart.getSeq();
+        if (seq.isEmpty()) {
+            seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+        }
+        
         ArrayList<String> direction = node.getDirection();
         if ("-".equals(direction.get(0))) {
             seq = PrimerDesign.reverseComplement(seq);

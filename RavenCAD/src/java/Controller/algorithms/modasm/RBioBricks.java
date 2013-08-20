@@ -243,6 +243,10 @@ public class RBioBricks extends RGeneral {
         
         Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = currentPart.getSeq();
+        if (seq.isEmpty()) {
+            seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+        }
+        
         ArrayList<String> direction = node.getDirection();
         if ("-".equals(direction.get(0))) {
             seq = PrimerDesign.reverseComplement(seq);
@@ -278,9 +282,13 @@ public class RBioBricks extends RGeneral {
         String vectorPrimerSuffix = "tactagtagcggccgctgcag";
         
         Vector currentVector = coll.getVector(vector.getUUID(), true);
+        String seq = currentVector.getSeq();
+        if (seq.isEmpty()) {
+            seq = "[ VECTOR " + currentVector.getName() + " HOMOLOGY REGION ]";
+        }
 
-        String forwardOligoSequence = vectorPrimerPrefix + currentVector.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentVector.getSeq(), true, false));
-        String reverseOligoSequence = PrimerDesign.reverseComplement(currentVector.getSeq().substring(currentVector.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentVector.getSeq()), true, false)) + vectorPrimerSuffix);
+        String forwardOligoSequence = vectorPrimerPrefix + seq.substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false));
+        String reverseOligoSequence = PrimerDesign.reverseComplement(currentVector.getSeq().substring(seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false)) + vectorPrimerSuffix);
 
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
