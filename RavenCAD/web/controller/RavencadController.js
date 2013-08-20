@@ -299,22 +299,22 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
 //draw target part options list
     var drawPartVectorLists = function() {
-        var targetListBody = "<select id=\"availableTargetPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
-        var libraryPartListBody = "<select id=\"libraryPartList\" multiple=\"multiple\" class=\"fixedHeight\">";
-        var libraryVectorListBody = "<select id=\"libraryVectorList\" multiple=\"multiple\" class=\"fixedHeight\">";
+        var targetListBody = '<select id="availableTargetPartList" multiple="multiple" class="fixedHeight">';
+        var libraryPartListBody = '<select id="libraryPartList" multiple="multiple" class="fixedHeight">';
+        var libraryVectorListBody = '<select id="libraryVectorList" multiple="multiple" class="fixedHeight">';
         $.each(_data["result"], function() {
             if (this["Type"] === "composite") {
-                targetListBody = targetListBody + "<option class=\"composite ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
+                targetListBody = targetListBody + '<option title="'+this["Composition"]+'|'+this["LO"]+'|'+this["RO"]+'" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else if (this["Type"] === "vector") {
-                libraryVectorListBody = libraryVectorListBody + "<option class=\"vector ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
+                libraryVectorListBody = libraryVectorListBody + '<option title="'+this["Name"]+'|'+this["LO"]+'|'+this["RO"]+'" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else {
-                libraryPartListBody = libraryPartListBody + "<option class=\"basic ui-state-default\" id=\"" + this["uuid"] + "\">" + this["Name"] + "</option>";
+                libraryPartListBody = libraryPartListBody + '<option title="'+this["Composition"]+'|'+this["LO"]+'|'+this["RO"]+'" class="basic ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             }
 
         });
-        targetListBody = targetListBody + "</select>";
-        libraryVectorListBody = libraryVectorListBody + "</select>";
-        libraryPartListBody = libraryPartListBody + "</select>";
+        targetListBody = targetListBody + '</select>';
+        libraryVectorListBody = libraryVectorListBody + '</select>';
+        libraryPartListBody = libraryPartListBody + '</select>';
         $("#availableTargetPartListArea").html(targetListBody);
         $("#libraryPartListArea").html(libraryPartListBody);
         $("#libraryVectorListArea").html(libraryVectorListBody);
@@ -369,7 +369,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     //generates typeahead items for input composition
     var generateIntermediateTokens = function(composition) {
         var toSplit = composition.substring(1, composition.length - 1);
-        toSplit = toSplit.replace(/\|[^|]+\|[^|]+\|/g, "|||");
+        toSplit = toSplit.replace(/\|[^,\|]+\|[^\|,]+\|/g, "|");
         var toReturn = [];
         var compositionArray = toSplit.split(",");
         var seenIntermediates = {};
@@ -695,6 +695,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<p><a id="downloadImage' + _designCount + '">Download Graph Image</a></p>' +
                 '<p><a id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
                 '<p><a id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
+                                '<p><a id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
                 '<p><a id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>'
 
                 );
