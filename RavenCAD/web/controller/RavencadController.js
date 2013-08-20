@@ -9,7 +9,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var _runParameters = {};
     var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
     /********************EVENT HANDLERS********************/
-    $('.input-mini').keyup(function(){
+    $('.input-mini').keyup(function() {
         updateSummary();
     });
     $('button#requireButton').click(function() {
@@ -307,11 +307,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var libraryVectorListBody = '<select id="libraryVectorList" multiple="multiple" class="fixedHeight">';
         $.each(_data["result"], function() {
             if (this["Type"] === "composite") {
-                targetListBody = targetListBody + '<option title="'+this["Composition"]+'|'+this["LO"]+'|'+this["RO"]+'" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
+                targetListBody = targetListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else if (this["Type"] === "vector") {
-                libraryVectorListBody = libraryVectorListBody + '<option title="'+this["Name"]+'|'+this["LO"]+'|'+this["RO"]+'" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
+                libraryVectorListBody = libraryVectorListBody + '<option title="' + this["Name"] + '|' + this["LO"] + '|' + this["RO"] + '" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else {
-                libraryPartListBody = libraryPartListBody + '<option title="'+this["Composition"]+'|'+this["LO"]+'|'+this["RO"]+'" class="basic ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
+                libraryPartListBody = libraryPartListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="basic ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             }
 
         });
@@ -694,12 +694,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '</div>');
         //add download buttons and bind events to them
         $('#download' + _designCount).append('<h4>Download Options</h4>' +
-                '<p><small>Please use right-click, then save as to download the files</small></p>' +
-                '<p><a id="downloadImage' + _designCount + '">Download Graph Image</a></p>' +
-                '<p><a id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
-                '<p><a id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
-                                '<p><a id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
-                '<p><a id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>'
+                '<p><a target="_blank" id="downloadImage' + _designCount + '">Download Graph Image</a></p>' +
+                '<p><a target="_blank" id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
+                '<p><a target="_blank" id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
+                '<p><a target="_blank" id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
+                '<p><a target="_blank" id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>'
 
                 );
         //event handler for discard modal dialog
@@ -863,7 +862,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
                     '<tr><td><strong>Parts Shared</strong></td><td>' + data["statistics"]["sharing"] + '</td></tr>' +
                     '<tr><td><strong>Algorithm Runtime</strong></td><td>' + data["statistics"]["time"] + '</td></tr></table>');
-            $('#downloadImage' + currentDesignCount).attr("href", data["result"]);
+            $('#downloadImage' + currentDesignCount).attr("href", data["graph"]["images"]);
             $('#downloadInstructions' + currentDesignCount).attr("href", "data/" + user + "/instructions" + currentDesignCount + ".txt");
             $('#downloadParts' + currentDesignCount).attr("href", "data/" + user + "/partsList" + currentDesignCount + ".csv");
             $('#downloadPigeon' + currentDesignCount).attr("href", "data/" + user + "/pigeon" + currentDesignCount + ".txt");
