@@ -32,17 +32,22 @@ public class RBioBricks extends RGeneral {
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
+        HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
+        for (RNode root : gpsNodes) {
+            String nodeKey = root.getNodeKey("+");
+            keyVectors.put(nodeKey, root.getVector());
+        }
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
-        assignBioBricksOverhangs(optimalGraphs);
+        assignBioBricksOverhangs(optimalGraphs, keyVectors);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
     }
     
     /** First step of overhang assignment - enforce numeric place holders for overhangs, ie no overhang redundancy in any step **/
-    private void assignBioBricksOverhangs (ArrayList<RGraph> optimalGraphs) {
+    private void assignBioBricksOverhangs (ArrayList<RGraph> optimalGraphs, HashMap<String, RVector> keyVectors) {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
@@ -52,7 +57,7 @@ public class RBioBricks extends RGeneral {
         for (RGraph graph : optimalGraphs) {
 
             RNode root = graph.getRootNode();
-            RVector rootVector = root.getVector();
+            RVector rootVector = keyVectors.get(root.getNodeKey("+"));
             if (rootVector == null) {
                 rootVector = vector;
             }
