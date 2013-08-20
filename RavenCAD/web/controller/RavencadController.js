@@ -672,7 +672,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<li><a href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
                 '<li><a href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
                 '<li><a href="#discardDialog' + _designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + _designCount + '" name="' + _designCount + '">Discard Design</a></li>' +
-                '<li><button class="btn btn-primary" id="redesignButton' + _designCount + '" name="' + _designCount + '">Redesign</button></li>' +
+                '<li><a class="btn" id="redesignButton' + _designCount + '" name="' + _designCount + '">Redesign</a></li>' +
                 '</ul>');
         //append modal dialog
         $('#resultTabs' + _designCount).append('<div id="discardDialog' + _designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + _designCount + '" aria-hidden="true">'
@@ -916,7 +916,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
         $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
         $('div#download' + currentDesignCount).addClass("hidden");
-        $('#resultTabsHeader' + currentDesignCount).append('<li><button id="redesignRun' + currentDesignCount + '" class="btn btn-success" val="' + currentDesignCount + '">Run</button>');
+        $('#resultTabsHeader' + currentDesignCount).append('<li><a id="redesignRun' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</a>');
         $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + originalDesignNumber).html());
         $('div#resultImage' + currentDesignCount).html($('div#resultImage' + originalDesignNumber).html());
         $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
