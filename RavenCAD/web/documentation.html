@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>RavenCAD</title>
+        <title>Raven</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="shortcut icon" href="images/shortcutIcon.ico">
         <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -11,7 +11,7 @@
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
-                    <a class="brand" href="index.html">RavenCAD</a>
+                    <a class="brand" href="index.html">Raven</a>
                     <ul class="nav">
                         <li><a href="import.html">Data</a></li>
                         <li><a href="ravencad.html">Design</a></li>
@@ -30,7 +30,7 @@
 
         <div class="container">
             <div class="page-header" style="margin-top:50px">
-                <h1>RavenCAD <small>Learn how our algorithms and tools can help you today</small></h1>
+                <h1>Raven <small>Learn how our algorithms and tools can help you today</small></h1>
             </div>
             <div class="row-fluid">
                 <div class="span2">
@@ -49,16 +49,16 @@
                 </div>
                 <div class="span10">
                     <div class="well" id="overview">
-                        <h3>RavenCAD Overview</h3>
+                        <h3>Raven Overview</h3>
                         <hr/>
                         <p>
-                            RavenCAD is a DNA assembly design and planning tool. 
+                            Raven is a DNA assembly design and planning tool. 
                             The tool accepts as its inputs a list of target parts and a parts library. 
-                            For any set of target parts, RavenCAD determines an optimized plan for assembling all selected target parts with a particular DNA assembly method while optimizing for time, efficiency and cost. 
+                            For any set of target parts, Raven determines an optimized plan for assembling all selected target parts with a particular DNA assembly method while optimizing for time, efficiency and cost. 
                         </p>
                         <p>
-                            A unique feature of RavenCAD is its ability to incorporate experimental data to drive the assembly solution. 
-                            RavenCAD allows the user to input efficiency information for a variety of parameters and bias or force certain assembly intermediates or overhangs from appearing in the assembly solution. 
+                            A unique feature of Raven is its ability to incorporate experimental data to drive the assembly solution. 
+                            Raven allows the user to input efficiency information for a variety of parameters and bias or force certain assembly intermediates or overhangs from appearing in the assembly solution. 
                             The tool comes with a set of default parameters that have been experimentally verified, but these values can be modified to the user’s specifications. 
                             This user-interactivity based on experimental data allows users to tailor the assembly solutions to lab- and experiment-specific conditions and recalculate increasingly effective solutions.
                         </p>
@@ -74,7 +74,7 @@
                         <h3>Assembly Methods</h3>
                         <hr/>
                         <p>
-                            RavenCAD broadly classifies cloning-based assembly methods into three categories: binary assembly, modular one-pot assembly and scarless one-pot assembly. 
+                            Raven broadly classifies cloning-based assembly methods into three categories: binary assembly, modular one-pot assembly and scarless one-pot assembly. 
                             BioBricks(TM) assembly [4] and its derivatives are supported binary assembly methods. 
                             CPEC [6], SLIC [5], Gibson [2] and GoldenGate [7] assembly are all supported scarless one-pot assembly methods. 
                             MoClo [3] is a supported modular one-pot assembly method. 
@@ -82,7 +82,7 @@
                         </p>
                         <p>
                             Additional cloning-based assembly method and chemical synthesis assembly are not currently supported. 
-                            However, RavenCAD’s core algorithm is highly generalizable and new methods can be added with relative ease. 
+                            However, Raven’s core algorithm is highly generalizable and new methods can be added with relative ease. 
                             Please contact the developers if you are interested in an assembly method that is not currently supported.
                         </p>
                     </div>
@@ -96,11 +96,11 @@
                             This strategy is applied to binary, one-pot scarless and one-pot modular assembly methods to produce fast, modular and efficient assembly plans.
                         </p>
                         <p>
-                            Sometimes an experimentalist observes higher or lower assembly efficiencies than realized in the literature due to a number of experimental conditions such as cell competency, specific reaction conditions and other factors. With RavenCAD, a user is able to adjust the default efficiency numbers guiding the efficiency optimizations. 
+                            Sometimes an experimentalist observes higher or lower assembly efficiencies than realized in the literature due to a number of experimental conditions such as cell competency, specific reaction conditions and other factors. With Raven, a user is able to adjust the default efficiency numbers guiding the efficiency optimizations. 
                             A user may also wish to bias certain intermediates from appearing or not appearing, with or without mandatory inclusion or exclusion. For example, a user might wish to bias an assembly towards intermediates that fit a certain substructure such as a transcriptional unit. 
                             Another user might want to bias against performing PCR on large parts or parts with hairpins or other problematic structures. A user might also encounter unsuccessful cloning steps or PCRs or wish to test specific intermediate parts or part junctions. 
                             In all of these cases, it is imperative that these intermediates and/or part junctions are either biased or forced to appear or not appear. Raven optimizes around these additional constraints unless they are so restrictive that no valid solution can be found. 
-                            RavenCAD allows for lists of intermediates or overhangs to be input as optional parameters for the algorithm. Intermediate parts and overhangs can be biased for (recommended), biased against (discouraged), forced or forbidden. 
+                            Raven allows for lists of intermediates or overhangs to be input as optional parameters for the algorithm. Intermediate parts and overhangs can be biased for (recommended), biased against (discouraged), forced or forbidden. 
                             These parts and overhangs can be specified either manually in the GUI or automatically via Eugene [8] scripts.
                         </p>
                     </div>
@@ -108,12 +108,12 @@
                         <h3>Integrated Tool Chain</h3>
                         <hr/>
                         <p>
-                            RavenCAD is a ‘stand-alone’ tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
+                            Raven is a ‘stand-alone’ tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
                             However, this tool is also connected to a larger tool-chain in the Clotho design automation platform. 
                             The tool chain is a top-down design flow and begins with the specification of device behavior. 
                             One tool in the Clotho design flow that can do this is Eugene [8]. 
                             Eugene can be used to generate a set of target devices based on libraries of parts and device design rule sets. 
-                            Once all target devices are determined, RavenCAD determines the best way to build all target parts. 
+                            Once all target devices are determined, Raven determines the best way to build all target parts. 
                             These output instructions can be given to a liquid handling robot to automatically assemble these devices from its resources. 
                             This flow allows a user to simply specify the behavior of a set of devices they would like to build and what resources they have and have the devices automatically constructed with liquid handling robots.
                         </p>
@@ -151,23 +151,23 @@
                         <hr/>
                         <dl>
                             <dt>
-                            What do I need to use RavenCAD?
+                            What do I need to use Raven?
                             </dt>
                             <dd>
                                 A user must minimally provide a list of target parts and all DNA parts that are needed to build the target parts. 
                                 Part sequences are not mandatory, but no sequence-level optimization can be performed on parts without sequence.
                             </dd>
                             <dt>
-                            What do I input into RavenCAD?
+                            What do I input into Raven?
                             </dt>
                             <dd>
                                 A user may input a list of target parts and library of existing parts or input a collection of annotated genbank files.
                             </dd>
                             <dt>
-                            What does RavenCAD output?
+                            What does Raven output?
                             </dt>
                             <dd>
-                                RavenCAD outputs several types of information: 
+                                Raven outputs several types of information: 
                                 <ol>
                                     <li>
                                         A graphical representation of an optimized assembly plan for the selected target parts. 
@@ -192,7 +192,7 @@
                                 </ol>
                             </dd>
                             <dt>
-                            What information is mandatory to run RavenCAD and what information is optional?
+                            What information is mandatory to run Raven and what information is optional?
                             </dt>
                             <dd>
                                 <ul>
@@ -213,7 +213,8 @@
         <footer>
             <div class="container" align="center">
                 <p>Designed and built by <a href="contact.html">Jenhan Tao</a> and <a href="contact.html">Evan Appleton</a> at <a href="http://wiki.bu.edu/ece-cidar/index.php/Main_Page">CIDAR</a></p>
-                <p>Code licensed under <a href="license.html">LICENSE</a></p>
+                <p><a href="license.html">LICENSE and DISCLAIMER</a></p>
+                <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-nd/3.0/88x31.png" /></a><br /><span>Raven</span> by <span>Jenhan Tao, Evan Appleton, and Douglas Densmore</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US">Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License</a>
             </div>
         </footer>
     </body>
