@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,6 +21,10 @@ public class RGeneral extends Modularity {
 
     /** Find assembly graph for multiple goal parts **/
     protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiencies, boolean sharing) throws Exception {
+        
+        for (String req : required) {
+            System.out.println("required: " + req);
+        }
         
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
         for (int i = 0; i < gps.size(); i++) {
@@ -62,42 +67,44 @@ public class RGeneral extends Modularity {
                 RGraph newGraph = createAsmGraph_sgp(gp, hashMem, libCompDir, required, recommended, forbidden, discouraged, slack, sharingHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
 
-//                System.out.println("current gp: " + gp.getComposition() + " sharing factor: " + newGraph.getModularityFactor());
-                
-                //Pin graph if no existing pinned graph
-                if (pinnedGraph == null) {
-                    pinnedGraph = newGraph;
-                    index = j;
-                }
-
-                //If there are any discouraged parts, pin the graph with the fewest discouraged parts
-                if (!discouraged.isEmpty()) {
-                    if (newGraph.getDiscouragedCount() < pinnedGraph.getDiscouragedCount()) {
-                        pinnedGraph = newGraph;
-                        index = j;
-                    }
-                }
-                
-                //If there are any recommended parts, pin the graph with greatest recommended parts
-                if (!recommended.isEmpty()) {
-                    if (newGraph.getReccomendedCount() > pinnedGraph.getReccomendedCount()) {
-                        pinnedGraph = newGraph;
-                        index = j;
-                    }
-
-                //If no recommended parts, pin the graph with the most sharing
+                if (newGraph.getRootNode().getComposition().isEmpty()) {
+                    System.out.println("WARNING, GOAL PART " + gp.getComposition() + " CANNOT BE BUILT WITH THIS FORBIDDEN SET!");
+                    return null;
+                    
                 } else {
-                    if (newGraph.getSharing() > pinnedGraph.getSharing()) {
+                    //Pin graph if no existing pinned graph
+                    if (pinnedGraph == null) {
                         pinnedGraph = newGraph;
                         index = j;
-                    } else if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
-                        pinnedGraph = newGraph;
-                        index = j;
+                    }
+
+                    //If there are any discouraged parts, pin the graph with the fewest discouraged parts
+                    if (!discouraged.isEmpty()) {
+                        if (newGraph.getDiscouragedCount() < pinnedGraph.getDiscouragedCount()) {
+                            pinnedGraph = newGraph;
+                            index = j;
+                        }
+                    }
+
+                    //If there are any recommended parts, pin the graph with greatest recommended parts
+                    if (!recommended.isEmpty()) {
+                        if (newGraph.getReccomendedCount() > pinnedGraph.getReccomendedCount()) {
+                            pinnedGraph = newGraph;
+                            index = j;
+                        }
+
+                    //If no recommended parts, pin the graph with the most sharing
+                    } else {
+                        if (newGraph.getSharing() > pinnedGraph.getSharing()) {
+                            pinnedGraph = newGraph;
+                            index = j;
+                        } else if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
+                            pinnedGraph = newGraph;
+                            index = j;
+                        }
                     }
                 }
             }
-
-//            System.out.println("pinnedGraph root: " + pinnedGraph.getRootNode().getComposition());
             
             //Add pinned graph and graph for each intermediate part to our hash of pinned graphs
             //Also search through the subgraphs of the bestGraph to see if it has any basic parts
@@ -125,7 +132,6 @@ public class RGeneral extends Modularity {
             //Send warning if there might be missing basic parts or subgraphs
             if (cantMake) {
                 System.out.println("WARNING, THERE ARE EITHER NO BASIC PARTS OR NO SUBGRAPHS... SOMETHING MAY ALREADY EXISTS OR SOMETHING CANNOT BE MADE");
-//                JOptionPane.showMessageDialog(null, "Forbidden part conflict discovered! Forbidden set is too restrictive. Please select compatible set of forbidden parts so that part can be constructed.");
             }
 
             //Remove pinned graph from goal part list and add to result list
@@ -198,7 +204,11 @@ public class RGeneral extends Modularity {
                     continue;
                 }
                 ArrayList<String> gpSub = new ArrayList<String>();
-                gpSub.addAll(gpComp.subList(start, end));
+                List<String> compSubList = gpComp.subList(start, end);
+                List<String> dirSubList = gpDir.subList(start, end);
+                for (int o = 0; o < compSubList.size(); o++) {
+                    gpSub.add(compSubList.get(o) + "|" + dirSubList.get(o));
+                }
                 if (required.contains(gpSub.toString())) {
                     for (int j = start + 1; j < end; j++) {
                         indexes.remove(new Integer(j));
@@ -229,9 +239,7 @@ public class RGeneral extends Modularity {
             }
         }
         
-        //If a large part has a combination of smaller parts that are all forbidden, which make it impossible make, this part must also be forbidden
-        //We must record if there is any way to break it
-        forbidden = conflictSearchForbidden(gpComp, forbidden);
+        //Initialize forbidden partition sets
         HashMap<Integer, ArrayList<int[]>> forbPartitionsBySize = new HashMap<Integer, ArrayList<int[]>>();
         for (int i = 1; i < _maxNeighbors; i++) {
             ArrayList<int[]> forbiddenPartitions = new ArrayList<int[]>();
@@ -284,6 +292,7 @@ public class RGeneral extends Modularity {
                     ArrayList<String> type = new ArrayList<String>();
                     ArrayList<String> comp = new ArrayList<String>();
                     ArrayList<String> dir = new ArrayList<String>();
+                    ArrayList<String> compDir = new ArrayList<String>();
                     
                     if (n == 0) {
                         type.addAll(gpType.subList(0, thisPartition[n]));
@@ -300,7 +309,11 @@ public class RGeneral extends Modularity {
                     }
 
                     //If any of the compositions is in the forbidden hash, this partition will not work
-                    if (forbidden.contains(comp.toString())) {
+                    for (int m = 0; m < comp.size(); m++) {
+                        compDir.add(comp.get(m) + "|" + dir.get(m));
+                    }
+                    
+                    if (forbidden.contains(compDir.toString())) {
                         canPartitionThis = false;
                         forbiddenPartitions.add(thisPartition);
                         continue;
@@ -314,7 +327,7 @@ public class RGeneral extends Modularity {
                 }
 
                 
-                //If there are no forbidden parts amongst subparts
+                //If there are no forbidden parts amongst subparts, this partition is valid
                 if (canPartitionThis) {
                     canPartitionAny = true;
                     ArrayList<RGraph> toCombine = new ArrayList<RGraph>();
@@ -324,26 +337,42 @@ public class RGeneral extends Modularity {
                     for (int o = 0; o < allSubParts.size(); o++) {
                         RNode oneSubPart = allSubParts.get(o);
                         RGraph solution = createAsmGraph_sgp(oneSubPart, partsHash, libCompDir, required, recommended, forbidden, discouraged, slack - 1, sharingHash, efficiencies);
+                        
+                        //If the solution is clear, meaning all possible partitions are forbidden and there is no answer, this partition must also be forbidden
+                        if (solution.getRootNode().getComposition().isEmpty()) {                            
+                            forbiddenPartitions.add(thisPartition);
+                            toCombine.clear();
+                            break;
+                        }
                         toCombine.add(solution);
                         combineDirection.addAll(oneSubPart.getDirection());
                     }
-                    RGraph newGraph = combineGraphsModEff(toCombine, combineDirection, recommended, discouraged, sharingHash, efficiencies);
 
-                    //Edge case: best graph does not exist yet
-                    if (bestGraph.getRootNode().getNeighbors().isEmpty()) {
-                        bestGraph = newGraph;
-                    } else {
+                    //If the solution is not empty, combine graphs and score against the current best
+                    if (!toCombine.isEmpty()) {
+                        RGraph newGraph = combineGraphsModEff(toCombine, combineDirection, recommended, discouraged, sharingHash, efficiencies);
+                        
+                        //Edge case: best graph does not exist yet
+                        if (bestGraph.getRootNode().getNeighbors().isEmpty()) {
+                            bestGraph = newGraph;
+                        } else {
 
-                        // If cost of new graph is the best so far save it
-                        bestGraph = minCostSlack(bestGraph, newGraph, slack);
+                            // If cost of new graph is the best so far save it
+                            bestGraph = minCostSlack(bestGraph, newGraph, slack);
+                        }
                     }
                 }
-                
+
                 //If none so far can be partitioned and the list is empty, find next most optimal set using partitioning method
                 if (!canPartitionAny && candidatePartitions.isEmpty()) {
                     HashMap<Integer, ArrayList<int[]>> newForbPartitionsBySize = new HashMap<Integer, ArrayList<int[]>>();
                     newForbPartitionsBySize.put(nBreaks, forbiddenPartitions);                    
                     HashMap<Integer, ArrayList<int[]>> newPartitions = getPartitions(indexes, newForbPartitionsBySize);
+                    
+                    //If all possible partitions have been exhausted, return the best graph, which should be empty... this should rarely happen 
+                    if (newPartitions.isEmpty()) {
+                        return bestGraph;
+                    }
                     candidatePartitions.addAll(newPartitions.get(nBreaks));
                 }
             }
@@ -409,16 +438,22 @@ public class RGeneral extends Modularity {
                 combineGraphsSRD.setModularityFactor(graphSharing);
             }
         }
-
+        
+        ArrayList<String> rootRecDis = new ArrayList<String>();
+        ArrayList<String> composition = combineGraphsSRD.getRootNode().getComposition();
+        for (int j = 0; j < composition.size(); j++) {
+            rootRecDis.add(composition.get(j) + "|" + direction.get(j));
+        }
+        
         //If recommended hash contains the root's composition
-        if (recommended.contains(combineGraphsSRD.getRootNode().getComposition().toString())) {
+        if (recommended.contains(rootRecDis.toString())) {
             combineGraphsSRD.setReccomendedCount(recCount + 1);
         } else {
             combineGraphsSRD.setReccomendedCount(recCount);
         }
         
         //If discouraged hash contains the root's composition
-        if (discouraged.contains(combineGraphsSRD.getRootNode().getComposition().toString())) {
+        if (discouraged.contains(rootRecDis.toString())) {
             combineGraphsSRD.setDiscouragedCount(disCount + 1);
         } else {
             combineGraphsSRD.setDiscouragedCount(disCount);

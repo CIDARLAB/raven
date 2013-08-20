@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JOptionPane;
 
@@ -226,7 +227,7 @@ public class Partitioning {
     /**
      * ************************************************************************
      *
-     * REQUIRED, FORBIDDEN
+     * REQUIRED
      *
      *************************************************************************
      */
@@ -236,6 +237,7 @@ public class Partitioning {
 
         //Initialize hash to keep track of potential intermediate conflicts
         ArrayList<String> gpComp = gp.getComposition();
+        ArrayList<String> gpDir = gp.getDirection();
         int gpSize = gp.getComposition().size();
         HashMap<ArrayList<Integer>, String> indexes = new HashMap<ArrayList<Integer>, String>();
 
@@ -243,7 +245,11 @@ public class Partitioning {
         for (int start = 0; start < gpSize; start++) {
             for (int end = start + 2; end < gpSize + 1; end++) {
                 ArrayList<String> gpSub = new ArrayList<String>();
-                gpSub.addAll(gpComp.subList(start, end));
+                List<String> gpSubListComp = gpComp.subList(start, end);
+                List<String> gpSubListDir = gpDir.subList(start, end);
+                for (int i = 0; i < gpSubListComp.size(); i++) {
+                    gpSub.add(gpSubListComp.get(i) + "|" + gpSubListDir);
+                }
 
                 //If an intermediate matches a composition in the required part hash
                 if (required.contains(gpSub.toString())) {
@@ -271,41 +277,6 @@ public class Partitioning {
                     }
                 }
             }
-        }
-    }
-
-    /** For a given goal part, search for conflicts with forbidden parts **/
-    protected HashSet<String> conflictSearchForbidden(ArrayList<String> gpComp, HashSet<String> forbidden) {
-        int gpSize = gpComp.size();
-
-        //Create idexes for goal part
-        ArrayList<Integer> indices = new ArrayList<Integer>();
-        for (int i = 1; i < gpSize; i++) {
-            indices.add(i);
-        }
-        boolean canBreak = false;
-        for (int k : indices) {
-
-            //Find right and left composition
-            ArrayList<String> leftComp = new ArrayList<String>();
-            leftComp.addAll(gpComp.subList(0, k));
-            ArrayList<String> rightComp = new ArrayList<String>();
-            rightComp.addAll(gpComp.subList(k, gpSize));
-
-            //If either the left or right part is forbidden
-            if (!forbidden.contains(leftComp.toString()) && !forbidden.contains(rightComp.toString())) {
-
-                //It can be broken
-                canBreak = true;
-            }
-        }
-
-        //Provided that this part cannot be broken, add this part to the forbidden set
-        if (!canBreak) {
-            forbidden.add(gpComp.toString());
-            return forbidden;
-        } else {
-            return forbidden;
         }
     }
     
