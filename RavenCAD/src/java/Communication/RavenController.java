@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -268,7 +269,7 @@ public class RavenController {
     }
 
     //returns all saved parts in the collector as a json array
-    public String fetchData() throws Exception {
+    public String fetchData(boolean scanRestrictionSites) throws Exception {
         String toReturn = "[";
         ArrayList<Part> allParts = _collector.getAllParts(false);
         for (Part p : allParts) {
@@ -345,11 +346,49 @@ public class RavenController {
                     + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
         toReturn = toReturn.subSequence(0, toReturn.length() - 1) + "]";
+        String restrictionScanMessage = "";
+        boolean appendScanMessage = false;
+        if (scanRestrictionSites) {
+            restrictionScanMessage = "<strong>Warning! The following parts contain restriction sites!<br/></strong><hr/>";
+            HashMap<Part, HashMap<String, ArrayList<int[]>>> reSeqScan = RestrictionEnzyme.reSeqScan(allParts, _restrictionEnzymes);
+            HashMap<String, Part> namePartHash = new HashMap();
+            ArrayList<String> sortedPartNames = new ArrayList();
+            for (Part p : reSeqScan.keySet()) {
+                sortedPartNames.add(p.getName());
+                namePartHash.put(p.getName(), p);
+            }
+
+            for (String partName : sortedPartNames) {
+                HashMap<String, ArrayList<int[]>> enzymeSites = reSeqScan.get(namePartHash.get(partName));
+                ArrayList<String> sortedEnzymes = new ArrayList(enzymeSites.keySet());
+                if (sortedEnzymes.size() > 0) {
+                    restrictionScanMessage = restrictionScanMessage + partName + "<ul>";
+                    appendScanMessage = true;
+                    Collections.sort(sortedEnzymes);
+                    for (String enzyme : sortedEnzymes) {
+                        ArrayList<int[]> foundIndices = enzymeSites.get(enzyme);
+                        if (foundIndices.size() > 0) {
+                            restrictionScanMessage = restrictionScanMessage + "<li>" + enzyme + "<ul>";
+
+                            for (int[] indices : foundIndices) {
+                                restrictionScanMessage = restrictionScanMessage + "<li>Start: " + indices[0] + " end: " + indices[1] + "</li>";
+
+                            }
+                            restrictionScanMessage = restrictionScanMessage + "</ul></li>";
+                        }
+                    }
+                    restrictionScanMessage = restrictionScanMessage + "</ul><hr/>";
+                }
+            }
+        }
+        if(!appendScanMessage) {
+            restrictionScanMessage = "";
+        }
         if (_error.length() > 0) {
             _error = _error.replaceAll("[\r\n\t]+", "<br/>");
             toReturn = "{\"result\":" + toReturn + ",\"status\":\"bad\",\"message\":\"" + _error + "\"}";
         } else {
-            toReturn = "{\"result\":" + toReturn + ",\"status\":\"good\"}";
+            toReturn = "{\"result\":" + toReturn + ",\"status\":\"good\",\"message\":\"" + restrictionScanMessage + "\"}";
         }
         return toReturn;
     }
@@ -442,7 +481,7 @@ public class RavenController {
                     } else {
                         level = -1;
                     }
-                    
+
                     Vector newVector = Vector.generateVector(name, sequence);
                     newVector.addSearchTag("LO: " + leftOverhang);
                     newVector.addSearchTag("RO: " + rightOverhang);
@@ -849,12 +888,12 @@ public class RavenController {
                 ArrayList<String> composition = current.getComposition();
                 String currentCompositionString = composition.toString();
                 if (direction.size() == composition.size()) {
-                    currentCompositionString ="";
-                    for(int i=0;i<composition.size();i++) {
-                        currentCompositionString = currentCompositionString+composition.get(i)+"|"+direction.get(i)+", ";
+                    currentCompositionString = "";
+                    for (int i = 0; i < composition.size(); i++) {
+                        currentCompositionString = currentCompositionString + composition.get(i) + "|" + direction.get(i) + ", ";
                     }
                 }
-                currentCompositionString = "["+currentCompositionString.substring(0,currentCompositionString.length()-2)+"]";
+                currentCompositionString = "[" + currentCompositionString.substring(0, currentCompositionString.length() - 2) + "]";
                 if (_forbidden.contains(currentCompositionString)) {
                     toReturn = false;
                     break;
@@ -960,4 +999,5 @@ public class RavenController {
     private String _error = "";
     private boolean _valid = false;
     private ArrayList<String> _databaseConfig = new ArrayList(); //0:database url, 1:database schema, 2:user, 3:password
+    private ArrayList<RestrictionEnzyme> _restrictionEnzymes = RestrictionEnzyme.getBBGGMoCloEnzymes();
 }

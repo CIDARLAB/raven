@@ -135,12 +135,18 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
 
     var getData = function() {
-        $.getJSON("RavenServlet", {"command": "fetch"}, function(json) {
+        $.getJSON("RavenServlet", {"command": "fetchScan"}, function(json) {
             ravenPart = json["result"];
             if (json["status"] === "bad") {
                 $('#error').html(json["message"]);
                 $('#error').append('<hr/><p>We have uploaded the rest of your parts and vectors</p>');
+                $('#error').prepend('<strong>Oops, an error occurred while uploading your data</strong>');
                 $('#errorArea').removeClass("hidden");
+            } else {
+                if (json["message"].length > 0) {
+                    $('#error').html(json["message"]);
+                    $('#errorArea').removeClass("hidden");
+                }
             }
             drawTable();
         });

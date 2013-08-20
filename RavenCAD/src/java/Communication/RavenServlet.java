@@ -77,10 +77,16 @@ public class RavenServlet extends HttpServlet {
             } else if (command.equals("fetch")) {
                 response.setContentType("application/json");
                 String responseString = "";
-                responseString = controller.fetchData();
+                responseString = controller.fetchData(false);
                 out.write(responseString);
 
-            } else if (command.equals("purge")) {
+            } else if (command.equals("fetchScan")) {
+                response.setContentType("application/json");
+                String responseString = "";
+                responseString = controller.fetchData(true);
+                out.write(responseString);
+
+            }else if (command.equals("purge")) {
                 response.setContentType("test/plain");
                 String responseString = "purged";
                 controller.clearData();

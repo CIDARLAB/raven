@@ -16,40 +16,42 @@ import java.util.regex.Pattern;
  */
 public class RestrictionEnzyme {
 
-    /** Restriction enzyme constructor **/
+    /**
+     * Restriction enzyme constructor *
+     */
     //Convention for cut sites: integer index refers to index of recogition sequence where cut occurs directly before
     //The recognition sequence must include forward sequence extended out to end of forward or reverse cut, whichever is furthest
     public RestrictionEnzyme(String name, String recSeq, ArrayList<Integer> cutSites, String buffer, Double temp, ArrayList<Double> HI) {
-        
+
         _name = name;
         _buffer = buffer;
         _incubationTemp = temp;
         _heatInactivation = HI;
-        
+
         //Convert recogition site indexes from forward to reverse
         ArrayList<Integer> revCutSites = new ArrayList<Integer>(2);
-        int rCut0 = cutSites.get(1) - recSeq.length();
-        int rCut1 = cutSites.get(0) - recSeq.length();
-        revCutSites.add(rCut0);
-        revCutSites.add(rCut1);
-        
+//        int rCut0 = cutSites.get(1) - recSeq.length();
+//        int rCut1 = cutSites.get(0) - recSeq.length();
+//        revCutSites.add(rCut0);
+//        revCutSites.add(rCut1);
+
         //Convert the recognition to a regular expression
         String lRecSeq = recSeq.toLowerCase();
-        String lRevRecSeq = PrimerDesign.reverseComplement(recSeq);        
-        
+        String lRevRecSeq = PrimerDesign.reverseComplement(recSeq);
+
         ArrayList<String> recSeqs = new ArrayList<String>(2);
         ArrayList<String> regExRecSeqs = new ArrayList<String>();
         recSeqs.add(lRecSeq);
         recSeqs.add(lRevRecSeq);
-        
+
         //For the forward and reverse recognition sequences
         for (int i = 0; i < recSeqs.size(); i++) {
             String seq = recSeqs.get(i);
             String regExSeq = new String();
-            
+
             //Scan through the sequence and translate to a regular expression
             for (int j = 0; j < seq.length(); j++) {
-     
+
                 char nuc = seq.charAt(i);
                 if (nuc == 'a' || nuc == 'c' || nuc == 'g' || nuc == 't' || nuc == 'u') {
                     regExSeq = regExSeq + nuc;
@@ -77,10 +79,10 @@ public class RestrictionEnzyme {
                     regExSeq = regExSeq + "[actg]{1}";
                 }
             }
-            
+
             regExRecSeqs.add(regExSeq);
         }
-        
+
         _fwdRecSeq = regExRecSeqs.get(0);
         _revRecSeq = regExRecSeqs.get(1);
         _fwdCutSites = cutSites;
@@ -89,22 +91,23 @@ public class RestrictionEnzyme {
         _reCount++;
         _uuid = null;
     }
-    
+
     //THIS NEXT METHOD USES RESTRICTION ENZYMES WHICH ARE OUTSIDE THE CLOTHO DATA MODEL, UNCLEAR WHERE THIS METHOD SHOULD GO
-    
-    /** Scan a set of parts for restriction sites **/
+    /**
+     * Scan a set of parts for restriction sites *
+     */
     //HashMap<Part, HashMap<Restriction Enzyme name, ArrayList<ArrayList<Start site, End site>>>>
     public static HashMap<Part, HashMap<String, ArrayList<int[]>>> reSeqScan(ArrayList<Part> parts, ArrayList<RestrictionEnzyme> enzymes) {
-        
+
         HashMap<Part, HashMap<String, ArrayList<int[]>>> partEnzResSeqs = new HashMap<Part, HashMap<String, ArrayList<int[]>>>();
-        
+
         //For all parts
         for (int i = 0; i < parts.size(); i++) {
             Part part = parts.get(i);
             String name = part.getName();
             String seq = part.getSeq();
             HashMap<String, ArrayList<int[]>> detectedResSeqs = new HashMap<String, ArrayList<int[]>>();
-            
+
             //Look at each enzyme's cut sites
             for (int j = 0; j < enzymes.size(); j++) {
                 ArrayList<int[]> matchSites = new ArrayList<int[]>();
@@ -112,44 +115,48 @@ public class RestrictionEnzyme {
                 String enzName = enzyme.getName();
                 String fwdRec = enzyme.getFwdRecSeq();
                 String revRec = enzyme.getRevRecSeq();
-                
+
                 //Compile regular expressions
                 Pattern compileFwdRec = Pattern.compile(fwdRec, Pattern.CASE_INSENSITIVE);
                 Pattern compileRevRec = Pattern.compile(revRec, Pattern.CASE_INSENSITIVE);
                 Matcher matcherFwdRec = compileFwdRec.matcher(seq);
                 Matcher matcherRevRec = compileRevRec.matcher(seq);
-                
+
                 //Find matches of forward sequence
                 while (matcherFwdRec.find()) {
                     int[] matchIndexes = new int[2];
                     int start = matcherFwdRec.start();
                     int end = matcherFwdRec.end();
-                    matchIndexes[0]=start;
-                    matchIndexes[1]=end;
+                    matchIndexes[0] = start;
+                    matchIndexes[1] = end;
                     matchSites.add(matchIndexes);
                 }
-                
+
                 //Find matches of reverse sequence
                 while (matcherRevRec.find()) {
                     int[] matchIndexes = new int[2];
                     int start = matcherRevRec.start();
                     int end = matcherRevRec.end();
-                    matchIndexes[0]=start;
-                    matchIndexes[1]=end;
+                    matchIndexes[0] = start;
+                    matchIndexes[1] = end;
                     matchSites.add(matchIndexes);
                 }
-                
-                detectedResSeqs.put(enzName, matchSites);
+                if (matchSites.size() > 0) {
+                    detectedResSeqs.put(enzName, matchSites);
+                }
             }
             partEnzResSeqs.put(part, detectedResSeqs);
         }
-        
+
         return partEnzResSeqs;
     }
 
-    /** Generate the enzymes that are relevant for BioBricks, MoClo and GoldenGate reactions **/
+    /**
+     * Generate the enzymes that are relevant for BioBricks, MoClo and
+     * GoldenGate reactions *
+     */
     public static ArrayList<RestrictionEnzyme> getBBGGMoCloEnzymes() {
-        
+
         ArrayList<RestrictionEnzyme> enzymes = new ArrayList<RestrictionEnzyme>();
         RestrictionEnzyme BbsI = new RestrictionEnzyme("BbsI", "gaagac", null, null, null, null);
         RestrictionEnzyme BsaI = new RestrictionEnzyme("BsaI", "ggtctc", null, null, null, null);
@@ -163,72 +170,93 @@ public class RestrictionEnzyme {
         enzymes.add(SpeI);
         enzymes.add(XbaI);
         enzymes.add(PstI);
-        
+
         return enzymes;
     }
-    
-    /** Get name **/
+
+    /**
+     * Get name *
+     */
     public String getName() {
         return _name;
     }
 
-    /** Get forward recognition site **/
+    /**
+     * Get forward recognition site *
+     */
     public String getFwdRecSeq() {
         return _fwdRecSeq;
     }
 
-    /** Get reverse recognition site **/
+    /**
+     * Get reverse recognition site *
+     */
     public String getRevRecSeq() {
         return _revRecSeq;
     }
-    
-    /** Get the forward cut sites **/
+
+    /**
+     * Get the forward cut sites *
+     */
     //Convention for cut sites: integer index refers to index of recogition sequence where cut occurs directly before
     public ArrayList<Integer> getFwdCutSites() {
         return _fwdCutSites;
     }
-    
-    /** Get the forward cut sites **/
+
+    /**
+     * Get the forward cut sites *
+     */
     //Convention for cut sites: integer index refers to index of recogition sequence where cut occurs directly before
     public ArrayList<Integer> getRevCutSites() {
         return _revCutSites;
     }
-    
-    /** Get the buffer **/
+
+    /**
+     * Get the buffer *
+     */
     public String getBuffer() {
         return _buffer;
     }
-    
-    /** Get the incubation time **/
+
+    /**
+     * Get the incubation time *
+     */
     public Double getIncubationTemp() {
         return _incubationTemp;
     }
 
-    /** Get the heat inactivation parameters... temp first, then time **/
+    /**
+     * Get the heat inactivation parameters... temp first, then time *
+     */
     public ArrayList<Double> getHeatInactivation() {
         return _heatInactivation;
     }
-    
-    /** Get UUID **/
+
+    /**
+     * Get UUID *
+     */
     public String getUUID() {
         return _uuid;
     }
-    
-    /** Get reID **/
+
+    /**
+     * Get reID *
+     */
     public int getREID() {
         return _reID;
     }
-    
-    /** Set UUID **/
-    public void setUUID (String uuid) {
+
+    /**
+     * Set UUID *
+     */
+    public void setUUID(String uuid) {
         _uuid = uuid;
     }
-    
     //FIELDS
     private final String _name;
     private final String _buffer;
     private final String _fwdRecSeq;
-    private final Double _incubationTemp; 
+    private final Double _incubationTemp;
     private final ArrayList<Double> _heatInactivation;
     private final ArrayList<Integer> _fwdCutSites;
     private final String _revRecSeq;
