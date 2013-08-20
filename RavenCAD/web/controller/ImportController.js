@@ -64,8 +64,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
 //draw table
     var drawTable = function() {
         //TODO draw parts and vectors into separate tabs
-        var allTableBody = "<table id='allTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
-        var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr></thead><tbody>";
+        var allTableBody = "<table id='allTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
+        var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr></thead><tbody>";
         var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
         $.each(ravenPart, function() {
             allTableBody = allTableBody + "<tr><td>"
@@ -74,6 +74,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     + this["LO"] + "</td><td>"
                     + this["RO"] + "</td><td>"
                     + this["Type"] + "</td><td>"
+                    + this["Vector"] + "</td><td>"
                     + this["Composition"] + "</td><td>"
                     + this["Resistance"] + "</td><td>"
                     + this["Level"] + "</td></tr>";
@@ -95,6 +96,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         + this["LO"] + "</td><td>"
                         + this["RO"] + "</td><td>"
                         + this["Type"] + "</td><td>"
+                        + this["Vector"] + "</td><td>"
                         + this["Composition"] + "</td></tr>";
             }
         });

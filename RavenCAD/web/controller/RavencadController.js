@@ -713,9 +713,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 );
         $('#resultTabs' + _designCount).append(
                 '<div class="tab-content" id="resultTabsContent' + _designCount + '">' +
-                '<div class="tab-pane active" id="imageTab' + _designCount + '"><div class="well" id="resultImage' + _designCount + '">Please wait while RavenCAD generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                '<div class="tab-pane" id="instructionTab' + _designCount + '"><div class="well" id="instructionArea' + _designCount + '" style="height:360px;overflow:auto">Please wait while RavenCAD generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
-                '<div class="tab-pane" id="partsListTab' + _designCount + '"><div id="partsListArea' + _designCount + '" style="overflow:visible">Please wait while RavenCAD generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane active" id="imageTab' + _designCount + '"><div class="well" id="resultImage' + _designCount + '">Please wait while Raven generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="instructionTab' + _designCount + '"><div class="well" id="instructionArea' + _designCount + '" style="height:360px;overflow:auto">Please wait while Raven generates instructions for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
+                '<div class="tab-pane" id="partsListTab' + _designCount + '"><div id="partsListArea' + _designCount + '" style="overflow:visible">Please wait while Raven generates the parts for your assembly<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div></div></div>' +
                 '<div class="tab-pane" id="summaryTab' + _designCount + '"><div class="well" id="summaryArea' + _designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
                 '</div>');
         //add download buttons and bind events to them
@@ -896,7 +896,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
             $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
             //render parts list
-            var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + currentDesignCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
+            var partsListTableBody = '<table class="table table-bordered table-hover" id="partsListTable' + currentDesignCount + '"><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>';
             $.each(data["partsList"], function() {
                 partsListTableBody = partsListTableBody + '<tr val="' + this["Type"] + '|' + this["uuid"] + '"><td>'
                         + this["uuid"] + "</td><td>"
@@ -904,6 +904,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         + this["LO"] + "</td><td>"
                         + this["RO"] + "</td><td>"
                         + this["Type"] + "</td><td>"
+                        + this["Vector"] + "</td><td>"
                         + this["Composition"] + "</td><td>"
                         + this["Resistance"] + "</td><td>"
                         + this["Level"] + "</td></tr>";

@@ -102,6 +102,30 @@ public class RGraph {
         }
         return toReturn;
     }
+    /**
+     * Return all parts in this graph *
+     */
+    public HashMap<Part,Vector> getPartVectorsInGraph(Collector coll) {
+        HashMap<Part,Vector> toReturn = new HashMap();
+        HashSet<RNode> seenNodes = new HashSet();
+        ArrayList<RNode> queue = new ArrayList<RNode>();
+        queue.add(this.getRootNode());
+        while (!queue.isEmpty()) {
+            RNode current = queue.get(0);
+            seenNodes.add(current);
+            queue.remove(0);
+            Part toAdd = coll.getPart(current.getUUID(), true);
+            if (toAdd != null) {
+                toReturn.put(toAdd, coll.getVector(current.getVector().getUUID(), true));
+            }
+            for (RNode neighbor : current.getNeighbors()) {
+                if (!seenNodes.contains(neighbor)) {
+                    queue.add(neighbor);
+                }
+            }
+        }
+        return toReturn;
+    }
 
     /**
      * Return all vectors in this graph *

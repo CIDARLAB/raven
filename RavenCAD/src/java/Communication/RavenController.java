@@ -138,20 +138,23 @@ public class RavenController {
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
+        HashMap<Part,Vector> partVectorHash = new HashMap();
         for (RGraph result : _assemblyGraphs) {
-            for (Part p : result.getPartsInGraph(_collector)) {
+            HashMap<Part, Vector> partVectorsInGraph = result.getPartVectorsInGraph(_collector);
+            partVectorHash.putAll(partVectorsInGraph);
+            for (Part p : partVectorsInGraph.keySet()) {
 
                 if (!usedParts.contains(p)) {
                     usedParts.add(p);
                 }
             }
-            for (Vector v : result.getVectorsInGraph(_collector)) {
+            for (Vector v : partVectorsInGraph.values()) {
                 if (!usedVectors.contains(v)) {
                     usedVectors.add(v);
                 }
             }
         }
-
+        
         //extract information from parts and write file
         String partList = "[";
         FileWriter fw = new FileWriter(file);
@@ -176,12 +179,21 @@ public class RavenController {
             }
 
             String composition = "";
+            String vectorName = "";
 
             if (p.isBasic()) {
                 composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",," + composition);
+                Vector v = partVectorHash.get(p);
+                if (v != null) {
+                    vectorName = v.getName();
+                }
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             } else {
                 type = "composite";
+                Vector v = partVectorHash.get(p);
+                if (v != null) {
+                    vectorName = v.getName();
+                }
                 for (int i = 0; i < p.getComposition().size(); i++) {
                     Part subpart = p.getComposition().get(i);
 
@@ -198,7 +210,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(1);
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,,TODO: addvector," + composition);
+                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             }
             partList = partList
                     + "{\"uuid\":\"" + p.getUUID()
@@ -207,6 +219,7 @@ public class RavenController {
                     + "\",\"LO\":\"" + p.getLeftOverhang()
                     + "\",\"RO\":\"" + p.getRightOverhang()
                     + "\",\"Type\":\"" + p.getType()
+                    + "\",\"Vector\":\"" + vectorName
                     + "\",\"Composition\":\"" + composition
                     + "\",\"Resistance\":\"\",\"Level\":\"\"},";
         }
@@ -234,7 +247,8 @@ public class RavenController {
                     + "\",\"Sequence\":\"" + v.getSeq()
                     + "\",\"LO\":\"" + v.getLeftoverhang()
                     + "\",\"RO\":\"" + v.getRightOverhang()
-                    + "\",\"Type\":\"vector\",\"Composition\":\"\""
+                    + "\",\"Type\":\"vector\",\"Composition\":\"\""                    
+                    + ",\"Vector\":\"\""
                     + ",\"Resistance\":\"" + v.getResistance()
                     + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
@@ -322,7 +336,11 @@ public class RavenController {
                 } else {
                     compositions.add(p.getName());
                 }
-
+                String vectorName = "";
+                Vector v = _compPartsVectors.get(p);
+                if (v != null) {
+                    vectorName = v.getName();
+                }
                 toReturn = toReturn
                         + "{\"uuid\":\"" + p.getUUID()
                         + "\",\"Name\":\"" + p.getName()
@@ -330,6 +348,7 @@ public class RavenController {
                         + "\",\"LO\":\"" + p.getLeftOverhang()
                         + "\",\"RO\":\"" + p.getRightOverhang()
                         + "\",\"Type\":\"" + p.getType()
+                        + "\",\"Vector\":\"" + vectorName
                         + "\",\"Composition\":\"" + compositions
                         + "\",\"Resistance\":\"\",\"Level\":\"\"},";
             }
@@ -381,7 +400,7 @@ public class RavenController {
                 }
             }
         }
-        if(!appendScanMessage) {
+        if (!appendScanMessage) {
             restrictionScanMessage = "";
         }
         if (_error.length() > 0) {
