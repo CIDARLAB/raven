@@ -888,11 +888,13 @@ public class RGraph {
                     pigeonLine.append("r ").append(name).append(" 5" + "\n");
                 } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
                     pigeonLine.append("c ").append(name).append(" 1" + "\n");
-                } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
+                } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("rep")) {
                     pigeonLine.append("c ").append(name).append(" 2" + "\n");
+                } else if (type.equalsIgnoreCase("resistance") || type.equalsIgnoreCase("res")) {
+                    pigeonLine.append("g ").append(name).append(" 2" + "\n");
                 } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
                     pigeonLine.append("T ").append(name).append(" 6" + "\n");
-                } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
+                } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("ins")) {
                     if ("-".equals(dir)) {
                         pigeonLine.append(" ").append(name).append(" 12" + "\n");
                     } else {
@@ -902,7 +904,7 @@ public class RGraph {
                     pigeonLine.append("s ").append(name).append(" 10" + "\n");
                 } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
                     pigeonLine.append("z ").append(name).append(" 14" + "\n");
-                } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
+                } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fus")) {
                     pigeonLine.append("f1");
                     String[] fusionParts = name.split("-");
                     for (int j = 1; j < fusionParts.length; j++) {

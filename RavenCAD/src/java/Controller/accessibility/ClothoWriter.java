@@ -49,9 +49,7 @@ public class ClothoWriter {
             } else {
                 stepNodes.add(currentNode);
             }
-            
-            System.out.println("queue nodekey: " + currentNode.getNodeKey("+"));
-            
+                        
             for (RNode neighbor : currentNode.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     if (!queue.contains(neighbor)) {
