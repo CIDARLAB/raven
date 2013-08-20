@@ -851,10 +851,10 @@ public class RavenController {
                 if (direction.size() == composition.size()) {
                     currentCompositionString ="";
                     for(int i=0;i<composition.size();i++) {
-                        currentCompositionString = currentCompositionString+composition.get(i)+"||"+direction.get(i)+",";
+                        currentCompositionString = currentCompositionString+composition.get(i)+"|"+direction.get(i)+", ";
                     }
                 }
-                currentCompositionString = "["+currentCompositionString.substring(0,currentCompositionString.length()-1)+"]";
+                currentCompositionString = "["+currentCompositionString.substring(0,currentCompositionString.length()-2)+"]";
                 if (_forbidden.contains(currentCompositionString)) {
                     toReturn = false;
                     break;
