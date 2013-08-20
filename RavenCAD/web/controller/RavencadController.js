@@ -9,6 +9,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var _runParameters = {};
     var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
     /********************EVENT HANDLERS********************/
+    $('.input-mini').keyup(function(){
+        updateSummary();
+    });
     $('button#requireButton').click(function() {
         var toRequire = $.trim($("#intermediatesTypeAhead").val());
         $("#intermediatesTypeAhead").val("");
@@ -438,7 +441,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
     };
     var updateSummary = function() {
-        var pattern = /^[\d]+\.[\d]+/;
+        var pattern = /^[\d]+\.*[\d]+/;
         var summary = "<p>You're trying to assemble</p>";
         if ($('#targetPartList option').length > 0) {
             summary = summary + '<ul style="max-height:150px;overflow:auto">';
