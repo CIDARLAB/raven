@@ -32,17 +32,22 @@ public class RBioBricks extends RGeneral {
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
+        HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
+        for (RNode root : gpsNodes) {
+            String nodeKey = root.getNodeKey("+");
+            keyVectors.put(nodeKey, root.getVector());
+        }
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
-        assignBioBricksOverhangs(optimalGraphs);
+        assignBioBricksOverhangs(optimalGraphs, keyVectors);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
     }
     
     /** First step of overhang assignment - enforce numeric place holders for overhangs, ie no overhang redundancy in any step **/
-    private void assignBioBricksOverhangs (ArrayList<RGraph> optimalGraphs) {
+    private void assignBioBricksOverhangs (ArrayList<RGraph> optimalGraphs, HashMap<String, RVector> keyVectors) {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
@@ -52,7 +57,7 @@ public class RBioBricks extends RGeneral {
         for (RGraph graph : optimalGraphs) {
 
             RNode root = graph.getRootNode();
-            RVector rootVector = root.getVector();
+            RVector rootVector = keyVectors.get(root.getNodeKey("+"));
             if (rootVector == null) {
                 rootVector = vector;
             }
@@ -238,6 +243,10 @@ public class RBioBricks extends RGeneral {
         
         Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = currentPart.getSeq();
+        if (seq.isEmpty()) {
+            seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+        }
+        
         ArrayList<String> direction = node.getDirection();
         if ("-".equals(direction.get(0))) {
             seq = PrimerDesign.reverseComplement(seq);
@@ -273,9 +282,13 @@ public class RBioBricks extends RGeneral {
         String vectorPrimerSuffix = "tactagtagcggccgctgcag";
         
         Vector currentVector = coll.getVector(vector.getUUID(), true);
+        String seq = currentVector.getSeq();
+        if (seq.isEmpty()) {
+            seq = "[ VECTOR " + currentVector.getName() + " HOMOLOGY REGION ]";
+        }
 
-        String forwardOligoSequence = vectorPrimerPrefix + currentVector.getSeq().substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentVector.getSeq(), true, false));
-        String reverseOligoSequence = PrimerDesign.reverseComplement(currentVector.getSeq().substring(currentVector.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentVector.getSeq()), true, false)) + vectorPrimerSuffix);
+        String forwardOligoSequence = vectorPrimerPrefix + seq.substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false));
+        String reverseOligoSequence = PrimerDesign.reverseComplement(currentVector.getSeq().substring(seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false)) + vectorPrimerSuffix);
 
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
