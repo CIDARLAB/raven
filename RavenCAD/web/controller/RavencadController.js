@@ -8,7 +8,33 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var efficiencyArray = [];
     var _runParameters = {};
     var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
+    var _destination = ""; //stores the url a user was navigating towards
     /********************EVENT HANDLERS********************/
+    //prompt dialog when navigating away from design page with unsaved parts
+    $('a.losePartLink').click(function(event) {
+        var notSaved = $('a[val="notSaved"]');
+        if (notSaved.length > 0) {
+            event.preventDefault();
+            _destination = $(this).attr("href");
+            $('#navigateModal').modal();
+        }
+    });
+    $('button#discardModalButton').click(function() {
+        window.location.replace(_destination);
+    });
+
+    //event handler for modal save all button
+    $('button#saveAllModalButton').click(function() {
+        //save all parts for each unsaved design
+        $('a[val="notSaved"]').each(function() {
+            var designNumber = $(this).attr("name");
+            $('#saveButton' + designNumber).click();
+        });
+        $('#navigateModal div p').text("Parts successfully saved!");
+        setTimeout(function(){window.location.replace(_destination);}, 2000);
+
+    });
+    //update summary when efficiencies are changed
     $('.input-mini').keyup(function() {
         updateSummary();
     });
