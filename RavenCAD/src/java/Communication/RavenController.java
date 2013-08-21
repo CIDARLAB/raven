@@ -35,6 +35,10 @@ public class RavenController {
     public RavenController(String path, String user) {
         _path = path;
         _user = user;
+        File file = new File(_path + _user);
+        if(!file.exists() || !file.isDirectory()) {
+            file.mkdirs();
+        }
         //temporary default values
         _databaseConfig.add("jdbc:mysql://128.197.164.27");
         _databaseConfig.add("Puppeteerv0 ");

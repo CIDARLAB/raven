@@ -5,20 +5,17 @@
 package Communication;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.JSONArray;
@@ -37,18 +34,17 @@ public class RavenServlet extends HttpServlet {
      *
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
      */
-    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
-        PrintWriter out = response.getWriter();
-        String command = request.getParameter("command");
-        String user = getUser(request).toLowerCase();
-        RavenController controller = _controllerHash.get(user);
-
+    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response) {
+        PrintWriter out = null;
+        String user = null;
         try {
+            RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
+            out = response.getWriter();
+            String command = request.getParameter("command");
+            user = getUser(request).toLowerCase();
+            RavenController controller = _controllerHash.get(user);
+
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
                 _controllerHash.put(user, new RavenController(path, user));
@@ -86,7 +82,7 @@ public class RavenServlet extends HttpServlet {
                 responseString = controller.fetchData(true);
                 out.write(responseString);
 
-            }else if (command.equals("purge")) {
+            } else if (command.equals("purge")) {
                 response.setContentType("test/plain");
                 String responseString = "purged";
                 controller.clearData();
@@ -204,31 +200,34 @@ public class RavenServlet extends HttpServlet {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (user == null) {
+                user = "default";
+            }
             StringWriter stringWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(stringWriter);
             RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
             e.printStackTrace(printWriter);
             RavenLogger.logError(user, request.getRemoteAddr(), stringWriter.toString());
             String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
-            out.println("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            if (out != null) {
+                out.println("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            }
         } finally {
-            out.close();
+            if (out != null) {
+                out.close();
+            }
         }
     }
 
     /**
      * @param request servlet request
      * @param response servlet response
-     * @
-     * throws ServletException if a servlet -specific error occurs
-     * @
-     * throws IOException if an I /O error occurs
      *
      */
-    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        PrintWriter writer = response.getWriter();
+    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) {
+        PrintWriter writer = null;
         try {
+            writer = response.getWriter();
             if (!ServletFileUpload.isMultipartContent(request)) {
                 String command = request.getParameter("command");
                 String user = getUser(request).toLowerCase();
@@ -279,14 +278,17 @@ public class RavenServlet extends HttpServlet {
 
             }
         } catch (Exception e) {
-            e.printStackTrace();
             StringWriter stringWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(stringWriter);
             e.printStackTrace(printWriter);
             String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
-            writer.write("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            if (writer != null) {
+                writer.write("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            }
         } finally {
-            writer.close();
+            if (writer != null) {
+                writer.close();
+            }
 
         }
     }
@@ -298,12 +300,9 @@ public class RavenServlet extends HttpServlet {
      *
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         processGetRequest(request, response);
     }
 
@@ -313,12 +312,9 @@ public class RavenServlet extends HttpServlet {
      *
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         processPostRequest(request, response);
     }
 
