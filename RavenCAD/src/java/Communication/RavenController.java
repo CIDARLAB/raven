@@ -609,10 +609,10 @@ public class RavenController {
                         } else if (partNameTokens.length == 3) {
                             bpForcedLeft = partNameTokens[1];
                             bpForcedRight = partNameTokens[2];
-                        } else if (partNameTokens.length == 4) {
-                            bpDirection = partNameTokens[1];
-                            bpForcedLeft = partNameTokens[2];
-                            bpForcedRight = partNameTokens[3];
+                        } else if (partNameTokens.length == 4) {                            
+                            bpForcedLeft = partNameTokens[1];
+                            bpForcedRight = partNameTokens[2];
+                            bpDirection = partNameTokens[3];
                         }
                     }
                     if (forcedOverhangHash.get(compositePartName) != null) {
