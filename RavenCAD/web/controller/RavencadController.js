@@ -953,7 +953,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr><thead><tbody>';
         $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
 //            alert($(this).find('td:nth-child(5)').text().toLowerCase());
-            if ($(this).find('td:nth-child(5)').text().toLowerCase() !== "vector") {
+            var  type = $(this).find('td:nth-child(5)').text().toLowerCase();
+            if (type  === "composite") {
                 redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Click to Require/Forbid</button></td>';
                 $(this).find('td').each(function(key, value) {
                     if (key < 6) {
