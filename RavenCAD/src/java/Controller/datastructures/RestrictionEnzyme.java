@@ -52,7 +52,7 @@ public class RestrictionEnzyme {
             //Scan through the sequence and translate to a regular expression
             for (int j = 0; j < seq.length(); j++) {
 
-                char nuc = seq.charAt(i);
+                char nuc = seq.charAt(j);
                 if (nuc == 'a' || nuc == 'c' || nuc == 'g' || nuc == 't' || nuc == 'u') {
                     regExSeq = regExSeq + nuc;
                 } else if (nuc == 'w') {
@@ -84,7 +84,7 @@ public class RestrictionEnzyme {
         }
 
         _fwdRecSeq = regExRecSeqs.get(0);
-        _revRecSeq = regExRecSeqs.get(1);
+        _revRecSeq = regExRecSeqs.get(1);        
         _fwdCutSites = cutSites;
         _revCutSites = revCutSites;
         _reID = _reCount;
@@ -104,7 +104,6 @@ public class RestrictionEnzyme {
         //For all parts
         for (int i = 0; i < parts.size(); i++) {
             Part part = parts.get(i);
-            String name = part.getName();
             String seq = part.getSeq();
             HashMap<String, ArrayList<int[]>> detectedResSeqs = new HashMap<String, ArrayList<int[]>>();
 
@@ -121,7 +120,7 @@ public class RestrictionEnzyme {
                 Pattern compileRevRec = Pattern.compile(revRec, Pattern.CASE_INSENSITIVE);
                 Matcher matcherFwdRec = compileFwdRec.matcher(seq);
                 Matcher matcherRevRec = compileRevRec.matcher(seq);
-
+               
                 //Find matches of forward sequence
                 while (matcherFwdRec.find()) {
                     int[] matchIndexes = new int[2];
@@ -129,18 +128,27 @@ public class RestrictionEnzyme {
                     int end = matcherFwdRec.end();
                     matchIndexes[0] = start;
                     matchIndexes[1] = end;
-                    matchSites.add(matchIndexes);
+                    if (!matchSites.contains(matchIndexes)) {
+                        matchSites.add(matchIndexes);
+                    }      
                 }
 
-                //Find matches of reverse sequence
-                while (matcherRevRec.find()) {
-                    int[] matchIndexes = new int[2];
-                    int start = matcherRevRec.start();
-                    int end = matcherRevRec.end();
-                    matchIndexes[0] = start;
-                    matchIndexes[1] = end;
-                    matchSites.add(matchIndexes);
+                //If the forward and reverse sequences are different, search for the reverse matches also
+                if (!fwdRec.equals(revRec)) {
+                    
+                    //Find matches of reverse sequence
+                    while (matcherRevRec.find()) {
+                        int[] matchIndexes = new int[2];
+                        int start = matcherRevRec.start();
+                        int end = matcherRevRec.end();
+                        matchIndexes[0] = start;
+                        matchIndexes[1] = end;
+                        if (!matchSites.contains(matchIndexes)) {
+                            matchSites.add(matchIndexes);
+                        }
+                    }
                 }
+
                 if (matchSites.size() > 0) {
                     detectedResSeqs.put(enzName, matchSites);
                 }
