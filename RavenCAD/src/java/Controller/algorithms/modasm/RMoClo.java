@@ -948,7 +948,7 @@ public class RMoClo extends RGeneral {
 //                assignment.clear();
             }
         }
-        
+
         //generate new overhangs
         HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
         int newOverhang = 0;
@@ -961,7 +961,7 @@ public class RMoClo extends RGeneral {
                 assignedOverhangs.add(String.valueOf(newOverhang));
             }
         }
-        
+
         //generate matching new overhangs for inverted overhans
         for (String invertedOverhang : invertedOverhangs) {
             if (bestAssignment.get(invertedOverhang).equals("*")) {
@@ -1020,7 +1020,7 @@ public class RMoClo extends RGeneral {
             ArrayList<RNode> queue = new ArrayList();
             HashSet<RNode> seenNodes = new HashSet();
             queue.add(graph.getRootNode());
-            
+
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 queue.remove(0);
@@ -1030,17 +1030,17 @@ public class RMoClo extends RGeneral {
                         queue.add(neighbor);
                     }
                 }
-                
+
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
                 current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
                 current.setROverhang(finalOverhangHash.get(currentRightOverhang));
                 currentLeftOverhang = current.getLOverhang();
                 currentRightOverhang = current.getROverhang();
-                
-                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), "DVL" + current.getStage(), null);              
+
+                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), "DVL" + current.getStage(), null);
                 newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
-                current.setVector(newVector);          
+                current.setVector(newVector);
             }
         }
     }
@@ -1186,20 +1186,19 @@ public class RMoClo extends RGeneral {
 
         Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = currentPart.getSeq();
-        if (seq.isEmpty()) {
-            seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-        }
-        
         ArrayList<String> direction = node.getDirection();
         if ("-".equals(direction.get(0))) {
             seq = PrimerDesign.reverseComplement(seq);
         }
-        
+
+        if (seq.equals("")) {
+            seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+        }
         String forwardOligoSequence;
         String reverseOligoSequence;
         if (currentPart.getSeq().length() > 24) {
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + seq.substring(0, PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false));
-            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false)) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + seq.substring(0, Math.min(seq.length(),PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(Math.max(0,seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false))) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
         } else {
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + seq + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
             reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);

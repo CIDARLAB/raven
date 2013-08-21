@@ -11,7 +11,7 @@ import java.util.HashMap;
  * @author evanappleton
  */
 public class PrimerDesign {
-    
+
     /**
      * ************************************************************************
      *
@@ -19,7 +19,6 @@ public class PrimerDesign {
      *
      *************************************************************************
      */
-    
     public static String reverseComplement(String seq) {
         String lSeq = seq.toLowerCase();
         String revComplement = "";
@@ -58,10 +57,10 @@ public class PrimerDesign {
         }
         return revComplement;
     }
-    
+
     //calculates the length of homology required for primers based on nearest neighbor calculations
     public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence, boolean fivePrime, boolean forceLength) {
- 
+
         int length = targetLength;
 
         //If no melting temp is input, return the given length
@@ -70,85 +69,95 @@ public class PrimerDesign {
                 return sequence.length();
             } else {
                 return length;
-            }           
+            }
         }
 
         //If the sequence is under the desired length
         if (sequence.length() < length) {
             return sequence.length();
-        }            
-        
+        }
+
         //If determining the homology of the five prime side of a part
         if (fivePrime) {
 
             String candidateSeq = sequence.substring(0, length);
             double candidateTemp = getMeltingTemp(candidateSeq);
-            
+
             //Add base pairs until candidate temp reaches the desired temp if too low
             if (candidateTemp < meltingTemp) {
                 while (candidateTemp < meltingTemp) {
                     length++;
-                    if (sequence.length() < length) {
+                    if (sequence.length() > length) {
                         return length;
                     }
                     candidateSeq = sequence.substring(0, length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
 
-            //Remove base pairs until candidate temp reaches the desired temp if too high
-            } else if (candidateTemp > meltingTemp) {                
+                //Remove base pairs until candidate temp reaches the desired temp if too high
+            } else if (candidateTemp > meltingTemp) {
                 if (forceLength) {
                     if (length == meltingTemp) {
-                        return length;
+                        if (sequence.length() > length) {
+                            return length;
+                        }
                     }
                 }
-                
-                while (candidateTemp > meltingTemp) {                                  
+
+                while (candidateTemp > meltingTemp) {
                     length--;
                     candidateSeq = sequence.substring(0, length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
             }
-        
-        //If determining the homology length of the three prime side
+
+            //If determining the homology length of the three prime side
         } else {
 
-            String candidateSeq = sequence.substring(sequence.length()-length);
+            String candidateSeq = sequence.substring(sequence.length() - length);
             double candidateTemp = getMeltingTemp(candidateSeq);
-            
+
             //Add base pairs until candidate temp reaches the desired temp if too low
             if (candidateTemp < meltingTemp) {
                 while (candidateTemp < meltingTemp) {
                     length++;
-                    if (sequence.length() < length) {
+                    if (sequence.length() > length) {
                         return length;
                     }
-                    candidateSeq = sequence.substring(sequence.length()-length);
+                    candidateSeq = sequence.substring(sequence.length() - length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
 
-            //Remove base pairs until candidate temp reaches the desired temp if too high
+                //Remove base pairs until candidate temp reaches the desired temp if too high
             } else if (candidateTemp > meltingTemp) {
                 if (forceLength) {
                     if (length == meltingTemp) {
-                        return length;
+                        if (sequence.length() > length) {
+                            return length;
+                        }
                     }
                 }
-                
+
                 while (candidateTemp > meltingTemp) {
                     length--;
-                    candidateSeq = sequence.substring(sequence.length()-length);
+                    candidateSeq = sequence.substring(sequence.length() - length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
             }
         }
-
+        if (sequence.length() > length) {
+            return length;
+        } else {
+            length = sequence.length();
+        }
         return length;
     }
-    
-    /** Logic for going from OH variable place holders to actual sequences **/
+
+    /**
+     * Logic for going from OH variable place holders to actual sequences *
+     */
     public static HashMap<String, String> getModularOHseqs() {
-        
+
         HashMap<String, String> overhangVariableSequenceHash = new HashMap<String, String>();
         overhangVariableSequenceHash.put("0", "ggac");
         overhangVariableSequenceHash.put("1", "tact");
@@ -174,11 +183,11 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("9*", "gtcg");
         overhangVariableSequenceHash.put("10*", "aacg");
         overhangVariableSequenceHash.put("11*", "caca");
-        return overhangVariableSequenceHash;       
+        return overhangVariableSequenceHash;
     }
-    
-    public static double getMeltingTemp (String sequence) {
-        
+
+    public static double getMeltingTemp(String sequence) {
+
         /* Resources:
          * http://en.wikipedia.org/wiki/DNA_melting#Nearest-neighbor_method
          * http://www.basic.northwestern.edu/biotools/oligocalc.html
@@ -200,8 +209,7 @@ public class PrimerDesign {
         if (init == 'G' || init == 'C') {
             dH += 0.1;
             dS += -2.8;
-        }
-        else if (init == 'A' || init == 'T') {
+        } else if (init == 'A' || init == 'T') {
             dH += 2.3;
             dS += 4.1;
         }
@@ -209,52 +217,42 @@ public class PrimerDesign {
         if (init == 'G' || init == 'C') {
             dH += 0.1;
             dS += -2.8;
-        }
-        else if (init == 'A' || init == 'T') {
+        } else if (init == 'A' || init == 'T') {
             dH += 2.3;
             dS += 4.1;
         }
 
         // Checks nearest neighbor pairs
         for (int i = 0; i < length - 1; i++) {
-            pair = seq.substring(i,i+2);
+            pair = seq.substring(i, i + 2);
             if (pair.equals("AA") || pair.equals("TT")) {
                 dH += -7.9;
                 dS += -22.2;
-            }
-            else if (pair.equals("AG") || pair.equals("CT")) {
+            } else if (pair.equals("AG") || pair.equals("CT")) {
                 dH += -7.8;
                 dS += -21.0;
-            }
-            else if (pair.equals("AT")) {
+            } else if (pair.equals("AT")) {
                 dH += -7.2;
                 dS += -20.4;
-            }
-            else if (pair.equals("AC") || pair.equals("GT") ) {
+            } else if (pair.equals("AC") || pair.equals("GT")) {
                 dH += -8.4;
                 dS += -22.4;
-            }
-            else if (pair.equals("GA") || pair.equals("TC")) {
+            } else if (pair.equals("GA") || pair.equals("TC")) {
                 dH += -8.2;
                 dS += -22.2;
-            }
-            else if (pair.equals("GG") || pair.equals("CC")) {
+            } else if (pair.equals("GG") || pair.equals("CC")) {
                 dH += -8.0;
                 dS += -19.9;
-            }
-            else if (pair.equals("GC")) {
+            } else if (pair.equals("GC")) {
                 dH += -9.8;
                 dS += -24.4;
-            }
-            else if (pair.equals("TA")) {
+            } else if (pair.equals("TA")) {
                 dH += -7.2;
                 dS += -21.3;
-            }
-            else if (pair.equals("TG") || pair.equals("CA")) {
+            } else if (pair.equals("TG") || pair.equals("CA")) {
                 dH += -8.5;
                 dS += -22.7;
-            }
-            else if (pair.equals("CG") ) {
+            } else if (pair.equals("CG")) {
                 dH += -10.6;
                 dS += -27.2;
             }
@@ -267,8 +265,7 @@ public class PrimerDesign {
             if (seq.substring(0, mid).equals("")) {
                 dS += -1.4;
             }
-        }
-        else {
+        } else {
             mid = (length - 1) / 2;
             if (seq.substring(0, mid).equals("")) {
                 dS += -1.4;
@@ -284,5 +281,4 @@ public class PrimerDesign {
         //return temp;
         return temp;
     }
-    
 }
