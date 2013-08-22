@@ -158,6 +158,7 @@ public class RavenController {
                 }
             }
         }
+        _compPartsVectors.putAll(partVectorHash);
         
         //extract information from parts and write file
         String partList = "[";
@@ -198,6 +199,8 @@ public class RavenController {
                 if (v != null) {
                     vectorName = v.getName();
                 }
+                
+                ArrayList<String> pDirection = ClothoReader.parseTags(p.getSearchTags(), "Direction:");
                 for (int i = 0; i < p.getComposition().size(); i++) {
                     Part subpart = p.getComposition().get(i);
 
@@ -206,11 +209,17 @@ public class RavenController {
                     for (int k = 0; k < tags.size(); k++) {
                         if (tags.get(k).startsWith("LO:")) {
                             LO = tags.get(k).substring(4);
+                            if (i == 0 && LO.isEmpty()) {
+                                LO = p.getLeftOverhang();
+                            }
                         } else if (tags.get(k).startsWith("RO:")) {
                             RO = tags.get(k).substring(4);
+                            if (i == p.getComposition().size()-1 && RO.isEmpty()) {
+                                RO = p.getRightOverhang();
+                            }
                         }
                     }
-                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + subPartDirection.get(0);
+                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + pDirection.get(i);
                 }
 
                 composition = composition.substring(1);
@@ -635,8 +644,11 @@ public class RavenController {
                 Vector vector = null;
                 ArrayList<Vector> vectors = _collector.getAllVectorsWithName(vectorName, true);
                 if (vectors.size() > 0) {
-                    //TODO do we need an exact match?
-                    vector = vectors.get(0);
+                    for (Vector vec : vectors) {
+                        if (vec.getLeftoverhang().equals(leftOverhang) && vec.getRightOverhang().equals(rightOverhang)) {
+                            vector = vec;
+                        }
+                    }                   
                 }
                 _compPartsVectors.put(newComposite, vector);
                 newComposite.addSearchTag("Direction: " + directions);
