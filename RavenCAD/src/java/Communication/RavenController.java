@@ -251,32 +251,34 @@ public class RavenController {
         }
 
         for (Vector v : usedVectors) {
-            ArrayList<String> tags = v.getSearchTags();
-            String RO = "";
-            String LO = "";
-            String level = "";
-            String resistance = "";
-            for (int k = 0; k < tags.size(); k++) {
-                if (tags.get(k).startsWith("LO:")) {
-                    LO = tags.get(k).substring(4);
-                } else if (tags.get(k).startsWith("RO:")) {
-                    RO = tags.get(k).substring(4);
-                } else if (tags.get(k).startsWith("Level:")) {
-                    level = tags.get(k).substring(7);
-                } else if (tags.get(k).startsWith("Resistance:")) {
-                    resistance = tags.get(k).substring(12);
+            if (v != null) {
+                ArrayList<String> tags = v.getSearchTags();
+                String RO = "";
+                String LO = "";
+                String level = "";
+                String resistance = "";
+                for (int k = 0; k < tags.size(); k++) {
+                    if (tags.get(k).startsWith("LO:")) {
+                        LO = tags.get(k).substring(4);
+                    } else if (tags.get(k).startsWith("RO:")) {
+                        RO = tags.get(k).substring(4);
+                    } else if (tags.get(k).startsWith("Level:")) {
+                        level = tags.get(k).substring(7);
+                    } else if (tags.get(k).startsWith("Resistance:")) {
+                        resistance = tags.get(k).substring(12);
+                    }
                 }
+                out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+                partList = partList + "{\"uuid\":\"" + v.getUUID()
+                        + "\",\"Name\":\"" + v.getName()
+                        + "\",\"Sequence\":\"" + v.getSeq()
+                        + "\",\"LO\":\"" + v.getLeftoverhang()
+                        + "\",\"RO\":\"" + v.getRightOverhang()
+                        + "\",\"Type\":\"vector\",\"Composition\":\"\""
+                        + ",\"Vector\":\"\""
+                        + ",\"Resistance\":\"" + v.getResistance()
+                        + "\",\"Level\":\"" + v.getLevel() + "\"},";
             }
-            out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
-            partList = partList + "{\"uuid\":\"" + v.getUUID()
-                    + "\",\"Name\":\"" + v.getName()
-                    + "\",\"Sequence\":\"" + v.getSeq()
-                    + "\",\"LO\":\"" + v.getLeftoverhang()
-                    + "\",\"RO\":\"" + v.getRightOverhang()
-                    + "\",\"Type\":\"vector\",\"Composition\":\"\""
-                    + ",\"Vector\":\"\""
-                    + ",\"Resistance\":\"" + v.getResistance()
-                    + "\",\"Level\":\"" + v.getLevel() + "\"},";
         }
         out.close();
         partList = partList.substring(0, partList.length() - 1);

@@ -18,3 +18,7 @@ jake,awtry
 janoo,fernandes
 aaron,heuckroth
 hsiaut,raven12345
+KimdeMora,raven12345
+smanski,raven
+jcanderson,raven12345
+alecNielson,raven12345

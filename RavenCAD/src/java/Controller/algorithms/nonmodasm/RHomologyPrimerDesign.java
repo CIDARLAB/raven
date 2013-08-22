@@ -51,6 +51,7 @@ public class RHomologyPrimerDesign {
                 String seq = leftNeighbor.getSeq();
                 if (seq.equals("")) {
                     missingLeftSequence = true;
+                    break;
                 }
                 ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
                 if ("-".equals(leftNeighborDirection.get(0))) {
@@ -65,6 +66,7 @@ public class RHomologyPrimerDesign {
                 String seq = leftNeighbor.getSeq();
                 if (seq.equals("")) {
                     missingLeftSequence = true;
+                    break;
                 }
                 ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
                 if ("-".equals(leftNeighborDirection.get(0))) {
@@ -85,6 +87,7 @@ public class RHomologyPrimerDesign {
                 ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
                 if (seq.equals("")) {
                     missingRightSequence = true;
+                    break;
                 }
                 if ("-".equals(leftNeighborDirection.get(0))) {
                     seq = PrimerDesign.reverseComplement(seq);
@@ -99,6 +102,7 @@ public class RHomologyPrimerDesign {
                 ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
                 if (seq.equals("")) {
                     missingRightSequence = true;
+                    break;
                 }
                 if ("-".equals(leftNeighborDirection.get(0))) {
                     seq = PrimerDesign.reverseComplement(seq);

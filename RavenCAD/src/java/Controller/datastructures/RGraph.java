@@ -102,11 +102,12 @@ public class RGraph {
         }
         return toReturn;
     }
+
     /**
      * Return all parts in this graph *
      */
-    public HashMap<Part,Vector> getPartVectorsInGraph(Collector coll) {
-        HashMap<Part,Vector> toReturn = new HashMap();
+    public HashMap<Part, Vector> getPartVectorsInGraph(Collector coll) {
+        HashMap<Part, Vector> toReturn = new HashMap();
         HashSet<RNode> seenNodes = new HashSet();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
@@ -116,7 +117,11 @@ public class RGraph {
             queue.remove(0);
             Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
-                toReturn.put(toAdd, coll.getVector(current.getVector().getUUID(), true));
+                if (current.getVector() != null) {
+                    toReturn.put(toAdd, coll.getVector(current.getVector().getUUID(), true));
+                } else {
+                    toReturn.put(toAdd, null);
+                }
             }
             for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
@@ -191,7 +196,7 @@ public class RGraph {
                         }
                     }
 
-                //If it has been seen merge the node in the hash and disconnect this node from solution
+                    //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
 
                     RNode finalNode;
@@ -626,11 +631,11 @@ public class RGraph {
         return arcsText.toString();
     }
 
-     /**
+    /**
      * Generate a Weyekin image file for a this graph *
      */
     public String generateWeyekinFile(ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<RNode> goalPartNodes, boolean scarless) {
-        
+
         //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
         String edgeLines = "";
@@ -644,13 +649,13 @@ public class RGraph {
         for (RNode rootNode : goalPartNodes) {
             gpComps.add(rootNode.getComposition().toString());
         }
-        
+
         HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
-        
+
         //Traverse the graph
         while (!queue.isEmpty()) {
-            
+
             String pigeonLine;
             RNode current = queue.get(0);
             seenNodes.add(current);
@@ -661,7 +666,7 @@ public class RGraph {
             if (vector != null) {
                 vecName = vector.getName();
             }
-            
+
             ArrayList<String> composition = current.getComposition();
             ArrayList<String> type = current.getType();
             ArrayList<String> scars = current.getScars();
@@ -669,7 +674,7 @@ public class RGraph {
             String lOverhang = current.getLOverhang();
             String rOverhang = current.getROverhang();
             String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-            
+
             if (scarless) {
                 if (gpComps.contains(composition.toString())) {
                     if (vecName == null) {
@@ -685,13 +690,13 @@ public class RGraph {
                 pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
                 weyekinText.append(pigeonLine);
             }
-            
+
             //Add PCR edges for level 0 nodes
             if (current.getStage() == 0) {
-                
+
                 boolean basicNode = false;
                 String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-                
+
                 //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                 if (nodeID.endsWith("null")) {
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
@@ -717,7 +722,7 @@ public class RGraph {
                     weyekinText.append(pigeonLine.toString());
                 }
             }
-            
+
             //Get vector, make an extra edge if a PCR is required
             if (vector != null) {
                 String vecLO = vector.getLOverhang();
@@ -727,15 +732,15 @@ public class RGraph {
                 edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
                 pigeonLine = generatePigeonCode(null, null, null, null, vecID, vecLO, vecRO, vecName);
                 weyekinText.append(pigeonLine.toString());
-                
+
                 if (!startVectorsLOlevelRO.contains(vecID)) {
                     String NvecID = vecName + "|" + vecL;
                     edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
                     pigeonLine = generatePigeonCode(null, null, null, null, NvecID, null, null, vecName);
                     weyekinText.append(pigeonLine.toString());
-                }                    
+                }
             }
-            
+
             //Add unseen neighbors to the queue
             for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
@@ -746,13 +751,13 @@ public class RGraph {
 
                 //If one of the neighbors is a parent, add an edge
                 if (neighbor.getStage() > current.getStage()) {
-                    
+
                     RVector vectorN = neighbor.getVector();
                     String vecNameN = null;
                     if (vectorN != null) {
                         vecNameN = vectorN.getName();
                     }
-                    
+
                     ArrayList<String> compositionN = neighbor.getComposition();
                     ArrayList<String> directionN = neighbor.getDirection();
                     ArrayList<String> scarsN = neighbor.getScars();
@@ -769,7 +774,6 @@ public class RGraph {
         weyekinText.append("}");
         return weyekinText.toString();
     }
-    
 
     //returns a json string that can be parsed by the client
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
@@ -874,8 +878,9 @@ public class RGraph {
 
     }
 
-    
-       /** Pigeon code generation **/
+    /**
+     * Pigeon code generation *
+     */
     private String generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
@@ -887,8 +892,8 @@ public class RGraph {
         if (LO != null) {
             if (!LO.isEmpty()) {
                 pigeonLine.append("5 ").append(LO).append("\n");
-            }           
-        }       
+            }
+        }
 
         if (composition != null) {
             for (int i = 0; i < composition.size(); i++) {
@@ -938,7 +943,7 @@ public class RGraph {
                     pigeonLine.append(" ").append(name).append("\n");
                 } else {
                     if ("-".equals(dir)) {
-                        pigeonLine.deleteCharAt(pigeonLine.length()-1);
+                        pigeonLine.deleteCharAt(pigeonLine.length() - 1);
                     }
                     pigeonLine.append("? ").append(name).append(" 13" + "\n");
                 }
@@ -952,16 +957,16 @@ public class RGraph {
                     }
                 }
             }
-        }        
+        }
 
         //Assign right overhang                
         if (RO != null) {
             if (!RO.isEmpty()) {
                 pigeonLine.append("3 ").append(RO).append("\n");
-            }           
-        }       
+            }
+        }
 //        pigeonLine.append("5 ").append(RO).append("\n");
-        
+
         //Vectors
         if (vecName != null) {
             pigeonLine.append("v ").append(vecName).append("\n");
@@ -970,8 +975,7 @@ public class RGraph {
         pigeonLine.append("PIGEON_END\n\n");
         return pigeonLine.toString();
     }
-    
-    
+
     /**
      * Pigeon code generation *
      */
