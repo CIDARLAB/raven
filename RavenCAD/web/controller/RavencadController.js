@@ -955,7 +955,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('div#summaryTab' + originalDesignNumber+' ul#targets li').each(function(){
             targets.push($(this).text());
         });
-        var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr><thead><tbody>';
+        var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
         $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
 //            alert($(this).find('td:nth-child(5)').text().toLowerCase());
             var type = $(this).find('td:nth-child(5)').text().toLowerCase();
@@ -965,7 +965,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (type === "composite" && isGoalPart===-1) {
                 redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Click to Require/Forbid</button></td>';
                 $(this).find('td').each(function(key, value) {
-                    if (key < 6) {
+                    if (key < 7) {
                         redesignPartsList = redesignPartsList + '<td>' + $(this).text() + '</td>';
                     }
                 });
