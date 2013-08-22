@@ -1195,17 +1195,35 @@ public class RMoClo extends RGeneral {
             seq = PrimerDesign.reverseComplement(seq);
         }
 
-        if (seq.equals("")) {
-            seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-        }
+        String fwdHomology = "";
+        String revHomology = "";
+
         String forwardOligoSequence;
         String reverseOligoSequence;
-        if (currentPart.getSeq().length() > 24) {
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
-            reverseOligoSequence = PrimerDesign.reverseComplement(currentPart.getSeq().substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false))) + revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix);
+        if (seq.length() > 24) {
+            if (seq.equals("")) {
+                fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+                revHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+            } else {
+                fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
+                revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false)));
+            }
+
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + fwdHomology;
+            reverseOligoSequence = PrimerDesign.reverseComplement(revEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix) + revHomology;
         } else {
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + seq + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
-            reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+            if (seq.equals("")) {
+                fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+                revHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
+                reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology + PrimerDesign.reverseComplement(partPrimerPrefix + fwdEnzymeRecSite1 + "nn");
+            } else {
+                fwdHomology = seq;
+                revHomology = PrimerDesign.reverseComplement(seq);
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
+                reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+
+            }
         }
         oligos.add(forwardOligoSequence);
         oligos.add(reverseOligoSequence);
