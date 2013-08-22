@@ -205,15 +205,19 @@ public class RavenController {
                     Part subpart = p.getComposition().get(i);
 
                     ArrayList<String> searchTags = subpart.getSearchTags();
-                    ArrayList<String> subPartDirection = ClothoReader.parseTags(searchTags, "Direction:");
+                    
                     for (int k = 0; k < tags.size(); k++) {
                         if (tags.get(k).startsWith("LO:")) {
                             LO = tags.get(k).substring(4);
+                            
+                            //Edge case with new composite part from a PCR of existing composite part
                             if (i == 0 && LO.isEmpty()) {
                                 LO = p.getLeftOverhang();
                             }
                         } else if (tags.get(k).startsWith("RO:")) {
                             RO = tags.get(k).substring(4);
+                            
+                            //Edge case with new composite part from a PCR of existing composite part
                             if (i == p.getComposition().size()-1 && RO.isEmpty()) {
                                 RO = p.getRightOverhang();
                             }

@@ -108,12 +108,6 @@ public class ClothoWriter {
                     }
                     String currentPartKey = stringComposition + "|" + currentPartDir + "|" + currentPartScars + "|" + currentPartLO + "|" + currentPartRO;
                     String nodeKey = currentNode.getNodeKey("+");
-
-                    //A new part must be created if one with the same composition and overhangs does not exist
-                    System.out.println("nodeKey: " + nodeKey);
-                    System.out.println("node vectorKey: " + currentNode.getVector().getVectorKey("+"));
-                    System.out.println("partKey: " + currentPartKey);
-                    System.out.println("currentPart searchTags: " + currentPart.getSearchTags());
                     
                     if (!currentPartKey.equals(nodeKey)) {
 
