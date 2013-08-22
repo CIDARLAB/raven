@@ -200,6 +200,7 @@ public class RavenServlet extends HttpServlet {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             if (user == null) {
                 user = "default";
             }
@@ -278,6 +279,7 @@ public class RavenServlet extends HttpServlet {
 
             }
         } catch (Exception e) {
+            e.printStackTrace();
             StringWriter stringWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(stringWriter);
             e.printStackTrace(printWriter);

@@ -108,8 +108,7 @@ public class ClothoWriter {
                     }
                     String currentPartKey = stringComposition + "|" + currentPartDir + "|" + currentPartScars + "|" + currentPartLO + "|" + currentPartRO;
                     String nodeKey = currentNode.getNodeKey("+");
-
-                    //A new part must be created if one with the same composition and overhangs does not exist
+                    
                     if (!currentPartKey.equals(nodeKey)) {
 
                         //If a new part must be created
@@ -166,8 +165,10 @@ public class ClothoWriter {
                                 cSearchTags.add("Type: " + cType);
                                 cSearchTags.add("Direction: [" + cDir + "]");
                                 Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                
+                                //Try to find the inverted version if this part does not exist
                                 if (exactPart == null) {
-                                    //find the inverted version
+                                    
                                     String invertedcRO = cRO;
                                     if (invertedcRO.contains("*")) {
                                         invertedcRO = invertedcRO.substring(0, invertedcRO.length() - 1);
@@ -192,6 +193,22 @@ public class ClothoWriter {
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("Direction: [" + invertedcDir + "]");
                                     exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                }
+
+                                //In the edge case where the overhangs of a re-used composite part is changed
+                                if (exactPart == null) {
+                                    cSearchTags.clear();
+                                    cSearchTags.add("Type: " + cType);
+                                    cSearchTags.add("RO: ");
+                                    cSearchTags.add("LO: ");
+                                    
+                                    System.out.println("cName: " + cName);
+                                    System.out.println("cSeq: " + cSeq);
+                                    System.out.println("cSearchTags: " + cSearchTags);
+                                    
+                                    exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                    
+                                    System.out.println("exactPart: " + exactPart);
                                 }
 
                                 newComposition.add(exactPart);
@@ -362,8 +379,10 @@ public class ClothoWriter {
             cSearchTags.add("Direction: [" + cDir + "]");
 
             Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+            
+            //Try to find the inverted version if this part does not exist
             if (exactPart == null) {
-                //find the inverted version
+                
                 String invertedcRO = cRO;
                 if (invertedcRO.contains("*")) {
                     invertedcRO = invertedcRO.substring(0, invertedcRO.length() - 1);
@@ -388,7 +407,7 @@ public class ClothoWriter {
                 cSearchTags.add("Type: " + cType);
                 cSearchTags.add("Direction: [" + invertedcDir + "]");
                 exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
-            }
+            }    
             newComposition.add(exactPart);
         }
 

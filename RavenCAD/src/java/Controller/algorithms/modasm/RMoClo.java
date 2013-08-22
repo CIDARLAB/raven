@@ -752,7 +752,7 @@ public class RMoClo extends RGeneral {
         for (Part p : _partLibrary) {
             if (p.getDirections().isEmpty()) {
                 //TODO shouldn't need this once part import is fixed
-                p.addSearchTag("Direction: [+]");
+//                p.addSearchTag("Direction: [+]");
             }
             compositionOverhangDirections.add(p.getStringComposition() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + p.getDirections());
             //populate compositionConcreteHash's
