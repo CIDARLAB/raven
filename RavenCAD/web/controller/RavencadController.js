@@ -955,15 +955,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('div#summaryTab' + originalDesignNumber + ' ul#targets li').each(function() {
             targets.push($(this).text());
         });
-        var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
+        var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Failure/Success</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
         $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
-//            alert($(this).find('td:nth-child(5)').text().toLowerCase());
-            var type = $(this).find('td:nth-child(5)').text().toLowerCase();
-            var name = $(this).find('td:nth-child(2)').text();
+//            var type = $(this).find('td:nth-child(6)').text().toLowerCase();
+            var uuid = $(this).find('td:nth-child(2)').text();
 
-            var isGoalPart = $.inArray(name, targets);
-            if (type === "composite" && isGoalPart === -1) {
-                redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Click to Require/Forbid</button></td>';
+            var isGoalPart = $.inArray(uuid, targets);
+            if (isGoalPart === -1) {
+                redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Succeeded or Failed?</button></td>';
                 $(this).find('td').each(function(key, value) {
                     if (key < 7) {
                         var cellData = $(this).text();
@@ -993,37 +992,48 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#resultTabsHeader' + designNumber + ' li:last').removeClass("hidden");
             $('div#download' + designNumber).removeClass("hidden");
 
-            //add waiting dialog
-            $('#partsListArea'+designNumber).html('Please wait while Raven generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>');
-            $('#resultImage'+designNumber).html('Please wait while Raven generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>');
             var redesignInput = _runParameters[originalDesignNumber];
             var forbid = "";
-            var req = "";
-            
+            var toSaveParts = [];
+            var toSaveVectors = [];
             $('#partsListTable' + designNumber + ' tbody tr').each(function() {
-                var forbidRequire = $(this).find('td').first().find("button").attr("name");
-                if (forbidRequire === "forbidden") {
-                    var toForbid = '['+$(this).find('td:last').text()+']';
-//                    toForbid = toForbid.replace(/\|[^,\|]+\|[^\|,]+\|/g, "|");
+                var failSucceed = $(this).find('td').first().find("button").attr("name");
+                var type = $(this).find('td:nth-child(6)').text().toLowerCase();
+                if (type === "composite" && failSucceed === "failed") {
+                    var toForbid = '[' + $(this).find('td:last').text() + ']';
                     forbid = forbid + toForbid + ";";
-                } else if (forbidRequire === "required") {
-                    var toRequire = '['+$(this).find('td:last').text()+']';
-//                    toRequire = toRequire.replace(/\|[^,\|]+\|[^\|,]+\|/g, "|");
-                    req = req + toRequire + ";";
+                } else if (failSucceed === "succeeded") {
+                    var uuid = $(this).find('td:nth-child(2)').text();
+                    if (type === "vector") {
+                        toSaveVectors.push(uuid);
+                    } else {
+                        toSaveParts.push(uuid);
+                    }
                 }
             });
-            forbid = forbid.substring(0, forbid.length - 1);
-            req = req.substring(0, req.length - 1);
-            redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
-            redesignInput["required"] = redesignInput["required"] + req;
-            _runParameters[designNumber] = redesignInput;
 
-            if (canRun) {
-                $.get("RavenServlet", redesignInput, function(data) {
-                    interpretDesignResult(designNumber, data);
-                    canRun = true;
-                });
-            }
+
+            $.get('RavenServlet', {"command": "save", "partIDs": "" + toSaveParts, "vectorIDs": "" + toSaveVectors, "writeSQL": "" + false}, function(result) {
+                if (result === "saved data") {
+                    //if successful parts succeeded, then run the redesign
+                    //add waiting dialog
+                    forbid = forbid.substring(0, forbid.length - 1);
+                    redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
+                    _runParameters[designNumber] = redesignInput;
+                    $('#partsListArea' + designNumber).html('Please wait while Raven generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>');
+                    $('#resultImage' + designNumber).html('Please wait while Raven generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>');
+
+                    if (canRun) {
+                        $.get("RavenServlet", redesignInput, function(data) {
+                            interpretDesignResult(designNumber, data);
+                            canRun = true;
+                        });
+                    }
+                } else {
+                    alert("Failed to save parts");
+                }
+            });
+
 
         });
         $('.reqForbidButton').click(function() {
@@ -1031,31 +1041,33 @@ $(document).ready(function() { //don't run javascript until page is loaded
             var originalDesignNumber = _redesignDesignHash[designNumber];
             if ($(this).attr("name") === "neither") {
                 //add to require
-                $(this).attr("name", "forbidden");
+                $(this).attr("name", "failed");
                 $(this).addClass("btn-danger");
-                $(this).text("Forbidden");
-            } else if ($(this).attr("name") === 'forbidden') {
+                $(this).text("Failed");
+            } else if ($(this).attr("name") === 'failed') {
                 //add to forbidden
                 $(this).removeClass("btn-danger");
-                $(this).attr("name", "required");
+                $(this).attr("name", "succeeded");
                 $(this).addClass("btn-success");
-                $(this).text("Required");
+                $(this).text("Succeeded");
             } else {
                 //return to neither
                 $(this).attr("name", "neither");
                 $(this).removeClass("btn-danger");
-                $(this).text("Click to Require/Forbid");//add to forbidden
+                $(this).text("Succeeded or Failed?");//add to forbidden
                 $(this).removeClass("btn-success");
             }
             $('#summaryTab' + designNumber + ' div ul.requiredList').html($('#summaryTab' + originalDesignNumber + ' div ul.requiredList').html());
             $('#summaryTab' + designNumber + ' div ul.forbiddenList').html($('#summaryTab' + originalDesignNumber + ' div ul.forbiddenList').html());
             $('#partsListTable' + designNumber + ' tbody tr').each(function() {
                 var forbidRequire = $(this).find('td').first().find("button").attr("name");
-                if (forbidRequire === "forbidden") {
+                var type = $(this).find('td:nth-child(6)').text().toLowerCase();
+                if (forbidRequire === "failed" && type === "composite") {
                     $('#summaryTab' + designNumber + ' div ul.forbiddenList').append('<li>' + $(this).find('td:last').text() + '</li>');
-                } else if (forbidRequire === "required") {
-                    $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');
                 }
+//                else if (forbidRequire === "required") {
+//                    $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');
+//                }
             });
 
         });

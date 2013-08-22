@@ -69,7 +69,7 @@
                         <h3>Demonstration Video</h3>
                         <hr/>
                         <div align="center">    
-                            <iframe width="640" height="480" src="http://www.youtube.com/embed/TeIG-r5-jLU" frameborder="0"></iframe>
+                            <iframe width="640" height="480" src="//www.youtube.com/embed/uvc1xP3fGs0" frameborder="0"></iframe>
                         </div>
                     </div>
                     <div class="well" id="methods">
@@ -180,15 +180,15 @@
                     <div class="well" id="guide">
                         <h3>Guides</h3>
                         <hr/>
-                        <p>Specific how to examples are coming soon. In the meanwhile, please contact <a href="mailto:ravencad@gmail.com">ravencadhelp@gmail.com</a> for technical support.</p>
-                        <p><small>Please use right-click, then save as to download</small></p>
-                        <p><a href="data/Test_Input.csv">Download example input file</a></p>
+                        <p>This section contains documentation about specific Raven features. More examples are coming soon. In the meanwhile, please contact us at <a href="mailto:ravencad@gmail.com">ravencadhelp@gmail.com</a> if you have further questions.</p>
                         <div class="accordion" id="guideAccordion">
                             <div class="accordion-group">
                                 <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#exampleFiles">
-                                        Raven input examples
-                                    </a>
+                                    <h5>
+                                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#exampleFiles">
+                                            Raven input examples
+                                        </a>
+                                    </h5>
                                 </div>
                                 <div id="exampleFiles" class="accordion-body collapse out">
                                     <div class="accordion-inner">
@@ -199,21 +199,144 @@
                             </div>
                             <div class="accordion-group">
                                 <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#detailedInput">
-                                        Input file specifics
-                                    </a>
+                                    <h5>
+                                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#detailedInput">
+                                            Input file specifics
+                                        </a>
+                                    </h5>
                                 </div>
                                 <div id="detailedInput" class="accordion-body collapse out">
                                     <div class="accordion-inner">
-
+                                        <p>This is the full specification for the Raven input file. <strong>Files that do not conform to this standard may cause undesirable results</strong></p>
+                                        <p>
+                                            Each row represents a part or vector none of the columns need to be unique, but the collection of all columns in one row must be unique and if all columns are blank, the row is ignored.
+                                        </p>
+                                        <ol>
+                                            <li><strong>Name</strong>
+                                                <p>
+                                                    This is the field used to name the part.
+                                                </p>
+                                            </li>
+                                            <li><strong>Sequence</strong>
+                                                <p>
+                                                    In all cases this fields is optional, but without this field, complete primer designs will not be generated. Primer designs are not optimized, but are valid based for the selected assembly method.
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <strong>
+                                                    Left Overhang & Right Overhang
+                                                </strong>
+                                                <p>
+                                                    These fields mark the overhangs of the parts generated. 
+                                                    These overhangs are variables and not sequences and re-use of parts based on their overhangs is used in the calculation of an optimized assembly plan. 
+                                                    Composite parts, basic parts and vectors are all allowed to have overhangs. MoClo assembly plans only recognize overhangs with the numbers 1 -> 256 for re-use. 
+                                                    MoClo assembly plans also recognize overhangs with the “*” character as reverse compliments of the standard 256 possible MoClo overhangs (i.e. “1*” is the reverse overhang of overhang “1”).
+                                                </p>
+                                                <p>
+                                                    BioBricks assembly plans only recognize “EX” for the left overhang and “SP” for the right overhang. 
+                                                    Upon input this field is completely optional, but most outputs contain parts and vectors with overhangs, as this is necessary for assembly.
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <strong>
+                                                    Type 
+                                                </strong>
+                                                <p>
+                                                    This field is used to create assembly plan pictures using PigeonCAD auto-generated SBOLv-compliant device glyphs. 
+                                                    All composite parts must have the key string “composite” in this field and all vectors need the key string “vector”. 
+                                                    All other entries are valid, and assumed to be basic part types.
+                                                </p>
+                                                <p>The following key strings are recognized for pigeon images for basic parts:</p>
+                                                <table>
+                                                    <thead>
+                                                        <tr><th>Type</th><th>Shorthand</th></tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr><td>promoter</td><td>p</td></tr>
+                                                        <tr><td>RBS</td><td>r</td></tr>
+                                                        <tr><td>gene</td><td>g</td></tr>
+                                                        <tr><td>terminator</td><td>t</td></tr>
+                                                        <tr><td>reporter</td><td>rep</td></tr>
+                                                        <tr><td>resistance</td><td>res</td></tr>
+                                                        <tr><td>invertase site</td>ins<td></td></tr>
+                                                        <tr><td>spacer</td><td>s</td></tr>
+                                                        <tr><td>origin</td><td>o</td></tr>
+                                                        <tr><td>fusion</td><td>fus</td></tr>
+                                                    </tbody>
+                                                </table>
+                                                <p>
+                                                    Parts with type “fusion” denote fusion proteins and the Name column is split with the “-” character to get all the fusion names. 
+                                                    Parts with type “resistance” denote a resistance cassette. 
+                                                    This type is a legal basic part type but may cause invalid answers with restriction-based assembly cloning method that relies on cloning with destination vectors that also have anti-biotic resistance within them.
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <strong>
+                                                    Resistance
+                                                </strong>
+                                                <p>
+                                                    This field is used to denote the antibiotic resistance of a vector part.
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <strong>
+                                                    Level
+                                                </strong>
+                                                <p>
+                                                    This field is used only for vectors. MoClo vectors with level and overhangs are re-used in a MoClo assembly plan if it saves time and cost. Levels start at “0” for MoClo and all vector names are formatted “DVLx”, where “x” equals its level.
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <strong>
+                                                    Vector
+                                                </strong>
+                                                <p>
+                                                    Vector field is used to specify which vector a composite part or basic part with overhangs resides in, if applicable. 
+                                                    This field is always optional. In homologous recombination-based assemblies, this field is used to denote which vector will be assembled to the construct in the final step. 
+                                                    If this field is empty for homologous recombination-based assemblies, no vector is assigned and it is assumed that all parts are to be assembled into a circular product. 
+                                                    In BioBricks and Golden Gate assembly if a vector is assigned, it is assigned to all steps and if no vector is assigned, vector pSK1A2 is assigned to all steps. 
+                                                    In MoClo assembly, the vector is ignored for a target part, but when re-using parts from the library, it checks this field to determine which vector a library part currently resides in to determine if a new vector must be created.
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <strong>
+                                                    Composition 
+                                                </strong>
+                                                <p>
+                                                    This field starts in column 9 and extends infinitely based on the size of the composition of the target device. 
+                                                    All target devices must have a composition size of two or greater and only these devices will be recognized as targets
+                                                </p>
+                                                <p>
+                                                    This field must be formatted in one of the following conventions:
+                                                </p>
+                                                <ul>
+                                                    <li>“partName|LeftOverhang|RightOverhang|Direction” </li>
+                                                    <li>“partName|Direction”</li>
+                                                    <li>“partName”</li>
+                                                </ul>
+                                                <p>
+                                                    The part name is mandatory. LeftOverhang and RightOverhang are optional and must agree with the Left Overhang and Right overhang specified in the other columns (see above). 
+                                                    Direction is how a user can specify the strand or “direction” of a part within a device. All parts are assumed to be forward or on the leading strand. 
+                                                    The two acceptable directions are “+” and “-”. 
+                                                    If a part in a device has Direction equal to “-” it is on the lagging or backward strand, all other entries mean the part will be forward. 
+                                                </p>
+                                                <p>
+                                                    This is also where overhang assignments may be forced in the calculation. 
+                                                    For example a device with part “partA|1|2|+” in the composition forces overhang “1” to be assigned to the Left Overhang of partA and overhang “2” to be assigned to the Right Overhang of partA.
+                                                    In the former, direction is assumed forward and any overhang from the calculation may be assigned. In the latter, direction is assigned, but overhangs are also unassigned.
+                                                </p>
+                                            </li>
+                                        </ol>
                                     </div>
                                 </div>
                             </div>
                             <div class="accordion-group">
                                 <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#recReqDisFor">
-                                        Recommended, Required, Discouraged, and Forbidden parts
-                                    </a>
+                                    <h5>
+                                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#recReqDisFor">
+                                            Recommended, Required, Discouraged, and Forbidden parts
+                                        </a>
+                                    </h5>
                                 </div>
                                 <div id="recReqDisFor" class="accordion-body collapse out">
                                     <div class="accordion-inner">
@@ -225,9 +348,11 @@
                             </div>
                             <div class="accordion-group">
                                 <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#reuse">
-                                        Using new parts from a design in another
-                                    </a>
+                                    <h5>
+                                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#reuse">
+                                            Using new parts from a design in another
+                                        </a>
+                                    </h5>
                                 </div>
                                 <div id="reuse" class="accordion-body collapse out">
                                     <div class="accordion-inner">
@@ -239,9 +364,11 @@
                             </div>
                             <div class="accordion-group">
                                 <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#forcingOverhangs">
-                                        Forcing overhangs
-                                    </a>
+                                    <h5>
+                                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#forcingOverhangs">
+                                            Forcing overhangs
+                                        </a>
+                                    </h5>
                                 </div>
                                 <div id="forcingOverhangs" class="accordion-body collapse out">
                                     <div class="accordion-inner">
@@ -253,13 +380,15 @@
                             </div>
                             <div class="accordion-group">
                                 <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#collapseOne">
-                                        Guide Topic
-                                    </a>
+                                    <h5>
+                                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#collapseOne">
+                                            Using the redesign tab.
+                                        </a>
+                                    </h5>
                                 </div>
                                 <div id="collapseOne" class="accordion-body collapse out">
                                     <div class="accordion-inner">
-                                        Guide Content
+                                        <iframe width="640" height="480" src="http://www.youtube.com/embed/TeIG-r5-jLU" frameborder="0"></iframe>
                                     </div>
                                 </div>
                             </div>
