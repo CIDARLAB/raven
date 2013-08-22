@@ -36,7 +36,7 @@ public class RavenController {
         _path = path;
         _user = user;
         File file = new File(_path + _user);
-        if(!file.exists() || !file.isDirectory()) {
+        if (!file.exists() || !file.isDirectory()) {
             file.mkdirs();
         }
         //temporary default values
@@ -142,7 +142,7 @@ public class RavenController {
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
-        HashMap<Part,Vector> partVectorHash = new HashMap();
+        HashMap<Part, Vector> partVectorHash = new HashMap();
         for (RGraph result : _assemblyGraphs) {
             HashMap<Part, Vector> partVectorsInGraph = result.getPartVectorsInGraph(_collector);
             partVectorHash.putAll(partVectorsInGraph);
@@ -158,7 +158,7 @@ public class RavenController {
                 }
             }
         }
-        
+
         //extract information from parts and write file
         String partList = "[";
         FileWriter fw = new FileWriter(file);
@@ -251,7 +251,7 @@ public class RavenController {
                     + "\",\"Sequence\":\"" + v.getSeq()
                     + "\",\"LO\":\"" + v.getLeftoverhang()
                     + "\",\"RO\":\"" + v.getRightOverhang()
-                    + "\",\"Type\":\"vector\",\"Composition\":\"\""                    
+                    + "\",\"Type\":\"vector\",\"Composition\":\"\""
                     + ",\"Vector\":\"\""
                     + ",\"Resistance\":\"" + v.getResistance()
                     + "\",\"Level\":\"" + v.getLevel() + "\"},";
@@ -512,6 +512,12 @@ public class RavenController {
                     newVector.addSearchTag("Resistance: " + resistance);
                     newVector.setTransientStatus(false);
                     Vector toBreak = newVector.saveDefault(_collector);
+                    //save vector with no overhangs juse in case;
+                    Vector blankVector = Vector.generateVector(name, sequence);
+                    blankVector.addSearchTag("LO: " + leftOverhang);
+                    blankVector.addSearchTag("RO: " + rightOverhang);
+                    blankVector.saveDefault(_collector);
+                    blankVector.setTransientStatus(false);
                     if (toBreak == null) {
                         break;
                     }
@@ -532,8 +538,14 @@ public class RavenController {
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
+
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
+                    //save part with no scars or overhangs juse in case;
+                    Part blankBasicPart = Part.generateBasic(name, sequence);
+                    blankBasicPart.addSearchTag("Type: " + type);
+                    blankBasicPart.saveDefault(_collector);
+                    blankBasicPart.setTransientStatus(false);
                     if (toBreak == null) {
                         break;
                     }
@@ -613,7 +625,7 @@ public class RavenController {
                         } else if (partNameTokens.length == 3) {
                             bpForcedLeft = partNameTokens[1];
                             bpForcedRight = partNameTokens[2];
-                        } else if (partNameTokens.length == 4) {                            
+                        } else if (partNameTokens.length == 4) {
                             bpForcedLeft = partNameTokens[1];
                             bpForcedRight = partNameTokens[2];
                             bpDirection = partNameTokens[3];
