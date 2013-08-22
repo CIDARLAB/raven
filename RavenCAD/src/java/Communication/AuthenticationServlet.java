@@ -37,7 +37,11 @@ public class AuthenticationServlet extends HttpServlet {
             String user = request.getParameter("user");
             String password = request.getParameter("password");
             if (passwordHash.containsKey(user) && password.equals(passwordHash.get(user))) {
-                RavenLogger.logSessionIn(user, request.getRemoteAddr());
+                String ipAddress = request.getHeader("X-FORWARDED-FOR");
+                if (ipAddress == null) {
+                    ipAddress = request.getRemoteAddr();
+                }
+                RavenLogger.logSessionIn(user, ipAddress);
                 Cookie authenticateCookie = new Cookie("authenticate", "authenticated");
                 Cookie userCookie = new Cookie("user", user);
                 authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
@@ -46,6 +50,14 @@ public class AuthenticationServlet extends HttpServlet {
                 response.sendRedirect("index.html");
                 out.println("authenticated");
             } else {
+                String ipAddress = request.getHeader("Remote_Addr");
+                if (ipAddress == null) {
+                    ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
+                }
+                if (ipAddress == null) {
+                    ipAddress = request.getRemoteAddr();
+                }
+                RavenLogger.logError(user, ipAddress, "Failed to log in");
                 Cookie authenticateCookie = new Cookie("authenticate", "failed");
                 authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
                 response.addCookie(authenticateCookie);
