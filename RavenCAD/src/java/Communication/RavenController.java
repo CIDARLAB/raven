@@ -232,10 +232,10 @@ public class RavenController {
                         }
                     }
                     
-                    composition = composition + "," + subpart.getName() + "|" + cLO + "|" + cRO + "|" + pDirection.get(i);
+                    composition = composition + ", " + subpart.getName() + "|" + cLO + "|" + cRO + "|" + pDirection.get(i);
                 }
 
-                composition = composition.substring(1);
+                composition = composition.substring(2);
                 out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             }
             partList = partList
