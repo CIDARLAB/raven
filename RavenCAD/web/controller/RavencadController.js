@@ -31,7 +31,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#saveButton' + designNumber).click();
         });
         $('#navigateModal div p').text("Parts successfully saved!");
-        setTimeout(function(){window.location.replace(_destination);}, 2000);
+        setTimeout(function() {
+            window.location.replace(_destination);
+        }, 2000);
 
     });
     //update summary when efficiencies are changed
@@ -470,7 +472,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var pattern = /^[\d]+\.*[\d]+/;
         var summary = "<p>You're trying to assemble</p>";
         if ($('#targetPartList option').length > 0) {
-            summary = summary + '<ul style="max-height:150px;overflow:auto">';
+            summary = summary + '<ul id="targets" style="max-height:150px;overflow:auto">';
             $('#targetPartList option').each(function() {
                 summary = summary + '<li>' + $(this).text() + '</li>';
             });
@@ -949,12 +951,18 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
         $('div#partsListTab' + currentDesignCount).html();
         $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-
+        var targets = [];
+        $('div#summaryTab' + originalDesignNumber+' ul#targets li').each(function(){
+            targets.push($(this).text());
+        });
         var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr><thead><tbody>';
         $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
 //            alert($(this).find('td:nth-child(5)').text().toLowerCase());
-            var  type = $(this).find('td:nth-child(5)').text().toLowerCase();
-            if (type  === "composite") {
+            var type = $(this).find('td:nth-child(5)').text().toLowerCase();
+            var name = $(this).find('td:nth-child(2)').text();
+
+            var isGoalPart = $.inArray(name, targets);
+            if (type === "composite" && isGoalPart===-1) {
                 redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Click to Require/Forbid</button></td>';
                 $(this).find('td').each(function(key, value) {
                     if (key < 6) {
