@@ -200,15 +200,8 @@ public class ClothoWriter {
                                     cSearchTags.clear();
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("RO: ");
-                                    cSearchTags.add("LO: ");
-                                    
-                                    System.out.println("cName: " + cName);
-                                    System.out.println("cSeq: " + cSeq);
-                                    System.out.println("cSearchTags: " + cSearchTags);
-                                    
+                                    cSearchTags.add("LO: ");                                    
                                     exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
-                                    
-                                    System.out.println("exactPart: " + exactPart);
                                 }
 
                                 newComposition.add(exactPart);
@@ -217,8 +210,8 @@ public class ClothoWriter {
                             newPart = Part.generateComposite(newComposition, currentPart.getName());
                         }
 
-                        newPart.addSearchTag("LO: " + currentNode.getLOverhang());
-                        newPart.addSearchTag("RO: " + currentNode.getROverhang());
+                        newPart.addSearchTag("LO: " + LO);
+                        newPart.addSearchTag("RO: " + RO);
                         newPart.addSearchTag("Direction: " + currentNode.getDirection().toString());
 
                         String type = currentNode.getType().toString();

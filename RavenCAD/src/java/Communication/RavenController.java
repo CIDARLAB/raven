@@ -203,27 +203,36 @@ public class RavenController {
                 ArrayList<String> pDirection = ClothoReader.parseTags(p.getSearchTags(), "Direction:");
                 for (int i = 0; i < p.getComposition().size(); i++) {
                     Part subpart = p.getComposition().get(i);
-
+                    String cRO = "";
+                    String cLO = "";
                     ArrayList<String> searchTags = subpart.getSearchTags();
                     
-                    for (int k = 0; k < tags.size(); k++) {
-                        if (tags.get(k).startsWith("LO:")) {
-                            LO = tags.get(k).substring(4);
+                    for (int k = 0; k < searchTags.size(); k++) {
+                        if (searchTags.get(k).startsWith("LO:")) {
+                            cLO = searchTags.get(k).substring(4);
                             
-                            //Edge case with new composite part from a PCR of existing composite part
-                            if (i == 0 && LO.isEmpty()) {
-                                LO = p.getLeftOverhang();
-                            }
-                        } else if (tags.get(k).startsWith("RO:")) {
-                            RO = tags.get(k).substring(4);
-                            
-                            //Edge case with new composite part from a PCR of existing composite part
-                            if (i == p.getComposition().size()-1 && RO.isEmpty()) {
-                                RO = p.getRightOverhang();
-                            }
+                        } else if (searchTags.get(k).startsWith("RO:")) {
+                            cRO = searchTags.get(k).substring(4);                           
+                        }
+                    }                   
+             
+                    //Edge case with new composite part from a PCR of existing composite part
+                    if (cLO.isEmpty()) {
+                        if (i == 0) {
+                            cLO = p.getLeftOverhang();
+                        } else {
+                            cLO = p.getComposition().get(i - 1).getRightOverhang();
                         }
                     }
-                    composition = composition + "," + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + pDirection.get(i);
+                    if (cRO.isEmpty()) {
+                        if (i == p.getComposition().size() - 1) {
+                            cRO = p.getRightOverhang();
+                        } else {
+                            cRO = p.getComposition().get(i + 1).getLeftOverhang();
+                        }
+                    }
+                    
+                    composition = composition + "," + subpart.getName() + "|" + cLO + "|" + cRO + "|" + pDirection.get(i);
                 }
 
                 composition = composition.substring(1);
