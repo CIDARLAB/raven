@@ -822,7 +822,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (data["statistics"]["valid"] === "true") {
                 status = '<span class="label label-success">Graph structure verified!</span>';
                 saveButtons = '<p><button id="reportButton' + currentDesignCount +
-                        '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
+                        '" class ="btn btn-primary" style="width:100%" val="'+currentDesignCount+'">Submit as Example</button></p>' +
                         '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
                 if (user === "admin") {
                     saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + currentDesignCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
@@ -831,14 +831,19 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 }
                 $('#download' + currentDesignCount).prepend(saveButtons);
                 $('#reportButton' + currentDesignCount).click(function() {
-                    alert("this feature will be coming soon");
+                    var designNumber = $(this).attr("val");
+                    var imageURL = $('#resultImage' + designNumber + ' span img:first').attr('src');
+                    $.get("RavenServlet", {"command": "saveExample", "url": imageURL}, function(data) {
+                        $('#reportButton'+designNumber).addClass('disabled');
+                        $('#reportButton'+designNumber).text('Example submitted');
+                    });
                 });
             } else {
                 status = '<span class="label label-warning">Graph Structure Invalid!</span>';
                 saveButtons = '<p><button id="reportButton' + currentDesignCount + '" class ="btn btn-danger">Report Error</button></p>';
                 $('#download' + currentDesignCount).prepend(saveButtons);
                 $('#reportButton' + currentDesignCount).click(function() {
-                    alert("this feature will be coming soon");
+                    alert('Thank you. Your error has been logged');
                 });
             }
             //prepend status badge and report button
@@ -1027,7 +1032,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         //if successful parts succeeded, then run the redesign
                         //add waiting dialog
                         forbid = forbid.substring(0, forbid.length - 1);
-                        redesignInput["designCount"] = (parseInt(redesignInput["designCount"]) + 1)+"";
+                        redesignInput["designCount"] = (parseInt(redesignInput["designCount"]) + 1) + "";
                         redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
                         redesignInput["partLibrary"] = redesignInput["partLibrary"] + toAddToPartLibrary;
                         redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + toAddToVectorLibrary;

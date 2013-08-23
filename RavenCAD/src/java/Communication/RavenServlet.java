@@ -203,10 +203,12 @@ public class RavenServlet extends HttpServlet {
 
             } else if (command.equals("mail")) {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
-            } else if(command.equals("saveExample")) {
+            } else if (command.equals("saveExample")) {
                 String url = request.getParameter("url");
                 String examplePath = "";
-                saveUrl(examplePath, url);
+                String path = this.getServletContext().getRealPath("/") + "/example/example.png";
+                //TODO i need to fix this
+//                saveUrl(path, url);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -354,31 +356,28 @@ public class RavenServlet extends HttpServlet {
         }
         return user;
     }
- 
-    
+
     public void saveUrl(String filename, String urlString)
-      throws MalformedURLException, IOException
-    {
+            throws MalformedURLException, IOException {
         BufferedInputStream in = null;
         FileOutputStream fout = null;
-        try
-        {
+        try {
             in = new BufferedInputStream(new URL(urlString).openStream());
-            fout = new FileOutputStream(filename);
+            File newImage = new File(filename);
+            fout = new FileOutputStream(newImage);
 
             byte data[] = new byte[1024];
             int count;
-            while ((count = in.read(data, 0, 1024)) != -1)
-            {
+            while ((count = in.read(data, 0, 1024)) != -1) {
                 fout.write(data, 0, count);
             }
-        }
-        finally
-        {
-            if (in != null)
+        } finally {
+            if (in != null) {
                 in.close();
-            if (fout != null)
+            }
+            if (fout != null) {
                 fout.close();
+            }
         }
     }
     //FIELDS
