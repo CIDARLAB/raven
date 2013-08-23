@@ -23,3 +23,6 @@ smanski,raven
 jcanderson,raven12345
 alecNielsen,raven12345
 alecnielsen,Tj859sjr
+monique,freitas
+braskemMP,bkpj11l
+braskemLP,bkpj11c
