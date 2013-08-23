@@ -537,11 +537,6 @@ public class RavenController {
                     newVector.setTransientStatus(false);
                     Vector toBreak = newVector.saveDefault(_collector);
                     //save vector with no overhangs juse in case;
-                    Vector blankVector = Vector.generateVector(name, sequence);
-                    blankVector.addSearchTag("LO: " + leftOverhang);
-                    blankVector.addSearchTag("RO: " + rightOverhang);
-                    blankVector.saveDefault(_collector);
-                    blankVector.setTransientStatus(false);
                     if (toBreak == null) {
                         break;
                     }
