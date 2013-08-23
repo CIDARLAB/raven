@@ -17,10 +17,10 @@ import java.util.ArrayList;
  */
 public class RHomologyPrimerDesign {
 
-    public static ArrayList<String> homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
 
         //initialize primer parameters
-        ArrayList<String> oligos = new ArrayList<String>(2);
+        String[] oligos = new String[2];
         String forwardOligoSequence;
         String reverseOligoSequence;
         String leftNeighborSeq = "";
@@ -134,8 +134,8 @@ public class RHomologyPrimerDesign {
         }
 
 
-        oligos.add(forwardOligoSequence);
-        oligos.add(reverseOligoSequence);
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
 
         return oligos;
     }

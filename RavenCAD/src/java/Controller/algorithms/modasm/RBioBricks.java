@@ -235,10 +235,10 @@ public class RBioBricks extends RGeneral {
     /**
      * Generation of new BioBricks primers for parts *
      */
-    public static ArrayList<String> generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
 
         //initialize primer parameters
-        ArrayList<String> oligos = new ArrayList<String>(2);
+        String[] oligos = new String[2];
         String partPrimerPrefix = "gaattcgcggccgcttctagag";
         String partPrimerSuffix = "tactagtagcggccgctgcag";
         String partPrimerPrefixAlt = "gaattcgcggccgcttctag";
@@ -278,8 +278,8 @@ public class RBioBricks extends RGeneral {
             reverseOligoSequence = PrimerDesign.reverseComplement(partPrimerSuffix)+revHomology;
 
         }
-        oligos.add(forwardOligoSequence);
-        oligos.add(reverseOligoSequence);
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
 
         return oligos;
     }
@@ -287,10 +287,10 @@ public class RBioBricks extends RGeneral {
     /**
      * Generation of new BioBricks primers for parts *
      */
-    public static ArrayList<String> generateVectorPrimers(RVector vector, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] generateVectorPrimers(RVector vector, Collector coll, Double meltingTemp, Integer targetLength) {
 
         //initialize primer parameters
-        ArrayList<String> oligos = new ArrayList<String>(2);
+        String[] oligos = new String[2];
         String vectorPrimerPrefix = "gaattcgcggccgcttctagag";
         String vectorPrimerSuffix = "tactagtagcggccgctgcag";
 
@@ -309,8 +309,8 @@ public class RBioBricks extends RGeneral {
         String forwardOligoSequence = vectorPrimerPrefix + fwdHomology;
         String reverseOligoSequence = PrimerDesign.reverseComplement(vectorPrimerSuffix)+revHomology;
 
-        oligos.add(forwardOligoSequence);
-        oligos.add(reverseOligoSequence);
+        oligos[0]=forwardOligoSequence;
+        oligos[1] =reverseOligoSequence;
 
         return oligos;
     }

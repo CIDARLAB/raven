@@ -1179,10 +1179,10 @@ public class RMoClo extends RGeneral {
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static ArrayList<String> generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
 
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
-        ArrayList<String> oligos = new ArrayList<String>(2);
+        String[] oligos = new String[2];
         String partPrimerPrefix = "nn";
         String partPrimerSuffix = "nn";
         String fwdEnzymeRecSite1 = "gaagac";
@@ -1225,15 +1225,15 @@ public class RMoClo extends RGeneral {
 
             }
         }
-        oligos.add(forwardOligoSequence);
-        oligos.add(reverseOligoSequence);
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
         return oligos;
     }
 
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static ArrayList<String> generateVectorPrimers(RVector vector, Collector coll) {
+    public static String[] generateVectorPrimers(RVector vector, Collector coll) {
 
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
         String vectorPrimerPrefix = "gttctttactagtg";
@@ -1243,7 +1243,7 @@ public class RMoClo extends RGeneral {
         String fwdEnzymeRecSite2 = "ggtctc";
         String revEnzymeRecSite2 = "gagacc";
 
-        ArrayList<String> oligos = new ArrayList<String>(2);
+        String[] oligos = new String[2];
 
         //Level 0, 2, 4, 6, etc. vectors
         String forwardOligoSequence;
@@ -1258,8 +1258,8 @@ public class RMoClo extends RGeneral {
             reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "nn" + overhangVariableSequenceHash.get(vector.getROverhang()) + "n" + revEnzymeRecSite1 + vectorPrimerSuffix);
         }
 
-        oligos.add(forwardOligoSequence);
-        oligos.add(reverseOligoSequence);
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
         return oligos;
     }
     //FIELDS
