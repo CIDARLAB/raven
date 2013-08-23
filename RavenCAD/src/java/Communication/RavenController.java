@@ -479,6 +479,7 @@ public class RavenController {
         if (forcedOverhangHash == null) {
             forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         }
+        HashSet<String> seenPartNames = new HashSet();
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
         String line = reader.readLine();
         line = reader.readLine(); //skip first line
@@ -561,10 +562,13 @@ public class RavenController {
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
                     //save part with no scars or overhangs juse in case;
-                    Part blankBasicPart = Part.generateBasic(name, sequence);
-                    blankBasicPart.addSearchTag("Type: " + type);
-                    blankBasicPart.saveDefault(_collector);
-                    blankBasicPart.setTransientStatus(false);
+                    if (leftOverhang.length() > 0 && rightOverhang.length() > 0 && !seenPartNames.contains(name)) {
+                        Part blankBasicPart = Part.generateBasic(name, sequence);
+                        blankBasicPart.addSearchTag("Type: " + type);
+                        blankBasicPart.saveDefault(_collector);
+                        blankBasicPart.setTransientStatus(false);
+                        seenPartNames.add(name);
+                    }
                     if (toBreak == null) {
                         break;
                     }
