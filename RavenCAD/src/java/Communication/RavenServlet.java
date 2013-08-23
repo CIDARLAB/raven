@@ -4,9 +4,14 @@
  */
 package Communication;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -198,6 +203,10 @@ public class RavenServlet extends HttpServlet {
 
             } else if (command.equals("mail")) {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
+            } else if(command.equals("saveExample")) {
+                String url = request.getParameter("url");
+                String examplePath = "";
+                saveUrl(examplePath, url);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -344,6 +353,33 @@ public class RavenServlet extends HttpServlet {
             }
         }
         return user;
+    }
+ 
+    
+    public void saveUrl(String filename, String urlString)
+      throws MalformedURLException, IOException
+    {
+        BufferedInputStream in = null;
+        FileOutputStream fout = null;
+        try
+        {
+            in = new BufferedInputStream(new URL(urlString).openStream());
+            fout = new FileOutputStream(filename);
+
+            byte data[] = new byte[1024];
+            int count;
+            while ((count = in.read(data, 0, 1024)) != -1)
+            {
+                fout.write(data, 0, count);
+            }
+        }
+        finally
+        {
+            if (in != null)
+                in.close();
+            if (fout != null)
+                fout.close();
+        }
     }
     //FIELDS
     private HashMap<String, RavenController> _controllerHash = new HashMap(); //key:user, value: collector assocaited with that user
