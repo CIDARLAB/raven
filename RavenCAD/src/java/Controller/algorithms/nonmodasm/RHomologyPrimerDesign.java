@@ -31,6 +31,8 @@ public class RHomologyPrimerDesign {
         boolean missingSequence = false;
         boolean missingRightSequence = false;
         Part currentPart = coll.getPart(node.getUUID(), true);
+        Part leftNeighbor = null;
+        Part rightNeighbor = null;
         Part rootPart = coll.getPart(root.getUUID(), true);
         ArrayList<Part> composition = rootPart.getComposition();
 
@@ -47,7 +49,7 @@ public class RHomologyPrimerDesign {
         //Keep getting the sequences of the leftmost neighbors until the min sequence size is satisfied
         while (leftNeighborSeqLength < targetLength) {
             if (indexOf == 0) {
-                Part leftNeighbor = composition.get(composition.size() - 1);
+                leftNeighbor = composition.get(composition.size() - 1);
                 String seq = leftNeighbor.getSeq();
                 if (seq.equals("")) {
                     missingLeftSequence = true;
@@ -62,7 +64,7 @@ public class RHomologyPrimerDesign {
                 leftNeighborSeqLength = leftNeighborSeq.length();
                 indexOf = composition.size() - 1;
             } else {
-                Part leftNeighbor = composition.get(indexOf - 1);
+                leftNeighbor = composition.get(indexOf - 1);
                 String seq = leftNeighbor.getSeq();
                 if (seq.equals("")) {
                     missingLeftSequence = true;
@@ -82,7 +84,7 @@ public class RHomologyPrimerDesign {
         //Keep getting the sequences of the righttmost neighbors until the min sequence size is satisfied
         while (rightNeighborSeqLength < targetLength) {
             if (indexOf == composition.size() - 1) {
-                Part rightNeighbor = composition.get(0);
+                rightNeighbor = composition.get(0);
                 String seq = rightNeighbor.getSeq();
                 ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
                 if (seq.equals("")) {
@@ -97,7 +99,7 @@ public class RHomologyPrimerDesign {
                 rightNeighborSeqLength = rightNeighborSeq.length();
                 indexOf = 0;
             } else {
-                Part rightNeighbor = composition.get(indexOf + 1);
+                rightNeighbor = composition.get(indexOf + 1);
                 String seq = rightNeighbor.getSeq();
                 ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
                 if (seq.equals("")) {
@@ -120,12 +122,12 @@ public class RHomologyPrimerDesign {
         int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
 
         //If the homology of this part is the full length of this part, return blank oligos... other longer oligos will cover this span
-        if (currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) {
+        if ((currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) && currentPart.getSeq().length()>0) {
             return oligos;
         }
         if (missingSequence || missingLeftSequence || missingRightSequence) {
-            forwardOligoSequence = "[LEFT NEIGHBOR HOMOLOGY][" + currentPart.getName() + " HOMOLOGY][RIGHT NEIGHBOR HOMOLOGY]";
-            reverseOligoSequence = "[RIGHT NEIGHBOR HOMOLOGY][" + currentPart.getName() + " HOMOLOGY][LEFT NEIGHBOR HOMOLOGY]";
+            forwardOligoSequence = "["+leftNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            reverseOligoSequence = "["+rightNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
         } else {
             forwardOligoSequence = leftNeighborSeq.substring(Math.max(0, leftNeighborSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
             reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rightNeighborSeq.substring(0, Math.min(rightNeighborSeq.length(), rNeighborHomologyLength)));
