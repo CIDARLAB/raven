@@ -118,6 +118,7 @@ public class RGraph {
             Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
                 if (current.getVector() != null) {
+
                     toReturn.put(toAdd, coll.getVector(current.getVector().getUUID(), true));
                 } else {
                     toReturn.put(toAdd, null);
