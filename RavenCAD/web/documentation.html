@@ -329,6 +329,24 @@
                                                 </p>
                                             </li>
                                         </ol>
+                                        <p>
+                                            <strong>
+                                                The input file only recognizes four types of entries. Entries that do not fall into these categories will not be input correctly and/or cause invalid answers. Here are the acceptable entry types:                                            
+                                            </strong>
+                                        </p>
+
+                                        <table class="table-condensed table-bordered">
+                                            <thead>
+                                                <tr><th>Entry Type</th><th>Required Fields</th><th>Optional Fields</th><th>Forbidden Fields</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td>Basic Part</td><td>Name, Type</td><td>Sequence</td><td>Resistance, Level, Left Overhang, Right Overhang, Composition, Vector</td></tr>
+                                                <tr><td>Basic Part (Overhangs)</td><td>Name, Type, Left Overhang, Right Overhang, Composition</td><td>Sequence, Vector</td><td>Resistance, Level</td></tr>
+                                                <tr><td>Composite Part</td><td>Name, Type (="composite"), Composition</td><td>Sequence, Left Overhang, Right Overhang, Vector</td><td>Resistance, Level</td></tr>
+                                                <tr><td>Vector</td><td>Name, Type (="vector"), Resistance</td><td>Sequence, Level, Left Overhang, Right Overhang</td><td>Composition</td></tr>
+                                            </tbody>
+                                        </table>
+                                   
                                     </div>
                                 </div>
                             </div>
