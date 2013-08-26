@@ -210,8 +210,19 @@ public class RavenServlet extends HttpServlet {
                 String path = this.getServletContext().getRealPath("/") + "examples/";
                 File dir = new File(path);
                 int numExamples = dir.listFiles().length;
-                path = path+"example"+(numExamples+1)+".png";
+                path = path + "example" + (numExamples + 1) + ".png";
                 saveUrl(url, path);
+            } else if (command.equals("getExamples")) {
+                JSONArray imageLinks = new JSONArray();
+                String url = request.getParameter("url");
+                String path = this.getServletContext().getRealPath("/") + "examples/";
+                File dir = new File(path);
+                File[] examples = dir.listFiles();
+                for (int i = 0; i < examples.length; i++) {
+                    imageLinks.put(examples[i].getName());
+                }
+                out.write(imageLinks.toString());
+
             }
         } catch (Exception e) {
             e.printStackTrace();
