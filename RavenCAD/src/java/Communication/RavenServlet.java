@@ -4,14 +4,17 @@
  */
 package Communication;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -205,10 +208,12 @@ public class RavenServlet extends HttpServlet {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             } else if (command.equals("saveExample")) {
                 String url = request.getParameter("url");
-                String examplePath = "";
-                String path = this.getServletContext().getRealPath("/") + "/example/example.png";
+                String path = this.getServletContext().getRealPath("/") + "examples/";
+                File dir = new File(path);
+                int numExamples = dir.listFiles().length;
+                path = path+"example"+(numExamples+1)+".png";
                 //TODO i need to fix this
-//                saveUrl(path, url);
+                saveUrl(url, path);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -357,26 +362,35 @@ public class RavenServlet extends HttpServlet {
         return user;
     }
 
-    public void saveUrl(String filename, String urlString)
-            throws MalformedURLException, IOException {
-        BufferedInputStream in = null;
-        FileOutputStream fout = null;
+    private void saveUrl(String urlString, String localFileName) {
+        int size = 1024;
+        OutputStream outStream = null;
+        URLConnection uCon = null;
+        InputStream inputStream = null;
         try {
-            in = new BufferedInputStream(new URL(urlString).openStream());
-            File newImage = new File(filename);
-            fout = new FileOutputStream(newImage);
-
-            byte data[] = new byte[1024];
-            int count;
-            while ((count = in.read(data, 0, 1024)) != -1) {
-                fout.write(data, 0, count);
+            URL url;
+            byte[] buf;
+            int ByteRead, ByteWritten = 0;
+            url = new URL(urlString);
+            File newFile = new File(localFileName);
+            newFile.createNewFile();
+            FileOutputStream fileOutStream = new FileOutputStream(newFile);
+            outStream = new BufferedOutputStream(fileOutStream);
+            uCon = url.openConnection();
+            inputStream = uCon.getInputStream();
+            buf = new byte[size];
+            while ((ByteRead = inputStream.read(buf)) != -1) {
+                outStream.write(buf, 0, ByteRead);
+                ByteWritten += ByteRead;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (fout != null) {
-                fout.close();
+            try {
+                inputStream.close();
+                outStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
