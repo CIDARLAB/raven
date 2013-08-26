@@ -773,9 +773,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $('#saveButton' + designNumber).text("Report Error");
                     $('#saveButton' + designNumber).removeClass('btn-success');
                     $('#saveButton' + designNumber).addClass('btn-danger');
-                    $('#saveButton' + designNumber).click(function() {
-                        alert('this feature will be coming soon');
-                    });
                 }
             });
         });
@@ -822,20 +819,39 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (data["statistics"]["valid"] === "true") {
                 status = '<span class="label label-success">Graph structure verified!</span>';
                 saveButtons = '<p><button id="reportButton' + currentDesignCount +
-                        '" class ="btn btn-primary" style="width:100%" val="'+currentDesignCount+'">Submit as Example</button></p>' +
+                        '" class ="btn btn-primary" style="width:100%" val="' + currentDesignCount + '">Submit as Example</button></p>' +
                         '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
                 if (user === "admin") {
                     saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + currentDesignCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
                 } else {
                     saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + currentDesignCount + '" type="checkbox" checked=false/></p>';
                 }
+                //add the appropriate save buttons
                 $('#download' + currentDesignCount).prepend(saveButtons);
+                //create the example modal
+                $('#resultTabs' + currentDesignCount).append('<div id="exampleModal' + currentDesignCount + '" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="exampleModal' +
+                        currentDesignCount + '" aria-hidden="true">' +
+                        '<div class="modal-header"><h4 id="exampleModal' + currentDesignCount + '">Submit example</h4></div>' +
+                        '<div class="modal-body"><p>Are you sure you want to submit your graph image as a public example?</p><p>Only the image will be shared - we will never disclose your sequence data</p></div>' +
+                        '<div class="modal-footer"><button id="submitExampleButton'+currentDesignCount+'" val="'+currentDesignCount+'" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Submit</button>'+
+                        '<button class="btn" data-dismiss="modal" aria-hidden="true">Dismiss</button></div></div>');
+
+                //triggers a confirmation modal 
                 $('#reportButton' + currentDesignCount).click(function() {
                     var designNumber = $(this).attr("val");
+                    $('#exampleModal' + designNumber).modal();
+
+                });
+
+                //this button actually submits the image as an example
+                $('#submitExampleButton'+currentDesignCount).click(function() {
+                    var designNumber = $(this).attr("val");
                     var imageURL = $('#resultImage' + designNumber + ' span img:first').attr('src');
-                    $.get("RavenServlet", {"command": "saveExample", "url": imageURL}, function(data) {
-                        $('#reportButton'+designNumber).addClass('disabled');
-                        $('#reportButton'+designNumber).text('Example submitted');
+                    $.get("RavenServlet", {"command": "saveExample", "url": imageURL}, function() {
+                        var reportButton = $('#reportButton' + designNumber);
+                        reportButton.addClass('disabled');
+                        reportButton.text('Example submitted');
+                        reportButton.unbind();
                     });
                 });
             } else {
@@ -866,16 +882,19 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
                     if (result === "saved data") {
                         $('#discardButton' + currentDesignCount).attr("val", "saved");
-                        $('#saveButton' + designNumber).prop('disabled', true);
-                        $('#saveButton' + designNumber).text("Successful Save");
+                        var saveButton = $('#saveButton' + designNumber);
+                        saveButton.prop('disabled', true);
+                        saveButton.text("Successful Save");
+                        saveButton.unbind();
                         refreshData();
                     } else {
                         alert("Failed to save parts");
-                        $('#saveButton' + designNumber).text("Report Error");
-                        $('#saveButton' + designNumber).removeClass('btn-success');
-                        $('#saveButton' + designNumber).addClass('btn-danger');
-                        $('#saveButton' + designNumber).click(function() {
-                            alert('this feature will be coming soon');
+                        var saveButton = $('#saveButton' + designNumber);
+                        saveButton.text("Report Error");
+                        saveButton.removeClass('btn-success');
+                        saveButton.addClass('btn-danger');
+                        saveButton.click(function() {
+                            alert('Your error has been logged. Thanks for letting us know.');
                         });
                     }
                 });

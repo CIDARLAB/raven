@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -212,7 +211,6 @@ public class RavenServlet extends HttpServlet {
                 File dir = new File(path);
                 int numExamples = dir.listFiles().length;
                 path = path+"example"+(numExamples+1)+".png";
-                //TODO i need to fix this
                 saveUrl(url, path);
             }
         } catch (Exception e) {
