@@ -215,7 +215,7 @@ public class RavenServlet extends HttpServlet {
             } else if (command.equals("getExamples")) {
                 JSONArray imageLinks = new JSONArray();
                 String url = request.getParameter("url");
-                String path = this.getServletContext().getRealPath("/") + "examples/";
+                String path = this.getServletContext().getRealPath("/") + "/examples/";
                 File dir = new File(path);
                 File[] examples = dir.listFiles();
                 for (int i = 0; i < examples.length; i++) {
