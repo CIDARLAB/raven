@@ -207,7 +207,7 @@ public class RavenServlet extends HttpServlet {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
             } else if (command.equals("saveExample")) {
                 String url = request.getParameter("url");
-                String path = this.getServletContext().getRealPath("/") + "examples/";
+                String path = this.getServletContext().getRealPath("/") + "/examples/";
                 File dir = new File(path);
                 int numExamples = dir.listFiles().length;
                 path = path + "example" + (numExamples + 1) + ".png";
