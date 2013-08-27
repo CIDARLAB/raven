@@ -61,57 +61,62 @@ public class PrimerDesign {
     //calculates the length of homology required for primers based on nearest neighbor calculations
     public static int getPrimerHomologyLength(Double meltingTemp, Integer targetLength, String sequence, boolean fivePrime, boolean forceLength) {
 
-        int length = targetLength;
-
         //If no melting temp is input, return the given length
         if (meltingTemp == null) {
-            if (sequence.length() < length) {
+            if (sequence.length() < targetLength) {
                 return sequence.length();
             } else {
-                return length;
+                return targetLength;
             }
         }
 
-        //If the sequence is under the desired length
-        if (sequence.length() < length) {
+        //If the sequence length is under this length, return the whole sequence length
+        if (sequence.length() < targetLength) {
             return sequence.length();
         }
-
+        
+        int length = targetLength;
+        
         //If determining the homology of the five prime side of a part
         if (fivePrime) {
 
             String candidateSeq = sequence.substring(0, length);
             double candidateTemp = getMeltingTemp(candidateSeq);
-
+            
+            System.out.println("candidateTemp: " + candidateTemp);
+            
             //Add base pairs until candidate temp reaches the desired temp if too low
             if (candidateTemp < meltingTemp) {
                 while (candidateTemp < meltingTemp) {
                     length++;
-                    if (sequence.length() > length) {
-                        return length;
+                    
+                    //If the sequence length is under this length, return the whole sequence length
+                    if (sequence.length() < length) {
+                        return sequence.length();
                     }
                     candidateSeq = sequence.substring(0, length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
 
-                //Remove base pairs until candidate temp reaches the desired temp if too high
+            //Remove base pairs until candidate temp reaches the desired temp if too high
             } else if (candidateTemp > meltingTemp) {
-                if (forceLength) {
-                    if (length == meltingTemp) {
-                        if (sequence.length() > length) {
-                            return length;
-                        }
-                    }
-                }
 
                 while (candidateTemp > meltingTemp) {
+                    
+                    //If the input length is forced, candidate length is under this length, return the target length
+                    if (forceLength) {
+                        if (length <= targetLength) {
+                            return targetLength;
+                        }
+                    }
+
                     length--;
                     candidateSeq = sequence.substring(0, length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
             }
 
-            //If determining the homology length of the three prime side
+        //If determining the homology length of the three prime side
         } else {
 
             String candidateSeq = sequence.substring(sequence.length() - length);
@@ -119,32 +124,37 @@ public class PrimerDesign {
 
             //Add base pairs until candidate temp reaches the desired temp if too low
             if (candidateTemp < meltingTemp) {
+                
                 while (candidateTemp < meltingTemp) {
                     length++;
-                    if (sequence.length() > length) {
-                        return length;
+                    if (sequence.length() < length) {
+                        return sequence.length();
                     }
                     candidateSeq = sequence.substring(sequence.length() - length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
 
-                //Remove base pairs until candidate temp reaches the desired temp if too high
+            //Remove base pairs until candidate temp reaches the desired temp if too high
             } else if (candidateTemp > meltingTemp) {
-                if (forceLength) {
-                    if (length == meltingTemp) {
-                        if (sequence.length() > length) {
-                            return length;
+
+                //Call the melting temperature function
+                while (candidateTemp > meltingTemp) {
+                    
+                    //If the input length is forced, candidate length is under this length, return the target length
+                    if (forceLength) {
+                        if (length <= targetLength) {
+                            return targetLength;
                         }
                     }
-                }
-
-                while (candidateTemp > meltingTemp) {
+                    
                     length--;
                     candidateSeq = sequence.substring(sequence.length() - length);
                     candidateTemp = getMeltingTemp(candidateSeq);
                 }
             }
         }
+        
+        //Extra check to make sure no indexing errors occur
         if (sequence.length() > length) {
             return length;
         } else {
@@ -196,7 +206,7 @@ public class PrimerDesign {
 
         String seq = sequence;
         int length = sequence.length();
-        double concP = 50 * java.lang.Math.pow(10, -9);
+        double concP = 10 * java.lang.Math.pow(10, -9);
         double dH = 0;
         double dS = 0;
         double R = 1.987;
@@ -275,10 +285,17 @@ public class PrimerDesign {
         // dH is in kCal, dS is in Cal - equilibrating units
         dH = dH * 1000;
 
-        double logCt = java.lang.Math.log(concP);
+        double logCt = java.lang.Math.log(concP/4);
         temp = (dH / (dS + (R * logCt))) - 273.15;
 
         //return temp;
         return temp;
+    }
+    
+    public static double getMetltingTempNew(String sequence) {
+        
+        
+        
+        return 0.0;
     }
 }

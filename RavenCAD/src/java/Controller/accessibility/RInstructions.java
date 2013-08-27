@@ -29,9 +29,9 @@ public class RInstructions {
         String instructions = "";
         HashMap<String, String> oligoSequenceNameHash = new HashMap(); //key: sequence, value: name
         designPrimers = true;
-        String oligoNameRoot = "oligo";
-        Double meltingTemp = 55.0;
-        int primerLength = 20;
+        String oligoNameRoot;
+        Double meltingTemp;
+        int primerLength;
 
         try {
             oligoNameRoot = primerParameters.get(0);
@@ -173,8 +173,8 @@ public class RInstructions {
                             if (oligos[0].length() > 0 && oligos[0].length() > 0) {
                                 String fwdOligo = oligos[0];
                                 String revOligo = oligos[1];
-                                String forwardOligoName = "";
-                                String reverseOligoName = "";
+                                String forwardOligoName;
+                                String reverseOligoName;
                                 if (oligoSequenceNameHash.containsKey(fwdOligo)) {
                                     forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
                                 } else {
@@ -230,7 +230,6 @@ public class RInstructions {
                         if (!vectorOligoHash.containsKey(vector.getVectorKey("+"))) {
                             ArrayList<String> vectorOligoNamesForNode = new ArrayList<String>();
 
-
                             //Determine which kind of primers to generate
                             String[] oligos = new String[2];
                             if (method.equalsIgnoreCase("MoClo")) {
@@ -241,8 +240,8 @@ public class RInstructions {
 
                             String fwdOligo = oligos[0];
                             String revOligo = oligos[1];
-                            String forwardOligoName = "";
-                            String reverseOligoName = "";
+                            String forwardOligoName;
+                            String reverseOligoName;
                             if (oligoSequenceNameHash.containsKey(fwdOligo)) {
                                 forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
                             } else {

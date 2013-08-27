@@ -114,7 +114,7 @@ public class RavenController {
         //Run algorithm for MoClo assembly
         _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
-        moclo.setForcedOverhangs(_collector, forcedOverhangHash);
+        moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
         ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
         return optimalGraphs;
     }
@@ -297,7 +297,7 @@ public class RavenController {
         _forbidden = new HashSet<String>();
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
-        forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+        _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         _partLibrary = new ArrayList<Part>();
         _vectorLibrary = new ArrayList<Vector>();
         _instructions = "";
@@ -476,8 +476,8 @@ public class RavenController {
     private void parseRavenFile(File input) throws Exception {
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
-        if (forcedOverhangHash == null) {
-            forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+        if (_forcedOverhangHash == null) {
+            _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         }
         HashSet<String> seenPartNames = new HashSet();
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
@@ -654,12 +654,12 @@ public class RavenController {
                             bpDirection = partNameTokens[3];
                         }
                     }
-                    if (forcedOverhangHash.get(compositePartName) != null) {
-                        forcedOverhangHash.get(compositePartName).add(bpForcedLeft + "|" + bpForcedRight);
+                    if (_forcedOverhangHash.get(compositePartName) != null) {
+                        _forcedOverhangHash.get(compositePartName).add(bpForcedLeft + "|" + bpForcedRight);
                     } else {
                         ArrayList<String> toAdd = new ArrayList();
                         toAdd.add(bpForcedLeft + "|" + bpForcedRight);
-                        forcedOverhangHash.put(compositePartName, toAdd);
+                        _forcedOverhangHash.put(compositePartName, toAdd);
                     }
 
                     directions.add(bpDirection);
@@ -1054,7 +1054,7 @@ public class RavenController {
     private HashSet<String> _forbidden = new HashSet<String>();
     private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();
-    private HashMap<String, ArrayList<String>> forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+    private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
     private String _instructions = "";
