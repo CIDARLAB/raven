@@ -169,7 +169,7 @@ public class PrimerDesign {
     public static HashMap<String, String> getModularOHseqs() {
 
         HashMap<String, String> overhangVariableSequenceHash = new HashMap<String, String>();
-        overhangVariableSequenceHash.put("0", "ggac");
+        overhangVariableSequenceHash.put("0", "ggag");
         overhangVariableSequenceHash.put("1", "tact");
         overhangVariableSequenceHash.put("2", "aatg");
         overhangVariableSequenceHash.put("3", "aggt");
@@ -181,7 +181,7 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("9", "cgac");
         overhangVariableSequenceHash.put("10", "cgtt");
         overhangVariableSequenceHash.put("11", "tgtg");
-        overhangVariableSequenceHash.put("0*", "gtcc");
+        overhangVariableSequenceHash.put("0*", "ctcc");
         overhangVariableSequenceHash.put("1*", "agta");
         overhangVariableSequenceHash.put("2*", "catt");
         overhangVariableSequenceHash.put("3*", "acct");
