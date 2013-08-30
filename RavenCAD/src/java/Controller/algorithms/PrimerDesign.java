@@ -83,8 +83,6 @@ public class PrimerDesign {
             String candidateSeq = sequence.substring(0, length);
             double candidateTemp = getMeltingTemp(candidateSeq);
             
-            System.out.println("candidateTemp: " + candidateTemp);
-            
             //Add base pairs until candidate temp reaches the desired temp if too low
             if (candidateTemp < meltingTemp) {
                 while (candidateTemp < meltingTemp) {
@@ -272,12 +270,12 @@ public class PrimerDesign {
         int mid;
         if (length % 2 == 0) {
             mid = length / 2;
-            if (seq.substring(0, mid).equals("")) {
+            if (seq.substring(0, mid).equals(reverseComplement(seq.substring(mid+1)))) {
                 dS += -1.4;
             }
         } else {
             mid = (length - 1) / 2;
-            if (seq.substring(0, mid).equals("")) {
+            if (seq.substring(0, mid).equals(reverseComplement(seq.substring(mid+1)))) {
                 dS += -1.4;
             }
         }
@@ -290,12 +288,5 @@ public class PrimerDesign {
 
         //return temp;
         return temp;
-    }
-    
-    public static double getMetltingTempNew(String sequence) {
-        
-        
-        
-        return 0.0;
     }
 }
