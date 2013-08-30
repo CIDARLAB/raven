@@ -76,11 +76,8 @@
                         <h3>Assembly Methods</h3>
                         <hr/>
                         <p>
-                            Raven broadly classifies cloning-based assembly methods into three categories: binary assembly, modular one-pot assembly and scarless one-pot assembly. 
-                            BioBricks(TM) assembly [4] and its derivatives are supported binary assembly methods. 
-                            CPEC [6], SLIC [5], Gibson [2] and GoldenGate [7] assembly are all supported scarless one-pot assembly methods. 
-                            MoClo [3] is a supported modular one-pot assembly method. 
-                            Each of the listed supported assembly methods has additional technology-specific constraints.
+                            Raven currently supports six cloning-based assembly methods: Gibson [2], MoClo [3], BioBricks(TM) [4], SLIC [5], CPEC [6], and GoldenGate [7].
+                            Each of these supported assembly methods has technology-specific constraints.
                         </p>
                         <p>
                             Additional cloning-based assembly method and chemical synthesis assembly are not currently supported. 
@@ -92,17 +89,24 @@
                         <h3>Algorithms</h3>
                         <hr/>
                         <p>
-                            Raven breaks the DNA assembly problem into two major parts: selecting and generating optimized overhangs and performing all cloning reactions necessary to achieve the final construct. 
-                            The tool first determines an optimized set of assembly steps, and then it optimizes overhang selection; 
-                            it is assumed that performing a successful assembly step is more costly and time consuming than performing a PCR reaction. 
-                            This strategy is applied to binary, one-pot scarless and one-pot modular assembly methods to produce fast, modular and efficient assembly plans.
+                            Raven breaks the DNA assembly problem into two major parts: determining all cloning reactions necessary to achieve the final construct and selecting optimized part junctions based on method-specific constraints. 
+                            For a given set of target constructs, the tool first determines an optimized set of assembly steps, then it selects part junctions (overhangs). 
+                            Calculations are made in this order because it is assumed that performing a successful assembly step is more costly and time consuming than performing a PCR reaction to get the required overhangs. 
+                            This strategy is applied to all supported assembly methods to produce fast, modular and efficient assembly plans.
                         </p>
                         <p>
-                            Sometimes an experimentalist observes higher or lower assembly efficiencies than realized in the literature due to a number of experimental conditions such as cell competency, specific reaction conditions and other factors. With Raven, a user is able to adjust the default efficiency numbers guiding the efficiency optimizations. 
-                            A user may also wish to bias certain intermediates from appearing or not appearing, with or without mandatory inclusion or exclusion. For example, a user might wish to bias an assembly towards intermediates that fit a certain substructure such as a transcriptional unit. 
-                            Another user might want to bias against performing PCR on large parts or parts with hairpins or other problematic structures. A user might also encounter unsuccessful cloning steps or PCRs or wish to test specific intermediate parts or part junctions. 
-                            In all of these cases, it is imperative that these intermediates and/or part junctions are either biased or forced to appear or not appear. Raven optimizes around these additional constraints unless they are so restrictive that no valid solution can be found. 
-                            Raven allows for lists of intermediates or overhangs to be input as optional parameters for the algorithm. Intermediate parts and overhangs can be biased for (recommended), biased against (discouraged), forced or forbidden. 
+                            Sometimes an experimentalist observes higher or lower assembly efficiencies than realized in the literature due to a number of experimental conditions such as cell competency, specific reaction conditions and other factors. 
+                            With Raven, a user is able to adjust the default efficiency numbers guiding the efficiency optimizations. 
+                        </p>    
+                        <p>    
+                            A user may also wish to bias certain intermediates from appearing or not appearing, with or without mandatory inclusion or exclusion. 
+                            For example, a user might wish to bias an assembly towards intermediates that fit a certain substructure such as a transcriptional unit. 
+                            Another user might also encounter unsuccessful cloning steps or PCRs or wish to test specific intermediate parts or part junctions. 
+                            In such cases, it is imperative that these intermediates and/or part junctions are either biased or forced to appear or not appear. 
+                        </p>   
+                        <p>
+                            Raven optimizes around these additional constraints unless they are so restrictive that no valid solution can be found. 
+                            Intermediate parts and overhangs can be biased for (recommended), biased against (discouraged), forced or forbidden. 
                             These parts and overhangs can be specified either manually in the GUI or automatically via Eugene [8] scripts.
                         </p>
                     </div>
@@ -110,14 +114,16 @@
                         <h3>Integrated Tool Chain</h3>
                         <hr/>
                         <p>
-                            Raven is a ‘stand-alone’ tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
-                            However, this tool is also connected to a larger tool-chain in the Clotho design automation platform. 
-                            The tool chain is a top-down design flow and begins with the specification of device behavior. 
-                            One tool in the Clotho design flow that can do this is Eugene [8]. 
-                            Eugene can be used to generate a set of target devices based on libraries of parts and device design rule sets. 
+                            Raven is implemented as a ‘stand-alone’ tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
+                            However, this tool is designed to connect to a larger tool-chain in the Clotho design automation platform. 
+                            This tool chain uses a 'top-down' design flow and begins with the specification of device behavior and ends in physically implemented assembly. 
+                        </p>    
+                        <p>    
+                            One such specification tool in the Clotho design flow is Eugene [8]. 
+                            Eugene can generate a set of target devices based on libraries of parts and device design rule sets. 
                             Once all target devices are determined, Raven determines the best way to build all target parts. 
                             These output instructions can be given to a liquid handling robot to automatically assemble these devices from its resources. 
-                            This flow allows a user to simply specify the behavior of a set of devices they would like to build and what resources they have and have the devices automatically constructed with liquid handling robots.
+                            This flow allows a user to merely specify the behavior of a set of devices they would like to build and what resources they have to have the devices automatically constructed with liquid handling robots.
                         </p>
                     </div>
                     <div class="well" id="help">
@@ -129,13 +135,13 @@
                             </dt>
                             <dd>
                                 A user must minimally provide a list of target parts and all DNA parts that are needed to build the target parts. 
-                                Part sequences are not mandatory, but no sequence-level optimization can be performed on parts without sequence.
+                                Part sequences are not mandatory, but no primers will be incomplete on parts without sequence.
                             </dd>
                             <dt>
                             What do I input into Raven?
                             </dt>
                             <dd>
-                                Raven accepts a single csv file that allows users to specify their basic parts, devices, and vectors. Details about this file can be found <a href="#detailedInput">here</a>.
+                                Raven accepts a single .csv file that allows users to specify their basic parts, devices, and vectors. Details about this file can be found <a href="#detailedInput">here</a>.
                                 Example input files can be found <a href="#exampleFiles">here</a>
                             </dd>
                             <dt>
@@ -173,6 +179,7 @@
                                 <ul>
                                     <li>Mandatory: Target parts, parts composing all target parts</li>
                                     <li>Optional: Existing overhangs for each input part; existing assembly vectors; complete parts library assembly efficiency information for a specific cloning method; recommended, discouraged, required, forbidden intermediate parts and/or overhangs</li>
+                                    <li>More information about acceptable part types and fields can be found <a href="#exampleFiles">here</a></li>
                                 </ul>
                             </dd>
                         </dl>
@@ -438,8 +445,8 @@
                         <h3>References</h3>
                         <hr/>
                         <ol>
-                            <li>Densmore, D. et al. Algorithms for automated DNA assembly. Nucleic Acids Research 38, 2607–2616 (2010).</li>
-                            <li>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</li>
+                            <li> Densmore, D. et al. Algorithms for automated DNA assembly. Nucleic Acids Research 38, 2607–2616 (2010).</li>
+                            <li> Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</li>
                             <li> Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A Modular Cloning System for Standardized Assembly of Multigene Con- structs. PloS ONE 6 (2010).</li>
                             <li> Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).</li>
                             <li> Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251– 256 (2007).</li>
