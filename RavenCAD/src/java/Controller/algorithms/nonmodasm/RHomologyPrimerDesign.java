@@ -17,17 +17,22 @@ import java.util.ArrayList;
  */
 public class RHomologyPrimerDesign {
 
-    public static ArrayList<String> homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
 
         //initialize primer parameters
-        ArrayList<String> oligos = new ArrayList<String>(2);
+        String[] oligos = new String[2];
         String forwardOligoSequence;
         String reverseOligoSequence;
         String leftNeighborSeq = "";
         String rightNeighborSeq = "";
         int rightNeighborSeqLength = 0;
         int leftNeighborSeqLength = 0;
+        boolean missingLeftSequence = false;
+        boolean missingSequence = false;
+        boolean missingRightSequence = false;
         Part currentPart = coll.getPart(node.getUUID(), true);
+        Part leftNeighbor = null;
+        Part rightNeighbor = null;
         Part rootPart = coll.getPart(root.getUUID(), true);
         ArrayList<Part> composition = rootPart.getComposition();
 
@@ -37,35 +42,43 @@ public class RHomologyPrimerDesign {
             currentSeq = PrimerDesign.reverseComplement(currentSeq);
         }
         if (currentSeq.equals("")) {
-            currentSeq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+            missingSequence = true;
         }
         int indexOf = composition.indexOf(currentPart);
 
         //Keep getting the sequences of the leftmost neighbors until the min sequence size is satisfied
         while (leftNeighborSeqLength < targetLength) {
+            
             if (indexOf == 0) {
-                Part leftNeighbor = composition.get(composition.size() - 1);
+                leftNeighbor = composition.get(composition.size() - 1);
                 String seq = leftNeighbor.getSeq();
+                if (seq.equals("")) {
+                    missingLeftSequence = true;
+                    break;
+                }
                 ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
                 if ("-".equals(leftNeighborDirection.get(0))) {
                     seq = PrimerDesign.reverseComplement(seq);
                 }
-                if (seq.equals("")) {
-                    seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                }
+
                 leftNeighborSeq = leftNeighborSeq + seq;
                 leftNeighborSeqLength = leftNeighborSeq.length();
                 indexOf = composition.size() - 1;
+            
             } else {
-                Part leftNeighbor = composition.get(indexOf - 1);
+                leftNeighbor = composition.get(indexOf - 1);
                 String seq = leftNeighbor.getSeq();
+                
+                if (seq.equals("")) {
+                    missingLeftSequence = true;
+                    break;
+                }
+                
                 ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
                 if ("-".equals(leftNeighborDirection.get(0))) {
                     seq = PrimerDesign.reverseComplement(seq);
                 }
-                if (seq.equals("")) {
-                    seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                }
+
                 leftNeighborSeq = leftNeighborSeq + seq;
                 leftNeighborSeqLength = leftNeighborSeq.length();
                 indexOf--;
@@ -74,29 +87,39 @@ public class RHomologyPrimerDesign {
 
         //Keep getting the sequences of the righttmost neighbors until the min sequence size is satisfied
         while (rightNeighborSeqLength < targetLength) {
+            
             if (indexOf == composition.size() - 1) {
-                Part rightNeighbor = composition.get(0);
+                rightNeighbor = composition.get(0);
                 String seq = rightNeighbor.getSeq();
                 ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
+                
+                if (seq.equals("")) {
+                    missingRightSequence = true;
+                    break;
+                }
+                
                 if ("-".equals(leftNeighborDirection.get(0))) {
                     seq = PrimerDesign.reverseComplement(seq);
                 }
-                if (seq.equals("")) {
-                    seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                }
+
                 rightNeighborSeq = rightNeighborSeq + seq;
                 rightNeighborSeqLength = rightNeighborSeq.length();
                 indexOf = 0;
+            
             } else {
-                Part rightNeighbor = composition.get(indexOf + 1);
+                rightNeighbor = composition.get(indexOf + 1);
                 String seq = rightNeighbor.getSeq();
                 ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
+                
+                if (seq.equals("")) {
+                    missingRightSequence = true;
+                    break;
+                }
+                
                 if ("-".equals(leftNeighborDirection.get(0))) {
                     seq = PrimerDesign.reverseComplement(seq);
                 }
-                if (seq.equals("")) {
-                    seq = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                }
+
                 rightNeighborSeq = rightNeighborSeq + seq;
                 rightNeighborSeqLength = rightNeighborSeq.length();
                 indexOf++;
@@ -109,15 +132,20 @@ public class RHomologyPrimerDesign {
         int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
 
         //If the homology of this part is the full length of this part, return blank oligos... other longer oligos will cover this span
-        if (currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) {
+        if ((currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) && currentPart.getSeq().length()>0) {
             return oligos;
         }
+        if (missingSequence || missingLeftSequence || missingRightSequence) {
+            forwardOligoSequence = "["+leftNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            reverseOligoSequence = "["+rightNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+        } else {
+            forwardOligoSequence = leftNeighborSeq.substring(Math.max(0, leftNeighborSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rightNeighborSeq.substring(0, Math.min(rightNeighborSeq.length(), rNeighborHomologyLength)));
+        }
 
-        forwardOligoSequence = leftNeighborSeq.substring(Math.max(0, leftNeighborSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(),currentPartLHomologyLength));
-        reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0,currentSeq.length() - currentPartRHomologyLength)) + rightNeighborSeq.substring(0, Math.min(rightNeighborSeq.length(),rNeighborHomologyLength)));
 
-        oligos.add(forwardOligoSequence);
-        oligos.add(reverseOligoSequence);
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
 
         return oligos;
     }

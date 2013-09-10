@@ -7,7 +7,7 @@ $(document).ready(function() {
         } else if ($('#loginForm input[name="password"]').val() === "") {
             $('#loginModal').modal();
         } else {
-            self.submit(function(){
+            self.submit(function() {
                 if (getCookie("authenticate") === "authenticated") {
                     $.get("RavenServlet", {"command": "purge"});
                 }
@@ -64,5 +64,16 @@ $(document).ready(function() {
     } else if (getCookie("authenticate") === "failed") {
         window.location.replace("login.html");
     }
+
+
+    $.get("RavenServlet", {command: "getExamples"}, function(data) {
+        var carousel = '';
+        var jsonData = $.parseJSON(data);
+        $.each(jsonData, function(index, value) {
+            carousel = carousel+'<div class="item"><img src="examples/'+value+'" alt =""/></div>';
+        });
+        $('#submittedExamples div').prepend(carousel);
+        $('#submittedExamples div div:first').addClass('active');
+    });
 
 });

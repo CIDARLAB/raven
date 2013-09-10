@@ -4,21 +4,25 @@
  */
 package Communication;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.JSONArray;
@@ -37,18 +41,17 @@ public class RavenServlet extends HttpServlet {
      *
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
      */
-    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
-        PrintWriter out = response.getWriter();
-        String command = request.getParameter("command");
-        String user = getUser(request).toLowerCase();
-        RavenController controller = _controllerHash.get(user);
-
+    protected void processGetRequest(HttpServletRequest request, HttpServletResponse response) {
+        PrintWriter out = null;
+        String user = null;
         try {
+            RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
+            out = response.getWriter();
+            String command = request.getParameter("command");
+            user = getUser(request).toLowerCase();
+            RavenController controller = _controllerHash.get(user);
+
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
                 _controllerHash.put(user, new RavenController(path, user));
@@ -86,7 +89,7 @@ public class RavenServlet extends HttpServlet {
                 responseString = controller.fetchData(true);
                 out.write(responseString);
 
-            }else if (command.equals("purge")) {
+            } else if (command.equals("purge")) {
                 response.setContentType("test/plain");
                 String responseString = "purged";
                 controller.clearData();
@@ -202,33 +205,55 @@ public class RavenServlet extends HttpServlet {
 
             } else if (command.equals("mail")) {
 //                GoogleMail.Send("ravencadhelp", "Cidar1123", "eapple@bu.edu", "Guess who can send emails using a server now?", "test message");
+            } else if (command.equals("saveExample")) {
+                String url = request.getParameter("url");
+                String path = this.getServletContext().getRealPath("/") + "/examples/";
+                File dir = new File(path);
+                int numExamples = dir.listFiles().length;
+                path = path + "example" + (numExamples + 1) + ".png";
+                saveUrl(url, path);
+            } else if (command.equals("getExamples")) {
+                JSONArray imageLinks = new JSONArray();
+                String url = request.getParameter("url");
+                String path = this.getServletContext().getRealPath("/") + "/examples/";
+                File dir = new File(path);
+                File[] examples = dir.listFiles();
+                for (int i = 0; i < examples.length; i++) {
+                    imageLinks.put(examples[i].getName());
+                }
+                out.write(imageLinks.toString());
+
             }
         } catch (Exception e) {
             e.printStackTrace();
+            if (user == null) {
+                user = "default";
+            }
             StringWriter stringWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(stringWriter);
             RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
             e.printStackTrace(printWriter);
             RavenLogger.logError(user, request.getRemoteAddr(), stringWriter.toString());
             String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
-            out.println("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            if (out != null) {
+                out.println("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            }
         } finally {
-            out.close();
+            if (out != null) {
+                out.close();
+            }
         }
     }
 
     /**
      * @param request servlet request
      * @param response servlet response
-     * @
-     * throws ServletException if a servlet -specific error occurs
-     * @
-     * throws IOException if an I /O error occurs
      *
      */
-    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        PrintWriter writer = response.getWriter();
+    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response) {
+        PrintWriter writer = null;
         try {
+            writer = response.getWriter();
             if (!ServletFileUpload.isMultipartContent(request)) {
                 String command = request.getParameter("command");
                 String user = getUser(request).toLowerCase();
@@ -284,9 +309,13 @@ public class RavenServlet extends HttpServlet {
             PrintWriter printWriter = new PrintWriter(stringWriter);
             e.printStackTrace(printWriter);
             String exceptionAsString = stringWriter.toString().replaceAll("[\r\n\t]+", "<br/>");
-            writer.write("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            if (writer != null) {
+                writer.write("{\"result\":\"" + exceptionAsString + "\",\"status\":\"bad\"}");
+            }
         } finally {
-            writer.close();
+            if (writer != null) {
+                writer.close();
+            }
 
         }
     }
@@ -298,12 +327,9 @@ public class RavenServlet extends HttpServlet {
      *
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         processGetRequest(request, response);
     }
 
@@ -313,12 +339,9 @@ public class RavenServlet extends HttpServlet {
      *
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         processPostRequest(request, response);
     }
 
@@ -346,6 +369,39 @@ public class RavenServlet extends HttpServlet {
             }
         }
         return user;
+    }
+
+    private void saveUrl(String urlString, String localFileName) {
+        int size = 1024;
+        OutputStream outStream = null;
+        URLConnection uCon = null;
+        InputStream inputStream = null;
+        try {
+            URL url;
+            byte[] buf;
+            int ByteRead, ByteWritten = 0;
+            url = new URL(urlString);
+            File newFile = new File(localFileName);
+            newFile.createNewFile();
+            FileOutputStream fileOutStream = new FileOutputStream(newFile);
+            outStream = new BufferedOutputStream(fileOutStream);
+            uCon = url.openConnection();
+            inputStream = uCon.getInputStream();
+            buf = new byte[size];
+            while ((ByteRead = inputStream.read(buf)) != -1) {
+                outStream.write(buf, 0, ByteRead);
+                ByteWritten += ByteRead;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                inputStream.close();
+                outStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
     //FIELDS
     private HashMap<String, RavenController> _controllerHash = new HashMap(); //key:user, value: collector assocaited with that user

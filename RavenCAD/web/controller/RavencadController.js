@@ -31,7 +31,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#saveButton' + designNumber).click();
         });
         $('#navigateModal div p').text("Parts successfully saved!");
-        setTimeout(function(){window.location.replace(_destination);}, 2000);
+        setTimeout(function() {
+            window.location.replace(_destination);
+        }, 2000);
 
     });
     //update summary when efficiencies are changed
@@ -470,7 +472,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var pattern = /^[\d]+\.*[\d]+/;
         var summary = "<p>You're trying to assemble</p>";
         if ($('#targetPartList option').length > 0) {
-            summary = summary + '<ul style="max-height:150px;overflow:auto">';
+            summary = summary + '<ul id="targets" style="max-height:150px;overflow:auto">';
             $('#targetPartList option').each(function() {
                 summary = summary + '<li>' + $(this).text() + '</li>';
             });
@@ -491,7 +493,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
             }
 
         });
-        summary = summary + '<p>This is the efficiency matrix that you are using for your assembly</p>';
         var recommended = $('#selectedIntermediates div div div ul#recommendedList li');
         summary = summary + '<p>The following intermediates are recommended:</p>';
         summary = summary + '<ul class="recommendedList" style="max-height:150px;overflow:auto">';
@@ -524,16 +525,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         summary = summary + '</ul>';
 
-        if ($('#libraryPartList option').length > 0) {
-            summary = summary + '<p>Your library includes the following parts:</p>';
-            summary = summary + '<ul style="max-height:150px;overflow:auto">';
-            $('#libraryPartList option').each(function() {
-                summary = summary + '<li>' + $(this).val() + "</li>";
-            });
-            summary = summary + "</ul>";
-        } else {
-            summary = summary + '<p>You library includes no parts</p>';
-        }
+        summary = summary + '<p>Your library includes the following parts:</p>';
+        summary = summary + '<ul class="libraryList" style="max-height:150px;overflow:auto">';
+        $('#libraryPartList option').each(function() {
+            summary = summary + '<li>' + $(this).val() + "</li>";
+        });
+        summary = summary + "</ul>";
+
 
 
         $('#designSummaryArea').html(summary);
@@ -775,9 +773,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $('#saveButton' + designNumber).text("Report Error");
                     $('#saveButton' + designNumber).removeClass('btn-success');
                     $('#saveButton' + designNumber).addClass('btn-danger');
-                    $('#saveButton' + designNumber).click(function() {
-                        alert('this feature will be coming soon');
-                    });
                 }
             });
         });
@@ -824,23 +819,47 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (data["statistics"]["valid"] === "true") {
                 status = '<span class="label label-success">Graph structure verified!</span>';
                 saveButtons = '<p><button id="reportButton' + currentDesignCount +
-                        '" class ="btn btn-primary" style="width:100%" >Submit as Example</button></p>' +
+                        '" class ="btn btn-primary" style="width:100%" val="' + currentDesignCount + '">Submit as Example</button></p>' +
                         '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
                 if (user === "admin") {
                     saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + currentDesignCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
                 } else {
                     saveButtons = saveButtons + '<p class="hidden"><input id="sqlCheckbox"' + currentDesignCount + '" type="checkbox" checked=false/></p>';
                 }
+                //add the appropriate save buttons
                 $('#download' + currentDesignCount).prepend(saveButtons);
+                //create the example modal
+                $('#resultTabs' + currentDesignCount).append('<div id="exampleModal' + currentDesignCount + '" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="exampleModal' +
+                        currentDesignCount + '" aria-hidden="true">' +
+                        '<div class="modal-header"><h4 id="exampleModal' + currentDesignCount + '">Submit example</h4></div>' +
+                        '<div class="modal-body"><p>Are you sure you want to submit your graph image as a public example?</p><p>Only the image will be shared - we will never disclose your sequence data</p></div>' +
+                        '<div class="modal-footer"><button id="submitExampleButton'+currentDesignCount+'" val="'+currentDesignCount+'" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Submit</button>'+
+                        '<button class="btn" data-dismiss="modal" aria-hidden="true">Dismiss</button></div></div>');
+
+                //triggers a confirmation modal 
                 $('#reportButton' + currentDesignCount).click(function() {
-                    alert("this feature will be coming soon");
+                    var designNumber = $(this).attr("val");
+                    $('#exampleModal' + designNumber).modal();
+
+                });
+
+                //this button actually submits the image as an example
+                $('#submitExampleButton'+currentDesignCount).click(function() {
+                    var designNumber = $(this).attr("val");
+                    var imageURL = $('#resultImage' + designNumber + ' span img:first').attr('src');
+                    $.get("RavenServlet", {"command": "saveExample", "url": imageURL}, function() {
+                        var reportButton = $('#reportButton' + designNumber);
+                        reportButton.addClass('disabled');
+                        reportButton.text('Example submitted');
+                        reportButton.unbind();
+                    });
                 });
             } else {
                 status = '<span class="label label-warning">Graph Structure Invalid!</span>';
                 saveButtons = '<p><button id="reportButton' + currentDesignCount + '" class ="btn btn-danger">Report Error</button></p>';
                 $('#download' + currentDesignCount).prepend(saveButtons);
                 $('#reportButton' + currentDesignCount).click(function() {
-                    alert("this feature will be coming soon");
+                    alert('Thank you. Your error has been logged');
                 });
             }
             //prepend status badge and report button
@@ -863,16 +882,19 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
                     if (result === "saved data") {
                         $('#discardButton' + currentDesignCount).attr("val", "saved");
-                        $('#saveButton' + designNumber).prop('disabled', true);
-                        $('#saveButton' + designNumber).text("Successful Save");
+                        var saveButton = $('#saveButton' + designNumber);
+                        saveButton.prop('disabled', true);
+                        saveButton.text("Successful Save");
+                        saveButton.unbind();
                         refreshData();
                     } else {
                         alert("Failed to save parts");
-                        $('#saveButton' + designNumber).text("Report Error");
-                        $('#saveButton' + designNumber).removeClass('btn-success');
-                        $('#saveButton' + designNumber).addClass('btn-danger');
-                        $('#saveButton' + designNumber).click(function() {
-                            alert('this feature will be coming soon');
+                        var saveButton = $('#saveButton' + designNumber);
+                        saveButton.text("Report Error");
+                        saveButton.removeClass('btn-success');
+                        saveButton.addClass('btn-danger');
+                        saveButton.click(function() {
+                            alert('Your error has been logged. Thanks for letting us know.');
                         });
                     }
                 });
@@ -882,7 +904,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
                     '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
                     '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
-                    '<tr><td><strong>Number of Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
+                    '<tr><td><strong>Number of PCR Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
                     '<tr><td><strong>Number of Recommended Parts</strong></td><td>' + data["statistics"]["recommended"] + '</td></tr>' +
                     '<tr><td><strong>Number of Discouraged Parts</strong></td><td>' + data["statistics"]["discouraged"] + '</td></tr>' +
                     '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +
@@ -936,111 +958,160 @@ $(document).ready(function() { //don't run javascript until page is loaded
         }
     };
     var redesign = function(originalDesignNumber) {
-        var currentDesignCount = addDesignTab();
-        _redesignDesignHash[currentDesignCount] = originalDesignNumber;
-        $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
-        $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
-        $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
-        $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
-        $('div#download' + currentDesignCount).addClass("hidden");
-        $('#resultTabsHeader' + currentDesignCount).append('<li><a id="redesignRun' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</a>');
-        $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + originalDesignNumber).html());
-        $('div#resultImage' + currentDesignCount).html($('div#resultImage' + originalDesignNumber).html());
-        $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
-        $('div#partsListTab' + currentDesignCount).html();
-        $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+        if (canRun) {
+            var currentDesignCount = addDesignTab();
+            _redesignDesignHash[currentDesignCount] = originalDesignNumber;
+            $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
+            $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
+            $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
+            $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
+            $('div#download' + currentDesignCount).addClass("hidden");
+            $('#resultTabsHeader' + currentDesignCount).append('<li><a id="redesignRun' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</a>');
+            $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + originalDesignNumber).html());
+            $('div#resultImage' + currentDesignCount).html($('div#resultImage' + originalDesignNumber).html());
+            $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
+            $('div#partsListTab' + currentDesignCount).html();
+            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+            var targets = [];
+            $('div#summaryTab' + originalDesignNumber + ' ul#targets li').each(function() {
+                targets.push($(this).text());
+            });
+            var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Failure/Success</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
+            $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
+//            var type = $(this).find('td:nth-child(6)').text().toLowerCase();
+                var uuid = $(this).find('td:nth-child(2)').text();
 
-        var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Require/Forbid</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr><thead><tbody>';
-        $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
-//            alert($(this).find('td:nth-child(5)').text().toLowerCase());
-            if ($(this).find('td:nth-child(5)').text().toLowerCase() !== "vector") {
-                redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Click to Require/Forbid</button></td>';
-                $(this).find('td').each(function(key, value) {
-                    if (key < 6) {
-                        redesignPartsList = redesignPartsList + '<td>' + $(this).text() + '</td>';
+                var isGoalPart = $.inArray(uuid, targets);
+                if (isGoalPart === -1) {
+                    redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Succeeded or Failed?</button></td>';
+                    $(this).find('td').each(function(key, value) {
+                        if (key < 7) {
+                            var cellData = $(this).text();
+                            cellData = cellData.replace(/\|[^,\|]+\|[^\|,]+\|/g, "|");
+                            redesignPartsList = redesignPartsList + '<td>' + cellData + '</td>';
+                        }
+                    });
+                    redesignPartsList = redesignPartsList + '</tr>';
+                }
+            });
+            redesignPartsList = redesignPartsList + '</tbody></table>';
+
+            $('#partsListTab' + currentDesignCount).html('<div id="partsListArea' + currentDesignCount + '">' + redesignPartsList + '</div>');
+            $("#partsListTable" + currentDesignCount).dataTable({
+                "sScrollY": "300px",
+                "bPaginate": false,
+                "bScrollCollapse": true
+            });
+
+            $('#redesignRun' + currentDesignCount).click(function() {
+
+                var designNumber = $(this).attr("val");
+                var originalDesignNumber = _redesignDesignHash[designNumber];
+                $(this).parent().remove();
+                $('#resultTabsHeader' + designNumber + ' li:nth-child(2)').removeClass("hidden");
+                $('#resultsTabCountent' + designNumber + ' li:nth-child(2)').removeClass("hidden");
+                $('#resultTabsHeader' + designNumber + ' li:last').removeClass("hidden");
+                $('#resultTabsHeader' + designNumber + ' li:last').removeClass("hidden");
+                $('div#download' + designNumber).removeClass("hidden");
+
+                //copy the original design input
+                var redesignInput = jQuery.extend(true, {}, _runParameters[originalDesignNumber]);
+
+                var forbid = "";
+                var toSaveParts = [];
+                var toSaveVectors = [];
+                var toAddToPartLibrary = "";
+                var toAddToVectorLibrary = "";
+
+
+
+                $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                    var failSucceed = $(this).find('td').first().find("button").attr("name");
+                    var type = $(this).find('td:nth-child(6)').text().toLowerCase();
+                    if (type === "composite" && failSucceed === "failed") {
+                        var toForbid = '[' + $(this).find('td:last').text() + ']';
+                        forbid = forbid + toForbid + ";";
+                    } else if (failSucceed === "succeeded") {
+                        var uuid = $(this).find('td:nth-child(2)').text();
+                        if (type === "vector") {
+                            toSaveVectors.push(uuid);
+                            toAddToVectorLibrary = toAddToVectorLibrary + uuid + ',';
+                        } else {
+                            toAddToPartLibrary = toAddToPartLibrary + uuid + ',';
+                            toSaveParts.push(uuid);
+                        }
                     }
                 });
-                redesignPartsList = redesignPartsList + '</tr>';
-            }
-        });
-        redesignPartsList = redesignPartsList + '</tbody></table>';
+                toAddToPartLibrary = toAddToPartLibrary.substring(0, toAddToPartLibrary.length - 1);
+                toAddToVectorLibrary = toAddToVectorLibrary.substring(0, toAddToVectorLibrary.length - 1);
 
-        $('#partsListTab' + currentDesignCount).html('<div id="partsListArea' + currentDesignCount + '">' + redesignPartsList + '</div>');
-        $("#partsListTable" + currentDesignCount).dataTable({
-            "sScrollY": "300px",
-            "bPaginate": false,
-            "bScrollCollapse": true
-        });
 
-        $('#redesignRun' + currentDesignCount).click(function() {
-            var designNumber = $(this).attr("val");
-            var originalDesignNumber = _redesignDesignHash[designNumber];
-            $(this).parent().remove();
-            $('#resultTabsHeader' + designNumber + ' li:nth-child(2)').removeClass("hidden");
-            $('#resultsTabCountent' + designNumber + ' li:nth-child(2)').removeClass("hidden");
-            $('#resultTabsHeader' + designNumber + ' li:last').removeClass("hidden");
-            $('#resultTabsHeader' + designNumber + ' li:last').removeClass("hidden");
-            $('div#download' + designNumber).removeClass("hidden");
+                $.get('RavenServlet', {"command": "save", "partIDs": "" + toSaveParts, "vectorIDs": "" + toSaveVectors, "writeSQL": "" + false}, function(result) {
+                    if (result === "saved data") {
+                        //if successful parts succeeded, then run the redesign
+                        //add waiting dialog
+                        forbid = forbid.substring(0, forbid.length - 1);
+                        redesignInput["designCount"] = (parseInt(redesignInput["designCount"]) + 1) + "";
+                        redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
+                        redesignInput["partLibrary"] = redesignInput["partLibrary"] + toAddToPartLibrary;
+                        redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + toAddToVectorLibrary;
+                        _runParameters[designNumber] = redesignInput;
+                        $('#partsListArea' + designNumber).html('Please wait while Raven generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>');
+                        $('#resultImage' + designNumber).html('Please wait while Raven generates your image<div class="progress progress-striped active"><div class="bar" style="width:100%"></div></div>');
 
-            var redesignInput = _runParameters[originalDesignNumber];
-            var forbid = "";
-            var req = "";
-
-            $('#partsListTable' + designNumber + ' tbody tr').each(function() {
-                var forbidRequire = $(this).find('td').first().find("button").attr("name");
-                if (forbidRequire === "forbidden") {
-                    forbid = forbid + $(this).find('td:last').text() + ";";
-                } else if (forbidRequire === "required") {
-                    req = req + $(this).find('td:last').text() + ";";
-                }
-            });
-            forbid = forbid.substring(0, forbid.length - 1);
-            req = req.substring(0, req.length - 1);
-            redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
-            redesignInput["required"] = redesignInput["required"] + req;
-            _runParameters[designNumber] = redesignInput;
-
-            if (canRun) {
-                $.get("RavenServlet", redesignInput, function(data) {
-                    interpretDesignResult(designNumber, data);
-                    canRun = true;
+                        if (canRun) {
+                            $.get("RavenServlet", redesignInput, function(data) {
+                                interpretDesignResult(designNumber, data);
+                                canRun = true;
+                            });
+                        } else {
+                            $('#waitModal').modal();
+                        }
+                    } else {
+                        alert("Failed to save parts");
+                    }
                 });
-            }
 
-        });
-        $('.reqForbidButton').click(function() {
-            var designNumber = $(this).attr("val");
-            var originalDesignNumber = _redesignDesignHash[designNumber];
-            if ($(this).attr("name") === "neither") {
-                //add to require
-                $(this).attr("name", "forbidden");
-                $(this).addClass("btn-danger");
-                $(this).text("Forbidden");
-            } else if ($(this).attr("name") === 'forbidden') {
-                //add to forbidden
-                $(this).removeClass("btn-danger");
-                $(this).attr("name", "required");
-                $(this).addClass("btn-success");
-                $(this).text("Required");
-            } else {
-                //return to neither
-                $(this).attr("name", "neither");
-                $(this).removeClass("btn-danger");
-                $(this).text("Click to Require/Forbid");//add to forbidden
-                $(this).removeClass("btn-success");
-            }
-            $('#summaryTab' + designNumber + ' div ul.requiredList').html($('#summaryTab' + originalDesignNumber + ' div ul.requiredList').html());
-            $('#summaryTab' + designNumber + ' div ul.forbiddenList').html($('#summaryTab' + originalDesignNumber + ' div ul.forbiddenList').html());
-            $('#partsListTable' + designNumber + ' tbody tr').each(function() {
-                var forbidRequire = $(this).find('td').first().find("button").attr("name");
-                if (forbidRequire === "forbidden") {
-                    $('#summaryTab' + designNumber + ' div ul.forbiddenList').append('<li>' + $(this).find('td:last').text() + '</li>');
-                } else if (forbidRequire === "required") {
-                    $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');
-                }
+
             });
+            $('.reqForbidButton').click(function() {
+                var designNumber = $(this).attr("val");
+                var originalDesignNumber = _redesignDesignHash[designNumber];
+                if ($(this).attr("name") === "neither") {
+                    //add to require
+                    $(this).attr("name", "failed");
+                    $(this).addClass("btn-danger");
+                    $(this).text("Failed");
+                } else if ($(this).attr("name") === 'failed') {
+                    //add to forbidden
+                    $(this).removeClass("btn-danger");
+                    $(this).attr("name", "succeeded");
+                    $(this).addClass("btn-success");
+                    $(this).text("Succeeded");
+                } else {
+                    //return to neither
+                    $(this).attr("name", "neither");
+                    $(this).removeClass("btn-danger");
+                    $(this).text("Succeeded or Failed?");//add to forbidden
+                    $(this).removeClass("btn-success");
+                }
+                $('#summaryTab' + designNumber + ' div ul.requiredList').html($('#summaryTab' + originalDesignNumber + ' div ul.requiredList').html());
+                $('#summaryTab' + designNumber + ' div ul.forbiddenList').html($('#summaryTab' + originalDesignNumber + ' div ul.forbiddenList').html());
+                $('#partsListTable' + designNumber + ' tbody tr').each(function() {
+                    var forbidRequire = $(this).find('td').first().find("button").attr("name");
+                    var type = $(this).find('td:nth-child(6)').text().toLowerCase();
+                    if (forbidRequire === "failed" && type === "composite") {
+                        $('#summaryTab' + designNumber + ' div ul.forbiddenList').append('<li>' + $(this).find('td:last').text() + '</li>');
+                    }
+                    else if (forbidRequire === "succeeded") {
+                        $('#summaryTab' + designNumber + ' div ul.libraryList').append('<li>' + $(this).find('td:nth-child(3)').text() + '</li>');
+                    }
+                });
 
-        });
+            });
+        } else {
+            $('#waitModal').modal();
+        }
     };
 });
 

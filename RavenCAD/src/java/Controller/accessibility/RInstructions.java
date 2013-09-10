@@ -25,13 +25,13 @@ public class RInstructions {
 
     public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
 
-        int oligoCount = 0;
+        int oligoCount = 1;
         String instructions = "";
-
+        HashMap<String, String> oligoSequenceNameHash = new HashMap(); //key: sequence, value: name
         designPrimers = true;
-        String oligoNameRoot = "oligo";
-        Double meltingTemp = 55.0;
-        int primerLength = 20;
+        String oligoNameRoot;
+        Double meltingTemp;
+        int primerLength;
 
         try {
             oligoNameRoot = primerParameters.get(0);
@@ -47,7 +47,7 @@ public class RInstructions {
         ArrayList<String> oligoSequences = new ArrayList<String>();
         HashSet<RVector> newVectors = new HashSet<RVector>();
         HashSet<RNode> newNodes = new HashSet<RNode>();
-        HashMap<String, ArrayList<String>> nodeOligoHash = new HashMap<String, ArrayList<String>>();
+        HashMap<String, String[]> nodeOligoHash = new HashMap();
         HashMap<String, ArrayList<String>> vectorOligoHash = new HashMap<String, ArrayList<String>>();
         HashSet<String> libraryPartKeys = ClothoReader.getExistingPartKeys(partLib);
         HashSet<String> libraryVectorKeys = ClothoReader.getExistingVectorKeys(vectorLib);
@@ -154,14 +154,11 @@ public class RInstructions {
                         //If primers for this node have not yet been created (seen in the hash), create them
                         if (!nodeOligoHash.containsKey(l0Node.getNodeKey("+"))) {
 
-                            ArrayList<String> oligoHash = new ArrayList<String>();
-                            String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
-                            String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                            oligoHash.add(forwardOligoName);
-                            oligoHash.add(reverseOligoName);
+                            String[] oligoNamesForNode = new String[2];
+
 
                             //Determine which kind of primers to generate
-                            ArrayList<String> oligos;
+                            String[] oligos;
                             if (method.equalsIgnoreCase("MoClo")) {
                                 oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
@@ -173,13 +170,30 @@ public class RInstructions {
                             }
 
                             //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
-                            if (!oligos.isEmpty()) {
-
-                                oligoNames.add(forwardOligoName);
-                                oligoNames.add(reverseOligoName);
-                                oligoSequences.addAll(oligos);
-                                nodeOligoHash.put(l0Node.getNodeKey("+"), oligoHash);
-                                oligoCount++;
+                            if (oligos[0].length() > 0 && oligos[0].length() > 0) {
+                                String fwdOligo = oligos[0];
+                                String revOligo = oligos[1];
+                                String forwardOligoName;
+                                String reverseOligoName;
+                                if (oligoSequenceNameHash.containsKey(fwdOligo)) {
+                                    forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
+                                } else {
+                                    forwardOligoName = oligoNameRoot + oligoCount;
+                                    oligoNames.add(forwardOligoName);
+                                    oligoSequences.add(fwdOligo);
+                                    oligoCount++;
+                                }
+                                if (oligoSequenceNameHash.containsKey(revOligo)) {
+                                    reverseOligoName = oligoSequenceNameHash.get(revOligo);
+                                } else {
+                                    reverseOligoName = oligoNameRoot + oligoCount;
+                                    oligoNames.add(reverseOligoName);
+                                    oligoSequences.add(revOligo);
+                                    oligoCount++;
+                                }
+                                oligoNamesForNode[0] = forwardOligoName;
+                                oligoNamesForNode[1] = reverseOligoName;
+                                nodeOligoHash.put(l0Node.getNodeKey("+"), oligoNamesForNode);
 
                                 //If the primers are small and therefore annealing primers
                                 if (anneal) {
@@ -190,11 +204,11 @@ public class RInstructions {
                             }
 
                         } else {
-                            ArrayList<String> oligoHash = nodeOligoHash.get(l0Node.getNodeKey("+"));
+                            String[] nodeOligos = nodeOligoHash.get(l0Node.getNodeKey("+"));
                             if (anneal) {
-                                instructions = instructions + "\nAnneal oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
                             } else {
-                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
                             }
                         }
                     } else {
@@ -214,25 +228,42 @@ public class RInstructions {
 
                         //If primers for this vector have not yet been created (seen in the hash), create them
                         if (!vectorOligoHash.containsKey(vector.getVectorKey("+"))) {
-                            ArrayList<String> oligoHash = new ArrayList<String>();
-                            String forwardOligoName = (oligoNameRoot + oligoCount) + "F";
-                            String reverseOligoName = (oligoNameRoot + oligoCount) + "R";
-                            oligoHash.add(forwardOligoName);
-                            oligoHash.add(reverseOligoName);
+                            ArrayList<String> vectorOligoNamesForNode = new ArrayList<String>();
 
                             //Determine which kind of primers to generate
-                            ArrayList<String> oligos = new ArrayList<String>();
+                            String[] oligos = new String[2];
                             if (method.equalsIgnoreCase("MoClo")) {
                                 oligos = RMoClo.generateVectorPrimers(vector, coll);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, primerLength);
                             }
 
-                            oligoNames.add(forwardOligoName);
-                            oligoNames.add(reverseOligoName);
-                            oligoSequences.addAll(oligos);
-                            vectorOligoHash.put(vector.getVectorKey("+"), oligoHash);
-                            oligoCount++;
+                            String fwdOligo = oligos[0];
+                            String revOligo = oligos[1];
+                            String forwardOligoName;
+                            String reverseOligoName;
+                            if (oligoSequenceNameHash.containsKey(fwdOligo)) {
+                                forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
+                            } else {
+                                forwardOligoName = oligoNameRoot + oligoCount;
+                                oligoNames.add(forwardOligoName);
+                                oligoSequences.add(fwdOligo);
+                                oligoCount++;
+                            }
+                            if (oligoSequenceNameHash.containsKey(revOligo)) {
+                                reverseOligoName = oligoSequenceNameHash.get(revOligo);
+                            } else {
+                                reverseOligoName = oligoNameRoot + oligoCount;
+                                oligoNames.add(reverseOligoName);
+                                oligoSequences.add(revOligo);
+                                oligoCount++;
+                            }
+                            
+                            //pair of oligos used for a part
+                            vectorOligoNamesForNode.add(forwardOligoName);
+                            vectorOligoNamesForNode.add(reverseOligoName);
+
+                            vectorOligoHash.put(vector.getVectorKey("+"), vectorOligoNamesForNode);
                             instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
 
                         } else {

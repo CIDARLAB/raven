@@ -63,10 +63,10 @@ public class RGoldenGate extends RGeneral {
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static ArrayList<String> generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
 
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
-        ArrayList<String> oligos = new ArrayList<String>(2);
+        String[] oligos = new String[2];
         String partPrimerPrefix = "nn";
         String partPrimerSuffix = "nn";
         String fwdEnzymeRecSite1 = "gaagac";
@@ -82,8 +82,8 @@ public class RGoldenGate extends RGeneral {
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "nn" + overhangVariableSequenceHash.get(node.getLOverhang()) + currentPart.getSeq() + overhangVariableSequenceHash.get(node.getROverhang()) + "nn" + revEnzymeRecSite1 + partPrimerSuffix;
             reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
         }
-        oligos.add(forwardOligoSequence);
-        oligos.add(reverseOligoSequence);
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
         return oligos;
     }
 

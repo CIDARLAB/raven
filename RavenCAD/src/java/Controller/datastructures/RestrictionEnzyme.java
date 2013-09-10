@@ -30,10 +30,6 @@ public class RestrictionEnzyme {
 
         //Convert recogition site indexes from forward to reverse
         ArrayList<Integer> revCutSites = new ArrayList<Integer>(2);
-//        int rCut0 = cutSites.get(1) - recSeq.length();
-//        int rCut1 = cutSites.get(0) - recSeq.length();
-//        revCutSites.add(rCut0);
-//        revCutSites.add(rCut1);
 
         //Convert the recognition to a regular expression
         String lRecSeq = recSeq.toLowerCase();
