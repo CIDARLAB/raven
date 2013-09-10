@@ -1,0 +1,83 @@
+10
+
+dir
+342
+svn+ssh://eapple@128.197.164.27/home/cidar/dfx/samplingRaven/build/classes
+svn+ssh://eapple@128.197.164.27/home/cidar/dfx
+
+
+
+2013-05-07T20:48:37.358023Z
+342
+eapple
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bf6f631f-f2be-442a-816e-d2db8dbeae88
+
+eugenescripts
+dir
+
+.netbeans_automatic_build
+file
+
+
+
+
+2013-05-07T19:26:54.000000Z
+d41d8cd98f00b204e9800998ecf8427e
+2013-05-07T20:48:37.358023Z
+342
+eapple
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0
+
+samplingraven
+dir
+
+accessibility
+dir
+
+algorithms
+dir
+
+raven
+dir
+
+sdsviewer
+dir
+
+datastructures
+dir
+

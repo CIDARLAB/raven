@@ -27,7 +27,6 @@ public class RInstructions {
 
         int oligoCount = 1;
         String instructions = "";
-        HashMap<String, String> oligoSequenceNameHash = new HashMap(); //key: sequence, value: name
         designPrimers = true;
         String oligoNameRoot;
         Double meltingTemp;
@@ -96,9 +95,9 @@ public class RInstructions {
 
                     //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                     if (vector != null) {
-                        instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n\n";
+                        instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
                     } else {
-                        instructions = instructions.substring(0, instructions.length() - 2) + "\n\n";
+                        instructions = instructions.substring(0, instructions.length() - 2) + "\n";
                     }
 
                     //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
@@ -124,7 +123,7 @@ public class RInstructions {
                         if (vector != null) {
                             instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with: ";
                             instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + ", ";
-                            instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n\n";
+                            instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
                         }
 
                         //If the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
@@ -175,22 +174,17 @@ public class RInstructions {
                                 String revOligo = oligos[1];
                                 String forwardOligoName;
                                 String reverseOligoName;
-                                if (oligoSequenceNameHash.containsKey(fwdOligo)) {
-                                    forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
-                                } else {
-                                    forwardOligoName = oligoNameRoot + oligoCount;
-                                    oligoNames.add(forwardOligoName);
-                                    oligoSequences.add(fwdOligo);
-                                    oligoCount++;
-                                }
-                                if (oligoSequenceNameHash.containsKey(revOligo)) {
-                                    reverseOligoName = oligoSequenceNameHash.get(revOligo);
-                                } else {
-                                    reverseOligoName = oligoNameRoot + oligoCount;
-                                    oligoNames.add(reverseOligoName);
-                                    oligoSequences.add(revOligo);
-                                    oligoCount++;
-                                }
+
+                                forwardOligoName = oligoNameRoot + oligoCount;
+                                oligoNames.add(forwardOligoName);
+                                oligoSequences.add(fwdOligo);
+                                oligoCount++;
+
+                                reverseOligoName = oligoNameRoot + oligoCount;
+                                oligoNames.add(reverseOligoName);
+                                oligoSequences.add(revOligo);
+                                oligoCount++;
+
                                 oligoNamesForNode[0] = forwardOligoName;
                                 oligoNamesForNode[1] = reverseOligoName;
                                 nodeOligoHash.put(l0Node.getNodeKey("+"), oligoNamesForNode);
@@ -242,23 +236,17 @@ public class RInstructions {
                             String revOligo = oligos[1];
                             String forwardOligoName;
                             String reverseOligoName;
-                            if (oligoSequenceNameHash.containsKey(fwdOligo)) {
-                                forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
-                            } else {
-                                forwardOligoName = oligoNameRoot + oligoCount;
-                                oligoNames.add(forwardOligoName);
-                                oligoSequences.add(fwdOligo);
-                                oligoCount++;
-                            }
-                            if (oligoSequenceNameHash.containsKey(revOligo)) {
-                                reverseOligoName = oligoSequenceNameHash.get(revOligo);
-                            } else {
-                                reverseOligoName = oligoNameRoot + oligoCount;
-                                oligoNames.add(reverseOligoName);
-                                oligoSequences.add(revOligo);
-                                oligoCount++;
-                            }
-                            
+
+                            forwardOligoName = oligoNameRoot + oligoCount;
+                            oligoNames.add(forwardOligoName);
+                            oligoSequences.add(fwdOligo);
+                            oligoCount++;
+
+                            reverseOligoName = oligoNameRoot + oligoCount;
+                            oligoNames.add(reverseOligoName);
+                            oligoSequences.add(revOligo);
+                            oligoCount++;
+
                             //pair of oligos used for a part
                             vectorOligoNamesForNode.add(forwardOligoName);
                             vectorOligoNamesForNode.add(reverseOligoName);

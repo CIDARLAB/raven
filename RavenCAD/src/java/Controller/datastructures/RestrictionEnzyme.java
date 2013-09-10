@@ -256,6 +256,7 @@ public class RestrictionEnzyme {
     public void setUUID(String uuid) {
         _uuid = uuid;
     }
+    
     //FIELDS
     private final String _name;
     private final String _buffer;

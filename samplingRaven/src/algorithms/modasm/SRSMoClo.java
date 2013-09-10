@@ -42,36 +42,24 @@ public class SRSMoClo extends SRSGeneral {
             }
             _maxNeighbors = max;
 
-            //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
-            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
+//            //Create hashMem parameter for createAsmGraph_sgp() call
+//            HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, value: corresponding graph; contains just basic parts and imported intermediates
+//            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
 
-            //Positional scoring of transcriptional units
-            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-            if (modular) {
-                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-                positionScores = getPositionalScoring(TUs);
-            }
-            //Add single transcriptional units to the required hash
-//            ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, 2);
-//            for (int i = 0; i < reqTUs.size(); i++) {
-//                required.add(reqTUs.get(i).toString());
-//            }
-
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
-            basicOverhangAssignment(optimalGraphs);
-            boolean valid = validateGraphs(optimalGraphs);
-            System.out.println("##############################\nfirst pass: " + valid);
-            minimizeOverhangs(optimalGraphs);
-            valid = validateGraphs(optimalGraphs);
-            System.out.println("##############################\nsecond pass: " + valid);
-            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
-            valid = validateGraphs(optimalGraphs);
-            System.out.println("##############################\nfinal pass: " + valid);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes);
+//            basicOverhangAssignment(optimalGraphs);
+//            boolean valid = validateGraphs(optimalGraphs);
+//            System.out.println("##############################\nfirst pass: " + valid);
+//            minimizeOverhangs(optimalGraphs);
+//            valid = validateGraphs(optimalGraphs);
+//            System.out.println("##############################\nsecond pass: " + valid);
+//            optimizeOverhangVectors(optimalGraphs, partHash, vectorSet);
+//            valid = validateGraphs(optimalGraphs);
+//            System.out.println("##############################\nfinal pass: " + valid);
 
             return optimalGraphs;
         } catch (Exception E) {
@@ -682,7 +670,7 @@ public class SRSMoClo extends SRSGeneral {
         }
     }
 
-    private boolean validateGraphs(ArrayList<SRSGraph> graphs) {
+    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
         boolean toReturn = true;
         for (SRSGraph graph : graphs) {
             SRSNode root = graph.getRootNode();
@@ -693,19 +681,22 @@ public class SRSMoClo extends SRSGeneral {
                 SRSNode parent = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(parent);
-//                System.out.println(parent.getComposition() + parent.getLOverhang() + "|" + parent.getROverhang());
+                //a node's left overhang can't be the same as the right overhang
                 if (parent.getLOverhang().equals(parent.getROverhang())) {
-                    System.out.println("parent failed: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
+//                    System.out.println("parent failed: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
                     toReturn = false;
                 }
                 if (parent.getNeighbors().size() > 1) {
                     SRSNode previous = null;
+                    //hashmaps for counting frequency of left overhangs and right overhangs
+                    //each overhang should appear only once in the set of all left overhangs and once in the set of all right overhangs
                     HashMap<String, Integer> leftFrequencyHash = new HashMap();
                     HashMap<String, Integer> rightFrequencyHash = new HashMap();
-                    for (int i = 0; i < parent.getNeighbors().size(); i++) {
-                        SRSNode child = parent.getNeighbors().get(i);
-                        if (!seenNodes.contains(child)) {
-
+                    int i=0; //counter for number of children encountered
+                        for (SRSNode child:parent.getNeighbors()) {
+                        //only visit children, aka neighbors with a lower stage
+                        if (!seenNodes.contains(child) && parent.getStage() > child.getStage()) {
+                            //count the left and right overhangs
                             if (leftFrequencyHash.get(child.getLOverhang()) != null) {
                                 leftFrequencyHash.put(child.getLOverhang(), leftFrequencyHash.get(child.getLOverhang()) + 1);
                             } else {
@@ -717,34 +708,37 @@ public class SRSMoClo extends SRSGeneral {
                                 rightFrequencyHash.put(child.getROverhang(), 1);
                             }
                             if (i == 0) {
+                                //the first 
                                 if (!child.getLOverhang().equals(parent.getLOverhang())) {
-                                    System.out.println(child.getComposition() + " left caused failure " + child.getLOverhang());
-                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
+//                                    System.out.println(child.getComposition() + " left caused failure " + child.getLOverhang());
+//                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
                                     toReturn = false;
                                 }
                             }
-                            if (i == parent.getNeighbors().size() - 1) {
+                            //last child should have the same right overhang as the parent
+                            if (i == parent.getComposition().size() - 1) {
                                 if (!child.getROverhang().equals(parent.getROverhang())) {
-                                    System.out.println(child.getComposition() + " right caused failure " + child.getROverhang());
-                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
+//                                    System.out.println(child.getComposition() + " right caused failure " + child.getROverhang());
+//                                    System.out.println("parent: " + parent.getComposition() + " " + parent.getLOverhang() + "|" + parent.getROverhang());
                                     toReturn = false;
                                 }
                             }
+                            //each nodes left overhang should be the same as the right overhang of the adjacent node
                             if (previous != null) {
                                 if (!child.getLOverhang().equals(previous.getROverhang())) {
-                                    System.out.println(child.getComposition() + " previous caused failure " + child.getLOverhang());
-                                    System.out.println("previous: " + previous.getComposition() + " " + previous.getLOverhang() + "|" + previous.getROverhang());
-
+//                                    System.out.println(child.getComposition() + " previous caused failure " + child.getLOverhang());
+//                                    System.out.println("previous: " + previous.getComposition() + " " + previous.getLOverhang() + "|" + previous.getROverhang());
                                     toReturn = false;
                                 }
                             }
-
                             previous = child;
                             queue.add(child);
+                            i++;
                         }
                     }
+                    //each overhang should appear only once in the set of all left overhangs and once in the set of all right overhangs                       
                     if (leftFrequencyHash.containsValue(2) || rightFrequencyHash.containsValue(2)) {
-                        System.out.println("repeat overhang use occurred in " + parent.getComposition());
+//                        System.out.println("repeat overhang use occurred in " + parent.getComposition());
                         toReturn = false;
                     }
                 }
@@ -752,6 +746,7 @@ public class SRSMoClo extends SRSGeneral {
         }
         return toReturn;
     }
+    
     private HashMap<String, ArrayList<String>> abstractOverhangCompositionHash; //key: overhangs delimited by "|", value: compositions with overhangs indicated by keys
     private HashMap<String, Integer> partOverhangFrequencyHash; //key: part composition concatenated with abstract overhang with "_" delimited with "|", value: number of occurences of part with given overhangs
     private HashSet<String> encounteredCompositions; //set of part compositions that appear in the set of all graphs
