@@ -22,3 +22,11 @@ THE DEVELOPERS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED
 
 Feature Requests
 ================
+* Google Analytics (visitor flow)
+* D3 for graph visualization
+* long requests (via email)
+* raven "project" file (reload designs)
+* sequence based input
+* j5 integration
+* integration with sequence viewer (any)
+* in-tool editing of data (name, type, sequence, etc)
