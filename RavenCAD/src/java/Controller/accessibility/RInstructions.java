@@ -39,7 +39,7 @@ public class RInstructions {
         } catch (Exception e) {
             oligoNameRoot = "oligo";
             meltingTemp = 55.0;
-            primerLength = 20;
+            primerLength = 24;
         }
 
         ArrayList<String> oligoNames = new ArrayList<String>();
@@ -83,12 +83,12 @@ public class RInstructions {
                     }
 
                     //append which parts to use for a moclo reaction
-                    instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a " + method + " cloning reaction with: ";
+                    instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
                     for (RNode neighbor : currentNode.getNeighbors()) {
 
                         if (currentNode.getStage() > neighbor.getStage()) {
                             Part neighborPart = coll.getPart(neighbor.getUUID(), true);
-                            instructions = instructions + neighborPart.getName() + "|" + neighborPart.getLeftOverhang() + "|" + neighborPart.getRightOverhang() + ", ";
+                            instructions = instructions + neighborPart.getName() + "|" + neighborPart.getLeftOverhang() + "|" + neighborPart.getRightOverhang() + "|" + neighborPart.getDirections() + ", ";
                             queue.add(neighbor);
                         }
                     }
@@ -121,15 +121,15 @@ public class RInstructions {
 
                         //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                         if (vector != null) {
-                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with: ";
-                            instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + ", ";
+                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                            instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + ", ";
                             instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
                         }
 
                         //If the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
                     } else {
                         if (!libraryVectorKeys.contains(vectorKey)) {
-                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with: ";
+                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
                         }
                     }
                 }
@@ -191,18 +191,18 @@ public class RInstructions {
 
                                 //If the primers are small and therefore annealing primers
                                 if (anneal) {
-                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 } else {
-                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 }
                             }
 
                         } else {
                             String[] nodeOligos = nodeOligoHash.get(l0Node.getNodeKey("+"));
                             if (anneal) {
-                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             } else {
-                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             }
                         }
                     } else {
