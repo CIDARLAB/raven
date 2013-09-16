@@ -90,7 +90,6 @@ public class RMoClo extends RGeneral {
     private void enforceOverhangRules(ArrayList<RGraph> optimalGraphs) {
 
         //Initialize fields that record information to save complexity for future steps
-        _encounteredCompositions = new HashSet<String>();
         _parentHash = new HashMap<RNode, RNode>();
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
         _stageDirectionAssignHash = new HashMap<Integer, HashMap<String, ArrayList<RNode>>>();
@@ -102,7 +101,6 @@ public class RMoClo extends RGeneral {
             RNode root = graph.getRootNode();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
-            _encounteredCompositions.add(root.getComposition().toString());
             root.setLOverhang(Integer.toString(count));
             count++;
             root.setROverhang(Integer.toString(count));
@@ -1261,7 +1259,6 @@ public class RMoClo extends RGeneral {
         return oligos;
     }
     //FIELDS
-    private HashSet<String> _encounteredCompositions; //set of part compositions that appear in the set of all graphs
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private HashMap<RNode, HashSet<String>> _takenParentOHs; //key: parent node, value: all overhangs that have been seen in this step
     private HashMap<String, ArrayList<String>> _typeROHHash; //key: part type, value: all right overhangs seen for this part type
