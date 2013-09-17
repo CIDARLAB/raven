@@ -773,33 +773,51 @@ public class SDSViewerFrame extends javax.swing.JFrame {
         }
         String selected = (String) algorithmSelector.getSelectedItem();
         if (selected.equals("BioBricks")) {
-
-            //Run SDS++ algorithm
-            runBioBricks();
+            try {
+                //Run SDS++ algorithm
+                runBioBricks();
+            } catch (Exception ex) {
+                Logger.getLogger(SDSViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (selected.equals("Gibson")) {
-
-            //Run SRS Gibson algorithm
-            runGibson();
+            try {
+                //Run SRS Gibson algorithm
+                runGibson();
+            } catch (Exception ex) {
+                Logger.getLogger(SDSViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (selected.equals("CPEC")) {
-
-            //Run SRS CPEC algorithm
-            runCPEC();
+            try {
+                //Run SRS CPEC algorithm
+                runCPEC();
+            } catch (Exception ex) {
+                Logger.getLogger(SDSViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (selected.equals("SLIC")) {
-
-            //Run SRS SLIC algorithm
-            runSLIC();
+            try {
+                //Run SRS SLIC algorithm
+                runSLIC();
+            } catch (Exception ex) {
+                Logger.getLogger(SDSViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (selected.equals("MoClo")) {
-
-            //Run SRS MoClo algorithm
-            runMoClo();
+            try {
+                //Run SRS MoClo algorithm
+                runMoClo();
+            } catch (Exception ex) {
+                Logger.getLogger(SDSViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (selected.equals("Golden Gate")) {
-
-            //Run SRS Golden Gate algorithm
-            runGoldenGate();
-//        } else if (selected.equals("Gateway")) {
-//
-//            //Run SRS Gateway algorithm
-//            runGateway();
+            try {
+                //Run SRS Golden Gate algorithm
+                runGoldenGate();
+    //        } else if (selected.equals("Gateway")) {
+    //
+    //            //Run SRS Gateway algorithm
+    //            runGateway();
+            } catch (Exception ex) {
+                Logger.getLogger(SDSViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else {
             JOptionPane.showMessageDialog(null, "Please select an algorithm to run");
 
@@ -1166,7 +1184,7 @@ private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         //Make individual graph files
         boolean canPigeon = result.canPigeon();
         ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-        graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
+//        graphTextFiles.add(result.generateWeyekinFile(postOrderEdges, canPigeon));
     }
 
     //Merge graph files and print  
@@ -1184,18 +1202,18 @@ private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             //traverse graphs to get uuids
             ArrayList<Part> usedPartsHash = new ArrayList<Part>();
             ArrayList<Vector> usedVectorsHash = new ArrayList<Vector>();
-            for (SRSGraph result : _assemblyGraphs) {
-                for (Part p : result.getPartsInGraph()) {
-                    if (!usedPartsHash.contains(p)) {
-                        usedPartsHash.add(p);
-                    }
-                }
-                for (Vector v : result.getVectorsInGraph()) {
-                    if (!usedVectorsHash.contains(v)) {
-                        usedVectorsHash.add(v);
-                    }
-                }
-            }
+//            for (SRSGraph result : _assemblyGraphs) {
+//                for (Part p : result.getPartsInGraph()) {
+//                    if (!usedPartsHash.contains(p)) {
+//                        usedPartsHash.add(p);
+//                    }
+//                }
+//                for (Vector v : result.getVectorsInGraph()) {
+//                    if (!usedVectorsHash.contains(v)) {
+//                        usedVectorsHash.add(v);
+//                    }
+//                }
+//            }
             //extract information from parts and write file
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);
@@ -1481,165 +1499,108 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         return vecLib;
     }
 
-    /**
+       /**
      * Traverse a solution graph for statistics *
      */
-    private void solutionStats(ArrayList<SRSGraph> optimalGraphs) {
+    private void solutionStats(String method) throws Exception {
 
         //Initialize statistics
-        HashSet<String> recd = new HashSet<String>();
-        HashSet<String> disc = new HashSet<String>();
-        HashSet<String> seenSteps = new HashSet<String>();
-        HashSet<String> sharedSteps = new HashSet<String>();
+        boolean overhangValid = false;
+        if (method.equals("biobrick")) {
+            overhangValid = SRSBioBricks.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("cpec")) {
+            overhangValid = SRSCPEC.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("gibson")) {
+            overhangValid = SRSGibson.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("golden gate")) {
+            overhangValid = SRSGoldenGate.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("moclo")) {
+            overhangValid = SRSMoClo.validateOverhangs(_assemblyGraphs);
+        } else if (method.equals("slic")) {
+            overhangValid = SRSSLIC.validateOverhangs(_assemblyGraphs);
+        }
+        boolean valid = validateGraphComposition();
+        valid = valid && overhangValid;
+        
         int steps = 0;
         int stages = 0;
-        int reactions = 0;
-        double modularity = 0;
-        double efficiency = 0;
+        int recCnt = 0;
+        int disCnt = 0;
+        int shr = 0;
+        int rxn = 0;
         ArrayList<Double> effArray = new ArrayList<Double>();
-        HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
+        double eff = 0;
         
-        for (int i = 0; i < optimalGraphs.size(); i++) {
-            SRSGraph graph = optimalGraphs.get(i);
-            _assemblyGraphs.add(graph);
-
-            SRSNode root = graph.getRootNode();
-            ArrayList<String> rootComp = root.getComposition();
-            String rRO = root.getROverhang();
-            String rLO = root.getLOverhang();
-            ArrayList<String> rootCompOH = new ArrayList<String>();
-            rootCompOH.add(rLO);
-            rootCompOH.addAll(rootCompOH);
-            rootCompOH.add(rRO);
+        if (!_assemblyGraphs.isEmpty()) {
             
-            //PCR Reactions for scarless assembly
-            if (root.getLOverhang().isEmpty() && root.getROverhang().isEmpty()) {
-                
-                //Record left and right neighbors for each node... this will determine how many PCRs need to be performed                            
-                String prev = new String();
-                String next = new String();
-                for (int j = 0; j < rootComp.size(); j++) {
-                    String current = rootComp.get(j);
-                    if (j == 0) {
-                        next = rootComp.get(j + 1);
-                    } else if (j == rootComp.size() - 1) {
-                        prev = rootComp.get(j - 1);
-                    } else {
-                        next = rootComp.get(j + 1);
-                        prev = rootComp.get(j - 1);
-                    }
-                    ArrayList<String> seq = new ArrayList<String>();
-                    seq.add(prev);
-                    seq.add(current);
-                    seq.add(next);
-                    neighborHash.add(seq);
+            for (SRSGraph graph : _assemblyGraphs) {              
+                if (graph.getStages() > stages) {
+                    stages = graph.getStages();
                 }
-                
+                steps = steps + graph.getSteps();
+                recCnt = recCnt + graph.getReccomendedCount();
+                disCnt = disCnt + graph.getDiscouragedCount();
+                shr = shr + graph.getSharing();
+                rxn = rxn + graph.getReaction();
+                effArray.addAll(graph.getEfficiencyArray());
             }
-            
-            //Get stages of this graph, if largest, set as assembly stages
-            int currentStages = graph.getStages();
-            if (currentStages > stages) {
-                stages = currentStages;
-            }
-
-            //Tabulate efficiency and modularity
-            modularity = modularity + graph.getModularity();
-            effArray.addAll(graph.getEfficiency());
-
-            //Traverse nodes to get scores for steps, recommended and sharing
-            HashSet<SRSNode> seenNodes = new HashSet();
-            seenNodes.add(graph.getRootNode());
-            ArrayList<SRSNode> queue = new ArrayList();
-            queue.add(graph.getRootNode());
-
-            while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
-                String LO = current.getLOverhang();
-                String RO = current.getROverhang();
-                ArrayList<String> currentComp = current.getComposition();
-                ArrayList<String> currentCompOH = new ArrayList<String>();
-                currentCompOH.add(LO);
-                currentCompOH.addAll(currentComp);
-                currentCompOH.add(RO);
-                queue.remove(0);
-
-                //Get sharing, steps, recommended and discouraged counts
-                if (current.getStage() > 0) {
-                    boolean add = seenSteps.add(currentCompOH.toString());
-                    if (!add && !(currentComp == rootComp)) {
-                        sharedSteps.add(currentCompOH.toString());
-                    }
-
-                    if (add) {
-                        steps++;
-                    } else if (currentComp == rootComp) {
-                        steps++;
-                    }
-
-                }
-                if (_recommended.contains(current.getComposition().toString())) {
-                    recd.add(current.getComposition().toString());
-                }
-                if (_discouraged.contains(current.getComposition().toString())) {
-                    disc.add(current.getComposition().toString());
-                }
-
-                //PCR Reaction for assemblies with scars
-                if (current.getStage() == 0) {
-                    String uUID = current.getUUID();
-                    Part part = Collector.getPart(uUID);
-                    if (!current.getLOverhang().equals(part.getLeftOverhang()) || !current.getROverhang().equals(part.getRightOverhang())) {
-                        ArrayList<String> seq = new ArrayList<String>();
-                        seq.add(current.getLOverhang());
-                        seq.add(current.getComposition().toString());
-                        seq.add(current.getROverhang());
-                        neighborHash.add(seq);
-                    }
-                }
-                
-                //Add unseen neighbors to queue
-                for (SRSNode node : current.getNeighbors()) {
-                    if (!seenNodes.contains(node)) {
-                        seenNodes.add(node);
-                        queue.add(node);
-                    }
-                }
-            }
-
-            //Get the average efficiency of all steps in this assembly
             double sum = 0;
-            for (int j = 0; j < effArray.size(); j++) {
-                sum = sum + effArray.get(j);
+            
+            for (Double anEff : effArray) {
+                sum = sum + anEff;
             }
-            efficiency = sum / effArray.size();
-
-            //Warn if no steps or stages are required to build part - i.e. it already exists in a library
-            if (seenSteps.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Warning! All goal part(s) already exist! No assembly required");
-            }
-
+            eff = sum/effArray.size();
         }
 
-        reactions = neighborHash.size();
-        modularity = modularity / optimalGraphs.size();
-//
-//        for (String shared : sharedSteps) {
-//            System.out.println("Shared step: " + shared);
-//        }
-        
-        //Statistics determined
-        _statistics.setModularity(modularity);
-        _statistics.setEfficiency(efficiency);
-        _statistics.setRecommended(recd.size());
+        _statistics.setEfficiency(eff);
+        _statistics.setRecommended(recCnt);
+        _statistics.setDiscouraged(disCnt);
         _statistics.setStages(stages);
         _statistics.setSteps(steps);
-        _statistics.setSharing(sharedSteps.size());
-        _statistics.setGoalParts(optimalGraphs.size());
+        _statistics.setSharing(shr);
+        _statistics.setGoalParts(_goalParts.keySet().size());
         _statistics.setExecutionTime(Statistics.getTime());
-        _statistics.setReaction(reactions);
+        _statistics.setReaction(rxn);
+        _statistics.setValid(valid);
     }
 
+    private boolean validateGraphComposition() throws Exception {
+        boolean toReturn = true;
+        HashSet<String> seenRequired = new HashSet();
+        for (SRSGraph graph : _assemblyGraphs) {
+            ArrayList<SRSNode> queue = new ArrayList();
+            HashSet<SRSNode> seenNodes = new HashSet();
+            queue.add(graph.getRootNode());
+            while (!queue.isEmpty()) {
+                SRSNode current = queue.get(0);
+                queue.remove(0);
+                seenNodes.add(current);
+                if (_forbidden.contains(current.getComposition().toString())) {
+                    toReturn = false;
+                    break;
+                }
+                if (_required.contains(current.getComposition().toString())) {
+                    seenRequired.add(current.getComposition().toString());
+                }
+                for (SRSNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+            if (toReturn == false) {
+                break;
+            }
+        }
+
+        if (toReturn && _required.size() == seenRequired.size()) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+    
     /**
      * ************************************************************************
      *
@@ -1650,7 +1611,7 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     /**
      * Run Binary SRS algorithm *
      */
-    private void runBioBricks() {
+    private void runBioBricks() throws Exception {
 
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
@@ -1662,19 +1623,20 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         gps.addAll(_goalParts.keySet());
         SRSBioBricks biobricks = new SRSBioBricks();
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false);
+        _assemblyGraphs = biobricks.bioBricksClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false);
         Statistics.stop();
-        solutionStats(optimalGraphs);
+        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        ArrayList<Part> parts = new ArrayList<Part>();
+        ArrayList<Vector> vecs = new ArrayList<Vector>();
+        SRSGraph.getGraphStats(_assemblyGraphs, parts, vecs, _goalParts, _recommended, _discouraged, false);
+        solutionStats("biobrick");
 
-        //Clean up data
-        library = null;
-        gps = null;
     }
 
     /**
      * Run SRS algorithm for Gibson *
      */
-    private void runGibson() {
+    private void runGibson() throws Exception {
 
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
@@ -1687,41 +1649,42 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         SRSGibson gibson = new SRSGibson();
 
         HashMap<Integer, Double> efficiencies = new HashMap<Integer, Double>();
-//        efficiencies.put(2, 1.0);
-//        efficiencies.put(3, 1.0);
-//        efficiencies.put(4, 1.0);
-//        efficiencies.put(5, 1.0);
-//        efficiencies.put(6, 1.0);
-//        efficiencies.put(7, 1.0);
-//        efficiencies.put(8, 1.0);
-//        efficiencies.put(9, 1.0);
-//        efficiencies.put(10, 1.0);
+        efficiencies.put(2, 1.0);
+        efficiencies.put(3, 1.0);
+        efficiencies.put(4, 1.0);
+        efficiencies.put(5, 1.0);
+        efficiencies.put(6, 1.0);
+        efficiencies.put(7, 1.0);
+        efficiencies.put(8, 1.0);
+        efficiencies.put(9, 1.0);
+        efficiencies.put(10, 1.0);
 //        efficiencies.put(11, 1.0);
 
-        efficiencies.put(2, 1.0);
-        efficiencies.put(3, 0.8);
-        efficiencies.put(4, 0.6);
-        efficiencies.put(5, 0.4);
-        efficiencies.put(6, .15);
-        efficiencies.put(7, .03);
-        efficiencies.put(8, .01);
-        efficiencies.put(9, .004);
-        efficiencies.put(10, .002);
+//        efficiencies.put(2, 1.0);
+//        efficiencies.put(3, 0.8);
+//        efficiencies.put(4, 0.6);
+//        efficiencies.put(5, 0.4);
+//        efficiencies.put(6, .15);
+//        efficiencies.put(7, .03);
+//        efficiencies.put(8, .01);
+//        efficiencies.put(9, .004);
+//        efficiencies.put(10, .002);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
+        _assemblyGraphs = gibson.gibsonClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
         Statistics.stop();
-        solutionStats(optimalGraphs);
+        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        ArrayList<Part> parts = new ArrayList<Part>();
+        ArrayList<Vector> vecs = new ArrayList<Vector>();
+        SRSGraph.getGraphStats(_assemblyGraphs, parts, vecs, _goalParts, _recommended, _discouraged, true);
+        solutionStats("gibson");
 
-        //Clean up data
-        library = null;
-        gps = null;
     }
 
     /**
      * Run SRS algorithm for CPEC *
      */
-    private void runCPEC() {
+    private void runCPEC() throws Exception {
 
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
@@ -1739,19 +1702,19 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         efficiencies.put(4, 1.0);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
+        _assemblyGraphs = cpec.cpecClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
         Statistics.stop();
-        solutionStats(optimalGraphs);
-
-        //Clean up data
-        library = null;
-        gps = null;
+        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        ArrayList<Part> parts = new ArrayList<Part>();
+        ArrayList<Vector> vecs = new ArrayList<Vector>();
+        SRSGraph.getGraphStats(_assemblyGraphs, parts, vecs, _goalParts, _recommended, _discouraged, true);
+        solutionStats("cpec");
     }
 
     /**
      * Run SRS algorithm for SLIC *
      */
-    private void runSLIC() {
+    private void runSLIC() throws Exception {
 
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
@@ -1769,19 +1732,20 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         efficiencies.put(4, 1.0);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = slic.slicClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
+        _assemblyGraphs = slic.slicClothoWrapper(gps, vecLibrary, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
         Statistics.stop();
-        solutionStats(optimalGraphs);
+        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        ArrayList<Part> parts = new ArrayList<Part>();
+        ArrayList<Vector> vecs = new ArrayList<Vector>();
+        SRSGraph.getGraphStats(_assemblyGraphs, parts, vecs, _goalParts, _recommended, _discouraged, true);
+        solutionStats("slic");
 
-        //Clean up data
-        library = null;
-        gps = null;
     }
 
     /**
      * Run SRS algorithm for MoClo *
      */
-    private void runMoClo() {
+    private void runMoClo() throws Exception {
         if (_goalParts == null) {
             return;
         }
@@ -1810,7 +1774,7 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 //        efficiencies.put(9, 1.0);
         Statistics.start();
         moclo.setForcedOverhangs(forcedOverhangHash);
-        ArrayList<SRSGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, null, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
+        _assemblyGraphs = moclo.mocloClothoWrapper(gps, null, _required, _recommended, _forbidden, _discouraged, library, false, efficiencies);
         Statistics.stop();
 
         //Given intermediates found, apply to selection table
@@ -1823,17 +1787,18 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             }
         }
 
-        solutionStats(optimalGraphs);
+        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        ArrayList<Part> parts = new ArrayList<Part>();
+        ArrayList<Vector> vecs = new ArrayList<Vector>();
+        SRSGraph.getGraphStats(_assemblyGraphs, parts, vecs, _goalParts, _recommended, _discouraged, false);
+        solutionStats("moclo");
 
-        //Clean up data
-        library = null;
-        gps = null;
     }
 
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    private void runGoldenGate() {
+    private void runGoldenGate() throws Exception {
 
         //  Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
@@ -1851,13 +1816,14 @@ private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         efficiencies.put(6, 1.0);
 
         Statistics.start();
-        ArrayList<SRSGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, null, _required, _recommended, _forbidden, _discouraged, library, true, efficiencies);
+        _assemblyGraphs = gg.goldenGateClothoWrapper(gps, null, _required, _recommended, _forbidden, _discouraged, library, true, efficiencies);
         Statistics.stop();
-        solutionStats(optimalGraphs);
+        _assemblyGraphs = SRSGraph.mergeGraphs(_assemblyGraphs);
+        ArrayList<Part> parts = new ArrayList<Part>();
+        ArrayList<Vector> vecs = new ArrayList<Vector>();
+        SRSGraph.getGraphStats(_assemblyGraphs, parts, vecs, _goalParts, _recommended, _discouraged, true);
+        solutionStats("golden gate");
 
-        //Clean up data
-        library = null;
-        gps = null;
     }
 
     /**

@@ -27,7 +27,6 @@ public class RInstructions {
 
         int oligoCount = 1;
         String instructions = "";
-        HashMap<String, String> oligoSequenceNameHash = new HashMap(); //key: sequence, value: name
         designPrimers = true;
         String oligoNameRoot;
         Double meltingTemp;
@@ -40,7 +39,7 @@ public class RInstructions {
         } catch (Exception e) {
             oligoNameRoot = "oligo";
             meltingTemp = 55.0;
-            primerLength = 20;
+            primerLength = 24;
         }
 
         ArrayList<String> oligoNames = new ArrayList<String>();
@@ -84,21 +83,21 @@ public class RInstructions {
                     }
 
                     //append which parts to use for a moclo reaction
-                    instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a " + method + " cloning reaction with: ";
+                    instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
                     for (RNode neighbor : currentNode.getNeighbors()) {
 
                         if (currentNode.getStage() > neighbor.getStage()) {
                             Part neighborPart = coll.getPart(neighbor.getUUID(), true);
-                            instructions = instructions + neighborPart.getName() + "|" + neighborPart.getLeftOverhang() + "|" + neighborPart.getRightOverhang() + ", ";
+                            instructions = instructions + neighborPart.getName() + "|" + neighborPart.getLeftOverhang() + "|" + neighborPart.getRightOverhang() + "|" + neighborPart.getDirections() + ", ";
                             queue.add(neighbor);
                         }
                     }
 
                     //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                     if (vector != null) {
-                        instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n\n";
+                        instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
                     } else {
-                        instructions = instructions.substring(0, instructions.length() - 2) + "\n\n";
+                        instructions = instructions.substring(0, instructions.length() - 2) + "\n";
                     }
 
                     //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
@@ -122,15 +121,15 @@ public class RInstructions {
 
                         //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                         if (vector != null) {
-                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with: ";
-                            instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + ", ";
-                            instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n\n";
+                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                            instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + ", ";
+                            instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
                         }
 
                         //If the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
                     } else {
                         if (!libraryVectorKeys.contains(vectorKey)) {
-                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + " by performing a MoClo cloning reaction with: ";
+                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
                         }
                     }
                 }
@@ -175,40 +174,35 @@ public class RInstructions {
                                 String revOligo = oligos[1];
                                 String forwardOligoName;
                                 String reverseOligoName;
-                                if (oligoSequenceNameHash.containsKey(fwdOligo)) {
-                                    forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
-                                } else {
-                                    forwardOligoName = oligoNameRoot + oligoCount;
-                                    oligoNames.add(forwardOligoName);
-                                    oligoSequences.add(fwdOligo);
-                                    oligoCount++;
-                                }
-                                if (oligoSequenceNameHash.containsKey(revOligo)) {
-                                    reverseOligoName = oligoSequenceNameHash.get(revOligo);
-                                } else {
-                                    reverseOligoName = oligoNameRoot + oligoCount;
-                                    oligoNames.add(reverseOligoName);
-                                    oligoSequences.add(revOligo);
-                                    oligoCount++;
-                                }
+
+                                forwardOligoName = oligoNameRoot + oligoCount;
+                                oligoNames.add(forwardOligoName);
+                                oligoSequences.add(fwdOligo);
+                                oligoCount++;
+
+                                reverseOligoName = oligoNameRoot + oligoCount;
+                                oligoNames.add(reverseOligoName);
+                                oligoSequences.add(revOligo);
+                                oligoCount++;
+
                                 oligoNamesForNode[0] = forwardOligoName;
                                 oligoNamesForNode[1] = reverseOligoName;
                                 nodeOligoHash.put(l0Node.getNodeKey("+"), oligoNamesForNode);
 
                                 //If the primers are small and therefore annealing primers
                                 if (anneal) {
-                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 } else {
-                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 }
                             }
 
                         } else {
                             String[] nodeOligos = nodeOligoHash.get(l0Node.getNodeKey("+"));
                             if (anneal) {
-                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             } else {
-                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             }
                         }
                     } else {
@@ -242,23 +236,17 @@ public class RInstructions {
                             String revOligo = oligos[1];
                             String forwardOligoName;
                             String reverseOligoName;
-                            if (oligoSequenceNameHash.containsKey(fwdOligo)) {
-                                forwardOligoName = oligoSequenceNameHash.get(fwdOligo);
-                            } else {
-                                forwardOligoName = oligoNameRoot + oligoCount;
-                                oligoNames.add(forwardOligoName);
-                                oligoSequences.add(fwdOligo);
-                                oligoCount++;
-                            }
-                            if (oligoSequenceNameHash.containsKey(revOligo)) {
-                                reverseOligoName = oligoSequenceNameHash.get(revOligo);
-                            } else {
-                                reverseOligoName = oligoNameRoot + oligoCount;
-                                oligoNames.add(reverseOligoName);
-                                oligoSequences.add(revOligo);
-                                oligoCount++;
-                            }
-                            
+
+                            forwardOligoName = oligoNameRoot + oligoCount;
+                            oligoNames.add(forwardOligoName);
+                            oligoSequences.add(fwdOligo);
+                            oligoCount++;
+
+                            reverseOligoName = oligoNameRoot + oligoCount;
+                            oligoNames.add(reverseOligoName);
+                            oligoSequences.add(revOligo);
+                            oligoCount++;
+
                             //pair of oligos used for a part
                             vectorOligoNamesForNode.add(forwardOligoName);
                             vectorOligoNamesForNode.add(reverseOligoName);

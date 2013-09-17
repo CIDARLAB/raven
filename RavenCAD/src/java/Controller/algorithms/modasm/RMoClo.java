@@ -704,19 +704,24 @@ public class RMoClo extends RGeneral {
     }
 
     public void assignFinalOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
-        HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap();
-        HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap(); //key: abstract overhang, value: set of all compositions associated with that composition
-        HashMap<String, HashSet<String>> abstractRightCompositionHash = new HashMap(); //key: composition, value: set of all abstract overhangs associated with that composition
-        HashMap<String, HashSet<String>> compositionLeftConcreteHash = new HashMap();
-        HashMap<String, HashSet<String>> compositionRightConcreteHash = new HashMap();
-        HashSet<String> compositionOverhangDirections = new HashSet(); //concatentation of compositionOverhang and direction seen in the partLibrary
-        HashMap<Integer, String> levelResistanceHash = new HashMap(); // key: level, value: antibiotic resistance
-        HashSet<String> invertedOverhangs = new HashSet();
+        HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap<String, HashSet<String>>();
+        HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap<String, HashSet<String>>(); //key: abstract overhang, value: set of all compositions associated with that composition
+        HashMap<String, HashSet<String>> abstractRightCompositionHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all abstract overhangs associated with that composition
+        HashMap<String, HashSet<String>> compositionLeftConcreteHash = new HashMap<String, HashSet<String>>();
+        HashMap<String, HashSet<String>> compositionRightConcreteHash = new HashMap<String, HashSet<String>>();
+        HashSet<String> compositionOverhangDirections = new HashSet<String>(); //concatentation of composition Overhang and direction seen in the partLibrary
+        HashMap<Integer, String> levelResistanceHash = new HashMap<Integer, String>(); // key: level, value: antibiotic resistance
+        HashSet<String> invertedOverhangs = new HashSet<String>();
 
+        //For each of the graphs in the solution set, assign final overhangs
         for (RGraph graph : graphs) {
+            
+            //
             for (RNode current : _rootBasicNodeHash.get(graph.getRootNode())) {
+                
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
+                
                 if (currentLeftOverhang.indexOf("*") < 0) { //ignore inverted overhangs
                     if (!abstractConcreteHash.containsKey(currentLeftOverhang)) {
                         abstractConcreteHash.put(currentLeftOverhang, new HashSet());
@@ -731,6 +736,7 @@ public class RMoClo extends RGeneral {
                 } else {
                     invertedOverhangs.add(currentLeftOverhang);
                 }
+                
                 if (currentRightOverhang.indexOf("*") < 0) { //ignore inverted overhangs
                     if (!abstractConcreteHash.containsKey(currentRightOverhang)) {
                         abstractConcreteHash.put(currentRightOverhang, new HashSet());
@@ -747,12 +753,15 @@ public class RMoClo extends RGeneral {
                 }
             }
         }
+        
         for (Part p : _partLibrary) {
             
             compositionOverhangDirections.add(p.getStringComposition() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + p.getDirections());
             
             //populate compositionConcreteHash's
             String currentComposition = p.getStringComposition().toString();
+            
+            //
             if (compositionLeftConcreteHash.containsKey(currentComposition) || compositionRightConcreteHash.containsKey(currentComposition)) {
                 compositionLeftConcreteHash.get(currentComposition).add(p.getLeftOverhang());
                 compositionRightConcreteHash.get(currentComposition).add(p.getRightOverhang());
@@ -766,6 +775,8 @@ public class RMoClo extends RGeneral {
             }
             //keep track of existing overhang pairs
         }
+        
+        //
         for (String key : abstractLeftCompositionHash.keySet()) {
             for (String composition : abstractLeftCompositionHash.get(key)) {
                 if (compositionLeftConcreteHash.get(composition) != null) {
@@ -778,6 +789,8 @@ public class RMoClo extends RGeneral {
             }
             abstractConcreteHash.get(key).add("*");
         }
+        
+        //
         for (String key : abstractRightCompositionHash.keySet()) {
             for (String composition : abstractRightCompositionHash.get(key)) {
                 if (compositionRightConcreteHash.get(composition) != null) {
@@ -803,6 +816,7 @@ public class RMoClo extends RGeneral {
         for (String abstractOverhang : sortedAbstractOverhangs) {
             ArrayList<CartesianNode> currentNodes = new ArrayList();
             HashSet<String> concreteOverhangs = abstractConcreteHash.get(abstractOverhang);
+            
             for (String overhang : concreteOverhangs) {
                 CartesianNode newNode = new CartesianNode();
                 newNode.setLevel(level);
@@ -810,7 +824,9 @@ public class RMoClo extends RGeneral {
                 newNode.setConcreteOverhang(overhang.trim());
                 currentNodes.add(newNode);
             }
+            
             if (previousNodes != null) {
+                
                 for (CartesianNode prev : previousNodes) {
                     for (CartesianNode current : currentNodes) {
                         if (!prev.getConcreteOverhang().equals(current.getConcreteOverhang()) || current.getConcreteOverhang().equals("*")) {
@@ -834,17 +850,20 @@ public class RMoClo extends RGeneral {
         ArrayList<ArrayList<String>> completeAssignments = new ArrayList();
         ArrayList<String> currentSolution;
         HashMap<CartesianNode, CartesianNode> parentHash = new HashMap(); //key: node, value: parent node
+        
         for (CartesianNode root : rootNodes) {
             currentSolution = new ArrayList();
             ArrayList<CartesianNode> stack = new ArrayList();
             stack.add(root);
             boolean toParent = false; // am i returning to a parent node?
             HashSet<String> seenPaths = new HashSet();
+            
             while (!stack.isEmpty()) {
                 CartesianNode currentNode = stack.get(0);
                 stack.remove(0);
                 String currentPath = currentSolution.toString();
                 currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->").replaceAll(" ", "");
+                
                 if (!toParent) {
                     currentSolution.add(currentNode.getConcreteOverhang());
                     currentPath = currentPath + "->" + currentNode.getConcreteOverhang();
@@ -854,6 +873,7 @@ public class RMoClo extends RGeneral {
                 }
                 CartesianNode parent = parentHash.get(currentNode);
                 int childrenCount = 0;
+                
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
                     if (currentPath.indexOf(neighbor.getConcreteOverhang()) < 0 || neighbor.getConcreteOverhang().equals("*")) {
                         String edge = currentPath + "->" + neighbor.getConcreteOverhang();
@@ -867,6 +887,7 @@ public class RMoClo extends RGeneral {
                     }
 
                 }
+                
                 if (childrenCount == 0) {
                     //no children means we've reached the end of a branch
                     if (currentSolution.size() == targetLength) {
@@ -895,6 +916,7 @@ public class RMoClo extends RGeneral {
         }
         int bestScore = 1000000000;
         HashMap<String, String> bestAssignment = null;
+        
         for (ArrayList<String> assignment : completeAssignments) {
             HashMap<String, String> currentAssignment = new HashMap();
             int currentScore = 0;
@@ -911,16 +933,20 @@ public class RMoClo extends RGeneral {
             
             //handle inverted overhangs
             for (String invertedOverhang : invertedOverhangs) {
+                
                 if (finalOverhangHash.containsKey(invertedOverhang)) {
                     currentAssignment.put(invertedOverhang, finalOverhangHash.get(invertedOverhang));
                 } else {
                     String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
+                    
                     if (currentAssignment.containsKey(uninvertedOverhang)) {
                         String uninvertedOverhangAssignment = currentAssignment.get(uninvertedOverhang);
                         String invertedOverhangAssignment = "";
+                        
                         if (uninvertedOverhangAssignment.equals("*")) {
                             currentAssignment.put(invertedOverhang, "*");
                         } else {
+                            
                             if (uninvertedOverhangAssignment.indexOf("*") > -1) {
                                 invertedOverhangAssignment = uninvertedOverhangAssignment.substring(0, uninvertedOverhangAssignment.indexOf("*"));
                             } else {
@@ -934,6 +960,7 @@ public class RMoClo extends RGeneral {
                 }
             }
             HashSet<String> matched = new HashSet();
+            
             for (RNode basicNode : basicNodes) {
                 String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
                 if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
@@ -952,6 +979,7 @@ public class RMoClo extends RGeneral {
         //generate new overhangs
         HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
         int newOverhang = 0;
+        
         for (String starAbstract : sortedAbstractOverhangs) {
             if (bestAssignment.get(starAbstract).equals("*")) {
                 while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
@@ -964,8 +992,10 @@ public class RMoClo extends RGeneral {
 
         //generate matching new overhangs for inverted overhans
         for (String invertedOverhang : invertedOverhangs) {
+            
             if (bestAssignment.get(invertedOverhang).equals("*")) {
                 String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
+                
                 if (bestAssignment.containsKey(uninvertedOverhang)) {
                     bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
                 } else {
@@ -980,12 +1010,15 @@ public class RMoClo extends RGeneral {
         
         //traverse graph and assign overhangs generate vectors
         finalOverhangHash = bestAssignment;
-        ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, chloramphenicol, kanamycin, ampicillin, neomycin, puromycin, spectinomycin, streptomycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
+        ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
+        
         for (Vector v : _vectorLibrary) {
+            
             if (!existingAntibiotics.contains(v.getResistance())) {
                 existingAntibiotics.add(v.getResistance());
+                
                 if (existingAntibioticsHash.get(v.getLevel()) == null) {
                     existingAntibioticsHash.put(v.getLevel(), new ArrayList());
                 }
@@ -1002,8 +1035,10 @@ public class RMoClo extends RGeneral {
                 maxStage = graph.getStages();
             }
         }
+        
         for (int i = 0; i <= maxStage; i++) {
             String resistance = "";
+            
             if (existingAntibioticsHash.get(i) != null) {
                 if (existingAntibioticsHash.get(i).size() > 0) {
                     resistance = existingAntibioticsHash.get(i).get(0);
@@ -1199,19 +1234,19 @@ public class RMoClo extends RGeneral {
         String reverseOligoSequence;
         if (seq.length() > 24) {
             if (seq.equals("")) {
-                fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                revHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+                fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
+                revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
             } else {
                 fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, true)));
                 revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, true)));
             }
 
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()) + fwdHomology;
-            reverseOligoSequence = PrimerDesign.reverseComplement(revEnzymeRecSite1 + "ag" + overhangVariableSequenceHash.get(node.getROverhang()) + partPrimerSuffix) + revHomology;
+            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + overhangVariableSequenceHash.get(node.getROverhang()) + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
         } else {
             if (seq.equals("")) {
-                fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                revHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
+                fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
+                revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
                 forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()) + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()) + "gt" + revEnzymeRecSite1 + partPrimerSuffix;
                 reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(node.getROverhang()) + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology + PrimerDesign.reverseComplement(partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()));
             } else {
@@ -1250,8 +1285,8 @@ public class RMoClo extends RGeneral {
 
             //Level 1, 3, 5, 7, etc. vectors
         } else {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "a" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "at" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "gt" + overhangVariableSequenceHash.get(vector.getROverhang()) + "a" + revEnzymeRecSite1 + vectorPrimerSuffix);
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + overhangVariableSequenceHash.get(vector.getLOverhang()) + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + overhangVariableSequenceHash.get(vector.getROverhang()) + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
         }
 
         oligos[0]=forwardOligoSequence;

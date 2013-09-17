@@ -24,24 +24,12 @@ public class SRSBioBricks extends SRSGeneral {
         try {
 
             _maxNeighbors = 2;
-            
-            //Initialize part hash and vector set
-            HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended);
-            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
 
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
-
-            //Positional scoring of transcriptional units
-            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-            if (modular) {
-                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-                positionScores = getPositionalScoring(TUs);
-            }   
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, null, true);
-            optimalGraphs = assignVectors(optimalGraphs, vectorSet);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes);
             
             return optimalGraphs;
         } catch (Exception E) {
@@ -53,52 +41,6 @@ public class SRSBioBricks extends SRSGeneral {
         }
     }
     
-    /** Optimize overhang assignments based on available parts and vectors with overhangs **/
-    private ArrayList<SRSGraph> assignVectors (ArrayList<SRSGraph> optimalGraphs, ArrayList<SRSVector> vectorSet) {
-        
-        //If the vector set is of size one, use that vector everywhere applicable 
-        SRSVector theVector = new SRSVector();
-        if (vectorSet.size() == 1) {
-            for (SRSVector vector : vectorSet) {
-                theVector = vector;
-            }
-        }
-        
-        //For all graphs traverse nodes of the graph and assign all nodes the biobricks vector
-        for (int i = 0; i < optimalGraphs.size(); i++) {
-            SRSGraph graph = optimalGraphs.get(i);
-            
-            //Traverse nodes of a graph and assign all the selected vector
-            ArrayList<SRSNode> queue = new ArrayList<SRSNode>();
-            HashSet<SRSNode> seenNodes = new HashSet<SRSNode>();
-            queue.add(graph.getRootNode());
-            while (!queue.isEmpty()) {
-                SRSNode current = queue.get(0);
-                queue.remove(0);
-                seenNodes.add(current);
-                for (SRSNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                    }
-                }
-                
-                //Give biobricks overhangs
-                current.setLOverhang("LeftBBa");
-                current.setROverhang("RightBBa");
-                
-                //If the node is not an existing part, i.e. does not have a UUID and is not the goal part
-                if (current.getUUID() == null) {
-                    current.setVector(theVector);
-                } else if (current.getComposition() == graph.getRootNode().getComposition()) {
-                    current.setVector(theVector);
-                }               
-                seenNodes.add(current);
-            }
-        }
-        
-        return optimalGraphs;
-    }  
-        
     /** Get all subsets of a set for a specific sized subset **/
 //    @Override
 //    protected ArrayList<int[]> getSubsets(int[] set, int k) {
@@ -120,5 +62,7 @@ public class SRSBioBricks extends SRSGeneral {
 //            }
 //        }
 //    }
-    
+    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+        return true;
+    }
 }

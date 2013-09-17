@@ -29,24 +29,12 @@ public class SRSGoldenGate extends SRSGeneral{
                 }
             }
             _maxNeighbors = max;
-
-            //Create hashMem parameter for createAsmGraph_sgp() call
-            HashMap<String, SRSGraph> partHash = partImportClotho(goalParts, partLibrary, required, recommended);
-            ArrayList<SRSVector> vectorSet = vectorImportClotho(vectorLibrary);
             
             //Put all parts into hash for mgp algorithm            
             ArrayList<SRSNode> gpsNodes = gpsToNodesClotho(goalParts);
-
-            //Positional scoring of transcriptional units
-            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-            if (modular) {
-                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-                positionScores = getPositionalScoring(TUs);
-            }
             
             //Run SDS Algorithm for multiple parts
-            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, required, recommended, forbidden, discouraged, partHash, positionScores, efficiencies, true);
-            optimalGraphs = assignOverhangs(optimalGraphs, partHash, vectorSet);
+            ArrayList<SRSGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes);
             
             return optimalGraphs;
         } catch (Exception E) {
@@ -56,8 +44,7 @@ public class SRSGoldenGate extends SRSGeneral{
         }
     }
     
-    /** Optimize overhang assignments based on available parts and vectors with overhangs **/
-    private ArrayList<SRSGraph> assignOverhangs (ArrayList<SRSGraph> optimalGraphs, HashMap<String, SRSGraph> partHash, ArrayList<SRSVector> vectorSet) {
-        return optimalGraphs;
-    }  
+    public static boolean validateOverhangs(ArrayList<SRSGraph> graphs) {
+        return true;
+    }
 }
