@@ -132,6 +132,7 @@ public class RGeneral extends Modularity {
 
             //Remove pinned graph from goal part list and add to result list
             gps.remove(gps.get(index));
+            System.out.println("Goal parts left: " + gps.size());
             resultGraphs.add(pinnedGraph);
         }
 

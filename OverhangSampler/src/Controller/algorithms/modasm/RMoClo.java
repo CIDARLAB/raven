@@ -68,9 +68,15 @@ public class RMoClo extends RGeneral {
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         enforceOverhangRules(optimalGraphs);
+        boolean valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nfirst pass: " + valid);
         maximizeOverhangSharing(optimalGraphs);
+        valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nsecond pass: " + valid);
         HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
         assignFinalOverhangs(optimalGraphs, finalOverhangHash);
+        valid = validateOverhangs(optimalGraphs);
+        System.out.println("##############################\nfinal pass: " + valid);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
