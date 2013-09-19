@@ -20,7 +20,7 @@ import java.util.Set;
 public class RGeneral extends Modularity {
 
     /** Find assembly graph for multiple goal parts **/
-    protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiencies, boolean sharing) throws Exception {
+    protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiencies, boolean sharing, boolean searchPartitions) throws Exception {
         
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
         for (int i = 0; i < gps.size(); i++) {
@@ -132,7 +132,6 @@ public class RGeneral extends Modularity {
 
             //Remove pinned graph from goal part list and add to result list
             gps.remove(gps.get(index));
-            System.out.println("Goal parts left: " + gps.size());
             resultGraphs.add(pinnedGraph);
         }
 

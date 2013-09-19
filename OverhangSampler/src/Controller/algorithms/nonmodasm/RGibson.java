@@ -21,7 +21,7 @@ public class RGibson extends RGeneral {
     /**
      * Clotho part wrapper for Gibson *
      */
-    public ArrayList<RGraph> gibsonClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> gibsonClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs, boolean searchOverhangs) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -46,7 +46,7 @@ public class RGibson extends RGeneral {
         }
 
         //Run hierarchical Raven Algorithm
-        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false, searchOverhangs);
         assignOverhangs(optimalGraphs, keyVectors);
 
         return optimalGraphs;

@@ -5,7 +5,6 @@
 package Controller.algorithms.modasm;
 
 import Controller.accessibility.ClothoReader;
-import Controller.algorithms.PrimerDesign;
 import Controller.algorithms.RGeneral;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +20,7 @@ public class RBioBricks extends RGeneral {
     /**
      * Clotho part wrapper for BioBricks 3A
      */
-    public ArrayList<RGraph> bioBricksClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> bioBricksClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs, boolean searchOverhangs) throws Exception {
 
         //Try-Catch block around wrapper method
         _maxNeighbors = 2;
@@ -39,9 +38,8 @@ public class RBioBricks extends RGeneral {
         }
 
         //Run hierarchical Raven Algorithm
-        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true, searchOverhangs);
         assignBioBricksOverhangs(optimalGraphs, keyVectors);
-        assignScars(optimalGraphs);
 
         return optimalGraphs;
     }
@@ -136,72 +134,6 @@ public class RBioBricks extends RGeneral {
     }
 
     /**
-     * Determine overhang scars *
-     */
-    private void assignScars(ArrayList<RGraph> optimalGraphs) {
-
-        //Loop through each optimal graph and grab the root node to prime for the traversal
-        for (RGraph graph : optimalGraphs) {
-
-            RNode root = graph.getRootNode();
-            ArrayList<RNode> children = root.getNeighbors();
-            assignScarsHelper(root, children);
-        }
-    }
-
-    /**
-     * Overhang scars helper *
-     */
-    private ArrayList<String> assignScarsHelper(RNode parent, ArrayList<RNode> children) {
-
-        ArrayList<String> scars = new ArrayList<String>();
-
-        //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
-        for (int i = 0; i < children.size(); i++) {
-
-            RNode child = children.get(i);
-
-            if (i > 0) {
-                if (child.getLOverhang().isEmpty()) {
-                    scars.add("_");
-                }
-                scars.add("BB");
-            }
-
-            //Make recursive call
-            if (child.getStage() > 0) {
-
-                //Remove the current parent from the list
-                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
-                grandChildren.addAll(child.getNeighbors());
-                if (grandChildren.contains(parent)) {
-                    grandChildren.remove(parent);
-                }
-
-                ArrayList<String> childScars = assignScarsHelper(child, grandChildren);
-                scars.addAll(childScars);
-            } else {
-
-                ArrayList<String> childScars = new ArrayList<String>();
-                if (child.getComposition().size() > 1) {
-                    if (!child.getScars().isEmpty()) {
-                        childScars.addAll(child.getScars());
-                    } else {
-
-                        for (int j = 0; j < child.getComposition().size() - 1; j++) {
-                            childScars.add("_");
-                        }
-                        child.setScars(childScars);
-                    }
-                }
-                scars.addAll(childScars);
-            }
-        }
-
-        parent.setScars(scars);
-        return scars;
-    }
-
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
 
         boolean valid = true;
@@ -235,84 +167,5 @@ public class RBioBricks extends RGeneral {
     /**
      * Generation of new BioBricks primers for parts *
      */
-    public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
-
-        //initialize primer parameters
-        String[] oligos = new String[2];
-        String partPrimerPrefix = "gaattcgcggccgcttctagag";
-        String partPrimerSuffix = "tactagtagcggccgctgcag";
-        String partPrimerPrefixAlt = "gaattcgcggccgcttctag";
-        String forwardOligoSequence = "";
-        String reverseOligoSequence = "";
-
-        Part currentPart = coll.getPart(node.getUUID(), true);
-        String seq = currentPart.getSeq();
-
-        ArrayList<String> direction = node.getDirection();
-        if ("-".equals(direction.get(0))) {
-            seq = PrimerDesign.reverseComplement(seq);
-        }
-        ArrayList<String> type = node.getType();
-        String fwdHomology = "";
-        String revHomology = "";
-        if (type.get(0).equals("gene") || type.get(0).equals("reporter")) {
-
-            if (seq.equals("")) {
-                fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                revHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-            } else {
-                fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
-                revHomology = PrimerDesign.reverseComplement(seq.substring(Math.max(0, currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false))));
-            }
-            forwardOligoSequence = partPrimerPrefixAlt + fwdHomology;
-            reverseOligoSequence = PrimerDesign.reverseComplement(partPrimerSuffix)+revHomology;
-        } else {
-            if (seq.equals("")) {
-                fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                revHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-            } else {
-                fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
-                revHomology = PrimerDesign.reverseComplement(seq.substring(Math.max(0, currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false))));
-            }
-            forwardOligoSequence = partPrimerPrefix + fwdHomology;
-            reverseOligoSequence = PrimerDesign.reverseComplement(partPrimerSuffix)+revHomology;
-
-        }
-        oligos[0]=forwardOligoSequence;
-        oligos[1]=reverseOligoSequence;
-
-        return oligos;
-    }
-
-    /**
-     * Generation of new BioBricks primers for parts *
-     */
-    public static String[] generateVectorPrimers(RVector vector, Collector coll, Double meltingTemp, Integer targetLength) {
-
-        //initialize primer parameters
-        String[] oligos = new String[2];
-        String vectorPrimerPrefix = "gaattcgcggccgcttctagag";
-        String vectorPrimerSuffix = "tactagtagcggccgctgcag";
-
-        Vector currentVector = coll.getVector(vector.getUUID(), true);
-        String seq = currentVector.getSeq();
-        String fwdHomology = "";
-        String revHomology = "";
-        if (seq.equals("")) {
-            fwdHomology = "[ VECTOR " + currentVector.getName() + " HOMOLOGY REGION ]";
-            revHomology = "[ VECTOR " + currentVector.getName() + " HOMOLOGY REGION ]";
-        } else {
-            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
-            revHomology = PrimerDesign.reverseComplement(currentVector.getSeq().substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false))));
-        }
-
-        String forwardOligoSequence = vectorPrimerPrefix + fwdHomology;
-        String reverseOligoSequence = PrimerDesign.reverseComplement(vectorPrimerSuffix)+revHomology;
-
-        oligos[0]=forwardOligoSequence;
-        oligos[1] =reverseOligoSequence;
-
-        return oligos;
-    }
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }

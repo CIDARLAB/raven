@@ -4,27 +4,16 @@
  */
 package Communication;
 
-import Controller.accessibility.RInstructions;
 import Controller.algorithms.modasm.RBioBricks;
-import Controller.accessibility.ClothoWriter;
-import Controller.accessibility.ClothoReader;
 import Controller.algorithms.modasm.*;
 import Controller.algorithms.nonmodasm.*;
 import Controller.datastructures.*;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -32,21 +21,7 @@ import org.json.JSONObject;
  */
 public class RavenController {
 
-    public RavenController(String path, String user) {
-        _path = path;
-        _user = user;
-        File file = new File(_path + _user);
-        if (!file.exists() || !file.isDirectory()) {
-            file.mkdirs();
-        }
-        //temporary default values
-        _databaseConfig.add("jdbc:mysql://128.197.164.27");
-        _databaseConfig.add("Puppeteerv0 ");
-        _databaseConfig.add("cidar.rwdu");
-        _databaseConfig.add("cidar");
-    }
-
-    public ArrayList<RGraph> runBioBricks() throws Exception {
+    public ArrayList<RGraph> runBioBricks(boolean searchOverhangs) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -54,14 +29,14 @@ public class RavenController {
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
         RBioBricks biobricks = new RBioBricks();
-        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, null);
+        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, null, searchOverhangs);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for Gibson *
      */
-    public ArrayList<RGraph> runGibson() throws Exception {
+    public ArrayList<RGraph> runGibson(boolean searchOverhangs) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -69,14 +44,14 @@ public class RavenController {
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         RGibson gibson = new RGibson();
-        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for CPEC *
      */
-    public ArrayList<RGraph> runCPEC() throws Exception {
+    public ArrayList<RGraph> runCPEC(boolean searchOverhangs) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -84,14 +59,14 @@ public class RavenController {
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
-        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for SLIC *
      */
-    public ArrayList<RGraph> runSLIC() throws Exception {
+    public ArrayList<RGraph> runSLIC(boolean searchOverhangs) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -99,14 +74,14 @@ public class RavenController {
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
-        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for MoClo *
      */
-    public ArrayList<RGraph> runMoClo() throws Exception {
+    public ArrayList<RGraph> runMoClo(boolean searchOverhangs) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -115,14 +90,14 @@ public class RavenController {
         _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
         moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null, searchOverhangs);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    public ArrayList<RGraph> runGoldenGate() throws Exception {
+    public ArrayList<RGraph> runGoldenGate(boolean searchOverhangs) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -130,350 +105,14 @@ public class RavenController {
         //Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
         RGoldenGate gg = new RGoldenGate();
-        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
         return optimalGraphs;
-    }
-
-    //returns json array containing all objects in parts list; generates parts list file
-    //input: design number refers to the design number on the client
-    public JSONArray generatePartsList(String designNumber) throws Exception {
-        File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
-
-        //traverse graphs to get uuids
-        ArrayList<Part> usedParts = new ArrayList<Part>();
-        ArrayList<Vector> usedVectors = new ArrayList<Vector>();
-        HashMap<Part, Vector> partVectorHash = new HashMap();
-        for (RGraph result : _assemblyGraphs) {
-            HashMap<Part, Vector> partVectorsInGraph = result.getPartVectorsInGraph(_collector);
-            partVectorHash.putAll(partVectorsInGraph);
-            for (Part p : partVectorsInGraph.keySet()) {
-
-                if (!usedParts.contains(p)) {
-                    usedParts.add(p);
-                }
-            }
-            for (Vector v : partVectorsInGraph.values()) {
-                if (!usedVectors.contains(v)) {
-                    usedVectors.add(v);
-                }
-            }
-        }
-        _compPartsVectors.putAll(partVectorHash);
-
-        //extract information from parts and write file
-        String partList = "[";
-        FileWriter fw = new FileWriter(file);
-        BufferedWriter out = new BufferedWriter(fw);
-        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
-
-        for (Part p : usedParts) {
-            ArrayList<String> tags = p.getSearchTags();
-            String RO = "";
-            String LO = "";
-            String type = "";
-            ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
-
-            for (int k = 0; k < tags.size(); k++) {
-                if (tags.get(k).startsWith("LO:")) {
-                    LO = tags.get(k).substring(4);
-                } else if (tags.get(k).startsWith("RO:")) {
-                    RO = tags.get(k).substring(4);
-                } else if (tags.get(k).startsWith("Type:")) {
-                    type = tags.get(k).substring(6);
-                }
-            }
-
-            String composition = "";
-            String vectorName = "";
-
-            if (p.isBasic()) {
-                composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
-                Vector v = partVectorHash.get(p);
-                if (v != null) {
-                    vectorName = v.getName();
-                }
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
-            } else {
-                type = "composite";
-                Vector v = partVectorHash.get(p);
-                if (v != null) {
-                    vectorName = v.getName();
-                }
-
-                ArrayList<String> pDirection = ClothoReader.parseTags(p.getSearchTags(), "Direction:");
-                for (int i = 0; i < p.getComposition().size(); i++) {
-                    Part subpart = p.getComposition().get(i);
-                    String cRO = "";
-                    String cLO = "";
-                    ArrayList<String> searchTags = subpart.getSearchTags();
-
-                    for (int k = 0; k < searchTags.size(); k++) {
-                        if (searchTags.get(k).startsWith("LO:")) {
-                            cLO = searchTags.get(k).substring(4);
-
-                        } else if (searchTags.get(k).startsWith("RO:")) {
-                            cRO = searchTags.get(k).substring(4);
-                        }
-                    }
-
-                    //Edge case with new composite part from a PCR of existing composite part
-                    if (cLO.isEmpty()) {
-                        if (i == 0) {
-                            cLO = p.getLeftOverhang();
-                        } else {
-                            cLO = p.getComposition().get(i - 1).getRightOverhang();
-                        }
-                    }
-                    if (cRO.isEmpty()) {
-                        if (i == p.getComposition().size() - 1) {
-                            cRO = p.getRightOverhang();
-                        } else {
-                            cRO = p.getComposition().get(i + 1).getLeftOverhang();
-                        }
-                    }
-
-                    composition = composition + ", " + subpart.getName() + "|" + cLO + "|" + cRO + "|" + pDirection.get(i);
-                }
-
-                composition = composition.substring(2);
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
-            }
-            partList = partList
-                    + "{\"uuid\":\"" + p.getUUID()
-                    + "\",\"Name\":\"" + p.getName()
-                    + "\",\"Sequence\":\"" + p.getSeq()
-                    + "\",\"LO\":\"" + p.getLeftOverhang()
-                    + "\",\"RO\":\"" + p.getRightOverhang()
-                    + "\",\"Type\":\"" + p.getType()
-                    + "\",\"Vector\":\"" + vectorName
-                    + "\",\"Composition\":\"" + composition
-                    + "\",\"Resistance\":\"\",\"Level\":\"\"},";
-        }
-
-        for (Vector v : usedVectors) {
-            if (v != null) {
-                ArrayList<String> tags = v.getSearchTags();
-                String RO = "";
-                String LO = "";
-                String level = "";
-                String resistance = "";
-                for (int k = 0; k < tags.size(); k++) {
-                    if (tags.get(k).startsWith("LO:")) {
-                        LO = tags.get(k).substring(4);
-                    } else if (tags.get(k).startsWith("RO:")) {
-                        RO = tags.get(k).substring(4);
-                    } else if (tags.get(k).startsWith("Level:")) {
-                        level = tags.get(k).substring(7);
-                    } else if (tags.get(k).startsWith("Resistance:")) {
-                        resistance = tags.get(k).substring(12);
-                    }
-                }
-                out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
-                partList = partList + "{\"uuid\":\"" + v.getUUID()
-                        + "\",\"Name\":\"" + v.getName()
-                        + "\",\"Sequence\":\"" + v.getSeq()
-                        + "\",\"LO\":\"" + v.getLeftoverhang()
-                        + "\",\"RO\":\"" + v.getRightOverhang()
-                        + "\",\"Type\":\"vector\",\"Composition\":\"\""
-                        + ",\"Vector\":\"\""
-                        + ",\"Resistance\":\"" + v.getResistance()
-                        + "\",\"Level\":\"" + v.getLevel() + "\"},";
-            }
-        }
-        out.close();
-        partList = partList.substring(0, partList.length() - 1);
-        partList = partList + "]";
-        return new JSONArray(partList);
-    }
-
-    //reset collector, all field variales, deletes all files in user's directory
-    public void clearData() throws Exception {
-        _collector.purge();
-        _goalParts = new HashMap<Part, Vector>();//key: target part, value: vector
-        _efficiency = new HashMap<Integer, Double>();
-        _required = new HashSet<String>();
-        _recommended = new HashSet<String>();
-        _discouraged = new HashSet<String>();
-        _forbidden = new HashSet<String>();
-        _statistics = new Statistics();
-        _assemblyGraphs = new ArrayList<RGraph>();
-        _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
-        _partLibrary = new ArrayList<Part>();
-        _vectorLibrary = new ArrayList<Vector>();
-        _instructions = "";
-        _error = "";
-
-        String uploadFilePath = _path + _user + "/";
-        File[] filesInDirectory = new File(uploadFilePath).listFiles();
-        for (File currentFile : filesInDirectory) {
-            currentFile.delete();
-        }
-    }
-
-    //returns all saved parts in the collector as a json array
-    public String fetchData(boolean scanRestrictionSites) throws Exception {
-        String toReturn = "[";
-        ArrayList<Part> allParts = _collector.getAllParts(false);
-        for (Part p : allParts) {
-            if (!p.isTransient()) {
-
-                //Get the composition's overhangs and directions
-                ArrayList<Part> composition = p.getComposition();
-                ArrayList<String> compositions = new ArrayList<String>();
-                String bpDir = new String();
-                String bpLO = new String();
-                String bpRO = new String();
-                ArrayList<String> tags = p.getSearchTags();
-                ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
-
-                if (composition.size() > 1) {
-                    for (int i = 0; i < composition.size(); i++) {
-                        Part part = composition.get(i);
-
-                        if (!direction.isEmpty()) {
-                            bpDir = direction.get(i);
-                        }
-
-                        ArrayList<String> searchTags = part.getSearchTags();
-                        String aPartComp;
-
-                        //Look at all of the search tags
-                        for (String tag : searchTags) {
-                            if (tag.startsWith("LO:")) {
-                                bpLO = tag.substring(4);
-                            } else if (tag.startsWith("RO:")) {
-                                bpRO = tag.substring(4);
-                            }
-                        }
-
-                        if (!bpDir.isEmpty()) {
-                            if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
-                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO + "|" + bpDir;
-                            } else {
-                                aPartComp = part.getName() + "|" + bpDir;
-                            }
-                        } else {
-                            if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
-                                aPartComp = part.getName() + "|" + bpLO + "|" + bpRO;
-                            } else {
-                                aPartComp = part.getName();
-                            }
-                        }
-                        compositions.add(aPartComp);
-                    }
-                } else {
-                    compositions.add(p.getName());
-                }
-                String vectorName = "";
-                Vector v = _compPartsVectors.get(p);
-                if (v != null) {
-                    vectorName = v.getName();
-                }
-                toReturn = toReturn
-                        + "{\"uuid\":\"" + p.getUUID()
-                        + "\",\"Name\":\"" + p.getName()
-                        + "\",\"Sequence\":\"" + p.getSeq()
-                        + "\",\"LO\":\"" + p.getLeftOverhang()
-                        + "\",\"RO\":\"" + p.getRightOverhang()
-                        + "\",\"Type\":\"" + p.getType()
-                        + "\",\"Vector\":\"" + vectorName
-                        + "\",\"Composition\":\"" + compositions
-                        + "\",\"Resistance\":\"\",\"Level\":\"\"},";
-            }
-        }
-        ArrayList<Vector> allVectors = _collector.getAllVectors(false);
-        for (Vector v : allVectors) {
-            toReturn = toReturn + "{\"uuid\":\"" + v.getUUID()
-                    + "\",\"Name\":\"" + v.getName()
-                    + "\",\"Sequence\":\"" + v.getSeq()
-                    + "\",\"LO\":\"" + v.getLeftoverhang()
-                    + "\",\"RO\":\"" + v.getRightOverhang()
-                    + "\",\"Type\":\"vector\",\"Composition\":\"\""
-                    + ",\"Resistance\":\"" + v.getResistance()
-                    + "\",\"Level\":\"" + v.getLevel() + "\"},";
-        }
-        toReturn = toReturn.subSequence(0, toReturn.length() - 1) + "]";
-        String restrictionScanMessage = "";
-        boolean appendScanMessage = false;
-        if (scanRestrictionSites) {
-            restrictionScanMessage = "<strong>Warning! The following parts contain restriction sites!<br/></strong><hr/>";
-            HashMap<Part, HashMap<String, ArrayList<int[]>>> reSeqScan = RestrictionEnzyme.reSeqScan(allParts, _restrictionEnzymes);
-            HashMap<String, Part> namePartHash = new HashMap();
-            ArrayList<String> sortedPartNames = new ArrayList();
-            for (Part p : reSeqScan.keySet()) {
-                sortedPartNames.add(p.getName());
-                namePartHash.put(p.getName(), p);
-            }
-
-            for (String partName : sortedPartNames) {
-                HashMap<String, ArrayList<int[]>> enzymeSites = reSeqScan.get(namePartHash.get(partName));
-                ArrayList<String> sortedEnzymes = new ArrayList(enzymeSites.keySet());
-                if (sortedEnzymes.size() > 0) {
-                    restrictionScanMessage = restrictionScanMessage + partName + "<ul>";
-                    appendScanMessage = true;
-                    Collections.sort(sortedEnzymes);
-                    for (String enzyme : sortedEnzymes) {
-                        ArrayList<int[]> foundIndices = enzymeSites.get(enzyme);
-                        if (foundIndices.size() > 0) {
-                            restrictionScanMessage = restrictionScanMessage + "<li>" + enzyme + "<ul>";
-
-                            for (int[] indices : foundIndices) {
-                                restrictionScanMessage = restrictionScanMessage + "<li>Start: " + indices[0] + " end: " + indices[1] + "</li>";
-
-                            }
-                            restrictionScanMessage = restrictionScanMessage + "</ul></li>";
-                        }
-                    }
-                    restrictionScanMessage = restrictionScanMessage + "</ul><hr/>";
-                }
-            }
-        }
-        if (!appendScanMessage) {
-            restrictionScanMessage = "";
-        }
-        if (_error.length() > 0) {
-            _error = _error.replaceAll("[\r\n\t]+", "<br/>");
-            toReturn = "{\"result\":" + toReturn + ",\"status\":\"bad\",\"message\":\"" + _error + "\"}";
-        } else {
-            toReturn = "{\"result\":" + toReturn + ",\"status\":\"good\",\"message\":\"" + restrictionScanMessage + "\"}";
-        }
-        return toReturn;
-    }
-
-    //handles multiple file upload from the client
-    //parses each file for parts and saves them
-    public void loadUploadedFiles(ArrayList<File> filesToRead) {
-        _error = "";
-//        String uploadFilePath = _path + _user + "/";
-//        File[] filesInDirectory = new File(uploadFilePath).listFiles();
-        try {
-            if (filesToRead != null) {
-                for (File currentFile : filesToRead) {
-                    String filePath = currentFile.getAbsolutePath();
-                    String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
-                    if ("csv".equals(fileExtension)) {
-                        parseRavenFile(currentFile);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            String exceptionAsString = e.getMessage().replaceAll("[\r\n\t]+", "<br/>");
-            _error = exceptionAsString;
-        }
-    }
-
-    //parses a newly generated parts list from a new design and saves the parts in that parts list
-    public void saveNewDesign(String designCount) throws Exception {
-        _error = "";
-        String filePath = _path + _user + "/partsList" + designCount + ".csv";
-        File toLoad = new File(filePath);
-        parseRavenFile(toLoad);
     }
 
     /**
      * Parse an input Raven file *
      */
-    private void parseRavenFile(File input) throws Exception {
+    public void parseRavenFile(File input) throws Exception {
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
         if (_forcedOverhangHash == null) {
@@ -705,237 +344,6 @@ public class RavenController {
         }
     }
 
-    //given an array of part and vector uuids, save each of them and set their transient status to false
-    //saved parts and vectors are typically associated with a new design on the client
-    //writeSQL indicates whether or not parts will be saved in an sql database; url hardcoded for puppeteer team testing
-    public String save(String[] partIDs, String[] vectorIDs, boolean writeSQL) {
-        ArrayList<Part> toSaveParts = new ArrayList();
-        ArrayList<Vector> toSaveVectors = new ArrayList();
-        if (partIDs.length > 0) {
-            for (int i = 0; i < partIDs.length; i++) {
-                Part p = _collector.getPart(partIDs[i], true);
-                if (p != null) {
-                    p.setTransientStatus(false);
-                    toSaveParts.add(p);
-                }
-            }
-        }
-        if (vectorIDs.length > 0) {
-            for (int i = 0; i < vectorIDs.length; i++) {
-                Vector v = _collector.getVector(vectorIDs[i], true);
-                if (v != null) {
-                    v.setTransientStatus(false);
-                    toSaveVectors.add(v);
-                }
-            }
-        }
-        if (writeSQL) {
-            PuppeteerWriter.saveParts(toSaveParts, _databaseConfig);
-            PuppeteerWriter.saveVectors(toSaveVectors, _databaseConfig);
-        }
-        return "saved data";
-
-    }
-
-    //returns "loaded" or "not loaded" depending on whether there are objects in the collector
-    public String getDataStatus() throws Exception {
-        String toReturn = "not loaded";
-        if (_collector.getAllParts(false).size() > 0 || _collector.getAllVectors(false).size() > 0) {
-            toReturn = "loaded";
-        }
-        return toReturn;
-    }
-
-    /**
-     * Traverse a solution graph for statistics *
-     */
-    private void getSolutionStats() throws Exception {
-
-        int steps = 0;
-        int stages = 0;
-        int recCnt = 0;
-        int disCnt = 0;
-        int shr = 0;
-        int rxn = 0;
-        ArrayList<Double> effArray = new ArrayList<Double>();
-        double eff = 0;
-
-        if (!_assemblyGraphs.isEmpty()) {
-
-            for (RGraph graph : _assemblyGraphs) {
-                if (graph.getStages() > stages) {
-                    stages = graph.getStages();
-                }
-                steps = steps + graph.getSteps();
-                recCnt = recCnt + graph.getReccomendedCount();
-                disCnt = disCnt + graph.getDiscouragedCount();
-                shr = shr + graph.getSharing();
-                rxn = rxn + graph.getReaction();
-                effArray.addAll(graph.getEfficiencyArray());
-            }
-            double sum = 0;
-
-            for (Double anEff : effArray) {
-                sum = sum + anEff;
-            }
-            eff = sum / effArray.size();
-        }
-
-        _statistics.setEfficiency(eff);
-        _statistics.setRecommended(recCnt);
-        _statistics.setDiscouraged(disCnt);
-        _statistics.setStages(stages);
-        _statistics.setSteps(steps);
-        _statistics.setSharing(shr);
-        _statistics.setGoalParts(_goalParts.keySet().size());
-        _statistics.setExecutionTime(Statistics.getTime());
-        _statistics.setReaction(rxn);
-        _statistics.setValid(_valid);
-        System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + _valid);
-    }
-
-    //using parameters from the client, run the algorithm
-    //using parameters from the client, run the algorithm
-    public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters) throws Exception {
-        _goalParts = new HashMap<Part, Vector>();
-        _required = required;
-        _recommended = recommended;
-        _forbidden = forbidden;
-        _discouraged = discouraged;
-        _statistics = new Statistics();
-        _vectorLibrary = new ArrayList<Vector>();
-        _partLibrary = new ArrayList<Part>();
-        _assemblyGraphs = new ArrayList<RGraph>();
-        _efficiency = efficiencyHash;
-        _valid = false;
-        method = method.toLowerCase().trim();
-
-        if (partLibraryIDs.length > 0) {
-            for (int i = 0; i < partLibraryIDs.length; i++) {
-                Part current = _collector.getPart(partLibraryIDs[i], false);
-                if (current != null) {
-                    _partLibrary.add(current);
-                }
-            }
-        }
-
-        if (vectorLibraryIDs.length > 0) {
-            for (int i = 0; i < vectorLibraryIDs.length; i++) {
-                Vector current = _collector.getVector(vectorLibraryIDs[i], false);
-                if (current != null) {
-                    _vectorLibrary.add(current);
-                }
-            }
-        }
-
-        for (int i = 0; i < targetIDs.length; i++) {
-            Part current = _collector.getPart(targetIDs[i], false);
-            Vector vector = _compPartsVectors.get(current);
-            _goalParts.put(current, vector);
-        }
-
-        Statistics.start();
-        boolean scarless = false;
-        if (method.equals("biobricks")) {
-            _assemblyGraphs = runBioBricks();
-        } else if (method.equals("cpec")) {
-            _assemblyGraphs = runCPEC();
-            scarless = true;
-        } else if (method.equals("gibson")) {
-            _assemblyGraphs = runGibson();
-            scarless = true;
-        } else if (method.equals("goldengate")) {
-            _assemblyGraphs = runGoldenGate();
-            scarless = true;
-        } else if (method.equals("moclo")) {
-            _assemblyGraphs = runMoClo();
-        } else if (method.equals("slic")) {
-            _assemblyGraphs = runSLIC();
-            scarless = true;
-        }
-
-        Statistics.stop();
-        ClothoWriter writer = new ClothoWriter();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        ArrayList<String> arcTextFiles = new ArrayList<String>();
-        ArrayList<RNode> targetRootNodes = new ArrayList();
-        if (!_assemblyGraphs.isEmpty()) {
-            for (RGraph result : _assemblyGraphs) {
-                targetRootNodes.add(result.getRootNode());
-            }
-        }
-
-        //Initialize statistics
-        boolean overhangValid = false;
-        if (method.equals("biobricks")) {
-            overhangValid = RBioBricks.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("cpec")) {
-            overhangValid = RCPEC.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("gibson")) {
-            overhangValid = RGibson.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("goldengate")) {
-            overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("moclo")) {
-            overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("slic")) {
-            overhangValid = RSLIC.validateOverhangs(_assemblyGraphs);
-        }
-        boolean valid = validateGraphComposition();
-        _valid = valid && overhangValid;
-        _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
-        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
-        getSolutionStats();
-        if (!_assemblyGraphs.isEmpty()) {
-            for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors);
-                writer.fixCompositeUUIDs(_collector, result);
-                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, targetRootNodes, scarless));
-            }
-        }
-        System.out.println("GRAPH AND ARCS FILES CREATED");
-        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
-
-        //generate instructions
-        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, primerParameters, true, method);
-        if (_instructions == null) {
-            _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
-        }
-
-        String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
-
-        File file = new File(_path + _user + "/instructions" + designCount + ".txt");
-        FileWriter fw = new FileWriter(file);
-        BufferedWriter out = new BufferedWriter(fw);
-        out.write(_instructions);
-        out.close();
-
-        //write graph text file
-        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
-        fw = new FileWriter(file);
-        out = new BufferedWriter(fw);
-        out.write(mergedGraphText);
-        out.close();
-
-        //write arcs text file
-        file = new File(_path + _user + "/arcs" + designCount + ".txt");
-        fw = new FileWriter(file);
-        out = new BufferedWriter(fw);
-        out.write(mergedArcText);
-        out.close();
-
-        //post request to graphviz
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
-
-        String imageURL = "";
-        imageURL = WeyekinPoster.getmGraphVizURI().toString();
-        JSONObject toReturn = new JSONObject();
-        toReturn.put("images", imageURL);
-        return toReturn;
-    }
-
     //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition
     private boolean validateGraphComposition() throws Exception {
         boolean toReturn = true;
@@ -984,65 +392,88 @@ public class RavenController {
         }
 
     }
+    //set searchPartitions to true to sample mgp space
+    //set searchPartitions to true to sample overhang space
+    public void run(String method, int targetSize, boolean searchPartitions, boolean searchOverhangs) throws Exception {
+        _goalParts = new HashMap();
+        _required = new HashSet();
+        _recommended = new HashSet();
+        _forbidden = new HashSet();
+        _discouraged = new HashSet();
+        _vectorLibrary = new ArrayList<Vector>();
+        _partLibrary = new ArrayList<Part>();
+        _assemblyGraphs = new ArrayList<RGraph>();
+        _efficiency = new HashMap();
+        _efficiency.put(1, 1.0);
+        _efficiency.put(2, 1.0);
+        _efficiency.put(3, 1.0);
+        _efficiency.put(4, 1.0);
 
-    //getter for accessing the instructions from RavenServlet
-    public String getInstructions() {
-        return _instructions;
-    }
-
-    public String importClotho(JSONArray toImport) {
-        String toReturn = "";
-        try {
-            for (int i = 0; i < toImport.length(); i++) {
-                JSONObject currentPart = toImport.getJSONObject(i);
-                if (currentPart.getString("schema").equals("BasicPart")) {
-                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"));
-                    String type = "gene";
-                    if (currentPart.has("type")) {
-                        type = currentPart.getString("type");
-                    }
-                    newBasicPart.addSearchTag("Type: " + type);
-                    newBasicPart.setUuid(currentPart.getString("id"));
-                    newBasicPart = newBasicPart.saveDefault(_collector);
-                    newBasicPart.setTransientStatus(false);
-                } else if (currentPart.getString("schema").equals("CompositePart")) {
-                    JSONArray compositionArray = currentPart.getJSONArray("composition");
-                    ArrayList<Part> composition = new ArrayList();
-                    ArrayList<String> direction = new ArrayList();
-                    for (int j = 0; j < compositionArray.length(); j++) {
-                        composition.add(_collector.getPart(compositionArray.getString(j), false));
-                        direction.add("+");
-                    }
-                    Part newComposite = Part.generateComposite(composition, currentPart.getString("name"));
-                    newComposite.setUuid(currentPart.getString("id"));
-                    newComposite.addSearchTag("Type: composite");
-                    newComposite.addSearchTag("Direction: " + direction);
-                    newComposite = newComposite.saveDefault(_collector);
-                    newComposite.setTransientStatus(false);
-                }
-
-
+        method = method.toLowerCase().trim();
+        ArrayList<Part> allParts = _collector.getAllParts(true);
+        HashSet<Part> goal = new HashSet(allParts.subList(0, targetSize));
+        for (Part p : goal) {
+            if (p.isComposite()) {
+                _goalParts.put(p, null);
             }
-        } catch (JSONException ex) {
-            Logger.getLogger(RavenController.class.getName()).log(Level.SEVERE, null, ex);
-            return "bad";
         }
 
-        return "good";
-    }
+        boolean scarless = false;
+        if (method.equals("biobricks")) {
+            _assemblyGraphs = runBioBricks(searchOverhangs);
+        } else if (method.equals("cpec")) {
+            _assemblyGraphs = runCPEC(searchOverhangs);
+            scarless = true;
+        } else if (method.equals("gibson")) {
+            _assemblyGraphs = runGibson(searchOverhangs);
+            scarless = true;
+        } else if (method.equals("goldengate")) {
+            _assemblyGraphs = runGoldenGate(searchOverhangs);
+            scarless = true;
+        } else if (method.equals("moclo")) {
+            _assemblyGraphs = runMoClo(searchOverhangs);
+        } else if (method.equals("slic")) {
+            _assemblyGraphs = runSLIC(searchOverhangs);
+            scarless = true;
+        }
+        getSolutionStats();
 
-    public JSONObject generateStats() throws Exception {
-        String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()
-                + "\",\"steps\":\"" + _statistics.getSteps()
-                + "\",\"stages\":\"" + _statistics.getStages()
-                + "\",\"reactions\":\"" + _statistics.getReactions()
-                + "\",\"recommended\":\"" + _statistics.getRecommended()
-                + "\",\"discouraged\":\"" + _statistics.getDiscouraged()
-                + "\",\"efficiency\":\"" + _statistics.getEfficiency()
-                + "\",\"sharing\":\"" + _statistics.getSharing()
-                + "\",\"time\":\"" + _statistics.getExecutionTime()
-                + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
-        return new JSONObject(statString);
+
+    }
+    
+     private void getSolutionStats() throws Exception {
+
+        int steps = 0;
+        int stages = 0;
+        int recCnt = 0;
+        int disCnt = 0;
+        int shr = 0;
+        int rxn = 0;
+        ArrayList<Double> effArray = new ArrayList<Double>();
+        double eff = 0;
+
+        if (!_assemblyGraphs.isEmpty()) {
+
+            for (RGraph graph : _assemblyGraphs) {
+                if (graph.getStages() > stages) {
+                    stages = graph.getStages();
+                }
+                steps = steps + graph.getSteps();
+                recCnt = recCnt + graph.getReccomendedCount();
+                disCnt = disCnt + graph.getDiscouragedCount();
+                shr = shr + graph.getSharing();
+                rxn = rxn + graph.getReaction();
+                effArray.addAll(graph.getEfficiencyArray());
+            }
+            double sum = 0;
+
+            for (Double anEff : effArray) {
+                sum = sum + anEff;
+            }
+            eff = sum / effArray.size();
+        }
+
+        System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn);
     }
     //FIELDS
     private HashMap<Part, Vector> _goalParts = new HashMap<Part, Vector>();//key: target part, value: composition
@@ -1052,17 +483,9 @@ public class RavenController {
     private HashSet<String> _recommended = new HashSet<String>();
     private HashSet<String> _discouraged = new HashSet<String>();
     private HashSet<String> _forbidden = new HashSet<String>();
-    private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();
     private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
-    private String _instructions = "";
     protected Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
-    private String _path;
-    private String _user;
-    private String _error = "";
-    private boolean _valid = false;
-    private ArrayList<String> _databaseConfig = new ArrayList(); //0:database url, 1:database schema, 2:user, 3:password
-    private ArrayList<RestrictionEnzyme> _restrictionEnzymes = RestrictionEnzyme.getBBGGMoCloEnzymes();
 }
