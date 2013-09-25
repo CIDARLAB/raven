@@ -180,7 +180,6 @@ public class RGeneral extends Modularity {
         
         RGraph bestGraph = new RGraph(goalPartNode);
 
-        //Recursive Programing to find best graph
         int gpSize = goalPartNode.getComposition().size();
         ArrayList<String> gpComp = goalPartNode.getComposition();
         ArrayList<String> gpType = goalPartNode.getType();
@@ -246,6 +245,7 @@ public class RGeneral extends Modularity {
         for (int j = 0; j < libIndexes.size(); j++) {
             
             HashMap<Integer, ArrayList<int[]>> aPartitionSetByNBreaks = getPartitions(libIndexes.get(j), forbPartitionsBySize);
+                //key: number of breaks that can be made in a part, value: arraylist of partitions
             Set<Integer> keySet = aPartitionSetByNBreaks.keySet();
             ArrayList<Integer> nNeighbors = new ArrayList<Integer>(keySet);
             Collections.sort(nNeighbors);
