@@ -874,7 +874,15 @@ public class RavenController {
             for (int i = 0; i < toImport.length(); i++) {
                 JSONObject currentPart = toImport.getJSONObject(i);
                 if (currentPart.getString("schema").equals("BasicPart")) {
-                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"));
+                    String sequence;
+                    
+                    try {
+                        sequence = currentPart.getJSONObject("sequence").getString("sequence");
+                    } catch (Exception e){
+                        sequence = "";
+                    }
+                    
+                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), sequence);
                     String type = "gene";
                     if (currentPart.has("type")) {
                         type = currentPart.getString("type");

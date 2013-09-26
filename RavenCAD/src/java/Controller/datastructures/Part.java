@@ -17,7 +17,7 @@ public class Part {
         Part newComposite = new Part();
         String sequence = "";
         for (Part p : newComposition) {
-            sequence = sequence + p.getSeq();
+            sequence = sequence + (p.getSeq() != null? p.getSeq() : "");
         }
         newComposite.sequence = sequence;
         newComposite.composition = newComposition;
