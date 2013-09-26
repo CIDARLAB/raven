@@ -301,7 +301,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     format: "FreeForm",
                     type: "composite",
                     riskGroup: 0,
-                    showDetail: true
                 };
                 _parts[newPart["name"]] = newPart;
                 _partIds[newPart["name"]] = partId;
@@ -332,7 +331,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     format: "FreeForm",
                     type: part["Type"],
                     riskGroup: 0,
-                    showDetail: true
                 };
                 _parts[newPart["name"]] = newPart;
                 _partIds[newPart["name"]] = partId;
