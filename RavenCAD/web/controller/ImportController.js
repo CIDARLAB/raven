@@ -342,7 +342,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
 
     /********Clotho Functions and Variables********/
-    var _connection = new WebSocket('ws://localhost:8080/websocket');
+    var _connection = new WebSocket('wss://localhost:8443/websocket');
     var canSend = false;
     var _requestCommand = {}; //key request id, value: callback function
     var _requestID = 0;
@@ -392,7 +392,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             _connection.send(message);
             _requestID++;
         } else {
-            _connection = new WebSocket('ws://localhost:8080/websocket');
+            _connection = new WebSocket('wss://localhost:8443/websocket');
         }
     };
     _connection.onmessage = function(e) {
