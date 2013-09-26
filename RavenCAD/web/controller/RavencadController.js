@@ -379,11 +379,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     })};
                 runParameters[designCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {
-                    alert(JSON.stringify(data));
+                    //alert(JSON.stringify(data));
                     if (data["status"] === "good") {
                         //render image
                         $("#resultImage" + designCount).html("<img src='" + data["graph"] + "'/>");
-                        $('#resultImage' + designCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+                        $('#resultImage' + designCount + ' img').wrap('<span style="width:100%;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
 
 //                        $.each(data["graph"]["images"], function(key, value) {
 //                            window.open(value, key);
