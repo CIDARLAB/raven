@@ -35,7 +35,27 @@ public class SamplingPartitioning {
         ArrayList<int[]> arrayList = new ArrayList(partitions.get(index));
         return arrayList.get(index2);
     }
+    public static HashMap<Integer, ArrayList<int[]>> getPartitions(ArrayList<Integer> indices, int maxNumBreaks) {
+        //key: number of breaks that can be made in a part, value: arraylist of partitions
+        for (int numBreaks = 1; numBreaks <= maxNumBreaks; numBreaks++) {
+            partitions.put(numBreaks, new HashSet());
+            for (int j = 0; j < indices.size(); j++) {
+                ArrayList<Integer> choices = new ArrayList();
+                choices.add(indices.get(j));
+                ArrayList<Integer> available = (ArrayList<Integer>) indices.clone();
+                available.remove(j);
+                getPartitionsHelper(available, choices, numBreaks, numBreaks - 1);
+            }
 
+        }
+        int index = 1 + (int)(Math.random() * ((maxNumBreaks - 1) + 1));
+        int index2 = 0 + (int)(Math.random() * ((partitions.get(index).size() - 1) + 1));
+        ArrayList<int[]> arrayList = new ArrayList(partitions.get(index));
+        HashMap<Integer, ArrayList<int[]>> toReturn = new HashMap();
+        toReturn.put(index, new ArrayList());
+        toReturn.get(index).add(arrayList.get(index2));
+        return toReturn;
+    }
     private static void getPartitionsHelper(ArrayList<Integer> indices, ArrayList<Integer> choices, int maxNumBreaks, int targetSize) {
         if (targetSize == 0) {
             Collections.sort(choices);

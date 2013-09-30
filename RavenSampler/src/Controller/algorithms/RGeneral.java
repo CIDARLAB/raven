@@ -19,17 +19,21 @@ import java.util.Set;
  */
 public class RGeneral extends Modularity {
 
-    /** Find assembly graph for multiple goal parts **/
+    public boolean sampling = true;
+
+    /**
+     * Find assembly graph for multiple goal parts *
+     */
     protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiencies, boolean sharing, boolean searchPartitions) throws Exception {
-        
+
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
-        for (int i = 0; i < gps.size(); i++) {
-            RNode gp = gps.get(i);
-            conflictSearchRequired(gp, required);
-        }
+//        for (int i = 0; i < gps.size(); i++) {
+//            RNode gp = gps.get(i);
+//            conflictSearchRequired(gp, required);
+//        }
 
         HashSet<String> libCompDir = new HashSet(partHash.keySet());
-        
+
         //Run algorithm for all goal parts separately, find the max stages
         HashMap<String, RGraph> slackLibrary = new HashMap<String, RGraph>();
         slackLibrary.putAll(partHash);
@@ -40,7 +44,7 @@ public class RGeneral extends Modularity {
         HashMap<String, Integer> sharingHash = new HashMap<String, Integer>();
         if (sharing == true) {
             sharingHash = computeIntermediateSharing(gps);
-        }        
+        }
 
         //First initiate results and pinned hash
         ArrayList<RGraph> resultGraphs = new ArrayList<RGraph>();
@@ -66,7 +70,7 @@ public class RGeneral extends Modularity {
                 if (newGraph.getRootNode().getComposition().isEmpty()) {
                     System.out.println("WARNING, GOAL PART " + gp.getComposition() + " CANNOT BE BUILT WITH THIS FORBIDDEN SET!");
                     return null;
-                    
+
                 } else {
                     //Pin graph if no existing pinned graph
                     if (pinnedGraph == null) {
@@ -89,7 +93,7 @@ public class RGeneral extends Modularity {
                             index = j;
                         }
 
-                    //If no recommended parts, pin the graph with the most sharing
+                        //If no recommended parts, pin the graph with the most sharing
                     } else {
                         if (newGraph.getSharing() > pinnedGraph.getSharing()) {
                             pinnedGraph = newGraph;
@@ -101,13 +105,13 @@ public class RGeneral extends Modularity {
                     }
                 }
             }
-            
+
             //Add pinned graph and graph for each intermediate part to our hash of pinned graphs
             //Also search through the subgraphs of the bestGraph to see if it has any basic parts
             boolean cantMake = true;
             RNode pinnedRoot = pinnedGraph.getRootNode();
             pinnedPartHash.put(pinnedRoot.getComposition().toString() + pinnedRoot.getDirection().toString(), pinnedGraph.clone());
-            
+
             if (!pinnedGraph.getSubGraphs().isEmpty()) {
                 cantMake = false;
             }
@@ -128,6 +132,7 @@ public class RGeneral extends Modularity {
             //Send warning if there might be missing basic parts or subgraphs
             if (cantMake) {
                 System.out.println("WARNING, THERE ARE EITHER NO BASIC PARTS OR NO SUBGRAPHS... SOMETHING MAY ALREADY EXISTS OR SOMETHING CANNOT BE MADE");
+                System.out.println(pinnedGraph.getRootNode().getComposition());
             }
 
             //Remove pinned graph from goal part list and add to result list
@@ -138,7 +143,10 @@ public class RGeneral extends Modularity {
         return resultGraphs;
     }
 
-    /** Find assembly graph for a single goal part factoring in slack and sharing **/
+    /**
+     * Find assembly graph for a single goal part factoring in slack and sharing
+     * *
+     */
     protected RGraph createAsmGraph_sgp(RNode goalPartNode, HashMap<String, RGraph> partsHash, HashSet<String> libCompDir, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, int slack, HashMap<String, Integer> sharingHash, HashMap<Integer, Double> efficiencies) {
 
         //If any of the parameters is null, must be set to a new object to avoid null pointer issues
@@ -166,7 +174,7 @@ public class RGeneral extends Modularity {
         if (efficiencies == null) {
             efficiencies = new HashMap<Integer, Double>();
         }
-        
+
         //Memoization Case - If graph already exists for this composition and direction. This is always the case for basic parts and library parts
         if (goalPartNode.getComposition().size() == 1) {
             if (partsHash.containsKey(goalPartNode.getComposition().toString() + "[]")) {
@@ -177,20 +185,20 @@ public class RGeneral extends Modularity {
                 return partsHash.get(goalPartNode.getComposition().toString() + goalPartNode.getDirection().toString());
             }
         }
-        
+
         RGraph bestGraph = new RGraph(goalPartNode);
 
         int gpSize = goalPartNode.getComposition().size();
         ArrayList<String> gpComp = goalPartNode.getComposition();
         ArrayList<String> gpType = goalPartNode.getType();
         ArrayList<String> gpDir = goalPartNode.getDirection();
-        
+
         //Create idexes for goal part
         ArrayList<Integer> indexes = new ArrayList<Integer>();
         for (int i = 1; i < gpSize; i++) {
             indexes.add(i);
         }
-        
+
         //Remove indexes for required parts
         for (int start = 0; start < gpSize; start++) {
             for (int end = start + 2; end < gpSize + 1; end++) {
@@ -210,7 +218,7 @@ public class RGeneral extends Modularity {
                 }
             }
         }
-        
+
         //Create an additional partition set if library parts already exist to explore more design space that includes library parts
         ArrayList<ArrayList<Integer>> libIndexes = new ArrayList<ArrayList<Integer>>();
         libIndexes.add(indexes);
@@ -222,7 +230,7 @@ public class RGeneral extends Modularity {
                 }
                 ArrayList<String> gpSub = new ArrayList<String>();
                 gpSub.addAll(gpComp.subList(startL, endL));
-                
+
                 if (libCompDir.contains(gpSub.toString())) {
                     ArrayList<Integer> aLibIndexes = new ArrayList<Integer>(indexes);
                     for (int j = startL + 1; j < endL; j++) {
@@ -232,36 +240,40 @@ public class RGeneral extends Modularity {
                 }
             }
         }
-        
+
         //Initialize forbidden partition sets
         HashMap<Integer, ArrayList<int[]>> forbPartitionsBySize = new HashMap<Integer, ArrayList<int[]>>();
         for (int i = 1; i < _maxNeighbors; i++) {
             ArrayList<int[]> forbiddenPartitions = new ArrayList<int[]>();
             forbPartitionsBySize.put(i, forbiddenPartitions);
         }
-        
+
         //For all of the allowed index sets, find the best way to break it into even peices for 1 to the maximum number of neighbors 
-        HashMap<Integer, ArrayList<int[]>> partitionSetByNBreaks = new HashMap<Integer, ArrayList<int[]>>();
-        for (int j = 0; j < libIndexes.size(); j++) {
-            
-            HashMap<Integer, ArrayList<int[]>> aPartitionSetByNBreaks = getPartitions(libIndexes.get(j), forbPartitionsBySize);
+        HashMap<Integer, ArrayList<int[]>> partitionSetByNBreaks;
+        if (sampling) {
+            partitionSetByNBreaks = SamplingPartitioning.getPartitions(indexes, goalPartNode.getComposition().size()-1);
+        } else {
+            partitionSetByNBreaks = new HashMap<Integer, ArrayList<int[]>>();
+            for (int j = 0; j < libIndexes.size(); j++) {
+                
+                HashMap<Integer, ArrayList<int[]>> aPartitionSetByNBreaks = getPartitions(libIndexes.get(j), forbPartitionsBySize);
                 //key: number of breaks that can be made in a part, value: arraylist of partitions
-            Set<Integer> keySet = aPartitionSetByNBreaks.keySet();
-            ArrayList<Integer> nNeighbors = new ArrayList<Integer>(keySet);
-            Collections.sort(nNeighbors);
-            
-            //Add partitions to larger set
-            if (partitionSetByNBreaks.isEmpty()) {
-                partitionSetByNBreaks = aPartitionSetByNBreaks;
-            } else {
-                for (Integer k : nNeighbors) {
-                    ArrayList<int[]> sets = partitionSetByNBreaks.get(k);
-                    sets.addAll(aPartitionSetByNBreaks.get(k));
-                    partitionSetByNBreaks.put(k, sets);
+                Set<Integer> keySet = aPartitionSetByNBreaks.keySet();
+                ArrayList<Integer> nNeighbors = new ArrayList<Integer>(keySet);
+                Collections.sort(nNeighbors);
+
+                //Add partitions to larger set
+                if (partitionSetByNBreaks.isEmpty()) {
+                    partitionSetByNBreaks = aPartitionSetByNBreaks;
+                } else {
+                    for (Integer k : nNeighbors) {
+                        ArrayList<int[]> sets = partitionSetByNBreaks.get(k);
+                        sets.addAll(aPartitionSetByNBreaks.get(k));
+                        partitionSetByNBreaks.put(k, sets);
+                    }
                 }
             }
         }
-        
         Set<Integer> keySet = partitionSetByNBreaks.keySet();
         ArrayList<Integer> keys = new ArrayList<Integer>(keySet);
         Collections.sort(keys);
@@ -273,10 +285,10 @@ public class RGeneral extends Modularity {
 
             ArrayList<int[]> forbiddenPartitions = new ArrayList<int[]>();
             ArrayList<int[]> candidatePartitions = partitionSetByNBreaks.get(nBreaks);
-            
+
             //For each partition of this size
             while (!candidatePartitions.isEmpty()) {
-                
+
                 int[] thisPartition = candidatePartitions.get(0);
                 candidatePartitions.remove(0);
                 ArrayList<RNode> allSubParts = new ArrayList<RNode>();
@@ -288,7 +300,7 @@ public class RGeneral extends Modularity {
                     ArrayList<String> comp = new ArrayList<String>();
                     ArrayList<String> dir = new ArrayList<String>();
                     ArrayList<String> compDir = new ArrayList<String>();
-                    
+
                     if (n == 0) {
                         type.addAll(gpType.subList(0, thisPartition[n]));
                         comp.addAll(gpComp.subList(0, thisPartition[n]));
@@ -307,7 +319,7 @@ public class RGeneral extends Modularity {
                     for (int m = 0; m < comp.size(); m++) {
                         compDir.add(comp.get(m) + "|" + dir.get(m));
                     }
-                    
+
                     if (forbidden.contains(compDir.toString())) {
                         canPartitionThis = false;
                         forbiddenPartitions.add(thisPartition);
@@ -321,20 +333,20 @@ public class RGeneral extends Modularity {
                     allSubParts.add(aSubPart);
                 }
 
-                
+
                 //If there are no forbidden parts amongst subparts, this partition is valid
                 if (canPartitionThis) {
                     canPartitionAny = true;
                     ArrayList<RGraph> toCombine = new ArrayList<RGraph>();
                     ArrayList<String> combineDirection = new ArrayList<String>();
-                    
+
                     //Recursive call
                     for (int o = 0; o < allSubParts.size(); o++) {
                         RNode oneSubPart = allSubParts.get(o);
                         RGraph solution = createAsmGraph_sgp(oneSubPart, partsHash, libCompDir, required, recommended, forbidden, discouraged, slack - 1, sharingHash, efficiencies);
-                        
+
                         //If the solution is clear, meaning all possible partitions are forbidden and there is no answer, this partition must also be forbidden
-                        if (solution.getRootNode().getComposition().isEmpty()) {                            
+                        if (solution.getRootNode().getComposition().isEmpty()) {
                             forbiddenPartitions.add(thisPartition);
                             toCombine.clear();
                             break;
@@ -346,7 +358,7 @@ public class RGeneral extends Modularity {
                     //If the solution is not empty, combine graphs and score against the current best
                     if (!toCombine.isEmpty()) {
                         RGraph newGraph = combineGraphsModEff(toCombine, combineDirection, recommended, discouraged, sharingHash, efficiencies);
-                        
+
                         //Edge case: best graph does not exist yet
                         if (bestGraph.getRootNode().getNeighbors().isEmpty()) {
                             bestGraph = newGraph;
@@ -361,9 +373,9 @@ public class RGeneral extends Modularity {
                 //If none so far can be partitioned and the list is empty, find next most optimal set using partitioning method
                 if (!canPartitionAny && candidatePartitions.isEmpty()) {
                     HashMap<Integer, ArrayList<int[]>> newForbPartitionsBySize = new HashMap<Integer, ArrayList<int[]>>();
-                    newForbPartitionsBySize.put(nBreaks, forbiddenPartitions);                    
+                    newForbPartitionsBySize.put(nBreaks, forbiddenPartitions);
                     HashMap<Integer, ArrayList<int[]>> newPartitions = getPartitions(indexes, newForbPartitionsBySize);
-                    
+
                     //If all possible partitions have been exhausted, return the best graph, which should be empty... this should rarely happen 
                     if (newPartitions.isEmpty()) {
                         return bestGraph;
@@ -371,8 +383,8 @@ public class RGeneral extends Modularity {
                     candidatePartitions.addAll(newPartitions.get(nBreaks));
                 }
             }
-        }        
-        
+        }
+
         //Save best graph for this intermediate
         RNode bestGraphRoot = bestGraph.getRootNode();
         partsHash.put(bestGraphRoot.getComposition().toString() + bestGraphRoot.getDirection().toString(), bestGraph);
@@ -381,10 +393,12 @@ public class RGeneral extends Modularity {
         return bestGraph;
     }
 
-    /** Combine multiple graphs, including efficiency and modularity scoring **/
+    /**
+     * Combine multiple graphs, including efficiency and modularity scoring *
+     */
     //Currently, it is assumed that efficiencies are additive and not multiplicative
     protected RGraph combineGraphsModEff(ArrayList<RGraph> graphs, ArrayList<String> direction, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash, HashMap<Integer, Double> efficiencies) {
-        
+
         //Call method without efficiency and modularity first
         RGraph combineGraphsME = combineGraphsShareRecDis(graphs, direction, recommended, discouraged, sharingHash);
         RNode root = combineGraphsME.getRootNode();
@@ -408,7 +422,9 @@ public class RGeneral extends Modularity {
         return combineGraphsME;
     }
 
-    /** Combine multiple graphs, including sharing and recommended **/
+    /**
+     * Combine multiple graphs, including sharing and recommended *
+     */
     protected RGraph combineGraphsShareRecDis(ArrayList<RGraph> graphs, ArrayList<String> direction, HashSet<String> recommended, HashSet<String> discouraged, HashMap<String, Integer> sharingHash) {
 
         //Call method without sharing first
@@ -433,20 +449,20 @@ public class RGeneral extends Modularity {
                 combineGraphsSRD.setModularityFactor(graphSharing);
             }
         }
-        
+
         ArrayList<String> rootRecDis = new ArrayList<String>();
         ArrayList<String> composition = combineGraphsSRD.getRootNode().getComposition();
         for (int j = 0; j < composition.size(); j++) {
             rootRecDis.add(composition.get(j) + "|" + direction.get(j));
         }
-        
+
         //If recommended hash contains the root's composition
         if (recommended.contains(rootRecDis.toString())) {
             combineGraphsSRD.setReccomendedCount(recCount + 1);
         } else {
             combineGraphsSRD.setReccomendedCount(recCount);
         }
-        
+
         //If discouraged hash contains the root's composition
         if (discouraged.contains(rootRecDis.toString())) {
             combineGraphsSRD.setDiscouragedCount(disCount + 1);
@@ -456,12 +472,14 @@ public class RGeneral extends Modularity {
         return combineGraphsSRD;
     }
 
-    /** Combine multiple graphs, ignoring sharing and recommended **/
+    /**
+     * Combine multiple graphs, ignoring sharing and recommended *
+     */
     protected RGraph combineGraphsStageStep(ArrayList<RGraph> graphs, ArrayList<String> direction) {
         RNode newRoot = new RNode();
         ArrayList<String> mergerComposition = new ArrayList<String>();
         ArrayList<String> mergerType = new ArrayList<String>();
-        
+
         //Get all the children types, compositions and directions
         for (int i = 0; i < graphs.size(); i++) {
             RNode currentNeighbor = graphs.get(i).getRootNode();
@@ -471,7 +489,7 @@ public class RGeneral extends Modularity {
         newRoot.setComposition(mergerComposition);
         newRoot.setType(mergerType);
         newRoot.setDirection(direction);
-        
+
         //Clone all the nodes from graphs being combined and then add to new root node
         for (int j = 0; j < graphs.size(); j++) {
             RNode toAdd = graphs.get(j).getRootNode().clone();
@@ -504,7 +522,10 @@ public class RGeneral extends Modularity {
         return newGraph;
     }
 
-    /** Find which of two graphs has a lower cost, including slack. Supports multi-goal-part assembly **/
+    /**
+     * Find which of two graphs has a lower cost, including slack. Supports
+     * multi-goal-part assembly *
+     */
     protected RGraph minCostSlack(RGraph g0, RGraph g1, int slack) {
 
         //Return pinned graphs
@@ -532,7 +553,7 @@ public class RGeneral extends Modularity {
         } else if (g1.getDiscouragedCount() > g0.getDiscouragedCount()) {
             return g0;
         }
-        
+
         //Recommended
         if (g0.getReccomendedCount() > g1.getReccomendedCount()) {
             return g0;
@@ -553,12 +574,14 @@ public class RGeneral extends Modularity {
         } else if (g1.getModularityFactor() > g0.getModularityFactor()) {
             return g1;
         }
-        
+
         //If equal, return the original
         return g0;
     }
 
-    /** Find which of two graphs has a lower cost, ignoring slack **/
+    /**
+     * Find which of two graphs has a lower cost, ignoring slack *
+     */
     protected RGraph minCost(RGraph g0, RGraph g1) {
 
         //Stages
@@ -581,7 +604,7 @@ public class RGeneral extends Modularity {
         } else if (g1.getDiscouragedCount() > g0.getDiscouragedCount()) {
             return g0;
         }
-        
+
         //Recommended
         if (g0.getReccomendedCount() > g1.getReccomendedCount()) {
             return g0;
@@ -593,7 +616,10 @@ public class RGeneral extends Modularity {
         return g0;
     }
 
-    /** Find the maximum amount of stages for a set of goal parts with a library. This determines a mgp assembly slack factor **/
+    /**
+     * Find the maximum amount of stages for a set of goal parts with a library.
+     * This determines a mgp assembly slack factor *
+     */
     protected int determineSlack(ArrayList<RNode> gps, HashMap<String, RGraph> library, HashSet<String> libCompDir, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden) {
         int slack = 0;
         for (int i = 0; i < gps.size(); i++) {
@@ -606,7 +632,6 @@ public class RGeneral extends Modularity {
 
         return slack;
     }
-    
     //Fields
     protected int _maxNeighbors;
 }
