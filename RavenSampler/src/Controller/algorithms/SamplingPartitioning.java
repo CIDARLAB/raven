@@ -7,7 +7,7 @@ package Controller.algorithms;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.HashSet;
 
 /**
  *
@@ -15,43 +15,43 @@ import java.util.Set;
  */
 public class SamplingPartitioning {
 
-    public static HashMap<Integer, ArrayList<int[]>> getPartitions(ArrayList<Integer> indices, int numBreaks) {
+    public static HashMap<Integer, HashSet<int[]>> partitions = new HashMap();
+
+    public static int[] getPartition(ArrayList<Integer> indices, int maxNumBreaks) {
         //key: number of breaks that can be made in a part, value: arraylist of partitions
-        HashMap<Integer, ArrayList<int[]>> partitions = new HashMap<Integer, ArrayList<int[]>>();
-        for (int i = 1; i <= numBreaks; i++) {
-            ArrayList<int[]> allChoices = new ArrayList();
-            ArrayList<Integer> choices = new ArrayList();
-            while (choices != null) {
-                choices = choices = new ArrayList();
+        for (int numBreaks = 1; numBreaks <= maxNumBreaks; numBreaks++) {
+            partitions.put(numBreaks, new HashSet());
+            for (int j = 0; j < indices.size(); j++) {
+                ArrayList<Integer> choices = new ArrayList();
+                choices.add(indices.get(j));
                 ArrayList<Integer> available = (ArrayList<Integer>) indices.clone();
-                choices = getPartitionsHelper(available, choices, i );
-                int[] choicesArray = new int[choices.size()];
-                for (int k = 0; k < choices.size(); k++) {
-                    choicesArray[k] = choices.get(k);
-                }
-                allChoices.add(choicesArray);
+                available.remove(j);
+                getPartitionsHelper(available, choices, numBreaks, numBreaks - 1);
             }
-            partitions.put(i, allChoices);
+
         }
-        return partitions;
+        int index = 1 + (int)(Math.random() * ((maxNumBreaks - 1) + 1));
+        int index2 = 0 + (int)(Math.random() * ((partitions.get(index).size() - 1) + 1));
+        ArrayList<int[]> arrayList = new ArrayList(partitions.get(index));
+        return arrayList.get(index2);
     }
 
-    private static ArrayList<Integer> getPartitionsHelper(ArrayList<Integer> indices, ArrayList<Integer> choices, int numBreaks) {
-
-        if (numBreaks == 0) {
-            return choices;
-        } else {
-            for (int i = 0; i < indices.size(); i++) {
-                ArrayList<Integer> toReturn = (ArrayList<Integer>) choices.clone();
-                ArrayList<Integer> available = (ArrayList<Integer>) indices.clone();
-                toReturn.add(indices.get(i));
-                available.remove(i);
-                toReturn = getPartitionsHelper(available, toReturn, numBreaks - 1);
-                return toReturn;
-
+    private static void getPartitionsHelper(ArrayList<Integer> indices, ArrayList<Integer> choices, int maxNumBreaks, int targetSize) {
+        if (targetSize == 0) {
+            Collections.sort(choices);
+            int[] partition = new int[choices.size()];
+            for (int i = 0; i < choices.size(); i++) {
+                partition[i] = choices.get(i);
             }
-
+            partitions.get(maxNumBreaks).add(partition);
+        } else {
+            for (int j = 0; j < indices.size(); j++) {
+                ArrayList<Integer> currentChoices = (ArrayList<Integer>) choices.clone();
+                currentChoices.add(indices.get(j));
+                ArrayList<Integer> available = (ArrayList<Integer>) indices.clone();
+                available.remove(j);
+                getPartitionsHelper(available, currentChoices, maxNumBreaks, targetSize - 1);
+            }
         }
-        return null;
     }
 }

@@ -394,7 +394,8 @@ public class RavenController {
     }
     //set searchPartitions to true to sample mgp space
     //set searchPartitions to true to sample overhang space
-    public void run(String method, int targetSize, boolean searchPartitions, boolean searchOverhangs) throws Exception {
+
+    public void run(String method, int targetSize, int numberOfRuns, boolean searchPartitions, boolean searchOverhangs) throws Exception {
         _goalParts = new HashMap();
         _required = new HashSet();
         _recommended = new HashSet();
@@ -418,30 +419,34 @@ public class RavenController {
             }
         }
 
-        boolean scarless = false;
-        if (method.equals("biobricks")) {
-            _assemblyGraphs = runBioBricks(searchOverhangs);
-        } else if (method.equals("cpec")) {
-            _assemblyGraphs = runCPEC(searchOverhangs);
-            scarless = true;
-        } else if (method.equals("gibson")) {
-            _assemblyGraphs = runGibson(searchOverhangs);
-            scarless = true;
-        } else if (method.equals("goldengate")) {
-            _assemblyGraphs = runGoldenGate(searchOverhangs);
-            scarless = true;
-        } else if (method.equals("moclo")) {
-            _assemblyGraphs = runMoClo(searchOverhangs);
-        } else if (method.equals("slic")) {
-            _assemblyGraphs = runSLIC(searchOverhangs);
-            scarless = true;
+        for (int i = 0; i < numberOfRuns; i++) {
+            boolean scarless = false;
+            _assemblyGraphs.clear();
+            if (method.equals("biobricks")) {
+                _assemblyGraphs = runBioBricks(searchOverhangs);
+            } else if (method.equals("cpec")) {
+                _assemblyGraphs = runCPEC(searchOverhangs);
+                scarless = true;
+            } else if (method.equals("gibson")) {
+                _assemblyGraphs = runGibson(searchOverhangs);
+                scarless = true;
+            } else if (method.equals("goldengate")) {
+                _assemblyGraphs = runGoldenGate(searchOverhangs);
+                scarless = true;
+            } else if (method.equals("moclo")) {
+                _assemblyGraphs = runMoClo(searchOverhangs);
+            } else if (method.equals("slic")) {
+                _assemblyGraphs = runSLIC(searchOverhangs);
+                scarless = true;
+            }
+            getSolutionStats();
+
         }
-        getSolutionStats();
 
 
     }
-    
-     private void getSolutionStats() throws Exception {
+
+    private void getSolutionStats() throws Exception {
 
         int steps = 0;
         int stages = 0;
