@@ -400,6 +400,7 @@ public class RavenController {
 
     public void run(String method, int targetSize, int numberOfRuns, boolean searchPartitions, boolean searchOverhangs) throws Exception {
         RavenController.samplePartitions = searchPartitions;
+        RavenController.sampleOverhangs = searchOverhangs;
         _goalParts = new HashMap();
         _required = new HashSet();
         _recommended = new HashSet();
