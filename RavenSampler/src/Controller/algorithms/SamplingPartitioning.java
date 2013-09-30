@@ -31,7 +31,7 @@ public class SamplingPartitioning {
 
         }
         int index = 1 + (int)(Math.random() * ((maxNumBreaks - 1) + 1));
-        int index2 = 0 + (int)(Math.random() * ((partitions.get(index).size() - 1) + 1));
+        int index2 = 0 + (int)(Math.random() * ((partitions.get(index).size() - 0) + 1));
         ArrayList<int[]> arrayList = new ArrayList(partitions.get(index));
         return arrayList.get(index2);
     }

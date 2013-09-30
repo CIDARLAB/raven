@@ -4,6 +4,7 @@
  */
 package Controller.algorithms.modasm;
 
+import Communication.RavenController;
 import Controller.accessibility.ClothoReader;
 import Controller.algorithms.RGeneral;
 import Controller.datastructures.*;
@@ -23,7 +24,7 @@ public class RMoClo extends RGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> mocloClothoWrapper(HashMap<Part, Vector> goalPartsVectors, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs, boolean searchOverhangs) throws Exception {
+    public ArrayList<RGraph> mocloClothoWrapper(HashMap<Part, Vector> goalPartsVectors, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
 
         _partLibrary = partLibrary;
         _vectorLibrary = vectorLibrary;
@@ -65,10 +66,16 @@ public class RMoClo extends RGeneral {
 //            }
 
         //Run hierarchical Raven Algorithm
-        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         enforceOverhangRules(optimalGraphs);
-        maximizeOverhangSharing(optimalGraphs);
-        HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+        HashMap<String, String> finalOverhangHash;
+        if (RavenController.sampleOverhangs) {
+            finalOverhangHash = new HashMap();
+        } else {
+            maximizeOverhangSharing(optimalGraphs);
+            finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+        }
+
         assignFinalOverhangs(optimalGraphs, finalOverhangHash);
         assignScars(optimalGraphs);
 
@@ -909,66 +916,75 @@ public class RMoClo extends RGeneral {
         }
         int bestScore = 1000000000;
         HashMap<String, String> bestAssignment = null;
-
-        for (ArrayList<String> assignment : completeAssignments) {
-            HashMap<String, String> currentAssignment = new HashMap();
-            int currentScore = 0;
-
-            //handle forced overhangs
-            for (int i = 0; i < sortedAbstractOverhangs.size(); i++) {
-                String currentAbstractOverhang = sortedAbstractOverhangs.get(i);
-                if (finalOverhangHash.containsKey(currentAbstractOverhang)) {
-                    currentAssignment.put(currentAbstractOverhang, finalOverhangHash.get(currentAbstractOverhang));
-                } else {
-                    currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
-                }
+        if (RavenController.sampleOverhangs) {
+            bestAssignment = new HashMap();
+            int index = 0 + (int) (Math.random() * ((completeAssignments.size() - 0) + 1));
+            ArrayList<String> assignment = completeAssignments.get(index);
+            for(int i=0;i< assignment.size(); i++) {
+                bestAssignment.put(sortedAbstractOverhangs.get(i),assignment.get(i));
             }
+        } else {
 
-            //handle inverted overhangs
-            for (String invertedOverhang : invertedOverhangs) {
 
-                if (finalOverhangHash.containsKey(invertedOverhang)) {
-                    currentAssignment.put(invertedOverhang, finalOverhangHash.get(invertedOverhang));
-                } else {
-                    String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
+            for (ArrayList<String> assignment : completeAssignments) {
+                HashMap<String, String> currentAssignment = new HashMap();
+                int currentScore = 0;
 
-                    if (currentAssignment.containsKey(uninvertedOverhang)) {
-                        String uninvertedOverhangAssignment = currentAssignment.get(uninvertedOverhang);
-                        String invertedOverhangAssignment = "";
-
-                        if (uninvertedOverhangAssignment.equals("*")) {
-                            currentAssignment.put(invertedOverhang, "*");
-                        } else {
-
-                            if (uninvertedOverhangAssignment.indexOf("*") > -1) {
-                                invertedOverhangAssignment = uninvertedOverhangAssignment.substring(0, uninvertedOverhangAssignment.indexOf("*"));
-                            } else {
-                                invertedOverhangAssignment = uninvertedOverhangAssignment + "*";
-                            }
-                            currentAssignment.put(invertedOverhang, invertedOverhangAssignment);
-                        }
+                //handle forced overhangs
+                for (int i = 0; i < sortedAbstractOverhangs.size(); i++) {
+                    String currentAbstractOverhang = sortedAbstractOverhangs.get(i);
+                    if (finalOverhangHash.containsKey(currentAbstractOverhang)) {
+                        currentAssignment.put(currentAbstractOverhang, finalOverhangHash.get(currentAbstractOverhang));
                     } else {
-                        currentAssignment.put(invertedOverhang, "*");
+                        currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
                     }
                 }
-            }
-            HashSet<String> matched = new HashSet();
 
-            for (RNode basicNode : basicNodes) {
-                String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
-                if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
-                    currentScore++;
-                } else {
-                    matched.add(compositionOverhangDirectionString);
+                //handle inverted overhangs
+                for (String invertedOverhang : invertedOverhangs) {
+
+                    if (finalOverhangHash.containsKey(invertedOverhang)) {
+                        currentAssignment.put(invertedOverhang, finalOverhangHash.get(invertedOverhang));
+                    } else {
+                        String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
+
+                        if (currentAssignment.containsKey(uninvertedOverhang)) {
+                            String uninvertedOverhangAssignment = currentAssignment.get(uninvertedOverhang);
+                            String invertedOverhangAssignment = "";
+
+                            if (uninvertedOverhangAssignment.equals("*")) {
+                                currentAssignment.put(invertedOverhang, "*");
+                            } else {
+
+                                if (uninvertedOverhangAssignment.indexOf("*") > -1) {
+                                    invertedOverhangAssignment = uninvertedOverhangAssignment.substring(0, uninvertedOverhangAssignment.indexOf("*"));
+                                } else {
+                                    invertedOverhangAssignment = uninvertedOverhangAssignment + "*";
+                                }
+                                currentAssignment.put(invertedOverhang, invertedOverhangAssignment);
+                            }
+                        } else {
+                            currentAssignment.put(invertedOverhang, "*");
+                        }
+                    }
+                }
+                HashSet<String> matched = new HashSet();
+
+                for (RNode basicNode : basicNodes) {
+                    String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
+                    if (!compositionOverhangDirections.contains(compositionOverhangDirectionString)) {
+                        currentScore++;
+                    } else {
+                        matched.add(compositionOverhangDirectionString);
+                    }
+                }
+                currentScore = currentScore - matched.size();
+                if (currentScore < bestScore) {
+                    bestScore = currentScore;
+                    bestAssignment = currentAssignment;
                 }
             }
-            currentScore = currentScore - matched.size();
-            if (currentScore < bestScore) {
-                bestScore = currentScore;
-                bestAssignment = currentAssignment;
-            }
         }
-
         //generate new overhangs
         HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
         int newOverhang = 0;

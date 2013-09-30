@@ -4,6 +4,7 @@
  */
 package Communication;
 
+import Controller.algorithms.RGeneral;
 import Controller.algorithms.modasm.RBioBricks;
 import Controller.algorithms.modasm.*;
 import Controller.algorithms.nonmodasm.*;
@@ -20,7 +21,9 @@ import java.util.HashSet;
  * @author Jenhan
  */
 public class RavenController {
-
+    public static boolean samplePartitions = false;
+    public static boolean sampleOverhangs = false;
+    
     public ArrayList<RGraph> runBioBricks(boolean searchOverhangs) throws Exception {
         if (_goalParts == null) {
             return null;
@@ -29,7 +32,7 @@ public class RavenController {
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
         RBioBricks biobricks = new RBioBricks();
-        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, null, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, null);
         return optimalGraphs;
     }
 
@@ -44,7 +47,7 @@ public class RavenController {
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         RGibson gibson = new RGibson();
-        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -59,7 +62,7 @@ public class RavenController {
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
-        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -74,7 +77,7 @@ public class RavenController {
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
-        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -90,7 +93,7 @@ public class RavenController {
         _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
         moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -105,7 +108,7 @@ public class RavenController {
         //Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
         RGoldenGate gg = new RGoldenGate();
-        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -396,6 +399,7 @@ public class RavenController {
     //set searchPartitions to true to sample overhang space
 
     public void run(String method, int targetSize, int numberOfRuns, boolean searchPartitions, boolean searchOverhangs) throws Exception {
+        RavenController.samplePartitions = searchPartitions;
         _goalParts = new HashMap();
         _required = new HashSet();
         _recommended = new HashSet();

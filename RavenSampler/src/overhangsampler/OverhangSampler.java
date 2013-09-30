@@ -30,8 +30,10 @@ public class OverhangSampler {
         File selectedFile = fc.getSelectedFile();
         if (selectedFile != null) {
             try {
+                
                 controller.parseRavenFile(selectedFile);
-                controller.run("moclo",10,3, false, false);
+                //method, number of parts, number of runs, sample partitioning?, sample overhangs?
+                controller.run("moclo",10,3, true, true);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 Logger.getLogger(OverhangSampler.class.getName()).log(Level.SEVERE, null, ex);

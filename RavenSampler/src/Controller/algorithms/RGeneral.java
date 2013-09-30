@@ -4,6 +4,7 @@
  */
 package Controller.algorithms;
 
+import Communication.RavenController;
 import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
 import java.util.ArrayList;
@@ -19,12 +20,10 @@ import java.util.Set;
  */
 public class RGeneral extends Modularity {
 
-    public boolean sampling = true;
-
     /**
      * Find assembly graph for multiple goal parts *
      */
-    protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiencies, boolean sharing, boolean searchPartitions) throws Exception {
+    protected ArrayList<RGraph> createAsmGraph_mgp(ArrayList<RNode> gps, HashMap<String, RGraph> partHash, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiencies, boolean sharing) throws Exception {
 
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
 //        for (int i = 0; i < gps.size(); i++) {
@@ -250,7 +249,7 @@ public class RGeneral extends Modularity {
 
         //For all of the allowed index sets, find the best way to break it into even peices for 1 to the maximum number of neighbors 
         HashMap<Integer, ArrayList<int[]>> partitionSetByNBreaks;
-        if (sampling) {
+        if (RavenController.samplePartitions) {
             partitionSetByNBreaks = SamplingPartitioning.getPartitions(indexes, goalPartNode.getComposition().size()-1);
         } else {
             partitionSetByNBreaks = new HashMap<Integer, ArrayList<int[]>>();

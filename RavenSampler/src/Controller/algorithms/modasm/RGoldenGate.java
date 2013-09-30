@@ -21,7 +21,7 @@ public class RGoldenGate extends RGeneral {
     /**
      * Clotho part wrapper for Golden Gate assembly *
      */
-    public ArrayList<RGraph> goldenGateClothoWrapper(HashMap<Part, Vector> goalPartsVectors, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs, boolean searchOverhangs) throws Exception {
+    public ArrayList<RGraph> goldenGateClothoWrapper(HashMap<Part, Vector> goalPartsVectors, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -41,7 +41,7 @@ public class RGoldenGate extends RGeneral {
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
 
         //Run hierarchical Raven Algorithm
-        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         optimalGraphs = assignOverhangs(optimalGraphs);
 
         return optimalGraphs;

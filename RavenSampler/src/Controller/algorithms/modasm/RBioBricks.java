@@ -20,7 +20,7 @@ public class RBioBricks extends RGeneral {
     /**
      * Clotho part wrapper for BioBricks 3A
      */
-    public ArrayList<RGraph> bioBricksClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs, boolean searchOverhangs) throws Exception {
+    public ArrayList<RGraph> bioBricksClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) throws Exception {
 
         //Try-Catch block around wrapper method
         _maxNeighbors = 2;
@@ -38,7 +38,7 @@ public class RBioBricks extends RGeneral {
         }
 
         //Run hierarchical Raven Algorithm
-        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true, searchOverhangs);
+        ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
         assignBioBricksOverhangs(optimalGraphs, keyVectors);
 
         return optimalGraphs;
