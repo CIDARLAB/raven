@@ -33,7 +33,8 @@ public class OverhangSampler {
                 
                 controller.parseRavenFile(selectedFile);
                 //method, number of parts, number of runs, sample partitioning?, sample overhangs?
-                controller.run("moclo",10,3, true, true);
+//                controller.run("moclo",10,100, false, false);
+                controller.run(args[0],Integer.parseInt(args[1]),Integer.parseInt(args[2]),Boolean.parseBoolean(args[3]),Boolean.parseBoolean(args[4]));
             } catch (Exception ex) {
                 ex.printStackTrace();
                 Logger.getLogger(OverhangSampler.class.getName()).log(Level.SEVERE, null, ex);

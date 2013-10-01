@@ -129,10 +129,13 @@ public class RGeneral extends Modularity {
             }
 
             //Send warning if there might be missing basic parts or subgraphs
-            if (cantMake) {
-                System.out.println("WARNING, THERE ARE EITHER NO BASIC PARTS OR NO SUBGRAPHS... SOMETHING MAY ALREADY EXISTS OR SOMETHING CANNOT BE MADE");
-                System.out.println(pinnedGraph.getRootNode().getComposition());
-            }
+//            if (cantMake) {
+//                RavenController.error = true;
+//                System.out.println("WARNING, THERE ARE EITHER NO BASIC PARTS OR NO SUBGRAPHS... SOMETHING MAY ALREADY EXISTS OR SOMETHING CANNOT BE MADE");
+//                System.out.println(pinnedGraph.getRootNode().getComposition());
+//            } else {
+//                System.out.println(pinnedGraph.getRootNode().getComposition());
+//            }
 
             //Remove pinned graph from goal part list and add to result list
             gps.remove(gps.get(index));
@@ -250,11 +253,11 @@ public class RGeneral extends Modularity {
         //For all of the allowed index sets, find the best way to break it into even peices for 1 to the maximum number of neighbors 
         HashMap<Integer, ArrayList<int[]>> partitionSetByNBreaks;
         if (RavenController.samplePartitions) {
-            partitionSetByNBreaks = SamplingPartitioning.getPartitions(indexes, goalPartNode.getComposition().size()-1);
+            partitionSetByNBreaks = SamplingPartitioning.getPartitions(indexes, goalPartNode.getComposition().size() - 1);
         } else {
             partitionSetByNBreaks = new HashMap<Integer, ArrayList<int[]>>();
             for (int j = 0; j < libIndexes.size(); j++) {
-                
+
                 HashMap<Integer, ArrayList<int[]>> aPartitionSetByNBreaks = getPartitions(libIndexes.get(j), forbPartitionsBySize);
                 //key: number of breaks that can be made in a part, value: arraylist of partitions
                 Set<Integer> keySet = aPartitionSetByNBreaks.keySet();

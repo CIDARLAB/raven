@@ -6,7 +6,11 @@ package Controller.algorithms;
 
 import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
+import Controller.datastructures.RVector;
+import Controller.datastructures.Vector;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -16,31 +20,104 @@ import java.util.HashSet;
  */
 public class SamplingOverhangs {
 
-    public static ArrayList<RGraph> sampleOverhangs(ArrayList<RGraph> optimalGraphs) {
+    public static void sampleOverhangs(ArrayList<RGraph> optimalGraphs) {
+        HashMap<String, String> finalOverhangHash = new HashMap();
+        //link graphs together using basic assignment
+        basicOverhangAssignment(optimalGraphs);
         //for each graph, compute the max number of overhangs
-        
-        for(RGraph graph:optimalGraphs) {
-            
+        int maxOverhangs = 1;
+        for (RGraph graph : optimalGraphs) {
+            //for each position, assign randomly
+            ArrayList<RNode> basicNodes = rootBasicNodeHash.get(graph.getRootNode());
+            maxOverhangs = maxOverhangs + basicNodes.size();
         }
-        //for each position, assign randomly
-        
+        ArrayList<Integer> available = new ArrayList();
+        for (int i = 0; i < maxOverhangs; i++) {
+            available.add(i);
+        }
+        //pick overhangs
+        for (RGraph graph : optimalGraphs) {
+            ArrayList<RNode> basicNodes = rootBasicNodeHash.get(graph.getRootNode());
+            ArrayList<Integer> currentAvailable = (ArrayList<Integer>) available.clone();
+            Collections.shuffle(currentAvailable);
+            for (RNode node : basicNodes) {
+                if (basicNodes.indexOf(node) == 0) {
+                    //assign new left overhang
+                    finalOverhangHash.put(node.getLOverhang(), String.valueOf(currentAvailable.get(0)));
+                    currentAvailable.remove(0);
+                } else {
+                    //left overhang already assigned
+                }
+                finalOverhangHash.put(node.getROverhang(), String.valueOf(currentAvailable.get(0)));
+                currentAvailable.remove(0);
+            }
+
+        }
         //assign overhangs
-        return null;
+        ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
+        HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
+        HashMap<Integer, String> levelResistanceHash = new HashMap<Integer, String>(); // key: level, value: antibiotic resistance
+
+
+        int maxStage = 0;
+
+        for (RGraph graph : optimalGraphs) {
+            if (graph.getStages() > maxStage) {
+                maxStage = graph.getStages();
+            }
+        }
+
+        for (int i = 0; i <= maxStage; i++) {
+            String resistance = "";
+
+            if (existingAntibioticsHash.get(i) != null) {
+                if (existingAntibioticsHash.get(i).size() > 0) {
+                    resistance = existingAntibioticsHash.get(i).get(0);
+                    existingAntibioticsHash.get(i).remove(0);
+                }
+            } else {
+                resistance = freeAntibiotics.get(0);
+                freeAntibiotics.remove(0);
+            }
+            levelResistanceHash.put(i, resistance);
+        }
+
+        //Assign vectors for all graphs
+        for (RGraph graph : optimalGraphs) {
+            ArrayList<RNode> queue = new ArrayList();
+            HashSet<RNode> seenNodes = new HashSet();
+            queue.add(graph.getRootNode());
+
+            while (!queue.isEmpty()) {
+                RNode current = queue.get(0);
+                queue.remove(0);
+                seenNodes.add(current);
+                for (RNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+
+                String currentLeftOverhang = current.getLOverhang();
+                String currentRightOverhang = current.getROverhang();
+                current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
+                current.setROverhang(finalOverhangHash.get(currentRightOverhang));
+                currentLeftOverhang = current.getLOverhang();
+                currentRightOverhang = current.getROverhang();
+
+                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), "DVL" + current.getStage(), null);
+                newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
+                current.setVector(newVector);
+            }
+        }
     }
-    private static HashSet encounteredCompositions;
-    private static HashMap parentHash;
-    private static HashMap compositionLevelHash;
-    private static HashMap rootBasicNodeHash;
-    
-    
-    
+
     public static void basicOverhangAssignment(ArrayList<RGraph> optimalGraphs) {
 
         encounteredCompositions = new HashSet();
         parentHash = new HashMap(); //key: node, value: parent node
         HashMap<RNode, RNode> previousHash = new HashMap(); //key: node, value: sibling node on the "left"
         HashMap<RNode, RNode> nextHash = new HashMap(); //key: node, value: sibling node on the "right"
-        compositionLevelHash = new HashMap();
         rootBasicNodeHash = new HashMap();
 
         for (RGraph graph : optimalGraphs) {
@@ -182,5 +259,7 @@ public class SamplingOverhangs {
             }
         }
     }
-
+    private static HashSet encounteredCompositions;
+    private static HashMap parentHash;
+    private static HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash;
 }

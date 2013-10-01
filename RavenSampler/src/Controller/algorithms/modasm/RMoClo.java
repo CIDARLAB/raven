@@ -59,7 +59,7 @@ public class RMoClo extends RGeneral {
         HashMap<String, String> finalOverhangHash;
         if (RavenController.sampleOverhangs) {
             finalOverhangHash = new HashMap();
-            SamplingOverhangs.basicOverhangAssignment(optimalGraphs);
+            SamplingOverhangs.sampleOverhangs(optimalGraphs);
         } else {
             maximizeOverhangSharing(optimalGraphs);
             finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
