@@ -4,6 +4,7 @@
  */
 package Controller.algorithms;
 
+import Communication.RavenController;
 import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
 import Controller.datastructures.RVector;
@@ -77,7 +78,9 @@ public class SamplingOverhangs {
                 }
             } else {
                 resistance = freeAntibiotics.get(0);
-                freeAntibiotics.remove(0);
+                if (!RavenController.sampleOverhangs && !RavenController.samplePartitions) {
+                    freeAntibiotics.remove(0);
+                }
             }
             levelResistanceHash.put(i, resistance);
         }

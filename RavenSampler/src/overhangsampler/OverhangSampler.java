@@ -25,16 +25,14 @@ public class OverhangSampler {
      */
     public static void main(String[] args) {
         RavenController controller = new RavenController();
-        JFileChooser fc = new JFileChooser();
-        fc.showOpenDialog(null);
-        File selectedFile = fc.getSelectedFile();
+        File selectedFile = new File(args[0]);
         if (selectedFile != null) {
             try {
                 
                 controller.parseRavenFile(selectedFile);
                 //method, number of parts, number of runs, sample partitioning?, sample overhangs?
-                controller.run("moclo",50,1000, true, false);
-//                controller.run(args[0],Integer.parseInt(args[1]),Integer.parseInt(args[2]),Boolean.parseBoolean(args[3]),Boolean.parseBoolean(args[4]));
+//                controller.run("moclo",50,1000, false, true);
+                controller.run(args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Boolean.parseBoolean(args[4]),Boolean.parseBoolean(args[5]));
             } catch (Exception ex) {
                 ex.printStackTrace();
                 Logger.getLogger(OverhangSampler.class.getName()).log(Level.SEVERE, null, ex);

@@ -1012,7 +1012,9 @@ public class RMoClo extends RGeneral {
                 if (!existingAntibioticsHash.get(v.getLevel()).contains(v.getResistance())) {
                     existingAntibioticsHash.get(v.getLevel()).add(v.getResistance());
                 }
-                freeAntibiotics.remove(v.getResistance());
+                if (!RavenController.sampleOverhangs && !RavenController.samplePartitions) {
+                    freeAntibiotics.remove(0);
+                }
             }
         }
         int maxStage = 0;
@@ -1033,7 +1035,9 @@ public class RMoClo extends RGeneral {
                 }
             } else {
                 resistance = freeAntibiotics.get(0);
-                freeAntibiotics.remove(0);
+                if (!RavenController.sampleOverhangs && !RavenController.samplePartitions) {
+                    freeAntibiotics.remove(0);
+                }
             }
             levelResistanceHash.put(i, resistance);
         }
