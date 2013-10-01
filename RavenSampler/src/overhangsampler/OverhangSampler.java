@@ -33,37 +33,11 @@ public class OverhangSampler {
                 
                 controller.parseRavenFile(selectedFile);
                 //method, number of parts, number of runs, sample partitioning?, sample overhangs?
-//                controller.run("moclo",10,100, false, false);
-                controller.run(args[0],Integer.parseInt(args[1]),Integer.parseInt(args[2]),Boolean.parseBoolean(args[3]),Boolean.parseBoolean(args[4]));
+                controller.run("moclo",50,1000, true, false);
+//                controller.run(args[0],Integer.parseInt(args[1]),Integer.parseInt(args[2]),Boolean.parseBoolean(args[3]),Boolean.parseBoolean(args[4]));
             } catch (Exception ex) {
                 ex.printStackTrace();
                 Logger.getLogger(OverhangSampler.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-
-    public static void testPartitioning() {
-
-        ArrayList indices = new ArrayList();
-        int numBreaks = 2;
-        indices.add(1);
-        indices.add(2);
-        indices.add(3);
-        indices.add(4);
-
-        int[] solution = SamplingPartitioning.getPartition(indices, numBreaks);
-        for (int i = 0; i < solution.length; i++) {
-            System.out.print(solution[i] + ", ");
-        }
-        System.out.println("\n*******************");
-        HashMap<Integer, HashSet<int[]>> partitions = SamplingPartitioning.partitions;
-        for (Integer key : partitions.keySet()) {
-            System.out.println("numBreaks: " + key);
-            for (int[] partition : partitions.get(key)) {
-                for (int i = 0; i < partition.length; i++) {
-                    System.out.print(partition[i] + ", ");
-                }
-                System.out.println();
             }
         }
     }

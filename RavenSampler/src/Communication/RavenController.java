@@ -431,7 +431,7 @@ public class RavenController {
                 _goalParts.put(p,null);
             }
         }
-        System.out.println("Steps,Stages,Sharing,PCRs,numberOfDevices: "+targetSize +",numberOfRuns: "+numberOfRuns+",searchOverhangs: "+searchOverhangs+",searchPartitions: "+searchPartitions);
+        System.out.println("Steps,Stages,Sharing,PCRs,numberOfDevices: "+targetSize +",numberOfRuns: "+numberOfRuns+",searchPartitions: "+searchPartitions+",searchOverhangs: "+searchOverhangs);
         for (int i = 0; i < numberOfRuns; i++) {
             boolean scarless = false;
             _assemblyGraphs.clear();
