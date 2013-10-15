@@ -277,7 +277,6 @@ public class RGraph {
         HashSet<ArrayList<String>> neighborHash = new HashSet();
         seenPartStrings.addAll(startPartsLOcompRO);
         seenVectorStrings.addAll(startVectorsLOlevelRO);
-
         //Get goal part compositions
         Set<Part> keySet = goalParts.keySet();
         HashSet<ArrayList<String>> gpComps = new HashSet();
@@ -311,7 +310,7 @@ public class RGraph {
                 int numParents = 0;
 
                 for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor) && current.getComposition().size() >neighbor.getComposition().size()) { //TODO: FIX APPLIED HERE
+                    if (!seenNodes.contains(neighbor) && current.getComposition().size() > neighbor.getComposition().size()) { //TODO: FIX APPLIED HERE
                         if (!queue.contains(neighbor)) {
                             queue.add(neighbor);
                         }
@@ -777,7 +776,6 @@ public class RGraph {
     }
 
     //returns a json string that can be parsed by the client
-
     /**
      * Pigeon code generation *
      */

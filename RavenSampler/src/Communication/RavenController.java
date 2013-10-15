@@ -121,7 +121,7 @@ public class RavenController {
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
         if (_forcedOverhangHash == null) {
-            _forcedOverhangHash = new HashMap<String,ArrayList<String>>();
+            _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         }
         HashSet<String> seenPartNames = new HashSet();
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
@@ -143,12 +143,12 @@ public class RavenController {
                 }
             }
 
-            //Composite parts - read,but do not generate
+            //Composite parts - read, but do not generate
             if (tokenCount > 9) {
 
                 try {
                     String[] trimmedTokens = new String[tokenCount];
-                    System.arraycopy(tokens,0,trimmedTokens,0,tokenCount);
+                    System.arraycopy(tokens, 0, trimmedTokens, 0, tokenCount);
                     compositePartTokens.add(trimmedTokens);
                 } catch (Exception e) {
                     badLines.add(line);
@@ -174,7 +174,7 @@ public class RavenController {
                         level = -1;
                     }
 
-                    Vector newVector = Vector.generateVector(name,sequence);
+                    Vector newVector = Vector.generateVector(name, sequence);
                     newVector.addSearchTag("LO: " + leftOverhang);
                     newVector.addSearchTag("RO: " + rightOverhang);
                     newVector.addSearchTag("Level: " + level);
@@ -198,16 +198,17 @@ public class RavenController {
                     String leftOverhang = tokens[2].trim();
                     String rightOverhang = tokens[3].trim();
                     String type = tokens[4].trim();
-                    Part newBasicPart = Part.generateBasic(name,sequence);
+                    Part newBasicPart = Part.generateBasic(name, sequence);
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
+                    newBasicPart.addSearchTag("Direction: [+]");
 
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
                     //save part with no scars or overhangs juse in case;
                     if (leftOverhang.length() > 0 && rightOverhang.length() > 0 && !seenPartNames.contains(name)) {
-                        Part blankBasicPart = Part.generateBasic(name,sequence);
+                        Part blankBasicPart = Part.generateBasic(name, sequence);
                         blankBasicPart.addSearchTag("Type: " + type);
                         blankBasicPart.saveDefault(_collector);
                         blankBasicPart.setTransientStatus(false);
@@ -231,18 +232,18 @@ public class RavenController {
                     String type = tokens[4].trim();
                     String vectorName = tokens[7].trim();
                     String composition = tokens[8].trim();
-                    Part newBasicPart = Part.generateBasic(name,sequence);
+                    Part newBasicPart = Part.generateBasic(name, sequence);
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
-                    newBasicPart.addSearchTag("Direction: [" + composition.substring(composition.length() - 1) + "]");
+                    newBasicPart.addSearchTag("Direction: [+]");
                     newBasicPart.addSearchTag("Type: " + type);
                     Vector vector = null;
-                    ArrayList<Vector> allVectorsWithName = _collector.getAllVectorsWithName(vectorName,true);
+                    ArrayList<Vector> allVectorsWithName = _collector.getAllVectorsWithName(vectorName, true);
                     if (!allVectorsWithName.isEmpty()) {
                         //TODO do i need an exact match?
                         vector = allVectorsWithName.get(0);
                     }
-                    _compPartsVectors.put(newBasicPart,vector);
+                    _compPartsVectors.put(newBasicPart, vector);
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
                     if (toBreak == null) {
@@ -303,16 +304,16 @@ public class RavenController {
                     } else {
                         ArrayList<String> toAdd = new ArrayList();
                         toAdd.add(bpForcedLeft + "|" + bpForcedRight);
-                        _forcedOverhangHash.put(compositePartName,toAdd);
+                        _forcedOverhangHash.put(compositePartName, toAdd);
                     }
 
                     directions.add(bpDirection);
-                    composition.add(_collector.getAllPartsWithName(basicPartName,true).get(0));
+                    composition.add(_collector.getAllPartsWithName(basicPartName, true).get(0));
                 }
 
-                Part newComposite = Part.generateComposite(composition,name);
+                Part newComposite = Part.generateComposite(composition, name);
                 Vector vector = null;
-                ArrayList<Vector> vectors = _collector.getAllVectorsWithName(vectorName,true);
+                ArrayList<Vector> vectors = _collector.getAllVectorsWithName(vectorName, true);
                 if (vectors.size() > 0) {
                     for (Vector vec : vectors) {
                         if (vec.getLeftoverhang().equals(leftOverhang) && vec.getRightOverhang().equals(rightOverhang)) {
@@ -320,7 +321,7 @@ public class RavenController {
                         }
                     }
                 }
-                _compPartsVectors.put(newComposite,vector);
+                _compPartsVectors.put(newComposite, vector);
                 newComposite.addSearchTag("Direction: " + directions);
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
@@ -333,7 +334,7 @@ public class RavenController {
                 for (int j = 0; j < tokens.length; j++) {
                     badLine = badLine + tokens[j] + ",";
                 }
-                badLines.add(badLine.substring(0,badLine.length() - 1));//trim the last comma
+                badLines.add(badLine.substring(0, badLine.length() - 1));//trim the last comma
             }
         }
 

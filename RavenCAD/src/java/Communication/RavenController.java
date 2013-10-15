@@ -558,6 +558,7 @@ public class RavenController {
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
+                    newBasicPart.addSearchTag("Direction: [+]");
 
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
@@ -590,7 +591,7 @@ public class RavenController {
                     Part newBasicPart = Part.generateBasic(name, sequence);
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
-                    newBasicPart.addSearchTag("Direction: [" + composition.substring(composition.length() - 1) + "]");
+                    newBasicPart.addSearchTag("Direction: [+]");
                     newBasicPart.addSearchTag("Type: " + type);
                     Vector vector = null;
                     ArrayList<Vector> allVectorsWithName = _collector.getAllVectorsWithName(vectorName, true);

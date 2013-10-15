@@ -370,6 +370,7 @@ public class RGraph {
 
                 //If a part with this composition and overhangs doesn't exist, there must be a PCR done                
                 if (current.getStage() == 0) {
+                    System.out.println(current.getNodeKey("+"));
                     if (seenPartStrings.add(aPartLOcompRO) == true) {
                         PCRs++;
                     }
