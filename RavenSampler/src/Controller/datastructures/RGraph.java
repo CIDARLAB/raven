@@ -41,13 +41,13 @@ public class RGraph {
      */
     public RGraph(RNode node) {
         _rootNode = node;
-        _subGraphs = new ArrayList<RGraph>();
+        _subGraphs = new ArrayList();
         _stages = 0;
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
         _modularityFactor = 0;
-        _efficiencyArray = new ArrayList<Double>();
+        _efficiencyArray = new ArrayList();
         _reactions = 0;
     }
 
@@ -163,8 +163,8 @@ public class RGraph {
      */
     public static ArrayList<RGraph> mergeGraphs(ArrayList<RGraph> graphs) {
 
-        ArrayList<RGraph> mergedGraphs = new ArrayList<RGraph>();
-        HashMap<String, RNode> mergedNodesHash = new HashMap<String, RNode>();
+        ArrayList<RGraph> mergedGraphs = new ArrayList();
+        HashMap<String, RNode> mergedNodesHash = new HashMap();
 
         //Traverse and merge graphs
         for (int i = 0; i < graphs.size(); i++) {
@@ -173,7 +173,7 @@ public class RGraph {
             boolean hasParent = true;
 
             HashSet<RNode> seenNodes = new HashSet();
-            ArrayList<RNode> queue = new ArrayList<RNode>();
+            ArrayList<RNode> queue = new ArrayList();
             queue.add(aGraph.getRootNode());
 
             while (!queue.isEmpty()) {
@@ -270,15 +270,15 @@ public class RGraph {
 
         HashSet<String> startPartsLOcompRO = ClothoReader.getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = ClothoReader.getExistingVectorKeys(vectorLib);
-        HashSet<String> partsLOcompRO = new HashSet<String>();
-        HashSet<String> vectorsLOlevelRO = new HashSet<String>();
-        HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
-        partsLOcompRO.addAll(startPartsLOcompRO);
-        vectorsLOlevelRO.addAll(startVectorsLOlevelRO);
+        HashSet<String> seenPartStrings = new HashSet();
+        HashSet<String> seenVectorStrings = new HashSet();
+        HashSet<ArrayList<String>> neighborHash = new HashSet();
+        seenPartStrings.addAll(startPartsLOcompRO);
+        seenVectorStrings.addAll(startVectorsLOlevelRO);
 
         //Get goal part compositions
         Set<Part> keySet = goalParts.keySet();
-        HashSet<ArrayList<String>> gpComps = new HashSet<ArrayList<String>>();
+        HashSet<ArrayList<String>> gpComps = new HashSet();
         for (Part gp : keySet) {
             ArrayList<String> compStr = gp.getStringComposition();
             gpComps.add(compStr);
@@ -294,11 +294,11 @@ public class RGraph {
             int stages = 0;
             boolean addStage = false;
             int shared = 0;
-            ArrayList<Double> efficiency = new ArrayList<Double>();
+            ArrayList<Double> efficiency = new ArrayList();
 
             RGraph aGraph = mergedGraphs.get(i);
             HashSet<RNode> seenNodes = new HashSet();
-            ArrayList<RNode> queue = new ArrayList<RNode>();
+            ArrayList<RNode> queue = new ArrayList();
             queue.add(aGraph.getRootNode());
 
             //Traverse the graph
@@ -309,7 +309,7 @@ public class RGraph {
                 int numParents = 0;
 
                 for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
+                    if (!seenNodes.contains(neighbor) && current.getComposition().size() >neighbor.getComposition().size()) { //TODO: FIX APPLIED HERE
                         if (!queue.contains(neighbor)) {
                             queue.add(neighbor);
                         }
@@ -358,7 +358,7 @@ public class RGraph {
                 //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
                 if (current.getStage() == 0) {
                     if (!aVecLOlevelRO.isEmpty()) {
-                        if (!vectorsLOlevelRO.contains(aVecLOlevelRO) || !partsLOcompRO.contains(aPartLOcompRO)) {
+                        if (!seenVectorStrings.contains(aVecLOlevelRO) || !seenPartStrings.contains(aPartLOcompRO)) {
                             addStage = true;
                             steps++;
                             if (numParents > 1) {
@@ -370,13 +370,13 @@ public class RGraph {
 
                 //If a part with this composition and overhangs doesn't exist, there must be a PCR done                
                 if (current.getStage() == 0) {
-                    if (partsLOcompRO.add(aPartLOcompRO) != false) {
+                    if (seenPartStrings.add(aPartLOcompRO) == true) {
                         PCRs++;
                     }
                 }
 
                 //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
-                if (vectorsLOlevelRO.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
+                if (seenVectorStrings.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
                     PCRs++;
                 }
 
