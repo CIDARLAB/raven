@@ -781,7 +781,7 @@ public class RMoClo extends RGeneral {
                     }
                 }
             }
-            abstractConcreteHash.get(key).add("*");
+            abstractConcreteHash.get(key).add("#"); //for new overhang
         }
         
         //
@@ -797,7 +797,7 @@ public class RMoClo extends RGeneral {
             }
             
             //add "new overhang" denoted by * character
-            abstractConcreteHash.get(key).add("*");
+            abstractConcreteHash.get(key).add("#");
         }
 
         //build the graph
@@ -823,7 +823,7 @@ public class RMoClo extends RGeneral {
                 
                 for (CartesianNode prev : previousNodes) {
                     for (CartesianNode current : currentNodes) {
-                        if (!prev.getConcreteOverhang().equals(current.getConcreteOverhang()) || current.getConcreteOverhang().equals("*")) {
+                        if (!prev.getConcreteOverhang().equals(current.getConcreteOverhang()) || current.getConcreteOverhang().equals("#")) {
                             prev.addNeighbor(current);
                         }
                     }
@@ -869,7 +869,7 @@ public class RMoClo extends RGeneral {
                 int childrenCount = 0;
                 
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
-                    if (currentPath.indexOf(neighbor.getConcreteOverhang()) < 0 || neighbor.getConcreteOverhang().equals("*")) {
+                    if (currentPath.indexOf(neighbor.getConcreteOverhang()) < 0 || neighbor.getConcreteOverhang().equals("#")) {
                         String edge = currentPath + "->" + neighbor.getConcreteOverhang();
                         if (!seenPaths.contains(edge)) {
                             if (neighbor.getLevel() > currentNode.getLevel()) {
@@ -924,7 +924,7 @@ public class RMoClo extends RGeneral {
                     currentAssignment.put(sortedAbstractOverhangs.get(i), assignment.get(i));
                 }
             }
-            
+            //TODO: DEAL WITH THIS
             //handle inverted overhangs
             for (String invertedOverhang : invertedOverhangs) {
                 
@@ -937,8 +937,9 @@ public class RMoClo extends RGeneral {
                         String uninvertedOverhangAssignment = currentAssignment.get(uninvertedOverhang);
                         String invertedOverhangAssignment = "";
                         
-                        if (uninvertedOverhangAssignment.equals("*")) {
-                            currentAssignment.put(invertedOverhang, "*");
+                        if (uninvertedOverhangAssignment.equals("#")) {
+                            //# markes new overhang
+                            currentAssignment.put(invertedOverhang, "#");
                         } else {
                             
                             if (uninvertedOverhangAssignment.indexOf("*") > -1) {
@@ -949,7 +950,8 @@ public class RMoClo extends RGeneral {
                             currentAssignment.put(invertedOverhang, invertedOverhangAssignment);
                         }
                     } else {
-                        currentAssignment.put(invertedOverhang, "*");
+                        //# marks new overhang
+                        currentAssignment.put(invertedOverhang, "#");
                     }
                 }
             }
@@ -975,7 +977,7 @@ public class RMoClo extends RGeneral {
         int newOverhang = 0;
         
         for (String starAbstract : sortedAbstractOverhangs) {
-            if (bestAssignment.get(starAbstract).equals("*")) {
+            if (bestAssignment.get(starAbstract).equals("#")) {
                 while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
                     newOverhang++;
                 }
@@ -987,7 +989,7 @@ public class RMoClo extends RGeneral {
         //generate matching new overhangs for inverted overhans
         for (String invertedOverhang : invertedOverhangs) {
             
-            if (bestAssignment.get(invertedOverhang).equals("*")) {
+            if (bestAssignment.get(invertedOverhang).equals("#")) {
                 String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
                 
                 if (bestAssignment.containsKey(uninvertedOverhang)) {
