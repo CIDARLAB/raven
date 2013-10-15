@@ -4,8 +4,9 @@
  */
 package Controller.datastructures;
 
-import Communication.WeyekinPoster;
 import Controller.accessibility.ClothoReader;
+import static Controller.datastructures.RGraph.getExistingPartKeys;
+import static Controller.datastructures.RGraph.getExistingVectorKeys;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
-import org.json.JSONObject;
 
 /**
  *
@@ -43,13 +43,13 @@ public class RGraph {
      */
     public RGraph(RNode node) {
         _rootNode = node;
-        _subGraphs = new ArrayList<RGraph>();
+        _subGraphs = new ArrayList();
         _stages = 0;
         _steps = 0;
         _recCnt = 0;
         _disCnt = 0;
         _modularityFactor = 0;
-        _efficiencyArray = new ArrayList<Double>();
+        _efficiencyArray = new ArrayList();
         _reactions = 0;
     }
 
@@ -165,8 +165,8 @@ public class RGraph {
      */
     public static ArrayList<RGraph> mergeGraphs(ArrayList<RGraph> graphs) {
 
-        ArrayList<RGraph> mergedGraphs = new ArrayList<RGraph>();
-        HashMap<String, RNode> mergedNodesHash = new HashMap<String, RNode>();
+        ArrayList<RGraph> mergedGraphs = new ArrayList();
+        HashMap<String, RNode> mergedNodesHash = new HashMap();
 
         //Traverse and merge graphs
         for (int i = 0; i < graphs.size(); i++) {
@@ -175,7 +175,7 @@ public class RGraph {
             boolean hasParent = true;
 
             HashSet<RNode> seenNodes = new HashSet();
-            ArrayList<RNode> queue = new ArrayList<RNode>();
+            ArrayList<RNode> queue = new ArrayList();
             queue.add(aGraph.getRootNode());
 
             while (!queue.isEmpty()) {
@@ -272,15 +272,15 @@ public class RGraph {
 
         HashSet<String> startPartsLOcompRO = ClothoReader.getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = ClothoReader.getExistingVectorKeys(vectorLib);
-        HashSet<String> partsLOcompRO = new HashSet<String>();
-        HashSet<String> vectorsLOlevelRO = new HashSet<String>();
-        HashSet<ArrayList<String>> neighborHash = new HashSet<ArrayList<String>>();
-        partsLOcompRO.addAll(startPartsLOcompRO);
-        vectorsLOlevelRO.addAll(startVectorsLOlevelRO);
+        HashSet<String> seenPartStrings = new HashSet();
+        HashSet<String> seenVectorStrings = new HashSet();
+        HashSet<ArrayList<String>> neighborHash = new HashSet();
+        seenPartStrings.addAll(startPartsLOcompRO);
+        seenVectorStrings.addAll(startVectorsLOlevelRO);
 
         //Get goal part compositions
         Set<Part> keySet = goalParts.keySet();
-        HashSet<ArrayList<String>> gpComps = new HashSet<ArrayList<String>>();
+        HashSet<ArrayList<String>> gpComps = new HashSet();
         for (Part gp : keySet) {
             ArrayList<String> compStr = gp.getStringComposition();
             gpComps.add(compStr);
@@ -296,11 +296,11 @@ public class RGraph {
             int stages = 0;
             boolean addStage = false;
             int shared = 0;
-            ArrayList<Double> efficiency = new ArrayList<Double>();
+            ArrayList<Double> efficiency = new ArrayList();
 
             RGraph aGraph = mergedGraphs.get(i);
             HashSet<RNode> seenNodes = new HashSet();
-            ArrayList<RNode> queue = new ArrayList<RNode>();
+            ArrayList<RNode> queue = new ArrayList();
             queue.add(aGraph.getRootNode());
 
             //Traverse the graph
@@ -311,7 +311,7 @@ public class RGraph {
                 int numParents = 0;
 
                 for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
+                    if (!seenNodes.contains(neighbor) && current.getComposition().size() >neighbor.getComposition().size()) { //TODO: FIX APPLIED HERE
                         if (!queue.contains(neighbor)) {
                             queue.add(neighbor);
                         }
@@ -360,7 +360,7 @@ public class RGraph {
                 //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
                 if (current.getStage() == 0) {
                     if (!aVecLOlevelRO.isEmpty()) {
-                        if (!vectorsLOlevelRO.contains(aVecLOlevelRO) || !partsLOcompRO.contains(aPartLOcompRO)) {
+                        if (!seenVectorStrings.contains(aVecLOlevelRO) || !seenPartStrings.contains(aPartLOcompRO)) {
                             addStage = true;
                             steps++;
                             if (numParents > 1) {
@@ -372,13 +372,13 @@ public class RGraph {
 
                 //If a part with this composition and overhangs doesn't exist, there must be a PCR done                
                 if (current.getStage() == 0) {
-                    if (partsLOcompRO.add(aPartLOcompRO) != false) {
+                    if (seenPartStrings.add(aPartLOcompRO) == true) {
                         PCRs++;
                     }
                 }
 
                 //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
-                if (vectorsLOlevelRO.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
+                if (seenVectorStrings.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
                     PCRs++;
                 }
 
@@ -777,107 +777,6 @@ public class RGraph {
     }
 
     //returns a json string that can be parsed by the client
-    public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
-        HashMap<String, String> imageURLs = new HashMap();
-        HashSet<String> edges = new HashSet();
-        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
-        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
-        for (RGraph graph : graphs) {
-            HashSet<RNode> seenNodes = new HashSet<RNode>();
-            ArrayList<RNode> queue = new ArrayList<RNode>();
-            queue.add(graph.getRootNode());
-
-            while (!queue.isEmpty()) {
-                RNode current = queue.get(0);
-                seenNodes.add(current);
-                queue.remove(0);
-
-                RVector vector = current.getVector();
-                String vecName = "";
-                if (vector != null) {
-                    vecName = vector.getName();
-                }
-
-                ArrayList<String> composition = current.getComposition();
-                ArrayList<String> type = current.getType();
-                ArrayList<String> scars = current.getScars();
-                ArrayList<String> direction = current.getDirection();
-                String lOverhang = current.getLOverhang();
-                String rOverhang = current.getROverhang();
-
-                String nodeID = current.getNodeKey("+") + "|" + vecName;
-                imageURLs.put(nodeID, generatePigeonImage(composition, type, direction, scars, lOverhang, rOverhang, vecName));
-
-                //Add PCR edges for level 0 nodes
-                if (current.getStage() == 0) {
-
-                    boolean basicNode = false;
-                    String nodeIDB = current.getNodeKey("+");
-
-                    //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
-                    if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
-                        edges.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
-                        imageURLs.put(nodeIDB, generatePigeonImage(composition, type, direction, scars, lOverhang, rOverhang, null));
-                    } else {
-                        basicNode = true;
-                    }
-
-
-                    if (!startPartsLOcompRO.contains(nodeIDB)) {
-                        if (basicNode == true) {
-                            nodeIDB = nodeID;
-                        }
-                        String NnodeID = composition + "|" + direction + "|" + scars;
-                        edges.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
-                        imageURLs.put(NnodeID, generatePigeonImage(composition, type, direction, scars, null, null, null));
-                    }
-                }
-
-                //Get vector, make an extra edge if a PCR is required
-                if (vector != null) {
-                    String vecLO = vector.getLOverhang();
-                    String vecRO = vector.getROverhang();
-                    int vecL = vector.getLevel();
-                    String vecID = vector.getVectorKey("+");
-                    edges.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
-                    imageURLs.put(vecID, generatePigeonImage(null, null, null, null, vecLO, vecRO, vecName));
-
-                    if (!startVectorsLOlevelRO.contains(vecID)) {
-                        String NvecID = vecName + "|" + vecL;
-                        edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"");
-                        imageURLs.put(NvecID, generatePigeonImage(null, null, null, null, null, null, vecName));
-                    }
-                }
-
-                //Add unseen neighbors to the queue
-                for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
-                        if (!queue.contains(neighbor)) {
-                            queue.add(neighbor);
-                        }
-                    }
-                    //If one of the neighbors is a parent, add an edge
-                    if (neighbor.getStage() > current.getStage()) {
-
-                        RVector vectorN = neighbor.getVector();
-                        String vecNameN = null;
-                        if (vectorN != null) {
-                            vecNameN = vectorN.getName();
-                        }
-                        ArrayList<String> scarsN = neighbor.getScars();
-                        String nodeIDN = neighbor.getNodeKey("+") + "|" + vecNameN;
-                        edges.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
-                    }
-                }
-            }
-
-        }
-        JSONObject graphData = new JSONObject();
-        graphData.put("edges", edges);
-        graphData.put("images", imageURLs);
-        return graphData;
-
-    }
 
     /**
      * Pigeon code generation *
@@ -975,94 +874,6 @@ public class RGraph {
         pigeonLine.append("# Arcs\n");
         pigeonLine.append("PIGEON_END\n\n");
         return pigeonLine.toString();
-    }
-
-    /**
-     * Pigeon code generation *
-     */
-    private static String generatePigeonImage(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
-
-        StringBuilder pigeonLine = new StringBuilder();
-        //Assign left overhang if it exists                
-//        pigeonLine.append("3 ").append(LO).append("\n");
-        if (LO != null) {
-            pigeonLine.append("5 ").append(LO).append("\n");
-        }
-
-        if (composition != null) {
-            for (int i = 0; i < composition.size(); i++) {
-
-                String name = composition.get(i);
-                String type = types.get(i);
-                String dir = "";
-
-                //Turn direction of glyph in reverse if reverse direction
-                if (!direction.isEmpty()) {
-                    dir = direction.get(i);
-                    if ("-".equals(dir)) {
-                        pigeonLine.append("<");
-                    }
-                }
-
-                //Write pigeon code for a recognized regular part type
-                if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
-                    pigeonLine.append("P ").append(name).append(" 4" + "\n");
-                } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
-                    pigeonLine.append("r ").append(name).append(" 5" + "\n");
-                } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
-                    pigeonLine.append("c ").append(name).append(" 1" + "\n");
-                } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
-                    pigeonLine.append("c ").append(name).append(" 2" + "\n");
-                } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
-                    pigeonLine.append("T ").append(name).append(" 6" + "\n");
-                } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
-                    if ("-".equals(dir)) {
-                        pigeonLine.append(" ").append(name).append(" 12" + "\n");
-                    } else {
-                        pigeonLine.append("> ").append(name).append(" 12" + "\n");
-                    }
-                } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
-                    pigeonLine.append("s ").append(name).append(" 10" + "\n");
-                } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
-                    pigeonLine.append("z ").append(name).append(" 14" + "\n");
-                } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
-                    pigeonLine.append("f1");
-                    String[] fusionParts = name.split("-");
-                    for (int j = 1; j < fusionParts.length; j++) {
-                        int color = j % 13 + 1;
-                        pigeonLine.append("-").append(color);
-                    }
-                    pigeonLine.append(" ").append(name).append("\n");
-                } else {
-                    pigeonLine.append("c ").append(name).append(" 13" + "\n");
-                }
-
-                //Scars
-                if (!scars.isEmpty()) {
-                    if (i < composition.size() - 1) {
-                        if (!"_".equals(scars.get(i))) {
-                            pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
-                        }
-                    }
-                }
-            }
-        }
-
-        //Assign right overhang                
-        if (RO != null) {
-            pigeonLine.append("3 ").append(RO).append("\n");
-        }
-//        pigeonLine.append("5 ").append(RO).append("\n");
-
-        //Vectors
-        if (vecName != null) {
-            pigeonLine.append("v ").append(vecName).append("\n");
-        }
-        pigeonLine.append("# Arcs\n");
-        WeyekinPoster.setPigeonText(pigeonLine.toString());
-//        WeyekinPoster.postMyBird();
-//        return WeyekinPoster.getmPigeonURI().toString();
-        return "";
     }
 
     /**

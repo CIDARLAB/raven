@@ -4,6 +4,8 @@
  */
 package Controller.accessibility;
 
+import static Controller.accessibility.ClothoReader.parseTags;
+import static Controller.accessibility.ClothoReader.vectorImportClotho;
 import Controller.datastructures.Part;
 import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
@@ -270,31 +272,23 @@ public class ClothoReader {
      */
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
 
-        HashSet<String> startPartsLOcompRO = new HashSet<String>();
+        HashSet<String> startPartsLOcompRO = new HashSet();
 
         //Go through parts library, put all compositions into hash of things that already exist
         for (Part aPart : partLib) {
 
             //Get forward and reverse part key string
-            ArrayList<Part> partComp = aPart.getComposition();
-            ArrayList<String> comp = new ArrayList<String>();
-            for (int j = 0; j < partComp.size(); j++) {
-                String name = partComp.get(j).getName();
-                comp.add(name);
-            }
-            ArrayList<String> revComp = new ArrayList<String>();
-            revComp.addAll(comp);
+            ArrayList<String> comp = aPart.getStringComposition();
+            ArrayList<String> revComp = (ArrayList<String>) comp.clone();
             Collections.reverse(revComp);
 
             ArrayList<String> searchTags = aPart.getSearchTags();
             ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
             ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
 
-            ArrayList<String> revDir = new ArrayList<String>();
-            revDir.addAll(dir);
+            ArrayList<String> revDir = (ArrayList<String>) dir.clone();
             Collections.reverse(revDir);
-            ArrayList<String> revScars = new ArrayList<String>();
-            revScars.addAll(scars);
+            ArrayList<String> revScars = (ArrayList<String>) scars.clone();
             Collections.reverse(revScars);
             for (String aRevScar : revScars) {
                 if (aRevScar.contains("*")) {
@@ -306,8 +300,9 @@ public class ClothoReader {
 
             String lOverhang = aPart.getLeftOverhang();
             String rOverhang = aPart.getRightOverhang();
-            String lOverhangR = aPart.getRightOverhang();
-            String rOverhangR = aPart.getLeftOverhang();
+            String lOverhangR = rOverhang;
+            String rOverhangR = lOverhang;
+            // invert the right overhang
             if (lOverhangR.contains("*")) {
                 lOverhangR = lOverhangR.replace("*", "");
             } else {
@@ -320,9 +315,10 @@ public class ClothoReader {
             }
 
             String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-            String aPartCompDirScarLOROR = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
+            String raPartCompDirScarLORO = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
+
             startPartsLOcompRO.add(aPartCompDirScarLORO);
-            startPartsLOcompRO.add(aPartCompDirScarLOROR);
+            startPartsLOcompRO.add(raPartCompDirScarLORO);
         }
 
         return startPartsLOcompRO;
