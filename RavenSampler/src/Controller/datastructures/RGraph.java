@@ -266,15 +266,12 @@ public class RGraph {
     /**
      * Get graph statistics *
      */
-    public static void getGraphStats(ArrayList<RGraph> mergedGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, Vector> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+    public static void getGraphStats(ArrayList<RGraph> allGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, Vector> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+        //don't count library parts and vectors 
+        HashSet<String> seenPartKeys = getExistingPartKeys(partLib);
+        HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
 
-        HashSet<String> startPartsLOcompRO = ClothoReader.getExistingPartKeys(partLib);
-        HashSet<String> startVectorsLOlevelRO = ClothoReader.getExistingVectorKeys(vectorLib);
-        HashSet<String> seenPartStrings = new HashSet();
-        HashSet<String> seenVectorStrings = new HashSet();
         HashSet<ArrayList<String>> neighborHash = new HashSet();
-        seenPartStrings.addAll(startPartsLOcompRO);
-        seenVectorStrings.addAll(startVectorsLOlevelRO);
 
         //Get goal part compositions
         Set<Part> keySet = goalParts.keySet();
@@ -285,7 +282,7 @@ public class RGraph {
         }
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
-        for (int i = 0; i < mergedGraphs.size(); i++) {
+        for (int i = 0; i < allGraphs.size(); i++) {
 
             int PCRs = 0;
             int steps = 0;
@@ -296,10 +293,11 @@ public class RGraph {
             int shared = 0;
             ArrayList<Double> efficiency = new ArrayList();
 
-            RGraph aGraph = mergedGraphs.get(i);
+            RGraph currentGraph = allGraphs.get(i);
+//            System.out.println("counting for: "+currentGraph.getRootNode().getComposition());
             HashSet<RNode> seenNodes = new HashSet();
             ArrayList<RNode> queue = new ArrayList();
-            queue.add(aGraph.getRootNode());
+            queue.add(currentGraph.getRootNode());
 
             //Traverse the graph
             while (!queue.isEmpty()) {
@@ -309,7 +307,7 @@ public class RGraph {
                 int numParents = 0;
 
                 for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor) && current.getComposition().size() >neighbor.getComposition().size()) { //TODO: FIX APPLIED HERE
+                    if (!seenNodes.contains(neighbor) && current.getComposition().size() > neighbor.getComposition().size()) { //TODO: FIX APPLIED HERE
                         if (!queue.contains(neighbor)) {
                             queue.add(neighbor);
                         }
@@ -320,11 +318,11 @@ public class RGraph {
                 }
 
                 ArrayList<String> composition = current.getComposition();
-                String aPartLOcompRO = current.getNodeKey("+");
+                String currentPartKey = current.getNodeKey("+");
 
-                String aVecLOlevelRO = new String();
+                String currentVectorKey = "";
                 if (current.getVector() != null) {
-                    aVecLOlevelRO = current.getVector().getVectorKey("+");
+                    currentVectorKey = current.getVector().getVectorKey("+");
                 }
 
                 //PCR Reactions for scarless assembly
@@ -346,7 +344,7 @@ public class RGraph {
                                 next = composition.get(j + 1);
                                 prev = composition.get(j - 1);
                             }
-                            ArrayList<String> seq = new ArrayList<String>();
+                            ArrayList<String> seq = new ArrayList();
                             seq.add(prev);
                             seq.add(currentBP);
                             seq.add(next);
@@ -357,8 +355,8 @@ public class RGraph {
 
                 //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
                 if (current.getStage() == 0) {
-                    if (!aVecLOlevelRO.isEmpty()) {
-                        if (!seenVectorStrings.contains(aVecLOlevelRO) || !seenPartStrings.contains(aPartLOcompRO)) {
+                    if (!currentVectorKey.equals("")) {
+                        if (!seenVectorKeys.contains(currentVectorKey) || !seenPartKeys.contains(currentPartKey)) {
                             addStage = true;
                             steps++;
                             if (numParents > 1) {
@@ -369,15 +367,17 @@ public class RGraph {
                 }
 
                 //If a part with this composition and overhangs doesn't exist, there must be a PCR done                
-                if (current.getStage() == 0) {
-                    System.out.println(current.getNodeKey("+"));
-                    if (seenPartStrings.add(aPartLOcompRO) == true) {
-                        PCRs++;
-                    }
+                if (current.getStage() == 0 && !seenPartKeys.contains(currentPartKey)) {
+                    seenPartKeys.add(currentPartKey);
+//                    System.out.println("incrementing part for " + currentPartKey);
+                    PCRs++;
+
                 }
 
                 //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
-                if (seenVectorStrings.add(aVecLOlevelRO) != false && !aVecLOlevelRO.isEmpty()) {
+                if (!seenVectorKeys.contains(currentVectorKey) != false && !currentVectorKey.equals("")) {
+//                    System.out.println("incrementing vector for " + currentVectorKey);
+                    seenVectorKeys.add(currentVectorKey);
                     PCRs++;
                 }
 
@@ -407,9 +407,9 @@ public class RGraph {
             }
 
             if (scarless == false) {
-                aGraph.setReactions(PCRs);
+                currentGraph.setReactions(PCRs);
             } else {
-                aGraph.setReactions(neighborHash.size());
+                currentGraph.setReactions(neighborHash.size());
             }
 
             if (addStage == true) {
@@ -420,14 +420,14 @@ public class RGraph {
             double estCost = (steps * stepCost) + (pcrCost * PCRs);
             double estTime = (stages * stepTime) + pcrTime;
 
-            aGraph.setSteps(steps);
-            aGraph.setDiscouragedCount(disCount);
-            aGraph.setReccomendedCount(recCount);
-            aGraph.setStages(stages);
-            aGraph.setEfficiencyArray(efficiency);
-            aGraph.setSharing(shared);
-            aGraph.setEstCost(estCost);
-            aGraph.setEstTime(estTime);
+            currentGraph.setSteps(steps);
+            currentGraph.setDiscouragedCount(disCount);
+            currentGraph.setReccomendedCount(recCount);
+            currentGraph.setStages(stages);
+            currentGraph.setEfficiencyArray(efficiency);
+            currentGraph.setSharing(shared);
+            currentGraph.setEstCost(estCost);
+            currentGraph.setEstTime(estTime);
         }
     }
 
@@ -437,14 +437,14 @@ public class RGraph {
      */
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
 
-        HashSet<String> keys = new HashSet<String>();
+        HashSet<String> keys = new HashSet<>();
 
         //Go through parts library, put all compositions into hash of things that already exist
         for (Part aPart : partLib) {
 
             //Get forward and reverse part key string
             ArrayList<Part> partComp = aPart.getComposition();
-            ArrayList<String> comp = new ArrayList<String>();
+            ArrayList<String> comp = new ArrayList();
             for (int j = 0; j < partComp.size(); j++) {
                 String name = partComp.get(j).getName();
                 comp.add(name);
@@ -776,7 +776,6 @@ public class RGraph {
     }
 
     //returns a json string that can be parsed by the client
-
     /**
      * Pigeon code generation *
      */
