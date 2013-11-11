@@ -5,8 +5,6 @@
 package Controller.datastructures;
 
 import Controller.accessibility.ClothoReader;
-import static Controller.datastructures.RGraph.getExistingPartKeys;
-import static Controller.datastructures.RGraph.getExistingVectorKeys;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -265,7 +263,6 @@ public class RGraph {
         return mergedGraphs;
     }
 
-    
     /**
      * Get graph statistics *
      */
@@ -273,9 +270,11 @@ public class RGraph {
         //don't count library parts and vectors 
         HashSet<String> seenPartKeys = getExistingPartKeys(partLib);
         HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
-
         HashSet<ArrayList<String>> neighborHash = new HashSet();
-
+        int vectorPCRCount = 0;
+        int partCount = 0;
+        int basicPCRCount = 0;
+        int nodeCount = 0;
         //Get goal part compositions
         Set<Part> keySet = goalParts.keySet();
         HashSet<ArrayList<String>> gpComps = new HashSet();
@@ -295,9 +294,7 @@ public class RGraph {
             boolean addStage = false;
             int shared = 0;
             ArrayList<Double> efficiency = new ArrayList();
-
             RGraph currentGraph = allGraphs.get(i);
-//            System.out.println("counting for: "+currentGraph.getRootNode().getComposition());
             HashSet<RNode> seenNodes = new HashSet();
             ArrayList<RNode> queue = new ArrayList();
             queue.add(currentGraph.getRootNode());
@@ -305,15 +302,14 @@ public class RGraph {
             //Traverse the graph
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
+                nodeCount++;
                 seenNodes.add(current);
                 queue.remove(0);
                 int numParents = 0;
 
                 for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor) && current.getComposition().size() > neighbor.getComposition().size()) { //TODO: FIX APPLIED HERE
-                        if (!queue.contains(neighbor)) {
-                            queue.add(neighbor);
-                        }
+                    if (!seenNodes.contains(neighbor)) { //TODO: FIX APPLIED HERE
+                        queue.add(neighbor);
                     }
                     if (neighbor.getStage() > current.getStage()) {
                         numParents++;
@@ -355,37 +351,32 @@ public class RGraph {
                         }
                     }
                 }
-
-                //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
-                if (current.getStage() == 0) {
-                    if (!currentVectorKey.equals("")) {
+                if (!currentVectorKey.equals("")) {
+                    //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
+                    if (current.getStage() == 0) {
                         if (!seenVectorKeys.contains(currentVectorKey) || !seenPartKeys.contains(currentPartKey)) {
                             addStage = true;
                             steps++;
                             if (numParents > 1) {
                                 shared++;
                             }
+
                         }
                     }
+                    //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
+                    if (!seenVectorKeys.contains(currentVectorKey)) {
+                        PCRs++;
+                    }
                 }
-
                 //If a part with this composition and overhangs doesn't exist, there must be a PCR done                
                 if (current.getStage() == 0 && !seenPartKeys.contains(currentPartKey)) {
-                    seenPartKeys.add(currentPartKey);
-//                    System.out.println("incrementing part for " + currentPartKey);
-                    PCRs++;
-
-                }
-
-                //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
-                if (!seenVectorKeys.contains(currentVectorKey) != false && !currentVectorKey.equals("")) {
-//                    System.out.println("incrementing vector for " + currentVectorKey);
-                    seenVectorKeys.add(currentVectorKey);
                     PCRs++;
                 }
+
+
 
                 //If the node is grater than stage 0, it is a step and add to efficiency list
-                if (current.getStage() > 0) {
+                if (current.getStage() > 0 && !seenPartKeys.contains(currentPartKey)) {
                     steps++;
                     efficiency.add(current.getEfficiency());
                     if (numParents > 1) {
@@ -407,9 +398,11 @@ public class RGraph {
                 if (discouraged.contains(current.getComposition().toString())) {
                     disCount++;
                 }
+                seenPartKeys.add(currentPartKey);
+                seenVectorKeys.add(currentVectorKey);
             }
 
-            if (scarless == false) {
+            if (!scarless) {
                 currentGraph.setReactions(PCRs);
             } else {
                 currentGraph.setReactions(neighborHash.size());
@@ -440,14 +433,14 @@ public class RGraph {
      */
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
 
-        HashSet<String> keys = new HashSet<String>();
+        HashSet<String> keys = new HashSet();
 
         //Go through parts library, put all compositions into hash of things that already exist
         for (Part aPart : partLib) {
 
             //Get forward and reverse part key string
             ArrayList<Part> partComp = aPart.getComposition();
-            ArrayList<String> comp = new ArrayList<String>();
+            ArrayList<String> comp = new ArrayList();
             for (int j = 0; j < partComp.size(); j++) {
                 String name = partComp.get(j).getName();
                 comp.add(name);
