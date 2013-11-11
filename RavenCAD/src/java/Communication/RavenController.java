@@ -750,7 +750,7 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    private void getSolutionStats() throws Exception {
+    private void getSolutionStats(String method) throws Exception {
 
         int steps = 0;
         int stages = 0;
@@ -792,6 +792,9 @@ public class RavenController {
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(rxn);
         _statistics.setValid(_valid);
+        if (method.equals("biobricks")) {
+            rxn = rxn + 2; //correction for additional biobrick vectors
+        }
         System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + _valid);
     }
 
@@ -885,7 +888,7 @@ public class RavenController {
         _valid = valid && overhangValid;
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
-        getSolutionStats();
+        getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors);

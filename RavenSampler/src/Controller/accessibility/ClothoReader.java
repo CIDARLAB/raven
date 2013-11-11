@@ -20,7 +20,7 @@ import java.util.Set;
  * @author evanappleton
  */
 public class ClothoReader {
-    
+
     /**
      * ************************************************************************
      *
@@ -28,8 +28,10 @@ public class ClothoReader {
      *
      *************************************************************************
      */
-    
-    /** Given goal parts and library, create hashMem, key: composition with overhangs concatenated at the end, value: corresponding graph **/
+    /**
+     * Given goal parts and library, create hashMem, key: composition with
+     * overhangs concatenated at the end, value: corresponding graph *
+     */
     public static HashMap<String, RGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
 
         //Create library to initialize hashMem
@@ -38,31 +40,31 @@ public class ClothoReader {
         //Add all basic parts in the goal parts to the memoization hash
         for (Part goalPart : goalParts) {
 
-                //Add all basic parts to the memoization hash
-                ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
-                for (int i = 0; i < basicParts.size(); i++) {
+            //Add all basic parts to the memoization hash
+            ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
+            for (int i = 0; i < basicParts.size(); i++) {
 
-                    //Initialize new graph for a basic part
-                    RGraph newBasicGraph = new RGraph();
-                    newBasicGraph.getRootNode().setUUID(basicParts.get(i).getUUID());
+                //Initialize new graph for a basic part
+                RGraph newBasicGraph = new RGraph();
+                newBasicGraph.getRootNode().setUUID(basicParts.get(i).getUUID());
 
-                    //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
-                    ArrayList<String> composition = new ArrayList<String>();
-                    ArrayList<String> direction = new ArrayList<String>();
-                    composition.add(basicParts.get(i).getName());
-                    ArrayList<String> sTags = basicParts.get(i).getSearchTags();
-                    ArrayList<String> type = parseTags(sTags, "Type:");
+                //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
+                ArrayList<String> composition = new ArrayList<String>();
+                ArrayList<String> direction = new ArrayList<String>();
+                composition.add(basicParts.get(i).getName());
+                ArrayList<String> sTags = basicParts.get(i).getSearchTags();
+                ArrayList<String> type = parseTags(sTags, "Type:");
 
-                    //Set type and composition
-                    RNode root = newBasicGraph.getRootNode();
-                    root.setName(basicParts.get(i).getName());
-                    root.setComposition(composition);
-                    root.setDirection(direction);
-                    root.setType(type);
-                    
-                    library.put(composition.toString() + direction.toString(), newBasicGraph);
-                }
-  
+                //Set type and composition
+                RNode root = newBasicGraph.getRootNode();
+                root.setName(basicParts.get(i).getName());
+                root.setComposition(composition);
+                root.setDirection(direction);
+                root.setType(type);
+
+                library.put(composition.toString() + direction.toString(), newBasicGraph);
+            }
+
         }
 
         //If there is an input Clotho part library, make a new node with only type and composition from library
@@ -89,16 +91,16 @@ public class ClothoReader {
                     for (Part libPartComponent : libPartComposition) {
                         ArrayList<String> sTags = libPartComponent.getSearchTags();
                         composition.add(libPartComponent.getName());
-                        
+
                         //If there was no direction found, all basic parts assumed to be forward
                         if (libraryPart.isComposite()) {
                             if (direction.isEmpty()) {
                                 direction.add("+");
                             }
-                        }             
+                        }
                         type.addAll(parseTags(sTags, "Type: "));
                     }
-                    
+
                     //Initialize new graph for library part
                     RGraph libraryPartGraph = new RGraph();
                     libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
@@ -113,7 +115,7 @@ public class ClothoReader {
                         libraryPartGraph.setReccomendedCount(libraryPartGraph.getReccomendedCount() + 1);
                         libraryPartGraph.getRootNode().setRecommended(true);
                     }
-                    
+
                     //If discouraged, give graph a recommended score of 1, make root node recommended
                     if (discouraged.contains(composition.toString())) {
                         libraryPartGraph.setDiscouragedCount(libraryPartGraph.getDiscouragedCount() + 1);
@@ -136,13 +138,13 @@ public class ClothoReader {
         //Provided there is an input vector library
         RVector rVector = null;
         if (vector != null) {
-            
+
             String name = vector.getName();
             String LO = new String();
             String RO = new String();
             String resistance = new String();
             int level = -1;
-            
+
             //If there's search tags, find overhangs
             if (vector.getSearchTags() != null) {
                 ArrayList<String> sTags = vector.getSearchTags();
@@ -170,13 +172,15 @@ public class ClothoReader {
         return rVector;
     }
 
-    /** Convert goal parts into SRS nodes for the algorithm **/
+    /**
+     * Convert goal parts into SRS nodes for the algorithm *
+     */
     public static ArrayList<RNode> gpsToNodesClotho(HashMap<Part, Vector> goalPartsVectors, boolean useVectors) throws Exception {
-        
+
         ArrayList<RNode> gpsNodes = new ArrayList<RNode>();
         Set<Part> goalParts = goalPartsVectors.keySet();
         for (Part goalPart : goalParts) {
-            
+
             //Get goal part's composition and type (part description type)
             ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
             ArrayList<String> searchTags = goalPart.getSearchTags();
@@ -189,7 +193,7 @@ public class ClothoReader {
             for (int j = 0; j < basicParts.size(); j++) {
                 composition.add(basicParts.get(j).getName());
                 ArrayList<String> sTags = basicParts.get(j).getSearchTags();
-                
+
                 //If there was no direction found, all basic parts assumed to be forward
                 if (direction.isEmpty()) {
                     direction.add("+");
@@ -211,40 +215,42 @@ public class ClothoReader {
             gp.setUUID(goalPart.getUUID());
             gpsNodes.add(gp);
         }
-        
+
         //Sort nodes by part size and then composition name
         ArrayList<RNode> orderedGPSNodes = new ArrayList<RNode>();
         HashMap<String, RNode> partNameHash = new HashMap<String, RNode>();
         for (RNode gpsNode : gpsNodes) {
             String key = gpsNode.getComposition().size() + gpsNode.getNodeKey("+");
             partNameHash.put(key, gpsNode);
-        }        
+        }
         Set<String> keySet = partNameHash.keySet();
         ArrayList<String> partNames = new ArrayList<String>(keySet);
         Collections.sort(partNames);
         for (String partName : partNames) {
             orderedGPSNodes.add(partNameHash.get(partName));
         }
-        
+
         return orderedGPSNodes;
     }
 
-    /** Parse Clotho search tags from a string into an ArrayList **/
+    /**
+     * Parse Clotho search tags from a string into an ArrayList *
+     */
     public static ArrayList<String> parseTags(ArrayList<String> tags, String header) {
-        
-        ArrayList<String> list = new ArrayList<String>();
+
+        ArrayList<String> list = new ArrayList();
         if (tags == null) {
-            tags = new ArrayList<String>();
+            tags = new ArrayList();
         }
-        
+
         for (String ST : tags) {
             if (ST.startsWith(header)) {
-                
+
                 //Split any arraylist-like search tag
                 if (ST.charAt(ST.length() - 1) == ']') {
-                    String splitTag = ST.substring(ST.indexOf("[")+1, ST.length() - 1);
+                    String splitTag = ST.substring(ST.indexOf("[") + 1, ST.length() - 1);
                     String[] tokens = splitTag.split(",");
-                    ArrayList<String> trimmedTokens = new ArrayList<String>();
+                    ArrayList<String> trimmedTokens = new ArrayList();
 
                     //Trim tokens to add to final list
                     for (String token : tokens) {
@@ -252,7 +258,7 @@ public class ClothoReader {
                         trimmedTokens.add(trimmedToken);
                     }
                     list.addAll(trimmedTokens);
-                    
+
                 } else {
                     String[] tokens1 = ST.split(":");
                     String splitTag = tokens1[1];
@@ -260,14 +266,15 @@ public class ClothoReader {
                     list.add(splitTag);
                 }
             }
-        }                
+        }
         return list;
     }
-    
+
     /**
      * Returns a part library and finds all forward and reverse characteristics
      * of each part *
      */
+    @Deprecated
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
 
         HashSet<String> startPartsLOcompRO = new HashSet<>();
@@ -314,8 +321,6 @@ public class ClothoReader {
 
             String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
             String raPartCompDirScarLORO = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
-            System.out.println(aPartCompDirScarLORO);
-            System.out.println(raPartCompDirScarLORO);
             startPartsLOcompRO.add(aPartCompDirScarLORO);
             startPartsLOcompRO.add(raPartCompDirScarLORO);
         }
@@ -327,6 +332,7 @@ public class ClothoReader {
      * Returns a part library and finds all forward and reverse characteristics
      * of each part *
      */
+    @Deprecated
     public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
 
         HashSet<String> startVectorsLOlevelRO = new HashSet<String>();

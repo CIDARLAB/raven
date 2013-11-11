@@ -34,3 +34,5 @@ twistbio,raven12345
 lwoodruff,raven12345
 pwestfall,raven12345
 rblue,raven12345
+vschuetz,raven12345
+dmaier,raven12345

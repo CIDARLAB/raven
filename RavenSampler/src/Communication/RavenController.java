@@ -34,7 +34,7 @@ public class RavenController {
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
         RBioBricks biobricks = new RBioBricks();
-        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts,_required,_recommended,_forbidden,_discouraged,_partLibrary,null);
+        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, null);
         return optimalGraphs;
     }
 
@@ -49,7 +49,7 @@ public class RavenController {
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         RGibson gibson = new RGibson();
-        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts,_required,_recommended,_forbidden,_discouraged,_partLibrary,_efficiency,null);
+        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -64,7 +64,7 @@ public class RavenController {
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
-        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts,_required,_recommended,_forbidden,_discouraged,_partLibrary,_efficiency,null);
+        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -79,7 +79,7 @@ public class RavenController {
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
-        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts,_required,_recommended,_forbidden,_discouraged,_partLibrary,_efficiency,null);
+        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -94,8 +94,8 @@ public class RavenController {
         //Run algorithm for MoClo assembly
         _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
-        moclo.setForcedOverhangs(_collector,_forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts,_vectorLibrary,_required,_recommended,_forbidden,_discouraged,_partLibrary,false,_efficiency,null);
+        moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
+        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -110,7 +110,7 @@ public class RavenController {
         //Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
         RGoldenGate gg = new RGoldenGate();
-        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts,_vectorLibrary,_required,_recommended,_forbidden,_discouraged,_partLibrary,_efficiency,null);
+        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
         return optimalGraphs;
     }
 
@@ -372,7 +372,7 @@ public class RavenController {
                         currentCompositionString = currentCompositionString + composition.get(i) + "|" + direction.get(i) + ",";
                     }
                 }
-                currentCompositionString = "[" + currentCompositionString.substring(0,currentCompositionString.length() - 2) + "]";
+                currentCompositionString = "[" + currentCompositionString.substring(0, currentCompositionString.length() - 2) + "]";
                 if (_forbidden.contains(currentCompositionString)) {
                     toReturn = false;
                     break;
@@ -401,7 +401,7 @@ public class RavenController {
     //set searchPartitions to true to sample mgp space
     //set searchPartitions to true to sample overhang space
 
-    public void run(String method,int targetSize,int numberOfRuns,boolean searchPartitions,boolean searchOverhangs) throws Exception {
+    public void run(String method, int targetSize, int numberOfRuns, boolean searchPartitions, boolean searchOverhangs) throws Exception {
         RavenController.samplePartitions = searchPartitions;
         RavenController.sampleOverhangs = searchOverhangs;
         _goalParts = new HashMap();
@@ -413,26 +413,26 @@ public class RavenController {
         _partLibrary = new ArrayList<Part>();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = new HashMap();
-        _efficiency.put(1,1.0);
-        _efficiency.put(2,1.0);
-        _efficiency.put(3,1.0);
-        _efficiency.put(4,1.0);
+        _efficiency.put(1, 1.0);
+        _efficiency.put(2, 1.0);
+        _efficiency.put(3, 1.0);
+        _efficiency.put(4, 1.0);
 
         method = method.toLowerCase().trim();
         ArrayList<Part> allParts = _collector.getAllParts(true);
         ArrayList<Part> allCompositeParts = new ArrayList();
-        for(Part p:allParts) {
-            if(p.isComposite()) {
+        for (Part p : allParts) {
+            if (p.isComposite()) {
                 allCompositeParts.add(p);
             }
         }
-        HashSet<Part> goal = new HashSet(allCompositeParts.subList(0,Math.min(allCompositeParts.size(),targetSize)));
+        HashSet<Part> goal = new HashSet(allCompositeParts.subList(0, Math.min(allCompositeParts.size(), targetSize)));
         for (Part p : goal) {
             if (p.isComposite()) {
-                _goalParts.put(p,null);
+                _goalParts.put(p, null);
             }
         }
-        System.out.println("Steps,Stages,Sharing,PCRs,numberOfDevices: "+targetSize +",numberOfRuns: "+numberOfRuns+",searchPartitions: "+searchPartitions+",searchOverhangs: "+searchOverhangs);
+        System.out.println("Steps,Stages,Sharing,PCRs,numberOfDevices: " + targetSize + ",numberOfRuns: " + numberOfRuns + ",method: "+method+",searchPartitions: " + searchPartitions + ",searchOverhangs: " + searchOverhangs);
         for (int i = 0; i < numberOfRuns; i++) {
             boolean scarless = false;
             _assemblyGraphs.clear();
@@ -453,10 +453,10 @@ public class RavenController {
                 _assemblyGraphs = runSLIC();
                 scarless = true;
             }
-            RGraph.getGraphStats(_assemblyGraphs,_partLibrary,_vectorLibrary,_goalParts,_recommended,_discouraged,scarless,0.0,0.0,0.0,0.0);
-            getSolutionStats();
-            
-            if(error) {
+            RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
+            getSolutionStats(method);
+
+            if (error) {
 //            ArrayList<String> graphTextFiles = new ArrayList();
 //            ArrayList<RNode> targetRootNodes = new ArrayList();
 //            if (!_assemblyGraphs.isEmpty()) {
@@ -476,7 +476,6 @@ public class RavenController {
 //
 //            String imageURL = "";
 //            imageURL = WeyekinPoster.getmGraphVizURI().toString();
-//            System.out.println(imageURL);
             }
             error = false;
         }
@@ -484,7 +483,7 @@ public class RavenController {
 
     }
 
-    private void getSolutionStats() throws Exception {
+    private void getSolutionStats(String method) throws Exception {
 
         int steps = 0;
         int stages = 0;
@@ -514,19 +513,22 @@ public class RavenController {
                 sum = sum + anEff;
             }
             eff = sum / effArray.size();
+            if(method.equals("biobricks")) {
+                rxn = rxn+2; //correction for additional biobrick vectors
+            }
+            System.out.println(steps + "," + stages + "," + shr + "," + rxn);
         }
-        System.out.println(steps + "," + stages + "," + shr + "," + rxn);
     }
     //FIELDS
-    private HashMap<Part,Vector> _goalParts = new HashMap<Part,Vector>();//key: target part,value: composition
-    private HashMap<Part,Vector> _compPartsVectors = new HashMap<Part,Vector>();
-    private HashMap<Integer,Double> _efficiency = new HashMap<Integer,Double>();
+    private HashMap<Part, Vector> _goalParts = new HashMap<Part, Vector>();//key: target part,value: composition
+    private HashMap<Part, Vector> _compPartsVectors = new HashMap<Part, Vector>();
+    private HashMap<Integer, Double> _efficiency = new HashMap<Integer, Double>();
     private HashSet<String> _required = new HashSet<String>();
     private HashSet<String> _recommended = new HashSet<String>();
     private HashSet<String> _discouraged = new HashSet<String>();
     private HashSet<String> _forbidden = new HashSet<String>();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();
-    private HashMap<String,ArrayList<String>> _forcedOverhangHash = new HashMap<String,ArrayList<String>>();
+    private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
     protected Collector _collector = new Collector(); //key:user,value: collector assocaited with that user

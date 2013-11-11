@@ -220,61 +220,55 @@ public class RNode {
         
         //Forward key information
         ArrayList<String> composition = this._composition;
-        ArrayList<String> direction = this._direction;
+        ArrayList<String> directions = this._direction;
         ArrayList<String> scars = this._scars;
-        String lOverhang = this._lOverhang;
-        String rOverhang = this._rOverhang;
+        String leftOverhang = this._lOverhang;
+        String rightOverhang = this._rOverhang;
         
         if (dir.equals("+")) {           
-            String aPartLOcompRO = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+            String aPartLOcompRO = composition + "|" + directions + "|" + scars + "|" + leftOverhang + "|" + rightOverhang;
             return aPartLOcompRO;
         } else {
             
             //Backward key information
-            ArrayList<String> revComp = new ArrayList<String>();
-            revComp.addAll(composition);
+            ArrayList<String> revComp = (ArrayList<String>) composition.clone();
             Collections.reverse(revComp);
             
-            ArrayList<String> revDir = new ArrayList<String>();
-            ArrayList<String> revDirF = new ArrayList<String>();
-            revDir.addAll(direction);
-            Collections.reverse(revDir);
-            for (String RD : revDir) {
-                if (RD.equals("+")) {
-                    revDirF.add("-");
-                } else if (RD.equals("-")) {
-                    revDirF.add("+");
+            ArrayList<String> invertedDirections = new ArrayList();
+
+            for(String d: directions) {
+                if(d.equals("+")) {
+                    invertedDirections.add(0,"-");
+                } else {
+                    invertedDirections.add(0,"+");
                 }
             }
             
-            ArrayList<String> revScars = new ArrayList<String>();
-            ArrayList<String> revScarsF = new ArrayList<String>();
-            revScars.addAll(scars);
-            Collections.reverse(revScars);
-            for (String aRevScar : revScars) {
-                if (aRevScar.contains("*")) {
-                    aRevScar = aRevScar.replace("*", "");
-                    revScarsF.add(aRevScar);
+            ArrayList<String> invertedScars = new ArrayList();
+            for (String scar: scars) {
+                if (scar.contains("*")) {
+                    scar = scar.replace("*", "");
+                    invertedScars.add(0,scar);
                 } else {
-                    aRevScar = aRevScar + "*";
-                    revScarsF.add(aRevScar);
+                    scar = scar + "*";
+                    invertedScars.add(0,scar);
                 }
             }
 
-            String lOverhangR = rOverhang;
-            String rOverhangR = lOverhang;
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
+            String invertedLeftOverhang = rightOverhang;
+            String invertedRightOverhang = leftOverhang;
+            if (invertedLeftOverhang.contains("*")) {
+                invertedLeftOverhang = invertedLeftOverhang.replace("*", "");
             } else {
-                lOverhangR = lOverhangR + "*";
+                invertedLeftOverhang = invertedLeftOverhang + "*";
             }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
+            if (invertedRightOverhang.contains("*")) {
+                invertedRightOverhang = invertedRightOverhang.replace("*", "");
             } else {
-                rOverhangR = rOverhangR + "*";
+                invertedRightOverhang = invertedRightOverhang + "*";
             }
             
-            String aPartCompDirScarLOROR = revComp + "|" + revDirF + "|" + revScarsF + "|" + lOverhangR + "|" + rOverhangR;
+            String aPartCompDirScarLOROR = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
             return aPartCompDirScarLOROR;
         }
     }
