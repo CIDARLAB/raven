@@ -7,7 +7,6 @@ package Controller.algorithms.nonmodasm;
 import Controller.algorithms.PrimerDesign;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
-import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
 import java.util.ArrayList;
 
@@ -19,115 +18,72 @@ public class RHomologyPrimerDesign {
 
     public static String[] homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
 
-        //initialize primer parameters
+        //Initialize primer parameters
         String[] oligos = new String[2];
         String forwardOligoSequence;
         String reverseOligoSequence;
-        String leftNeighborSeq = "";
-        String rightNeighborSeq = "";
-        int rightNeighborSeqLength = 0;
-        int leftNeighborSeqLength = 0;
+        String lSeq;
+        String rSeq;
+        
         boolean missingLeftSequence = false;
         boolean missingSequence = false;
         boolean missingRightSequence = false;
+        
         Part currentPart = coll.getPart(node.getUUID(), true);
-        Part leftNeighbor = null;
-        Part rightNeighbor = null;
+        Part leftNeighbor;
+        Part rightNeighbor;
         Part rootPart = coll.getPart(root.getUUID(), true);
         ArrayList<Part> composition = rootPart.getComposition();
 
         String currentSeq = currentPart.getSeq();
         ArrayList<String> direction = node.getDirection();
+        
+        //Reverse complement sequences that are on the reverse strand
         if ("-".equals(direction.get(0))) {
             currentSeq = PrimerDesign.reverseComplement(currentSeq);
         }
+        
         if (currentSeq.equals("")) {
             missingSequence = true;
         }
         int indexOf = composition.indexOf(currentPart);
 
-        //Keep getting the sequences of the leftmost neighbors until the min sequence size is satisfied
-        while (leftNeighborSeqLength < targetLength) {
-            
-            if (indexOf == 0) {
-                leftNeighbor = composition.get(composition.size() - 1);
-                String seq = leftNeighbor.getSeq();
-                if (seq.equals("")) {
-                    missingLeftSequence = true;
-                    break;
-                }
-                ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
-                if ("-".equals(leftNeighborDirection.get(0))) {
-                    seq = PrimerDesign.reverseComplement(seq);
-                }
+        //Get neighbor sequences
+        if (indexOf == 0) {
+            leftNeighbor = composition.get(composition.size() - 1);
+            rightNeighbor = composition.get(indexOf + 1);
+            rSeq = rightNeighbor.getSeq();
+            lSeq = leftNeighbor.getSeq();
+        } else if (indexOf == composition.size() - 1) {
+            rightNeighbor = composition.get(0);
+            leftNeighbor = composition.get(indexOf - 1);
+            rSeq = rightNeighbor.getSeq();
+            lSeq = leftNeighbor.getSeq();
+        } else {
+            rightNeighbor = composition.get(indexOf + 1);
+            leftNeighbor = composition.get(indexOf - 1);
+            rSeq = rightNeighbor.getSeq();
+            lSeq = leftNeighbor.getSeq();
+        }
+       
+        ArrayList<String> rightNeighborDirection = rightNeighbor.getDirections();
+        ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
 
-                leftNeighborSeq = leftNeighborSeq + seq;
-                leftNeighborSeqLength = leftNeighborSeq.length();
-                indexOf = composition.size() - 1;
-            
-            } else {
-                leftNeighbor = composition.get(indexOf - 1);
-                String seq = leftNeighbor.getSeq();
-                
-                if (seq.equals("")) {
-                    missingLeftSequence = true;
-                    break;
-                }
-                
-                ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
-                if ("-".equals(leftNeighborDirection.get(0))) {
-                    seq = PrimerDesign.reverseComplement(seq);
-                }
-
-                leftNeighborSeq = leftNeighborSeq + seq;
-                leftNeighborSeqLength = leftNeighborSeq.length();
-                indexOf--;
-            }
+        if (lSeq.equals("")) {
+            missingLeftSequence = true;
+        } else if (rSeq.equals("")) {
+            missingRightSequence = true;
         }
 
-        //Keep getting the sequences of the righttmost neighbors until the min sequence size is satisfied
-        while (rightNeighborSeqLength < targetLength) {
-            
-            if (indexOf == composition.size() - 1) {
-                rightNeighbor = composition.get(0);
-                String seq = rightNeighbor.getSeq();
-                ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
-                
-                if (seq.equals("")) {
-                    missingRightSequence = true;
-                    break;
-                }
-                
-                if ("-".equals(leftNeighborDirection.get(0))) {
-                    seq = PrimerDesign.reverseComplement(seq);
-                }
-
-                rightNeighborSeq = rightNeighborSeq + seq;
-                rightNeighborSeqLength = rightNeighborSeq.length();
-                indexOf = 0;
-            
-            } else {
-                rightNeighbor = composition.get(indexOf + 1);
-                String seq = rightNeighbor.getSeq();
-                ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
-                
-                if (seq.equals("")) {
-                    missingRightSequence = true;
-                    break;
-                }
-                
-                if ("-".equals(leftNeighborDirection.get(0))) {
-                    seq = PrimerDesign.reverseComplement(seq);
-                }
-
-                rightNeighborSeq = rightNeighborSeq + seq;
-                rightNeighborSeqLength = rightNeighborSeq.length();
-                indexOf++;
-            }
+        if ("-".equals(leftNeighborDirection.get(0))) {
+            lSeq = PrimerDesign.reverseComplement(lSeq);
+        }
+        if ("-".equals(rightNeighborDirection.get(0))) {
+            rSeq = PrimerDesign.reverseComplement(rSeq);
         }
 
-        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, leftNeighborSeq, false, true);
-        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rightNeighborSeq), false, true);
+        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, lSeq, false, true);
+        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rSeq), false, true);
         int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentSeq, true, true);
         int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
 
@@ -135,12 +91,13 @@ public class RHomologyPrimerDesign {
         if ((currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) && currentPart.getSeq().length()>0) {
             return oligos;
         }
+        
         if (missingSequence || missingLeftSequence || missingRightSequence) {
             forwardOligoSequence = "["+leftNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
             reverseOligoSequence = "["+rightNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
         } else {
-            forwardOligoSequence = leftNeighborSeq.substring(Math.max(0, leftNeighborSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
-            reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rightNeighborSeq.substring(0, Math.min(rightNeighborSeq.length(), rNeighborHomologyLength)));
+            forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
         }
 
 
@@ -149,11 +106,92 @@ public class RHomologyPrimerDesign {
 
         return oligos;
     }
+}
 
+//OLD CODE DUMP, MIGHT REVISIT LATER
     /**
      * Traverses graphs and looks for parts that are too small for homologous
      * recombination and merges them with their neighbor(s) *
      */
-    public void smallPartHomologyGraphMerge(ArrayList<RGraph> optimalGraphs) {
-    }
-}
+//    public void smallPartHomologyGraphMerge(ArrayList<RGraph> optimalGraphs) {
+//    }
+
+//Keep getting the sequences of the leftmost neighbors until the min sequence size is satisfied
+//        while (leftNeighborSeqLength < targetLength) {
+//            
+//            if (indexOf == 0) {
+//                leftNeighbor = composition.get(composition.size() - 1);
+//                String seq = leftNeighbor.getSeq();
+//                if (seq.equals("")) {
+//                    missingLeftSequence = true;
+//                    break;
+//                }
+//                ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
+//                if ("-".equals(leftNeighborDirection.get(0))) {
+//                    seq = PrimerDesign.reverseComplement(seq);
+//                }
+//
+//                leftNeighborSeq = leftNeighborSeq + seq;
+//                leftNeighborSeqLength = leftNeighborSeq.length();
+//                indexOf = composition.size() - 1;
+//            
+//            } else {
+//                leftNeighbor = composition.get(indexOf - 1);
+//                String seq = leftNeighbor.getSeq();
+//                
+//                if (seq.equals("")) {
+//                    missingLeftSequence = true;
+//                    break;
+//                }
+//                
+//                ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
+//                if ("-".equals(leftNeighborDirection.get(0))) {
+//                    seq = PrimerDesign.reverseComplement(seq);
+//                }
+//
+//                leftNeighborSeq = leftNeighborSeq + seq;
+//                leftNeighborSeqLength = leftNeighborSeq.length();
+//                indexOf--;
+//            }
+//        }
+//
+//        //Keep getting the sequences of the righttmost neighbors until the min sequence size is satisfied
+//        while (rightNeighborSeqLength < targetLength) {
+//            
+//            if (indexOf == composition.size() - 1) {
+//                rightNeighbor = composition.get(0);
+//                String seq = rightNeighbor.getSeq();
+//                ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
+//                
+//                if (seq.equals("")) {
+//                    missingRightSequence = true;
+//                    break;
+//                }
+//                
+//                if ("-".equals(leftNeighborDirection.get(0))) {
+//                    seq = PrimerDesign.reverseComplement(seq);
+//                }
+//
+//                rightNeighborSeq = rightNeighborSeq + seq;
+//                rightNeighborSeqLength = rightNeighborSeq.length();
+//                indexOf = 0;
+//            
+//            } else {
+//                rightNeighbor = composition.get(indexOf + 1);
+//                String seq = rightNeighbor.getSeq();
+//                ArrayList<String> leftNeighborDirection = rightNeighbor.getDirections();
+//                
+//                if (seq.equals("")) {
+//                    missingRightSequence = true;
+//                    break;
+//                }
+//                
+//                if ("-".equals(leftNeighborDirection.get(0))) {
+//                    seq = PrimerDesign.reverseComplement(seq);
+//                }
+//
+//                rightNeighborSeq = rightNeighborSeq + seq;
+//                rightNeighborSeqLength = rightNeighborSeq.length();
+//                indexOf++;
+//            }
+//        }
