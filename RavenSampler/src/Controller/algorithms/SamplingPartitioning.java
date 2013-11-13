@@ -20,20 +20,20 @@ public class SamplingPartitioning {
     public static HashMap<Integer, ArrayList<int[]>> getPartitions(ArrayList<Integer> indices, int maxNumBreaks) {
         //key: number of breaks that can be made in a part, value: arraylist of partitions
 
-        int numBreaks = 1 + (int) (Math.random() * ((maxNumBreaks - 1) + 1));
+        int numBreaks = getNumBreaks(maxNumBreaks);
         int[] partition = new int[numBreaks];
         ArrayList<Integer> available = (ArrayList<Integer>) indices.clone();
         ArrayList<Integer> chosen = new ArrayList();
         Collections.shuffle(available);
-        
-        for(int i=0;i<numBreaks;i++) {
+
+        for (int i = 0; i < numBreaks; i++) {
             chosen.add(available.get(i));
         }
         Collections.sort(chosen);
-        for(int i=0;i<chosen.size();i++) {
-            partition[i]=chosen.get(i);
+        for (int i = 0; i < chosen.size(); i++) {
+            partition[i] = chosen.get(i);
         }
-        HashMap<Integer,ArrayList<int[]>> toReturn = new HashMap();
+        HashMap<Integer, ArrayList<int[]>> toReturn = new HashMap();
         toReturn.put(numBreaks, new ArrayList());
         toReturn.get(numBreaks).add(partition);
         return toReturn;
@@ -97,5 +97,20 @@ public class SamplingPartitioning {
                 getPartitionsHelper(available, currentChoices, maxNumBreaks, targetSize - 1);
             }
         }
+    }
+
+    public static int getNumBreaks(int maxNumBreaks) {
+        Double random = Math.random()/2.0;
+        Double[] thresholds = new Double[maxNumBreaks];
+        for (int i = 0; i < maxNumBreaks; i++) {
+            Double threshold = (0.5) * Math.pow(1 - 0.5, i); //assuming the probability of assigning each split is 0.5
+            thresholds[maxNumBreaks-1-i] = threshold;
+        }
+        int maxIndex = 0;
+        while (random > thresholds[maxIndex] && maxIndex<maxNumBreaks-1) {
+            maxIndex++;
+        }
+        int numBreaks = maxIndex+1; //prioritize larger number of breaks;
+        return numBreaks;
     }
 }

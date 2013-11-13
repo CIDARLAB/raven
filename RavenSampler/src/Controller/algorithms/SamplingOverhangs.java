@@ -42,6 +42,7 @@ public class SamplingOverhangs {
             ArrayList<Integer> currentAvailable = (ArrayList<Integer>) available.clone();
             Collections.shuffle(currentAvailable);
             for (RNode node : basicNodes) {
+                int rand = 0;//(int)(Math.random() * ((node.getComposition().size()) + 1))/2;
                 if (basicNodes.indexOf(node) == 0) {
                     //assign new left overhang
                     finalOverhangHash.put(node.getLOverhang(), String.valueOf(currentAvailable.get(0)));

@@ -432,7 +432,7 @@ public class RavenController {
                 _goalParts.put(p, null);
             }
         }
-        System.out.println("Steps,Stages,Sharing,PCRs,numberOfDevices: " + targetSize + ",numberOfRuns: " + numberOfRuns + ",method: "+method+",searchPartitions: " + searchPartitions + ",searchOverhangs: " + searchOverhangs);
+        System.out.println("Steps,Stages,Sharing,PCRs,numberOfDevices: " + targetSize + ",numberOfRuns: " + numberOfRuns + ",method: " + method + ",searchPartitions: " + searchPartitions + ",searchOverhangs: " + searchOverhangs);
         for (int i = 0; i < numberOfRuns; i++) {
             boolean scarless = false;
             _assemblyGraphs.clear();
@@ -455,27 +455,29 @@ public class RavenController {
             }
             RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
             getSolutionStats(method);
-
+            error = false;
             if (error) {
-//            ArrayList<String> graphTextFiles = new ArrayList();
-//            ArrayList<RNode> targetRootNodes = new ArrayList();
-//            if (!_assemblyGraphs.isEmpty()) {
-//                for (RGraph result : _assemblyGraphs) {
-//                    targetRootNodes.add(result.getRootNode());
-//                }
-//            }
-//            ArrayList<RGraph> mergeGraphs = RGraph.mergeGraphs(_assemblyGraphs);
-//            if (!_assemblyGraphs.isEmpty()) {
-//                for (RGraph result : _assemblyGraphs) {
-//                    graphTextFiles.add(result.generateWeyekinFile(_partLibrary,_vectorLibrary,targetRootNodes,scarless));
-//                }
-//            }
-//            String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
-//            WeyekinPoster.setDotText(mergedGraphText);
-//            WeyekinPoster.postMyVision();
-//
-//            String imageURL = "";
-//            imageURL = WeyekinPoster.getmGraphVizURI().toString();
+                ArrayList<String> graphTextFiles = new ArrayList();
+                ArrayList<RNode> targetRootNodes = new ArrayList();
+                if (!_assemblyGraphs.isEmpty()) {
+                    for (RGraph result : _assemblyGraphs) {
+                        targetRootNodes.add(result.getRootNode());
+                    }
+                }
+                ArrayList<RGraph> mergeGraphs = RGraph.mergeGraphs(_assemblyGraphs);
+                if (!_assemblyGraphs.isEmpty()) {
+                    for (RGraph result : _assemblyGraphs) {
+                        graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, targetRootNodes, scarless));
+                    }
+                }
+                String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
+                WeyekinPoster.setDotText(mergedGraphText);
+                WeyekinPoster.postMyVision();
+
+                String imageURL = "";
+                imageURL = WeyekinPoster.getmGraphVizURI().toString();
+                
+                System.out.println(imageURL);
             }
             error = false;
         }
@@ -513,9 +515,6 @@ public class RavenController {
                 sum = sum + anEff;
             }
             eff = sum / effArray.size();
-            if(method.equals("biobricks")) {
-                rxn = rxn+2; //correction for additional biobrick vectors
-            }
             System.out.println(steps + "," + stages + "," + shr + "," + rxn);
         }
     }
