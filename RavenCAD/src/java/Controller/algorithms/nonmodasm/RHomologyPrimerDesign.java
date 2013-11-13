@@ -65,16 +65,17 @@ public class RHomologyPrimerDesign {
             rSeq = rightNeighbor.getSeq();
             lSeq = leftNeighbor.getSeq();
         }
-       
-        ArrayList<String> rightNeighborDirection = rightNeighbor.getDirections();
-        ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
 
+        //Look to see if there are blank sequences for the right or left part
         if (lSeq.equals("")) {
             missingLeftSequence = true;
         } else if (rSeq.equals("")) {
             missingRightSequence = true;
         }
 
+        //Reverse sequence direction for parts on the reverse strand            
+        ArrayList<String> rightNeighborDirection = rightNeighbor.getDirections();
+        ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
         if ("-".equals(leftNeighborDirection.get(0))) {
             lSeq = PrimerDesign.reverseComplement(lSeq);
         }
@@ -86,12 +87,8 @@ public class RHomologyPrimerDesign {
         int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rSeq), false, true);
         int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentSeq, true, true);
         int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
-
-        //If the homology of this part is the full length of this part, return blank oligos... other longer oligos will cover this span
-        if ((currentPartLHomologyLength == currentPart.getSeq().length() || currentPartRHomologyLength == currentPart.getSeq().length()) && currentPart.getSeq().length()>0) {
-            return oligos;
-        }
         
+        //If there are any missing sequences, return default homology indications
         if (missingSequence || missingLeftSequence || missingRightSequence) {
             forwardOligoSequence = "["+leftNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
             reverseOligoSequence = "["+rightNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
