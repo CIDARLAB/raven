@@ -270,23 +270,11 @@ public class RGraph {
         //don't count library parts and vectors 
         HashSet<String> seenPartKeys = getExistingPartKeys(partLib);
         HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
-        HashSet<ArrayList<String>> neighborHash = new HashSet();
-        int vectorPCRCount = 0;
-        int partCount = 0;
-        int basicPCRCount = 0;
-        int nodeCount = 0;
-        //Get goal part compositions
-        Set<Part> keySet = goalParts.keySet();
-        HashSet<ArrayList<String>> gpComps = new HashSet();
-        for (Part gp : keySet) {
-            ArrayList<String> compStr = gp.getStringComposition();
-            gpComps.add(compStr);
-        }
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
         for (int i = 0; i < allGraphs.size(); i++) {
 
-            int PCRs = 0;
+            int numPCRs = 0;
             int steps = 0;
             int recCount = 0;
             int disCount = 0;
@@ -302,7 +290,6 @@ public class RGraph {
             //Traverse the graph
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
-                nodeCount++;
                 seenNodes.add(current);
                 queue.remove(0);
                 int numParents = 0;
@@ -324,33 +311,6 @@ public class RGraph {
                     currentVectorKey = current.getVector().getVectorKey("+");
                 }
 
-                //PCR Reactions for scarless assembly
-                if (scarless == true) {
-                    if (gpComps.contains(composition)) {
-
-                        //Record left and right neighbors for each node... this will determine how many PCRs need to be performed                            
-                        String prev;
-                        String next;
-                        for (int j = 0; j < composition.size(); j++) {
-                            String currentBP = composition.get(j);
-                            if (j == 0) {
-                                next = composition.get(j + 1);
-                                prev = composition.get(composition.size() - 1);
-                            } else if (j == composition.size() - 1) {
-                                next = composition.get(0);
-                                prev = composition.get(j - 1);
-                            } else {
-                                next = composition.get(j + 1);
-                                prev = composition.get(j - 1);
-                            }
-                            ArrayList<String> seq = new ArrayList();
-                            seq.add(prev);
-                            seq.add(currentBP);
-                            seq.add(next);
-                            neighborHash.add(seq);
-                        }
-                    }
-                }
                 if (!currentVectorKey.equals("")) {
                     //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
                     if (current.getStage() == 0) {
@@ -365,15 +325,13 @@ public class RGraph {
                     }
                     //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
                     if (!seenVectorKeys.contains(currentVectorKey)) {
-                        PCRs++;
+                        numPCRs++;
                     }
                 }
                 //If a part with this composition and overhangs doesn't exist, there must be a PCR done                
                 if (current.getStage() == 0 && !seenPartKeys.contains(currentPartKey)) {
-                    PCRs++;
+                    numPCRs++;
                 }
-
-
 
                 //If the node is grater than stage 0, it is a step and add to efficiency list
                 if (current.getStage() > 0 && !seenPartKeys.contains(currentPartKey)) {
@@ -402,18 +360,14 @@ public class RGraph {
                 seenVectorKeys.add(currentVectorKey);
             }
 
-            if (!scarless) {
-                currentGraph.setReactions(PCRs);
-            } else {
-                currentGraph.setReactions(neighborHash.size());
-            }
+            currentGraph.setReactions(numPCRs);
 
             if (addStage == true) {
                 stages++;
             }
 
             //Estimated time and cost
-            double estCost = (steps * stepCost) + (pcrCost * PCRs);
+            double estCost = (steps * stepCost) + (pcrCost * numPCRs);
             double estTime = (stages * stepTime) + pcrTime;
 
             currentGraph.setSteps(steps);
