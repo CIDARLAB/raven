@@ -806,12 +806,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var user = getCookie("user");
         if (data["status"] === "good") {
             //render image
-            $("#resultImage" + currentDesignCount).html("<img src='" + data["graph"]["images"] + "'/>");
-            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-
-//                        $.each(data["graph"]["images"], function(key, value) {
-//                            window.open(value, key);
-//                        })
+            //old method
+//            $("#resultImage" + currentDesignCount).html("<img src='" + data["graph"]["images"] + "'/>");
+//            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+            //open each image for d3 in a new window
+            $.each(data["graph"]["images"], function(key, value) {
+                window.open(value, key);
+            });
 
             $('#instructionArea' + currentDesignCount).html('<div>' + data["instructions"] + '</div>');
             var status = '';
@@ -833,7 +834,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         currentDesignCount + '" aria-hidden="true">' +
                         '<div class="modal-header"><h4 id="exampleModal' + currentDesignCount + '">Submit example</h4></div>' +
                         '<div class="modal-body"><p>Are you sure you want to submit your graph image as a public example?</p><p>Only the image will be shared - we will never disclose your sequence data</p></div>' +
-                        '<div class="modal-footer"><button id="submitExampleButton'+currentDesignCount+'" val="'+currentDesignCount+'" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Submit</button>'+
+                        '<div class="modal-footer"><button id="submitExampleButton' + currentDesignCount + '" val="' + currentDesignCount + '" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Submit</button>' +
                         '<button class="btn" data-dismiss="modal" aria-hidden="true">Dismiss</button></div></div>');
 
                 //triggers a confirmation modal 
@@ -844,7 +845,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 });
 
                 //this button actually submits the image as an example
-                $('#submitExampleButton'+currentDesignCount).click(function() {
+                $('#submitExampleButton' + currentDesignCount).click(function() {
                     var designNumber = $(this).attr("val");
                     var imageURL = $('#resultImage' + designNumber + ' span img:first').attr('src');
                     $.get("RavenServlet", {"command": "saveExample", "url": imageURL}, function() {
