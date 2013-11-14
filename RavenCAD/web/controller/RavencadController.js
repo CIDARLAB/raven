@@ -811,7 +811,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 //            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
             //open each image for d3 in a new window
             $.each(data["graph"]["images"], function(key, value) {
-                window.open(value, key);
+                window.open(value,key);
             });
 
             $('#instructionArea' + currentDesignCount).html('<div>' + data["instructions"] + '</div>');
