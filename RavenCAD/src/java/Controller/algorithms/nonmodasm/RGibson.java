@@ -65,8 +65,18 @@ public class RGibson extends RGeneral {
             RVector vector = keyVectors.get(root.getNodeKey("+"));
             root.setVector(vector);
             ArrayList<String> composition = root.getComposition();
-            root.setLOverhang(composition.get(composition.size()-1));
-            root.setROverhang(composition.get(0));
+            
+            //Assign overhangs of vector and goal part if a vector exists
+            if (vector != null) {
+                root.setLOverhang(vector.getName() + "_L");
+                root.setROverhang(vector.getName() + "_R");
+                vector.setLOverhang(composition.get(0));
+                vector.setROverhang(composition.get(composition.size()-1));
+            } else {
+                root.setLOverhang(composition.get(composition.size() - 1));
+                root.setROverhang(composition.get(0));
+            }
+                        
             ArrayList<RNode> neighbors = root.getNeighbors();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
