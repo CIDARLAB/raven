@@ -28,7 +28,6 @@ public class OverhangSequenceSelector {
             return null;
         }
 
-
         int currentLength = 1;
         ArrayList<String> currentSequences = new ArrayList(Arrays.asList(alphabet));
         while (currentLength < length) {
@@ -50,7 +49,7 @@ public class OverhangSequenceSelector {
         int[][] toReturn = new int[sequences.length][sequences.length];
         for (int i = 0; i < sequences.length; i++) {
             for (int j = i + 1; j < sequences.length; j++) {
-                int score = scoreAlignment(sequences[i], sequences[j]);
+                int score = scoreSequences(sequences[i], sequences[j]);
 //                System.out.println("scoring " + i + " against " + j + " score: " + score);
 //                System.out.println(sequences[i]);
 //                System.out.println(sequences[j]);
@@ -64,49 +63,58 @@ public class OverhangSequenceSelector {
 
     public static String[] selectSequences(int numberOfSequences, String[] sequences, int[][] scoreMatrix, String[] selectedSequences) {
         ArrayList<Integer> selectedIndices = new ArrayList();
+        ArrayList<Integer> revCompIndices = new ArrayList(); //stores indices of overhangs that are the reverse complement of selectedIndices
         int currentIndex = -1;
         if (selectedSequences.length > 0) {
             for (int i = 0; i < selectedSequences.length; i++) {
+                String revComp = reverseComplement(selectedSequences[i]);
                 for (int j = 0; j < sequences.length; j++) {
                     if (sequences[j].equals(selectedSequences[i])) {
                         selectedIndices.add(j);
-                        break;
+                    }
+                    if (sequences[j].equals(revComp)) {
+                        revCompIndices.add(j);
                     }
                 }
             }
         }
-        while (selectedIndices.isEmpty()) {
-            //due to symmetry of scoring matrix, any initial sequence is as good as the next really
-            //select one without long runs at random to avoid systematic bias
-            int randIndex = (int) (Math.random() * (sequences.length - 1) + 1);
-            char[] currentSeqCharArray = sequences[randIndex].toCharArray();
-            int score = 0; //arbitrary score that assess the length of character runs
-            char prev = '*';
-            for (int i = 0; i < currentSeqCharArray.length; i++) {
-                if (currentSeqCharArray[i] != prev) {
-                    score = score + 1;
-                } else {
-                    score = score - 1;
+        if (selectedIndices.isEmpty()) {
+            while (selectedIndices.isEmpty()) {
+                //due to symmetry of scoring matrix, any initial sequence is as good as the next really
+                //select one without long runs at random to avoid systematic bias
+                int randIndex = (int) (Math.random() * (sequences.length - 1) + 1);
+                char[] currentSeqCharArray = sequences[randIndex].toCharArray();
+                int score = 0; //arbitrary score that assess the length of character runs
+                char prev = '*';
+                for (int i = 0; i < currentSeqCharArray.length; i++) {
+                    if (currentSeqCharArray[i] != prev) {
+                        score = score + 1;
+                    } else {
+                        score = score - 1;
+                    }
+                    prev = currentSeqCharArray[i];
                 }
-                prev = currentSeqCharArray[i];
+                if (score > currentSeqCharArray.length / 2) {
+                    selectedIndices.add(randIndex);
+                    currentIndex = randIndex;
+                }
             }
-            if (score > currentSeqCharArray.length / 2) {
-                selectedIndices.add(randIndex);
-                currentIndex = randIndex;
-            }
+        } else {
+            currentIndex = selectedIndices.get(selectedIndices.size() - 1);
         }
         ArrayList<Integer> potentialIndices = new ArrayList();
-        while (selectedIndices.size() < numberOfSequences) {
+        while (selectedIndices.size() < numberOfSequences/2) {
             potentialIndices.clear();
+            //add at least one sequence
             while (potentialIndices.isEmpty()) {
                 for (int i = 0; i < sequences.length; i++) {
-                    if (!selectedIndices.contains(i)) {
+                    if (!selectedIndices.contains(i) && !revCompIndices.contains(i)) {
                         potentialIndices.add(i);
                     }
                 }
             }
             for (int i = 0; i < sequences.length; i++) {
-                if (i != currentIndex && !selectedIndices.contains(i)) {
+                if (i != currentIndex && !selectedIndices.contains(i) && !revCompIndices.contains(i)) {
                     if (scoreMatrix[currentIndex][i] < scoreMatrix[currentIndex][potentialIndices.get(0)]) {
                         potentialIndices.clear();
                         potentialIndices.add(i);
@@ -121,6 +129,11 @@ public class OverhangSequenceSelector {
             int minIndex = potentialIndices.get(0);
             for (Integer potentialIndex : potentialIndices) {
                 int currentScore = 0;
+                String potentialSequence = sequences[potentialIndex];
+                //don't pick sequences that are pallindromes
+                if (potentialSequence.substring(0, potentialSequence.length() / 2).equals(reverseComplement(potentialSequence.substring(potentialSequence.length() / 2)))) {
+                    currentScore = currentScore + potentialSequence.length();
+                }
                 for (Integer selectedIndex : selectedIndices) {
                     currentScore = currentScore + scoreMatrix[selectedIndex][potentialIndex];
                 }
@@ -129,29 +142,41 @@ public class OverhangSequenceSelector {
                     minIndex = potentialIndex;
                 }
             }
+            currentIndex = minIndex;
             selectedIndices.add(minIndex);
+            //remove the reverseComplement
+            String revComp = reverseComplement(sequences[minIndex]);
+            for (int i = 0; i < sequences.length; i++) {
+                if (sequences[i].equals(revComp)) {
+                    revCompIndices.add(i);
+                    break;
+                }
+            }
         }
 
         String[] toReturn = new String[numberOfSequences];
-        for (int i = 0; i < numberOfSequences; i++) {
+        for (int i = 0; i < selectedIndices.size(); i++) {
             System.out.println("selected: " + sequences[selectedIndices.get(i)]);
             toReturn[i] = sequences[selectedIndices.get(i)];
         }
+        for (int i = 0; i < revCompIndices.size(); i++) {
+            System.out.println("revComp: " + sequences[revCompIndices.get(i)]);
+            toReturn[i+numberOfSequences/2] = sequences[revCompIndices.get(i)];
+        }
+
         return toReturn;
     }
 
     public static void printMatrix(int[][] matrix, String[] sequences) {
         for (int i = 0; i < matrix.length; i++) {
-            System.out.print(sequences[i]+" | ");
+            System.out.print(sequences[i] + " | ");
             for (int j = 0; j < matrix[i].length; j++) {
                 System.out.print(matrix[i][j] + " ");
             }
             System.out.println();
         }
     }
-    
-    
-    
+
     public static String reverseComplement(String seq) {
         String lSeq = seq.toLowerCase();
         String revComplement = "";
@@ -190,17 +215,16 @@ public class OverhangSequenceSelector {
         }
         return revComplement;
     }
-    
+
     //given two input sequences, return a score indicating the similarity of the two sequences
     //positive score denotes similarity, negative score inidcates dissimilarity 
-    public static int scoreAlignment(String seqA, String seqB) {
+    public static int scoreSequences(String seqA, String seqB) {
         int toReturn = 0;
-        if(seqA.equals(reverseComplement(seqB))) {
+        if (seqA.equals(reverseComplement(seqB))) {
             return Math.min(seqA.length(), seqB.length());
-        }        
+        }
         DNASequence target = new DNASequence(seqA,
                 AmbiguityDNACompoundSet.getDNACompoundSet());
-
 
         DNASequence query = new DNASequence(seqB,
                 AmbiguityDNACompoundSet.getDNACompoundSet());
@@ -211,9 +235,9 @@ public class OverhangSequenceSelector {
         gapP.setOpenPenalty((short) 5);
         gapP.setExtensionPenalty((short) 2);
 
-        SequencePair<DNASequence, NucleotideCompound> psa =
-                Alignments.getPairwiseAlignment(query, target,
-                Alignments.PairwiseSequenceAlignerType.GLOBAL, gapP, matrix);
+        SequencePair<DNASequence, NucleotideCompound> psa
+                = Alignments.getPairwiseAlignment(query, target,
+                        Alignments.PairwiseSequenceAlignerType.GLOBAL, gapP, matrix);
 
         String[] alignmentStrings = psa.toString().split("[\\n\\r]");
         //TODO iterate over alignment strings and count stuff
