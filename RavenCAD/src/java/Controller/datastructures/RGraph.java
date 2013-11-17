@@ -118,7 +118,7 @@ public class RGraph {
             Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
                 if (current.getVector() != null) {
-                    
+
                     toReturn.put(toAdd, coll.getVector(current.getVector().getUUID(), true));
                 } else {
                     toReturn.put(toAdd, null);
@@ -164,20 +164,20 @@ public class RGraph {
      * Merge all graphs from a set of graphs *
      */
     public static ArrayList<RGraph> mergeGraphs(ArrayList<RGraph> graphs) {
-        
+
         ArrayList<RGraph> mergedGraphs = new ArrayList();
         HashMap<String, RNode> mergedNodesHash = new HashMap();
 
         //Traverse and merge graphs
         for (int i = 0; i < graphs.size(); i++) {
-            
+
             RGraph aGraph = graphs.get(i);
             boolean hasParent = true;
-            
+
             HashSet<RNode> seenNodes = new HashSet();
             ArrayList<RNode> queue = new ArrayList();
             queue.add(aGraph.getRootNode());
-            
+
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 seenNodes.add(current);
@@ -190,7 +190,7 @@ public class RGraph {
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
                     mergedNodesHash.put(currentCompDirOHStage, current);
-                    
+
                     for (RNode neighbor : current.getNeighbors()) {
                         if (!seenNodes.contains(neighbor)) {
                             queue.add(neighbor);
@@ -199,7 +199,7 @@ public class RGraph {
 
                     //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
-                    
+
                     RNode finalNode;
                     if (mergedNodesHash.containsKey(currentCompDirOHStageRev)) {
                         finalNode = mergedNodesHash.get(currentCompDirOHStageRev);
@@ -228,7 +228,7 @@ public class RGraph {
                     }
                 }
             }
-            
+
             if (hasParent == true) {
                 mergedGraphs.add(aGraph);
             }
@@ -238,16 +238,16 @@ public class RGraph {
         HashSet<RNode> seenNodes = new HashSet();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         ArrayList<RGraph> remGraphs = new ArrayList<RGraph>();
-        
+
         for (RGraph graph : mergedGraphs) {
             queue.add(graph.getRootNode());
             boolean newNodes = seenNodes.add(graph.getRootNode());
-            
+
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
-                
+
                 for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
@@ -255,12 +255,12 @@ public class RGraph {
                     }
                 }
             }
-            
+
             if (newNodes == false) {
                 remGraphs.add(graph);
             }
         }
-        
+
         mergedGraphs.removeAll(remGraphs);
         return mergedGraphs;
     }
@@ -275,7 +275,7 @@ public class RGraph {
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
         for (int i = 0; i < allGraphs.size(); i++) {
-            
+
             int numPCRs = 0;
             int steps = 0;
             int recCount = 0;
@@ -295,7 +295,7 @@ public class RGraph {
                 seenNodes.add(current);
                 queue.remove(0);
                 int numParents = 0;
-                
+
                 for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) { //TODO: FIX APPLIED HERE
                         queue.add(neighbor);
@@ -304,15 +304,15 @@ public class RGraph {
                         numParents++;
                     }
                 }
-                
+
                 ArrayList<String> composition = current.getComposition();
                 String currentPartKey = current.getNodeKey("+");
-                
+
                 String currentVectorKey = "";
                 if (current.getVector() != null) {
                     currentVectorKey = current.getVector().getVectorKey("+");
                 }
-                
+
                 if (!currentVectorKey.equals("")) {
                     //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
                     if (current.getStage() == 0) {
@@ -322,7 +322,7 @@ public class RGraph {
                             if (numParents > 1) {
                                 shared++;
                             }
-                            
+
                         }
                     }
                     //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
@@ -361,9 +361,9 @@ public class RGraph {
                 seenPartKeys.add(currentPartKey);
                 seenVectorKeys.add(currentVectorKey);
             }
-            
+
             currentGraph.setReactions(numPCRs);
-            
+
             if (addStage == true) {
                 stages++;
             }
@@ -371,7 +371,7 @@ public class RGraph {
             //Estimated time and cost
             double estCost = (steps * stepCost) + (pcrCost * numPCRs);
             double estTime = (stages * stepTime) + pcrTime;
-            
+
             currentGraph.setSteps(steps);
             currentGraph.setDiscouragedCount(disCount);
             currentGraph.setReccomendedCount(recCount);
@@ -388,7 +388,7 @@ public class RGraph {
      * of each part *
      */
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
-        
+
         HashSet<String> keys = new HashSet();
 
         //Go through parts library, put all compositions into hash of things that already exist
@@ -401,13 +401,13 @@ public class RGraph {
                 String name = partComp.get(j).getName();
                 comp.add(name);
             }
-            
+
             ArrayList<String> searchTags = aPart.getSearchTags();
             RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0, null);
             keys.add(node.getNodeKey("+"));
             keys.add(node.getNodeKey("-"));
         }
-        
+
         return keys;
     }
 
@@ -416,12 +416,12 @@ public class RGraph {
      * of each part *
      */
     public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
-        
+
         HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
 
         //Go through vectors library, put all compositions into hash of things that already exist
         for (Vector aVec : vectorLib) {
-            
+
             String lOverhang = aVec.getLeftoverhang();
             String rOverhang = aVec.getRightOverhang();
             int stage = aVec.getLevel();
@@ -430,7 +430,7 @@ public class RGraph {
             startVectorsLOlevelRO.add(vector.getVectorKey("+"));
             startVectorsLOlevelRO.add(vector.getVectorKey("-"));
         }
-        
+
         return startVectorsLOlevelRO;
     }
 
@@ -536,7 +536,7 @@ public class RGraph {
             String vertex2Name = null;
             String vertex1UUID = tokens[0].trim();
             String vertex2UUID = tokens[1].trim();
-            
+
             if (coll.getPart(vertex1UUID, true) != null) {
                 vertex1Name = coll.getPart(vertex1UUID, true).getName();
             }
@@ -592,33 +592,33 @@ public class RGraph {
         StringBuilder weyekinText = new StringBuilder();
         String edgeLines = "";
         weyekinText.append("digraph {\n");
-        
+
         HashSet<RNode> seenNodes = new HashSet<RNode>();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
-        
+
         HashSet<String> gpComps = new HashSet<String>();
         for (RNode rootNode : goalPartNodes) {
             gpComps.add(rootNode.getComposition().toString());
         }
-        
+
         HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
 
         //Traverse the graph
         while (!queue.isEmpty()) {
-            
+
             String pigeonLine;
             RNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
-            
+
             RVector vector = current.getVector();
             String vecName = null;
             if (vector != null) {
                 vecName = vector.getName();
             }
-            
+
             ArrayList<String> composition = current.getComposition();
             ArrayList<String> type = current.getType();
             ArrayList<String> scars = current.getScars();
@@ -626,7 +626,7 @@ public class RGraph {
             String lOverhang = current.getLOverhang();
             String rOverhang = current.getROverhang();
             String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-            
+
             if (scarless) {
                 if (gpComps.contains(composition.toString())) {
                     if (vecName == null) {
@@ -645,7 +645,7 @@ public class RGraph {
 
             //Add PCR edges for level 0 nodes
             if (current.getStage() == 0) {
-                
+
                 boolean basicNode = false;
                 String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
 
@@ -663,7 +663,7 @@ public class RGraph {
                     pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
                     weyekinText.append(pigeonLine.toString());
                 }
-                
+
                 if (!startPartsLOcompRO.contains(nodeIDB)) {
                     if (basicNode == true) {
                         nodeIDB = nodeID;
@@ -684,7 +684,7 @@ public class RGraph {
                 edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
                 pigeonLine = generatePigeonCodeOld(null, null, null, null, vecID, vecLO, vecRO, vecName);
                 weyekinText.append(pigeonLine.toString());
-                
+
                 if (!startVectorsLOlevelRO.contains(vecID)) {
                     String NvecID = vecName + "|" + vecL;
                     edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
@@ -703,13 +703,13 @@ public class RGraph {
 
                 //If one of the neighbors is a parent, add an edge
                 if (neighbor.getStage() > current.getStage()) {
-                    
+
                     RVector vectorN = neighbor.getVector();
                     String vecNameN = null;
                     if (vectorN != null) {
                         vecNameN = vectorN.getName();
                     }
-                    
+
                     ArrayList<String> compositionN = neighbor.getComposition();
                     ArrayList<String> directionN = neighbor.getDirection();
                     ArrayList<String> scarsN = neighbor.getScars();
@@ -738,18 +738,18 @@ public class RGraph {
             HashSet<RNode> seenNodes = new HashSet<RNode>();
             ArrayList<RNode> queue = new ArrayList<RNode>();
             queue.add(graph.getRootNode());
-            
+
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
-                
+
                 RVector vector = current.getVector();
                 String vecName = "";
                 if (vector != null) {
                     vecName = vector.getName();
                 }
-                
+
                 ArrayList<String> composition = current.getComposition();
                 ArrayList<String> type = current.getType();
                 ArrayList<String> scars = current.getScars();
@@ -765,30 +765,34 @@ public class RGraph {
 
                 //Add PCR edges for level 0 nodes
                 if (current.getStage() == 0) {
-                    
+
                     boolean basicNode = false;
                     String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
 
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
                         edges.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
-                        if(testing) {
+                        if (testing) {
                             imageURLs.put(nodeIDB, nodeIDB);
                         } else {
                             imageURLs.put(nodeIDB, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, null));
                         }
-                        
+
                     } else {
                         basicNode = true;
                     }
-                    
+
                     if (!startPartsLOcompRO.contains(nodeIDB)) {
                         if (basicNode == true) {
                             nodeIDB = nodeID;
                         }
                         String NnodeID = composition + "|" + direction + "|" + scars;
                         edges.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
-                        imageURLs.put(NnodeID, generatePigeonCode(composition, type, direction, scars, null, null, null));
+                        if (testing) {
+                            imageURLs.put(NnodeID,NnodeID);
+                        } else {
+                            imageURLs.put(NnodeID, generatePigeonCode(composition, type, direction, scars, null, null, null));
+                        }
                     }
                 }
 
@@ -804,7 +808,7 @@ public class RGraph {
                     } else {
                         imageURLs.put(vecID, generatePigeonCode(null, null, null, null, vecLO, vecRO, vecName));
                     }
-                    
+
                     if (!startVectorsLOlevelRO.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
                         edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
@@ -825,7 +829,7 @@ public class RGraph {
                     }
                     //If one of the neighbors is a parent, add an edge
                     if (neighbor.getStage() > current.getStage()) {
-                        
+
                         RVector vectorN = neighbor.getVector();
                         String vecNameN = null;
                         if (vectorN != null) {
@@ -841,27 +845,27 @@ public class RGraph {
                     }
                 }
             }
-            
+
         }
         JSONObject graphData = new JSONObject();
         graphData.put("edges", edges);
         graphData.put("images", imageURLs);
         return graphData;
-        
+
     }
-    
+
     private static String generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
-        
+
         StringBuilder pigeonLine = new StringBuilder();
         //Assign left overhang if it exists                
 //        pigeonLine.append("3 ").append(LO).append("\n");
         if (LO != null) {
             pigeonLine.append("5 ").append(LO).append("\n");
         }
-        
+
         if (composition != null) {
             for (int i = 0; i < composition.size(); i++) {
-                
+
                 String name = composition.get(i);
                 String type = types.get(i);
                 String dir = "";
@@ -939,7 +943,7 @@ public class RGraph {
      */
     @Deprecated
     public static String generatePigeonCodeOld(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
-        
+
         StringBuilder pigeonLine = new StringBuilder();
         pigeonLine.append("PIGEON_START\n");
         pigeonLine.append("\"").append(compLORO).append("\"\n");
@@ -951,10 +955,10 @@ public class RGraph {
                 pigeonLine.append("5 ").append(LO).append("\n");
             }
         }
-        
+
         if (composition != null) {
             for (int i = 0; i < composition.size(); i++) {
-                
+
                 String name = composition.get(i);
                 String type = types.get(i);
                 String dir = "";
@@ -1106,7 +1110,7 @@ public class RGraph {
 
         //For each file to merge
         for (String graphFile : filesToMerge) {
-            
+
             String[] fileLines = graphFile.split("\n");
             HashSet<String> currentSeenLines = new HashSet<String>();
             boolean keepGoing = false;
@@ -1181,19 +1185,19 @@ public class RGraph {
                     }
                 }
             }
-            
+
             Iterator<String> iterator = currentSeenLines.iterator();
             while (iterator.hasNext()) {
                 String next = iterator.next();
                 seenLines.add(next);
             }
         }
-        
+
         for (String edge : edgeList) {
             mergedFile = mergedFile + edge + "\n";
         }
         mergedFile = "digraph{\n" + mergedFile + "\n}";
-        
+
         return mergedFile;
     }
 
@@ -1285,7 +1289,7 @@ public class RGraph {
      * Get the average efficiency score of a graph *
      */
     public double getAveEff() {
-        
+
         ArrayList<Double> efficiencyArray = this.getEfficiencyArray();
         double sumEff = 0;
         double aveEff;
