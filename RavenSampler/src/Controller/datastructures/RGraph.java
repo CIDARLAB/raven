@@ -4,6 +4,7 @@
  */
 package Controller.datastructures;
 
+import Communication.WeyekinPoster;
 import Controller.accessibility.ClothoReader;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
+import org.json.JSONObject;
 
 /**
  *
@@ -116,7 +118,7 @@ public class RGraph {
             Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
                 if (current.getVector() != null) {
-
+                    
                     toReturn.put(toAdd, coll.getVector(current.getVector().getUUID(), true));
                 } else {
                     toReturn.put(toAdd, null);
@@ -162,20 +164,20 @@ public class RGraph {
      * Merge all graphs from a set of graphs *
      */
     public static ArrayList<RGraph> mergeGraphs(ArrayList<RGraph> graphs) {
-
+        
         ArrayList<RGraph> mergedGraphs = new ArrayList();
         HashMap<String, RNode> mergedNodesHash = new HashMap();
 
         //Traverse and merge graphs
         for (int i = 0; i < graphs.size(); i++) {
-
+            
             RGraph aGraph = graphs.get(i);
             boolean hasParent = true;
-
+            
             HashSet<RNode> seenNodes = new HashSet();
             ArrayList<RNode> queue = new ArrayList();
             queue.add(aGraph.getRootNode());
-
+            
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 seenNodes.add(current);
@@ -188,7 +190,7 @@ public class RGraph {
                 //If a node with this composition, overhangs and stage has not been seen before
                 if (mergedNodesHash.containsKey(currentCompDirOHStage) == false && mergedNodesHash.containsKey(currentCompDirOHStageRev) == false) {
                     mergedNodesHash.put(currentCompDirOHStage, current);
-
+                    
                     for (RNode neighbor : current.getNeighbors()) {
                         if (!seenNodes.contains(neighbor)) {
                             queue.add(neighbor);
@@ -197,7 +199,7 @@ public class RGraph {
 
                     //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
-
+                    
                     RNode finalNode;
                     if (mergedNodesHash.containsKey(currentCompDirOHStageRev)) {
                         finalNode = mergedNodesHash.get(currentCompDirOHStageRev);
@@ -226,7 +228,7 @@ public class RGraph {
                     }
                 }
             }
-
+            
             if (hasParent == true) {
                 mergedGraphs.add(aGraph);
             }
@@ -236,16 +238,16 @@ public class RGraph {
         HashSet<RNode> seenNodes = new HashSet();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         ArrayList<RGraph> remGraphs = new ArrayList<RGraph>();
-
+        
         for (RGraph graph : mergedGraphs) {
             queue.add(graph.getRootNode());
             boolean newNodes = seenNodes.add(graph.getRootNode());
-
+            
             while (!queue.isEmpty()) {
                 RNode current = queue.get(0);
                 seenNodes.add(current);
                 queue.remove(0);
-
+                
                 for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
                         queue.add(neighbor);
@@ -253,12 +255,12 @@ public class RGraph {
                     }
                 }
             }
-
+            
             if (newNodes == false) {
                 remGraphs.add(graph);
             }
         }
-
+        
         mergedGraphs.removeAll(remGraphs);
         return mergedGraphs;
     }
@@ -273,7 +275,7 @@ public class RGraph {
 
         //Will get stats for a set of graphs and assign the values to the individual graphs
         for (int i = 0; i < allGraphs.size(); i++) {
-
+            
             int numPCRs = 0;
             int steps = 0;
             int recCount = 0;
@@ -293,7 +295,7 @@ public class RGraph {
                 seenNodes.add(current);
                 queue.remove(0);
                 int numParents = 0;
-
+                
                 for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) { //TODO: FIX APPLIED HERE
                         queue.add(neighbor);
@@ -302,15 +304,15 @@ public class RGraph {
                         numParents++;
                     }
                 }
-
+                
                 ArrayList<String> composition = current.getComposition();
                 String currentPartKey = current.getNodeKey("+");
-
+                
                 String currentVectorKey = "";
                 if (current.getVector() != null) {
                     currentVectorKey = current.getVector().getVectorKey("+");
                 }
-
+                
                 if (!currentVectorKey.equals("")) {
                     //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
                     if (current.getStage() == 0) {
@@ -320,7 +322,7 @@ public class RGraph {
                             if (numParents > 1) {
                                 shared++;
                             }
-
+                            
                         }
                     }
                     //If a vector with this composition and overhangs doesn't exist, there must be a PCR done
@@ -359,9 +361,9 @@ public class RGraph {
                 seenPartKeys.add(currentPartKey);
                 seenVectorKeys.add(currentVectorKey);
             }
-
+            
             currentGraph.setReactions(numPCRs);
-
+            
             if (addStage == true) {
                 stages++;
             }
@@ -369,7 +371,7 @@ public class RGraph {
             //Estimated time and cost
             double estCost = (steps * stepCost) + (pcrCost * numPCRs);
             double estTime = (stages * stepTime) + pcrTime;
-
+            
             currentGraph.setSteps(steps);
             currentGraph.setDiscouragedCount(disCount);
             currentGraph.setReccomendedCount(recCount);
@@ -386,7 +388,7 @@ public class RGraph {
      * of each part *
      */
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
-
+        
         HashSet<String> keys = new HashSet();
 
         //Go through parts library, put all compositions into hash of things that already exist
@@ -399,13 +401,13 @@ public class RGraph {
                 String name = partComp.get(j).getName();
                 comp.add(name);
             }
-
+            
             ArrayList<String> searchTags = aPart.getSearchTags();
             RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0, null);
             keys.add(node.getNodeKey("+"));
             keys.add(node.getNodeKey("-"));
         }
-
+        
         return keys;
     }
 
@@ -414,12 +416,12 @@ public class RGraph {
      * of each part *
      */
     public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
-
+        
         HashSet<String> startVectorsLOlevelRO = new HashSet<String>();
 
         //Go through vectors library, put all compositions into hash of things that already exist
         for (Vector aVec : vectorLib) {
-
+            
             String lOverhang = aVec.getLeftoverhang();
             String rOverhang = aVec.getRightOverhang();
             int stage = aVec.getLevel();
@@ -428,7 +430,7 @@ public class RGraph {
             startVectorsLOlevelRO.add(vector.getVectorKey("+"));
             startVectorsLOlevelRO.add(vector.getVectorKey("-"));
         }
-
+        
         return startVectorsLOlevelRO;
     }
 
@@ -534,7 +536,7 @@ public class RGraph {
             String vertex2Name = null;
             String vertex1UUID = tokens[0].trim();
             String vertex2UUID = tokens[1].trim();
-
+            
             if (coll.getPart(vertex1UUID, true) != null) {
                 vertex1Name = coll.getPart(vertex1UUID, true).getName();
             }
@@ -590,33 +592,33 @@ public class RGraph {
         StringBuilder weyekinText = new StringBuilder();
         String edgeLines = "";
         weyekinText.append("digraph {\n");
-
+        
         HashSet<RNode> seenNodes = new HashSet<RNode>();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
-
+        
         HashSet<String> gpComps = new HashSet<String>();
         for (RNode rootNode : goalPartNodes) {
             gpComps.add(rootNode.getComposition().toString());
         }
-
+        
         HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
 
         //Traverse the graph
         while (!queue.isEmpty()) {
-
+            
             String pigeonLine;
             RNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
-
+            
             RVector vector = current.getVector();
             String vecName = null;
             if (vector != null) {
                 vecName = vector.getName();
             }
-
+            
             ArrayList<String> composition = current.getComposition();
             ArrayList<String> type = current.getType();
             ArrayList<String> scars = current.getScars();
@@ -624,26 +626,26 @@ public class RGraph {
             String lOverhang = current.getLOverhang();
             String rOverhang = current.getROverhang();
             String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-
+            
             if (scarless) {
                 if (gpComps.contains(composition.toString())) {
                     if (vecName == null) {
                         vecName = "";
                     }
-                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, "", "", vecName);
+                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, "", "", vecName);
                     weyekinText.append(pigeonLine);
                 } else {
-                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
+                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
                     weyekinText.append(pigeonLine);
                 }
             } else {
-                pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
+                pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
                 weyekinText.append(pigeonLine);
             }
 
             //Add PCR edges for level 0 nodes
             if (current.getStage() == 0) {
-
+                
                 boolean basicNode = false;
                 String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
 
@@ -651,24 +653,24 @@ public class RGraph {
                 if (nodeID.endsWith("null")) {
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
                         edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                        pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                        pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
                         weyekinText.append(pigeonLine.toString());
                     } else {
                         basicNode = true;
                     }
                 } else {
                     edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
                     weyekinText.append(pigeonLine.toString());
                 }
-
+                
                 if (!startPartsLOcompRO.contains(nodeIDB)) {
                     if (basicNode == true) {
                         nodeIDB = nodeID;
                     }
                     String NnodeID = composition + "|" + direction + "|" + scars;
                     edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
-                    pigeonLine = generatePigeonCode(composition, type, direction, scars, NnodeID, null, null, null);
+                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, NnodeID, null, null, null);
                     weyekinText.append(pigeonLine.toString());
                 }
             }
@@ -680,13 +682,13 @@ public class RGraph {
                 int vecL = vector.getLevel();
                 String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
                 edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                pigeonLine = generatePigeonCode(null, null, null, null, vecID, vecLO, vecRO, vecName);
+                pigeonLine = generatePigeonCodeOld(null, null, null, null, vecID, vecLO, vecRO, vecName);
                 weyekinText.append(pigeonLine.toString());
-
+                
                 if (!startVectorsLOlevelRO.contains(vecID)) {
                     String NvecID = vecName + "|" + vecL;
                     edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
-                    pigeonLine = generatePigeonCode(null, null, null, null, NvecID, null, null, vecName);
+                    pigeonLine = generatePigeonCodeOld(null, null, null, null, NvecID, null, null, vecName);
                     weyekinText.append(pigeonLine.toString());
                 }
             }
@@ -701,13 +703,13 @@ public class RGraph {
 
                 //If one of the neighbors is a parent, add an edge
                 if (neighbor.getStage() > current.getStage()) {
-
+                    
                     RVector vectorN = neighbor.getVector();
                     String vecNameN = null;
                     if (vectorN != null) {
                         vecNameN = vectorN.getName();
                     }
-
+                    
                     ArrayList<String> compositionN = neighbor.getComposition();
                     ArrayList<String> directionN = neighbor.getDirection();
                     ArrayList<String> scarsN = neighbor.getScars();
@@ -726,11 +728,218 @@ public class RGraph {
     }
 
     //returns a json string that can be parsed by the client
+    public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
+        boolean testing = true;
+        HashMap<String, String> imageURLs = new HashMap();
+        HashSet<String> edges = new HashSet();
+        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
+        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
+        for (RGraph graph : graphs) {
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            queue.add(graph.getRootNode());
+            
+            while (!queue.isEmpty()) {
+                RNode current = queue.get(0);
+                seenNodes.add(current);
+                queue.remove(0);
+                
+                RVector vector = current.getVector();
+                String vecName = "";
+                if (vector != null) {
+                    vecName = vector.getName();
+                }
+                
+                ArrayList<String> composition = current.getComposition();
+                ArrayList<String> type = current.getType();
+                ArrayList<String> scars = current.getScars();
+                ArrayList<String> direction = current.getDirection();
+                String lOverhang = current.getLOverhang();
+                String rOverhang = current.getROverhang();
+                String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
+                if (testing) {
+                    imageURLs.put(nodeID, nodeID);
+                } else {
+                    imageURLs.put(nodeID, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, vecName));
+                }
+
+                //Add PCR edges for level 0 nodes
+                if (current.getStage() == 0) {
+                    
+                    boolean basicNode = false;
+                    String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+
+                    //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
+                    if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
+                        edges.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
+                        if(testing) {
+                            imageURLs.put(nodeIDB, nodeIDB);
+                        } else {
+                            imageURLs.put(nodeIDB, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, null));
+                        }
+                        
+                    } else {
+                        basicNode = true;
+                    }
+                    
+                    if (!startPartsLOcompRO.contains(nodeIDB)) {
+                        if (basicNode == true) {
+                            nodeIDB = nodeID;
+                        }
+                        String NnodeID = composition + "|" + direction + "|" + scars;
+                        edges.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
+                        imageURLs.put(NnodeID, generatePigeonCode(composition, type, direction, scars, null, null, null));
+                    }
+                }
+
+                //Get vector, make an extra edge if a PCR is required
+                if (vector != null) {
+                    String vecLO = vector.getLOverhang();
+                    String vecRO = vector.getROverhang();
+                    int vecL = vector.getLevel();
+                    String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
+                    edges.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
+                    if (testing) {
+                        imageURLs.put(vecID, vecID);
+                    } else {
+                        imageURLs.put(vecID, generatePigeonCode(null, null, null, null, vecLO, vecRO, vecName));
+                    }
+                    
+                    if (!startVectorsLOlevelRO.contains(vecID)) {
+                        String NvecID = vecName + "|" + vecL;
+                        edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
+                        if (testing) {
+                            imageURLs.put(NvecID, NvecID);
+                        } else {
+                            imageURLs.put(NvecID, generatePigeonCode(null, null, null, null, null, null, vecName));
+                        }
+                    }
+                }
+
+                //Add unseen neighbors to the queue
+                for (RNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        if (!queue.contains(neighbor)) {
+                            queue.add(neighbor);
+                        }
+                    }
+                    //If one of the neighbors is a parent, add an edge
+                    if (neighbor.getStage() > current.getStage()) {
+                        
+                        RVector vectorN = neighbor.getVector();
+                        String vecNameN = null;
+                        if (vectorN != null) {
+                            vecNameN = vectorN.getName();
+                        }
+                        ArrayList<String> compositionN = neighbor.getComposition();
+                        ArrayList<String> directionN = neighbor.getDirection();
+                        ArrayList<String> scarsN = neighbor.getScars();
+                        String lOverhangN = neighbor.getLOverhang();
+                        String rOverhangN = neighbor.getROverhang();
+                        String nodeIDN = compositionN + "|" + directionN + "|" + scarsN + "|" + lOverhangN + "|" + rOverhangN + "|" + vecNameN;
+                        edges.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
+                    }
+                }
+            }
+            
+        }
+        JSONObject graphData = new JSONObject();
+        graphData.put("edges", edges);
+        graphData.put("images", imageURLs);
+        return graphData;
+        
+    }
+    
+    private static String generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
+        
+        StringBuilder pigeonLine = new StringBuilder();
+        //Assign left overhang if it exists                
+//        pigeonLine.append("3 ").append(LO).append("\n");
+        if (LO != null) {
+            pigeonLine.append("5 ").append(LO).append("\n");
+        }
+        
+        if (composition != null) {
+            for (int i = 0; i < composition.size(); i++) {
+                
+                String name = composition.get(i);
+                String type = types.get(i);
+                String dir = "";
+
+                //Turn direction of glyph in reverse if reverse direction
+                if (!direction.isEmpty()) {
+                    dir = direction.get(i);
+                    if ("-".equals(dir)) {
+                        pigeonLine.append("<");
+                    }
+                }
+
+                //Write pigeon code for a recognized regular part type
+                if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
+                    pigeonLine.append("P ").append(name).append(" 4" + "\n");
+                } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
+                    pigeonLine.append("r ").append(name).append(" 5" + "\n");
+                } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
+                    pigeonLine.append("c ").append(name).append(" 1" + "\n");
+                } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("gr")) {
+                    pigeonLine.append("c ").append(name).append(" 2" + "\n");
+                } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
+                    pigeonLine.append("T ").append(name).append(" 6" + "\n");
+                } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("is")) {
+                    if ("-".equals(dir)) {
+                        pigeonLine.append(" ").append(name).append(" 12" + "\n");
+                    } else {
+                        pigeonLine.append("> ").append(name).append(" 12" + "\n");
+                    }
+                } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
+                    pigeonLine.append("s ").append(name).append(" 10" + "\n");
+                } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
+                    pigeonLine.append("z ").append(name).append(" 14" + "\n");
+                } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fu")) {
+                    pigeonLine.append("f1");
+                    String[] fusionParts = name.split("-");
+                    for (int j = 1; j < fusionParts.length; j++) {
+                        int color = j % 13 + 1;
+                        pigeonLine.append("-").append(color);
+                    }
+                    pigeonLine.append(" ").append(name).append("\n");
+                } else {
+                    pigeonLine.append("c ").append(name).append(" 13" + "\n");
+                }
+
+                //Scars
+                if (!scars.isEmpty()) {
+                    if (i < composition.size() - 1) {
+                        if (!"_".equals(scars.get(i))) {
+                            pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
+                        }
+                    }
+                }
+            }
+        }
+
+        //Assign right overhang                
+        if (RO != null) {
+            pigeonLine.append("3 ").append(RO).append("\n");
+        }
+//        pigeonLine.append("5 ").append(RO).append("\n");
+
+        //Vectors
+        if (vecName != null) {
+            pigeonLine.append("v ").append(vecName).append("\n");
+        }
+        pigeonLine.append("# Arcs\n");
+        WeyekinPoster.setPigeonText(pigeonLine.toString());
+        WeyekinPoster.postMyBird();
+        return WeyekinPoster.getmPigeonURI().toString();
+    }
+
     /**
      * Pigeon code generation *
      */
-    private String generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
-
+    @Deprecated
+    public static String generatePigeonCodeOld(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
+        
         StringBuilder pigeonLine = new StringBuilder();
         pigeonLine.append("PIGEON_START\n");
         pigeonLine.append("\"").append(compLORO).append("\"\n");
@@ -742,10 +951,10 @@ public class RGraph {
                 pigeonLine.append("5 ").append(LO).append("\n");
             }
         }
-
+        
         if (composition != null) {
             for (int i = 0; i < composition.size(); i++) {
-
+                
                 String name = composition.get(i);
                 String type = types.get(i);
                 String dir = "";
@@ -897,7 +1106,7 @@ public class RGraph {
 
         //For each file to merge
         for (String graphFile : filesToMerge) {
-
+            
             String[] fileLines = graphFile.split("\n");
             HashSet<String> currentSeenLines = new HashSet<String>();
             boolean keepGoing = false;
@@ -972,19 +1181,19 @@ public class RGraph {
                     }
                 }
             }
-
+            
             Iterator<String> iterator = currentSeenLines.iterator();
             while (iterator.hasNext()) {
                 String next = iterator.next();
                 seenLines.add(next);
             }
         }
-
+        
         for (String edge : edgeList) {
             mergedFile = mergedFile + edge + "\n";
         }
         mergedFile = "digraph{\n" + mergedFile + "\n}";
-
+        
         return mergedFile;
     }
 
@@ -1076,7 +1285,7 @@ public class RGraph {
      * Get the average efficiency score of a graph *
      */
     public double getAveEff() {
-
+        
         ArrayList<Double> efficiencyArray = this.getEfficiencyArray();
         double sumEff = 0;
         double aveEff;
