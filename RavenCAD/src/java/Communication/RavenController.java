@@ -164,7 +164,7 @@ public class RavenController {
         String partList = "[";
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
-        out.write("Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
+        out.write("Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
 
         for (Part p : usedParts) {
             ArrayList<String> tags = p.getSearchTags();
@@ -192,7 +192,7 @@ public class RavenController {
                 if (v != null) {
                     vectorName = v.getName();
                 }
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
+                out.write("\nLibrary," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             } else {
                 type = "composite";
                 Vector v = partVectorHash.get(p);
@@ -236,7 +236,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(2);
-                out.write("\n" + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
+                out.write("\nLibrary," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             }
             partList = partList
                     + "{\"uuid\":\"" + p.getUUID()
@@ -268,7 +268,7 @@ public class RavenController {
                         resistance = tags.get(k).substring(12);
                     }
                 }
-                out.write("\n" + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+                out.write("\nLibrary," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
                 partList = partList + "{\"uuid\":\"" + v.getUUID()
                         + "\",\"Name\":\"" + v.getName()
                         + "\",\"Sequence\":\"" + v.getSeq()
