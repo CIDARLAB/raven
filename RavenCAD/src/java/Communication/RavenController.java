@@ -474,6 +474,9 @@ public class RavenController {
      * Parse an input Raven file *
      */
     private void parseRavenFile(File input) throws Exception {
+        
+        _vectorLibrary = new ArrayList<Vector>();
+        _partLibrary = new ArrayList<Part>();
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
         if (_forcedOverhangHash == null) {
@@ -500,7 +503,7 @@ public class RavenController {
             }
 
             //Composite parts - read, but do not generate
-            if (tokenCount > 9) {
+            if (tokenCount > 10) {
 
                 try {
                     String[] trimmedTokens = new String[tokenCount];
@@ -511,18 +514,18 @@ public class RavenController {
                 }
 
                 //Vectors - read and generate new vector
-            } else if (tokenCount == 7 || tokenCount == 6) {
+            } else if (tokenCount == 8 || tokenCount == 7) {
 
                 try {
-                    String name = tokens[0].trim();
-                    String sequence = tokens[1].trim();
-                    String leftOverhang = tokens[2].trim();
-                    String rightOverhang = tokens[3].trim();
-                    String resistance = tokens[5].toLowerCase().trim();
+                    String name = tokens[1].trim();
+                    String sequence = tokens[2].trim();
+                    String leftOverhang = tokens[3].trim();
+                    String rightOverhang = tokens[4].trim();
+                    String resistance = tokens[6].toLowerCase().trim();
                     int level;
-                    if (tokens.length == 7) {
+                    if (tokens.length == 8) {
                         try {
-                            level = Integer.parseInt(tokens[6]);
+                            level = Integer.parseInt(tokens[7]);
                         } catch (NumberFormatException e) {
                             level = -1;
                         }
@@ -537,6 +540,12 @@ public class RavenController {
                     newVector.addSearchTag("Resistance: " + resistance);
                     newVector.setTransientStatus(false);
                     Vector toBreak = newVector.saveDefault(_collector);
+                    
+                    //Library logic
+                    if (tokens[0].trim().equals("Library")) {
+                        _vectorLibrary.add(newVector);
+                    }
+                    
                     //save vector with no overhangs juse in case;
                     if (toBreak == null) {
                         break;
@@ -546,14 +555,14 @@ public class RavenController {
                 }
 
                 //Basic part - read and generate new part
-            } else if (tokenCount == 5) {
+            } else if (tokenCount == 6) {
 
                 try {
-                    String name = tokens[0].trim();
-                    String sequence = tokens[1].trim();
-                    String leftOverhang = tokens[2].trim();
-                    String rightOverhang = tokens[3].trim();
-                    String type = tokens[4].trim();
+                    String name = tokens[1].trim();
+                    String sequence = tokens[2].trim();
+                    String leftOverhang = tokens[3].trim();
+                    String rightOverhang = tokens[4].trim();
+                    String type = tokens[5].trim();
                     Part newBasicPart = Part.generateBasic(name, sequence);
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
@@ -562,12 +571,19 @@ public class RavenController {
 
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
+                    
                     //save part with no scars or overhangs juse in case;
                     if (leftOverhang.length() > 0 && rightOverhang.length() > 0 && !seenPartNames.contains(name)) {
                         Part blankBasicPart = Part.generateBasic(name, sequence);
                         blankBasicPart.addSearchTag("Type: " + type);
                         blankBasicPart.saveDefault(_collector);
                         blankBasicPart.setTransientStatus(false);
+                        
+                        //Library logic
+                        if (tokens[0].trim().equals("Library")) {
+                            _partLibrary.add(blankBasicPart);
+                        }
+                        
                         seenPartNames.add(name);
                     }
                     if (toBreak == null) {
@@ -578,16 +594,16 @@ public class RavenController {
                 }
 
                 //Basic parts with direction and overhangs
-            } else if (tokenCount == 9) {
+            } else if (tokenCount == 10) {
 
                 try {
-                    String name = tokens[0].trim();
-                    String sequence = tokens[1].trim();
-                    String leftOverhang = tokens[2].trim();
-                    String rightOverhang = tokens[3].trim();
-                    String type = tokens[4].trim();
-                    String vectorName = tokens[7].trim();
-                    String composition = tokens[8].trim();
+                    String name = tokens[1].trim();
+                    String sequence = tokens[2].trim();
+                    String leftOverhang = tokens[3].trim();
+                    String rightOverhang = tokens[4].trim();
+                    String type = tokens[5].trim();
+                    String vectorName = tokens[8].trim();
+                    String composition = tokens[9].trim();
                     Part newBasicPart = Part.generateBasic(name, sequence);
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
@@ -602,6 +618,12 @@ public class RavenController {
                     _compPartsVectors.put(newBasicPart, vector);
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
+                   
+                    //Library logic
+                    if (tokens[0].trim().equals("Library")) {
+                        _partLibrary.add(newBasicPart);
+                    }
+                    
                     if (toBreak == null) {
                         break;
                     }
@@ -624,20 +646,20 @@ public class RavenController {
                 ArrayList<Part> composition = new ArrayList<Part>();
 
                 //For all of the basic parts in the composite part composition
-                String name = tokens[0].trim();
-                String leftOverhang = tokens[2].trim();
-                String rightOverhang = tokens[3].trim();
-                String vectorName = tokens[7].trim();
+                String name = tokens[1].trim();
+                String leftOverhang = tokens[3].trim();
+                String rightOverhang = tokens[4].trim();
+                String vectorName = tokens[8].trim();
                 ArrayList<String> directions = new ArrayList<String>();
 
                 //Parse composition tokens
-                for (int i = 8; i < tokens.length; i++) {
+                for (int i = 9; i < tokens.length; i++) {
                     String basicPartString = tokens[i].trim();
                     String[] partNameTokens = basicPartString.split("\\|");
                     String bpForcedLeft = " ";
                     String bpForcedRight = " ";
                     String bpDirection = "+";
-                    String compositePartName = tokens[0];
+                    String compositePartName = tokens[1];
                     String basicPartName = partNameTokens[0];
 
                     //Check for forced overhangs and direction
@@ -684,6 +706,12 @@ public class RavenController {
                 newComposite.addSearchTag("Type: composite");
                 newComposite = newComposite.saveDefault(_collector);
                 newComposite.setTransientStatus(false);
+                
+                //Library logic
+                if (tokens[0].trim().equals("Library")) {
+                    _partLibrary.add(newComposite);
+                }
+                
             } catch (NullPointerException e) {
                 String badLine = "";
 
@@ -807,30 +835,30 @@ public class RavenController {
         _forbidden = forbidden;
         _discouraged = discouraged;
         _statistics = new Statistics();
-        _vectorLibrary = new ArrayList<Vector>();
-        _partLibrary = new ArrayList<Part>();
+//        _vectorLibrary = new ArrayList<Vector>();
+//        _partLibrary = new ArrayList<Part>();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
         method = method.toLowerCase().trim();
-
-        if (partLibraryIDs.length > 0) {
-            for (int i = 0; i < partLibraryIDs.length; i++) {
-                Part current = _collector.getPart(partLibraryIDs[i], false);
-                if (current != null) {
-                    _partLibrary.add(current);
-                }
-            }
-        }
-
-        if (vectorLibraryIDs.length > 0) {
-            for (int i = 0; i < vectorLibraryIDs.length; i++) {
-                Vector current = _collector.getVector(vectorLibraryIDs[i], false);
-                if (current != null) {
-                    _vectorLibrary.add(current);
-                }
-            }
-        }
+//
+//        if (partLibraryIDs.length > 0) {
+//            for (int i = 0; i < partLibraryIDs.length; i++) {
+//                Part current = _collector.getPart(partLibraryIDs[i], false);
+//                if (current != null) {
+//                    _partLibrary.add(current);
+//                }
+//            }
+//        }
+//
+//        if (vectorLibraryIDs.length > 0) {
+//            for (int i = 0; i < vectorLibraryIDs.length; i++) {
+//                Vector current = _collector.getVector(vectorLibraryIDs[i], false);
+//                if (current != null) {
+//                    _vectorLibrary.add(current);
+//                }
+//            }
+//        }
 
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
