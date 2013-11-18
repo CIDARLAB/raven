@@ -900,6 +900,7 @@ public class RavenController {
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
+//        JSONObject d3Graph = new JSONObject();
         JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
 
