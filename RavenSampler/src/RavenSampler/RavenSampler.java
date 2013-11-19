@@ -34,6 +34,7 @@ public class RavenSampler {
                 Logger.getLogger(RavenSampler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
     }
 //    public static void main(String[] args) {
 //        int[] counts =new int[6];

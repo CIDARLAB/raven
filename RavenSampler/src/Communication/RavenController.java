@@ -431,16 +431,26 @@ public class RavenController {
                 allCompositeParts.add(p);
             }
         }
+        
+        ArrayList<Vector> allVectors = _collector.getAllVectors(true);
+        _vectorLibrary.addAll(allVectors);
+        
         HashSet<Part> goal = new HashSet(allCompositeParts.subList(0, Math.min(allCompositeParts.size(), targetSize)));
         for (Part p : goal) {
             if (p.isComposite()) {
-                _goalParts.put(p, null);
+                Vector v = _compPartsVectors.get(p);
+                _goalParts.put(p, v);
             }
         }
-        System.out.println("Steps,Stages,Sharing,PCRs,numberOfDevices: " + targetSize + ",numberOfRuns: " + numberOfRuns + ",method: " + method + ",searchPartitions: " + searchPartitions + ",searchOverhangs: " + searchOverhangs);
+        
+        
+        System.out.println("numberOfDevices: " + targetSize + ",numberOfRuns: " + numberOfRuns + ",method: " + method + ",searchPartitions: " + searchPartitions + ",searchOverhangs: " + searchOverhangs);
         for (int i = 0; i < numberOfRuns; i++) {
             boolean scarless = false;
             _assemblyGraphs.clear();
+            
+            
+            
             if (method.equals("biobricks")) {
                 _assemblyGraphs = runBioBricks();
             } else if (method.equals("cpec")) {
@@ -458,9 +468,12 @@ public class RavenController {
                 _assemblyGraphs = runSLIC();
                 scarless = true;
             }
+            
+            _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
             RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
             getSolutionStats(method);
             error = false;
+            
             if (error) {
                 ArrayList<String> graphTextFiles = new ArrayList();
                 ArrayList<RNode> targetRootNodes = new ArrayList();

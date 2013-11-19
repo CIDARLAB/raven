@@ -1,0 +1,86 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="jsLibraries/d3.v3.min.js"></script>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style>
+            .node {
+                stroke: #fff;
+                stroke-width: 3px;
+            }
+
+            .link {
+                stroke: #999;
+                stroke-opacity: .6;
+            }
+        </style>
+    </head>
+    <body>
+        <script>
+            var graphData = {"edges":["\"DVL0|7|0|4*\" -> \"[taRNA]|[-]|[]|7|4*|DVL0\"","\"DVL0|0\" -> \"DVL0|3*|0|2*\"\n","\"[pBAD]|[-]|[]\" -> \"[pBAD]|[-]|[]|4*|0|DVL0\"","\"[crR12]|[+]|[]|0|1|DVL0\" -> \"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\"","\"[rtcRBS]|[+]|[]|2|3|DVL0\" -> \"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\"","\"DVL1|1\" -> \"DVL1|7|1|5\"\n","\"DVL0|0\" -> \"DVL0|3|0|4\"\n","\"[crR12]|[+]|[]\" -> \"[crR12]|[+]|[]|1|2|DVL0\"","\"DVL0|0\" -> \"DVL0|3|0|5\"\n","\"[T1]|[+]|[]|5|4*|DVL0\" -> \"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\"","\"DVL0|0\" -> \"DVL0|1|0|2\"\n","\"DVL0|5|0|4*\" -> \"[T1]|[+]|[]|5|4*|DVL0\"","\"[rtcRBS]|[+]|[]|1|2|DVL0\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\"","\"[rtcRBS]|[+]|[]|1|2|DVL0\" -> \"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\"","\"[Tphi]|[+]|[]|3|4|DVL0\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\"","\"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB, taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP, T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, +, +, +, +, -, -, -, +, +, +, +, +, -, -, -, -, -]|[0, 1, 2, 3, 4, 7, 4*, 0, 1, 2, 3, 5, 4*, 3*, 2*, 1*, 0*]|6|8|DVL2\"","\"DVL0|0|0|1\" -> \"[pTet]|[+]|[]|0|1|DVL0\"","\"DVL2|6|2|8\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB, taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP, T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, +, +, +, +, -, -, -, +, +, +, +, +, -, -, -, -, -]|[0, 1, 2, 3, 4, 7, 4*, 0, 1, 2, 3, 5, 4*, 3*, 2*, 1*, 0*]|6|8|DVL2\"","\"[T7_RNAP]|[+]|[]\" -> \"[T7_RNAP]|[+]|[]|3|5|DVL0\"","\"[taRNA]|[-]|[]\" -> \"[taRNA]|[-]|[]|7|4*|DVL0\"","\"DVL0|1|0|2\" -> \"[crR12]|[+]|[]|1|2|DVL0\"","\"DVL0|4|0|7\" -> \"[rrnB]|[-]|[]|4|7|DVL0\"","\"[gfp]|[-]|[]\" -> \"[gfp]|[-]|[]|3*|2*|DVL0\"","\"DVL0|0|0|1\" -> \"[crR12]|[+]|[]|0|1|DVL0\"","\"DVL0|2|0|3\" -> \"[T3_RNAP]|[+]|[]|2|3|DVL0\"","\"[Tphi]|[+]|[]|3|4|DVL0\" -> \"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\"","\"[pTet]|[+]|[]|0|1|DVL0\" -> \"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\"","\"[crR12]|[+]|[]|0|1|DVL0\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\"","\"[gfp]|[-]|[]|3*|2*|DVL0\" -> \"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\"","\"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB, taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP, T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, +, +, +, +, -, -, -, +, +, +, +, +, -, -, -, -, -]|[0, 1, 2, 3, 4, 7, 4*, 0, 1, 2, 3, 5, 4*, 3*, 2*, 1*, 0*]|6|8|DVL2\"","\"DVL1|6|1|7\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\"","\"DVL1|7|1|5\" -> \"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\"","\"DVL1|1\" -> \"DVL1|5|1|8\"\n","\"DVL0|0\" -> \"DVL0|4|0|7\"\n","\"[T7_RNAP]|[+]|[]|3|5|DVL0\" -> \"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\"","\"DVL0|0\" -> \"DVL0|6|0|0\"\n","\"DVL0|1|0|2\" -> \"[rtcRBS]|[+]|[]|1|2|DVL0\"","\"DVL2|2\" -> \"DVL2|6|2|8\"\n","\"DVL1|1\" -> \"DVL1|6|1|7\"\n","\"[rrnB]|[-]|[]\" -> \"[rrnB]|[-]|[]|4|7|DVL0\"","\"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB, taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP, T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, +, +, +, +, -, -, -, +, +, +, +, +, -, -, -, -, -]|[0, 1, 2, 3, 4, 7, 4*, 0, 1, 2, 3, 5, 4*, 3*, 2*, 1*, 0*]|6|8|DVL2\"","\"DVL0|3|0|5\" -> \"[T7_RNAP]|[+]|[]|3|5|DVL0\"","\"DVL0|0\" -> \"DVL0|5|0|4*\"\n","\"DVL0|2|0|3\" -> \"[rtcRBS]|[+]|[]|2|3|DVL0\"","\"DVL0|3*|0|2*\" -> \"[gfp]|[-]|[]|3*|2*|DVL0\"","\"DVL0|6|0|0\" -> \"[pT7]|[+]|[]|6|0|DVL0\"","\"[pT3]|[-]|[]\" -> \"[pT3]|[-]|[]|0*|8|DVL0\"","\"[rtcRBS]|[+]|[]\" -> \"[rtcRBS]|[+]|[]|2|3|DVL0\"","\"[crR12]|[+]|[]\" -> \"[crR12]|[+]|[]|0|1|DVL0\"","\"DVL1|5|1|8\" -> \"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\"","\"[rrnB]|[-]|[]|4|7|DVL0\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\"","\"DVL0|0\" -> \"DVL0|0*|0|8\"\n","\"[Tphi]|[+]|[]\" -> \"[Tphi]|[+]|[]|3|4|DVL0\"","\"DVL0|0\" -> \"DVL0|7|0|4*\"\n","\"DVL0|0\" -> \"DVL0|2|0|3\"\n","\"[pBAD]|[-]|[]|4*|0|DVL0\" -> \"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\"","\"[pT3]|[-]|[]|0*|8|DVL0\" -> \"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1\"","\"DVL0|3|0|4\" -> \"[Tphi]|[+]|[]|3|4|DVL0\"","\"DVL0|0\" -> \"DVL0|0|0|1\"\n","\"[T3_RNAP]|[+]|[]\" -> \"[T3_RNAP]|[+]|[]|2|3|DVL0\"","\"DVL0|0\" -> \"DVL0|4*|0|0\"\n","\"[T1]|[+]|[]\" -> \"[T1]|[+]|[]|5|4*|DVL0\"","\"[crR12]|[+]|[]|1|2|DVL0\" -> \"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\"","\"[taRNA]|[-]|[]|7|4*|DVL0\" -> \"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1\"","\"[rtcRBS]|[+]|[]\" -> \"[rtcRBS]|[+]|[]|1|2|DVL0\"","\"[pT7]|[+]|[]\" -> \"[pT7]|[+]|[]|6|0|DVL0\"","\"DVL0|0*|0|8\" -> \"[pT3]|[-]|[]|0*|8|DVL0\"","\"[pT7]|[+]|[]|6|0|DVL0\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\"","\"[T3_RNAP]|[+]|[]|2|3|DVL0\" -> \"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1\"","\"DVL0|4*|0|0\" -> \"[pBAD]|[-]|[]|4*|0|DVL0\"","\"[pTet]|[+]|[]\" -> \"[pTet]|[+]|[]|0|1|DVL0\""],"images":{"DVL1|7|1|5":"DVL1|7|1|5","[rtcRBS]|[+]|[]|1|2|DVL0":"[rtcRBS]|[+]|[]|1|2|DVL0","DVL0|2|0|3":"DVL0|2|0|3","[T7_RNAP]|[+]|[]|3|5|DVL0":"[T7_RNAP]|[+]|[]|3|5|DVL0","[pBAD]|[-]|[]|4*|0|DVL0":"[pBAD]|[-]|[]|4*|0|DVL0","[Tphi]|[+]|[]|3|4|DVL0":"[Tphi]|[+]|[]|3|4|DVL0","[crR12]|[+]|[]|1|2|DVL0":"[crR12]|[+]|[]|1|2|DVL0","DVL0|1|0|2":"DVL0|1|0|2","[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1":"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB]|[+, +, +, +, +, -]|[0, 1, 2, 3, 4]|6|7|DVL1","DVL1|5|1|8":"DVL1|5|1|8","[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1":"[T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, -, -, -, -, -]|[4*, 3*, 2*, 1*, 0*]|5|8|DVL1","DVL0|0":"DVL0|0","DVL1|6|1|7":"DVL1|6|1|7","[rrnB]|[-]|[]|4|7|DVL0":"[rrnB]|[-]|[]|4|7|DVL0","[T3_RNAP]|[+]|[]":"[T3_RNAP]|[+]|[]","[crR12]|[+]|[]|0|1|DVL0":"[crR12]|[+]|[]|0|1|DVL0","[crR12]|[+]|[]":"[crR12]|[+]|[]","[gfp]|[-]|[]":"[gfp]|[-]|[]","[T7_RNAP]|[+]|[]":"[T7_RNAP]|[+]|[]","DVL0|3*|0|2*":"DVL0|3*|0|2*","DVL0|0|0|1":"DVL0|0|0|1","[pBAD]|[-]|[]":"[pBAD]|[-]|[]","DVL0|4|0|7":"DVL0|4|0|7","[rtcRBS]|[+]|[]":"[rtcRBS]|[+]|[]","[rtcRBS]|[+]|[]|2|3|DVL0":"[rtcRBS]|[+]|[]|2|3|DVL0","DVL0|6|0|0":"DVL0|6|0|0","DVL2|6|2|8":"DVL2|6|2|8","DVL0|7|0|4*":"DVL0|7|0|4*","[taRNA]|[-]|[]":"[taRNA]|[-]|[]","[pTet]|[+]|[]":"[pTet]|[+]|[]","DVL0|3|0|4":"DVL0|3|0|4","[rrnB]|[-]|[]":"[rrnB]|[-]|[]","DVL1|1":"DVL1|1","DVL0|3|0|5":"DVL0|3|0|5","DVL2|2":"DVL2|2","[pTet]|[+]|[]|0|1|DVL0":"[pTet]|[+]|[]|0|1|DVL0","[T1]|[+]|[]|5|4*|DVL0":"[T1]|[+]|[]|5|4*|DVL0","DVL0|0*|0|8":"DVL0|0*|0|8","[pT3]|[-]|[]":"[pT3]|[-]|[]","[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB, taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP, T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, +, +, +, +, -, -, -, +, +, +, +, +, -, -, -, -, -]|[0, 1, 2, 3, 4, 7, 4*, 0, 1, 2, 3, 5, 4*, 3*, 2*, 1*, 0*]|6|8|DVL2":"[pT7, crR12, rtcRBS, T3_RNAP, Tphi, rrnB, taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP, T1, Tphi, gfp, rtcRBS, crR12, pT3]|[+, +, +, +, +, -, -, -, +, +, +, +, +, -, -, -, -, -]|[0, 1, 2, 3, 4, 7, 4*, 0, 1, 2, 3, 5, 4*, 3*, 2*, 1*, 0*]|6|8|DVL2","[taRNA]|[-]|[]|7|4*|DVL0":"[taRNA]|[-]|[]|7|4*|DVL0","[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1":"[taRNA, pBAD, pTet, crR12, rtcRBS, T7_RNAP]|[-, -, +, +, +, +]|[4*, 0, 1, 2, 3]|7|5|DVL1","[pT7]|[+]|[]|6|0|DVL0":"[pT7]|[+]|[]|6|0|DVL0","[gfp]|[-]|[]|3*|2*|DVL0":"[gfp]|[-]|[]|3*|2*|DVL0","DVL0|5|0|4*":"DVL0|5|0|4*","[T1]|[+]|[]":"[T1]|[+]|[]","DVL0|4*|0|0":"DVL0|4*|0|0","[Tphi]|[+]|[]":"[Tphi]|[+]|[]","[T3_RNAP]|[+]|[]|2|3|DVL0":"[T3_RNAP]|[+]|[]|2|3|DVL0","[pT3]|[-]|[]|0*|8|DVL0":"[pT3]|[-]|[]|0*|8|DVL0","[pT7]|[+]|[]":"[pT7]|[+]|[]"}};
+            var toyGraph ={ "edges":[{"source":0,"target":1},{"source":1,"target":2},{"source":2,"target":0},{"source":2,"target":3}],
+                "nodes":[{"id":1},{"id":2},{"id":3},{"id":4}]};
+                        
+            var width = 640,
+            height = 480;
+            var color = d3.scale.category20();
+            
+            var force = d3.layout.force()
+            .charge(-120)
+            .linkDistance(30)
+            .size([width, height]);
+            
+            var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+            
+            force.nodes(toyGraph.nodes).links(toyGraph.edges).start();
+            
+            var link = svg.selectAll(".link")
+            .data(toyGraph.edges)
+            .enter().append("line")
+            .attr("class", "link")
+            .style("stroke-width", 2);
+
+            var node = svg.selectAll(".node")
+            .data(toyGraph.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .call(force.drag);
+
+            node.append("image")
+            .attr("xlink:href", "https://github.com/favicon.ico")
+            .attr("x",-8)
+            .attr("y",-8)
+            .attr("width", 16)
+            .attr("height", 16);
+            
+            node.append("title")
+            .text(function(d) { return d.id; });
+
+            force.on("tick", function() {
+                link.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+                node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+            });
+            
+        </script>
+
+    </body>
+</html>
+
+
+
+<!--node.append("image")
+.attr("xlink:href", "https://github.com/favicon.ico")
+.attr("x", -8)
+.attr("y", -8)
+.attr("width", 16)
+.attr("height", 16);-->
