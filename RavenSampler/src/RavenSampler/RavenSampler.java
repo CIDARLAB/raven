@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package overhangsampler;
+package RavenSampler;
 
 import Communication.RavenController;
 import java.io.File;
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author jenhan
  */
-public class OverhangSampler {
+public class RavenSampler {
 
     /**
      * @param args the command line arguments
@@ -31,7 +31,7 @@ public class OverhangSampler {
                 controller.run(args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Boolean.parseBoolean(args[4]),Boolean.parseBoolean(args[5]));
             } catch (Exception ex) {
                 ex.printStackTrace();
-                Logger.getLogger(OverhangSampler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(RavenSampler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
