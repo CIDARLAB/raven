@@ -415,10 +415,13 @@ public class RavenController {
         _efficiency = new HashMap();
         _efficiency.put(1, 1.0);
         _efficiency.put(2, 1.0);
-        _efficiency.put(3, 1.0);
-        _efficiency.put(4, 1.0);
-        _efficiency.put(5, 1.0);
-        _efficiency.put(6, 1.0);
+        if (!method.equals("biobricks")) {
+            _efficiency.put(3, 1.0);
+            _efficiency.put(4, 1.0);
+            _efficiency.put(5, 1.0);
+            _efficiency.put(6, 1.0);
+
+        }
 
         method = method.toLowerCase().trim();
         ArrayList<Part> allParts = _collector.getAllParts(true);
@@ -428,10 +431,10 @@ public class RavenController {
                 allCompositeParts.add(p);
             }
         }
-        
+
         ArrayList<Vector> allVectors = _collector.getAllVectors(true);
         _vectorLibrary.addAll(allVectors);
-        
+
         HashSet<Part> goal = new HashSet(allCompositeParts.subList(0, Math.min(allCompositeParts.size(), targetSize)));
         for (Part p : goal) {
             if (p.isComposite()) {
@@ -439,15 +442,15 @@ public class RavenController {
                 _goalParts.put(p, v);
             }
         }
-        
-        
+
+
         System.out.println("numberOfDevices: " + targetSize + ",numberOfRuns: " + numberOfRuns + ",method: " + method + ",searchPartitions: " + searchPartitions + ",searchOverhangs: " + searchOverhangs);
         for (int i = 0; i < numberOfRuns; i++) {
             boolean scarless = false;
             _assemblyGraphs.clear();
-            
-            
-            
+
+
+
             if (method.equals("biobricks")) {
                 _assemblyGraphs = runBioBricks();
             } else if (method.equals("cpec")) {
@@ -465,12 +468,12 @@ public class RavenController {
                 _assemblyGraphs = runSLIC();
                 scarless = true;
             }
-            
+
             _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
             RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
             getSolutionStats(method);
             error = false;
-            
+
             if (error) {
                 ArrayList<String> graphTextFiles = new ArrayList();
                 ArrayList<RNode> targetRootNodes = new ArrayList();
@@ -491,7 +494,7 @@ public class RavenController {
 
                 String imageURL = "";
                 imageURL = WeyekinPoster.getmGraphVizURI().toString();
-                
+
                 System.out.println(imageURL);
             }
             error = false;
