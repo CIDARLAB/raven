@@ -307,16 +307,12 @@ public class RNode {
             } else {
                 invertedLeftOverhang = invertedLeftOverhang + "*";
             }
-            if (invertedRightOverhang != null) {
-
                 if (invertedRightOverhang.contains("*")) {
                     invertedRightOverhang = invertedRightOverhang.replace("*", "");
                 } else {
                     invertedRightOverhang = invertedRightOverhang + "*";
                 }
-            } else {
-                System.out.println("moo");
-            }
+            
             String aPartCompDirScarLOROR = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
             return aPartCompDirScarLOROR;
         }

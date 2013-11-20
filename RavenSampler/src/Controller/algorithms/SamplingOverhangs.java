@@ -46,18 +46,12 @@ public class SamplingOverhangs {
                 int rand = 0;//(int)(Math.random() * ((node.getComposition().size()) + 1))/2;
                 if (basicNodes.indexOf(node) == 0) {
                     //assign new left overhang
-                    if(String.valueOf(currentAvailable.get(0)) ==null ||node.getLOverhang()==null) {
-                        System.out.println("moo");
-                    }
                     finalOverhangHash.put(node.getLOverhang(), String.valueOf(currentAvailable.get(0)));
                     currentAvailable.remove(0);
                 } else {
                     //left overhang already assigned
                 }
                 finalOverhangHash.put(node.getROverhang(), String.valueOf(currentAvailable.get(0)));
-                if(String.valueOf(currentAvailable.get(0)) ==null || node.getROverhang()==null) {
-                        System.out.println("moo");
-                    }
                 currentAvailable.remove(0);
             }
 
