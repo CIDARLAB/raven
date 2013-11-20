@@ -13,8 +13,8 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Stack;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -729,9 +729,11 @@ public class RGraph {
 
     //returns a json string that can be parsed by the client
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
-        boolean testing = true;
         HashMap<String, String> imageURLs = new HashMap();
-        HashSet<String> edges = new HashSet();
+        HashSet<String> edgeSet = new HashSet();
+        int nodeCount = 0;
+        JSONArray nodes = new JSONArray();
+        JSONArray edges = new JSONArray();
         HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
         for (RGraph graph : graphs) {
@@ -757,11 +759,7 @@ public class RGraph {
                 String lOverhang = current.getLOverhang();
                 String rOverhang = current.getROverhang();
                 String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-                if (testing) {
-                    imageURLs.put(nodeID, nodeID);
-                } else {
-                    imageURLs.put(nodeID, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, vecName));
-                }
+                imageURLs.put(nodeID, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, vecName));
 
                 //Add PCR edges for level 0 nodes
                 if (current.getStage() == 0) {
@@ -771,12 +769,8 @@ public class RGraph {
 
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
-                        edges.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
-                        if (testing) {
-                            imageURLs.put(nodeIDB, nodeIDB);
-                        } else {
-                            imageURLs.put(nodeIDB, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, null));
-                        }
+                        edgeSet.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
+                        imageURLs.put(nodeIDB, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, null));
 
                     } else {
                         basicNode = true;
@@ -787,12 +781,8 @@ public class RGraph {
                             nodeIDB = nodeID;
                         }
                         String NnodeID = composition + "|" + direction + "|" + scars;
-                        edges.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
-                        if (testing) {
-                            imageURLs.put(NnodeID,NnodeID);
-                        } else {
-                            imageURLs.put(NnodeID, generatePigeonCode(composition, type, direction, scars, null, null, null));
-                        }
+                        edgeSet.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
+                        imageURLs.put(NnodeID, generatePigeonCode(composition, type, direction, scars, null, null, null));
                     }
                 }
 
@@ -802,21 +792,13 @@ public class RGraph {
                     String vecRO = vector.getROverhang();
                     int vecL = vector.getLevel();
                     String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
-                    edges.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
-                    if (testing) {
-                        imageURLs.put(vecID, vecID);
-                    } else {
-                        imageURLs.put(vecID, generatePigeonCode(null, null, null, null, vecLO, vecRO, vecName));
-                    }
+                    edgeSet.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
+                    imageURLs.put(vecID, generatePigeonCode(null, null, null, null, vecLO, vecRO, vecName));
 
                     if (!startVectorsLOlevelRO.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
-                        edges.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
-                        if (testing) {
-                            imageURLs.put(NvecID, NvecID);
-                        } else {
-                            imageURLs.put(NvecID, generatePigeonCode(null, null, null, null, null, null, vecName));
-                        }
+                        edgeSet.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
+                        imageURLs.put(NvecID, generatePigeonCode(null, null, null, null, null, null, vecName));
                     }
                 }
 
@@ -841,15 +823,17 @@ public class RGraph {
                         String lOverhangN = neighbor.getLOverhang();
                         String rOverhangN = neighbor.getROverhang();
                         String nodeIDN = compositionN + "|" + directionN + "|" + scarsN + "|" + lOverhangN + "|" + rOverhangN + "|" + vecNameN;
-                        edges.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
+                        edgeSet.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
                     }
                 }
             }
 
         }
         JSONObject graphData = new JSONObject();
+//        graphData.put("edges", edgeSet);
+//        graphData.put("images", imageURLs);
         graphData.put("edges", edges);
-        graphData.put("images", imageURLs);
+        graphData.put("nodes", nodes);
         return graphData;
 
     }

@@ -15,24 +15,20 @@ import java.net.URL;
  * @author jenhan
  */
 public class ImageDownloader {
-    
-    
-    public static void downloadImage(URL imageURL) throws IOException {
-//        InputStream is = url.openStream();
-//        OutputStream os = new FileOutputStream(destinationFile);
-//
-//        byte[] b = new byte[2048];
-//        int length;
-//
-//        while ((length = is.read(b)) != -1) {
-//            os.write(b, 0, length);
-//        }
-//
-//        is.close();
-//        os.close();
+
+    public static void downloadImage(String urlString, String outputFileName) throws IOException {
+        URL imageURL = new URL(urlString);
+        InputStream inputStream = imageURL.openStream();
+        OutputStream out = new FileOutputStream("/home/jenhan/Desktop/test.jpg");
+
+        byte[] b = new byte[2048];
+        int length;
+
+        while ((length = inputStream.read(b)) != -1) {
+            out.write(b, 0, length);
+        }
+
+        inputStream.close();
+        out.close();
+    }
 }
-}
-
-
-
-
