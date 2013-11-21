@@ -6,6 +6,7 @@ package Controller.datastructures;
 
 import Communication.WeyekinPoster;
 import Controller.accessibility.ClothoReader;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -728,14 +729,23 @@ public class RGraph {
     }
 
     //returns a json string that can be parsed by the client
-    public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
+    public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, String designCount, String path) throws Exception {
         HashMap<String, String> imageURLs = new HashMap();
         HashSet<String> edgeSet = new HashSet();
         int nodeCount = 0;
         JSONArray nodes = new JSONArray();
         JSONArray edges = new JSONArray();
-        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
-        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
+        HashSet<String> seenPartKeys = getExistingPartKeys(partLib);
+        HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
+
+        //create directory for images in scratch directory
+        
+//        _user = user;
+//        File file = new File(_path + _user);
+//        if (!file.exists() || !file.isDirectory()) {
+//            file.mkdirs();
+//        }
+
         for (RGraph graph : graphs) {
             HashSet<RNode> seenNodes = new HashSet<RNode>();
             ArrayList<RNode> queue = new ArrayList<RNode>();
@@ -776,7 +786,7 @@ public class RGraph {
                         basicNode = true;
                     }
 
-                    if (!startPartsLOcompRO.contains(nodeIDB)) {
+                    if (!seenPartKeys.contains(nodeIDB)) {
                         if (basicNode == true) {
                             nodeIDB = nodeID;
                         }
@@ -795,7 +805,7 @@ public class RGraph {
                     edgeSet.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
                     imageURLs.put(vecID, generatePigeonCode(null, null, null, null, vecLO, vecRO, vecName));
 
-                    if (!startVectorsLOlevelRO.contains(vecID)) {
+                    if (!seenVectorKeys.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
                         edgeSet.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
                         imageURLs.put(NvecID, generatePigeonCode(null, null, null, null, null, null, vecName));
