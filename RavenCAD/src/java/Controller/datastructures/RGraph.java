@@ -627,7 +627,7 @@ public class RGraph {
                 String lOverhang = current.getLOverhang();
                 String rOverhang = current.getROverhang();
                 String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-                int nodeIDCount = nodeCount + 1;
+                int nodeIDCount = nodeCount;
                 idCountMap.put(nodeID, nodeIDCount);
                 nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, lOverhang, rOverhang, vecName));
                 nodeCount++;
@@ -636,7 +636,7 @@ public class RGraph {
 
                     boolean basicNode = false;
                     String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-                    int nodeIDBCount = nodeCount + 1;
+                    int nodeIDBCount = nodeCount;
                     idCountMap.put(nodeIDB, nodeIDBCount);
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
@@ -650,9 +650,10 @@ public class RGraph {
                     if (!seenPartKeys.contains(nodeIDB)) {
                         if (basicNode == true) {
                             nodeIDB = nodeID;
+                            nodeIDBCount = nodeIDCount;
                         }
                         String NnodeID = composition + "|" + direction + "|" + scars;
-                        int NnodeIDCount = nodeCount + 1;
+                        int NnodeIDCount = nodeCount;
                         idCountMap.put(NnodeID, NnodeIDCount);
                         edges.put(createD3Edge(NnodeIDCount, nodeIDBCount));
                         nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, null, null, null));
@@ -666,14 +667,14 @@ public class RGraph {
                     String vecRO = vector.getROverhang();
                     int vecL = vector.getLevel();
                     String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
-                    int vecIDCount = nodeCount + 1;
+                    int vecIDCount = nodeCount;
                     idCountMap.put(vecID, vecIDCount);
                     edges.put(createD3Edge(vecIDCount, nodeIDCount));
                     nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, vecLO, vecRO, vecName));
                     nodeCount++;
                     if (!seenVectorKeys.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
-                        int NvecIDCount = nodeCount + 1;
+                        int NvecIDCount = nodeCount;
                         idCountMap.put(NvecID, NvecIDCount);
                         edges.put(createD3Edge(NvecIDCount, vecIDCount));
                         nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, null, null, vecName));
@@ -801,12 +802,12 @@ public class RGraph {
             pigeonLine.append("v ").append(vecName).append("\n");
         }
         pigeonLine.append("# Arcs\n");
-        WeyekinPoster.setPigeonText(pigeonLine.toString());
-        WeyekinPoster.postMyBird();
-        String imageUrl = WeyekinPoster.getmPigeonURI().toString();
-
-        //download image; note pigeon images are given in png format
-        String imageName = ImageDownloader.downloadImage(imageUrl, path, nodeCount + ".png");
+//        WeyekinPoster.setPigeonText(pigeonLine.toString());
+//        WeyekinPoster.postMyBird();
+//        String imageUrl = WeyekinPoster.getmPigeonURI().toString();
+//
+//        //download image; note pigeon images are given in png format
+//        String imageName = ImageDownloader.downloadImage(imageUrl, path, nodeCount + ".png");
 
         //create the JSONObject
         JSONObject toReturn = new JSONObject();
@@ -822,8 +823,9 @@ public class RGraph {
         if (vecName != null) {
             toReturn.put("Vector", vecName);
         }
-        toReturn.put("url", imageUrl);
-        toReturn.put("file", path+imageName);
+        toReturn.put("id", nodeCount);
+//        toReturn.put("url", imageUrl);
+//        toReturn.put("file", path+imageName);
 
 
         return toReturn;
