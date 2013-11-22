@@ -474,7 +474,7 @@ public class RavenController {
      * Parse an input Raven file *
      */
     private void parseRavenFile(File input) throws Exception {
-        
+
         _vectorLibrary = new ArrayList<Vector>();
         _partLibrary = new ArrayList<Part>();
         ArrayList<String> badLines = new ArrayList();
@@ -540,12 +540,12 @@ public class RavenController {
                     newVector.addSearchTag("Resistance: " + resistance);
                     newVector.setTransientStatus(false);
                     Vector toBreak = newVector.saveDefault(_collector);
-                    
+
                     //Library logic
                     if (tokens[0].trim().equals("Library")) {
                         _vectorLibrary.add(newVector);
                     }
-                    
+
                     //save vector with no overhangs juse in case;
                     if (toBreak == null) {
                         break;
@@ -571,19 +571,19 @@ public class RavenController {
 
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
-                    
+
                     //save part with no scars or overhangs juse in case;
                     if (leftOverhang.length() > 0 && rightOverhang.length() > 0 && !seenPartNames.contains(name)) {
                         Part blankBasicPart = Part.generateBasic(name, sequence);
                         blankBasicPart.addSearchTag("Type: " + type);
                         blankBasicPart.saveDefault(_collector);
                         blankBasicPart.setTransientStatus(false);
-                        
+
                         //Library logic
                         if (tokens[0].trim().equals("Library")) {
                             _partLibrary.add(blankBasicPart);
                         }
-                        
+
                         seenPartNames.add(name);
                     }
                     if (toBreak == null) {
@@ -618,12 +618,12 @@ public class RavenController {
                     _compPartsVectors.put(newBasicPart, vector);
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
-                   
+
                     //Library logic
                     if (tokens[0].trim().equals("Library")) {
                         _partLibrary.add(newBasicPart);
                     }
-                    
+
                     if (toBreak == null) {
                         break;
                     }
@@ -706,12 +706,12 @@ public class RavenController {
                 newComposite.addSearchTag("Type: composite");
                 newComposite = newComposite.saveDefault(_collector);
                 newComposite.setTransientStatus(false);
-                
+
                 //Library logic
                 if (tokens[0].trim().equals("Library")) {
                     _partLibrary.add(newComposite);
                 }
-                
+
             } catch (NullPointerException e) {
                 String badLine = "";
 
@@ -924,21 +924,17 @@ public class RavenController {
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
                 //method call for deprecated weyekin image
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, targetRootNodes, scarless));
+//                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, targetRootNodes, scarless));
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
-//        JSONObject d3Graph = new JSONObject();
-        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary, designCount, _path+_user);
+        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary, designCount, _path + _user);
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
 
         //generate instructions
         _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, primerParameters, true, method);
-        if (_instructions == null) {
-            _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
-        }
 
-        String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
+//        String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
         File file = new File(_path + _user + "/instructions" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fw);
@@ -947,11 +943,11 @@ public class RavenController {
 
         //write graph text file
         //TODO is there an equivalent for d3?
-        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
-        fw = new FileWriter(file);
-        out = new BufferedWriter(fw);
-        out.write(mergedGraphText);
-        out.close();
+//        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
+//        fw = new FileWriter(file);
+//        out = new BufferedWriter(fw);
+//        out.write(mergedGraphText);
+//        out.close();
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);
@@ -960,15 +956,14 @@ public class RavenController {
         out.close();
 
         //post request to graphviz
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
-
-        String imageURL = "";
-        imageURL = WeyekinPoster.getmGraphVizURI().toString();
-        JSONObject toReturn = new JSONObject();
-        toReturn.put("images", imageURL);
-        return toReturn;
-//        return d3Graph;
+//        WeyekinPoster.setDotText(mergedGraphText);
+//        WeyekinPoster.postMyVision();
+//        String imageURL = "";
+//        imageURL = WeyekinPoster.getmGraphVizURI().toString();
+//        JSONObject toReturn = new JSONObject();
+//        toReturn.put("images", imageURL);
+//        return toReturn;
+        return d3Graph;
     }
 
     //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition
