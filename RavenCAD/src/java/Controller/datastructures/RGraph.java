@@ -587,154 +587,9 @@ public class RGraph {
         return arcsText.toString();
     }
 
-    /**
-     * Generate a Weyekin image file for a this graph *
-     */
-    public String generateWeyekinFile(ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<RNode> goalPartNodes, boolean scarless) {
-
-        //Initiate weyekin file
-        StringBuilder weyekinText = new StringBuilder();
-        String edgeLines = "";
-        weyekinText.append("digraph {\n");
-
-        HashSet<RNode> seenNodes = new HashSet<RNode>();
-        ArrayList<RNode> queue = new ArrayList<RNode>();
-        queue.add(this.getRootNode());
-
-        HashSet<String> gpComps = new HashSet<String>();
-        for (RNode rootNode : goalPartNodes) {
-            gpComps.add(rootNode.getComposition().toString());
-        }
-
-        HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
-        HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
-
-        //Traverse the graph
-        while (!queue.isEmpty()) {
-
-            String pigeonLine;
-            RNode current = queue.get(0);
-            seenNodes.add(current);
-            queue.remove(0);
-
-            RVector vector = current.getVector();
-            String vecName = null;
-            if (vector != null) {
-                vecName = vector.getName();
-            }
-
-            ArrayList<String> composition = current.getComposition();
-            ArrayList<String> type = current.getType();
-            ArrayList<String> scars = current.getScars();
-            ArrayList<String> direction = current.getDirection();
-            String lOverhang = current.getLOverhang();
-            String rOverhang = current.getROverhang();
-            String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-
-            if (scarless) {
-                if (gpComps.contains(composition.toString())) {
-                    if (vecName == null) {
-                        vecName = "";
-                    }
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, "", "", vecName);
-                    weyekinText.append(pigeonLine);
-                } else {
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
-                    weyekinText.append(pigeonLine);
-                }
-            } else {
-                pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
-                weyekinText.append(pigeonLine);
-            }
-
-            //Add PCR edges for level 0 nodes
-            if (current.getStage() == 0) {
-
-                boolean basicNode = false;
-                String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-
-                //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
-                if (nodeID.endsWith("null")) {
-                    if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
-                        edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                        pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
-                        weyekinText.append(pigeonLine.toString());
-                    } else {
-                        basicNode = true;
-                    }
-                } else {
-                    edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
-                    weyekinText.append(pigeonLine.toString());
-                }
-
-                if (!startPartsLOcompRO.contains(nodeIDB)) {
-                    if (basicNode == true) {
-                        nodeIDB = nodeID;
-                    }
-                    String NnodeID = composition + "|" + direction + "|" + scars;
-                    edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, NnodeID, null, null, null);
-                    weyekinText.append(pigeonLine.toString());
-                }
-            }
-
-            //Get vector, make an extra edge if a PCR is required
-            if (vector != null) {
-                String vecLO = vector.getLOverhang();
-                String vecRO = vector.getROverhang();
-                int vecL = vector.getLevel();
-                String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
-                edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                pigeonLine = generatePigeonCodeOld(null, null, null, null, vecID, vecLO, vecRO, vecName);
-                weyekinText.append(pigeonLine.toString());
-
-                if (!startVectorsLOlevelRO.contains(vecID)) {
-                    String NvecID = vecName + "|" + vecL;
-                    edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
-                    pigeonLine = generatePigeonCodeOld(null, null, null, null, NvecID, null, null, vecName);
-                    weyekinText.append(pigeonLine.toString());
-                }
-            }
-
-            //Add unseen neighbors to the queue
-            for (RNode neighbor : current.getNeighbors()) {
-                if (!seenNodes.contains(neighbor)) {
-                    if (!queue.contains(neighbor)) {
-                        queue.add(neighbor);
-                    }
-                }
-
-                //If one of the neighbors is a parent, add an edge
-                if (neighbor.getStage() > current.getStage()) {
-
-                    RVector vectorN = neighbor.getVector();
-                    String vecNameN = null;
-                    if (vectorN != null) {
-                        vecNameN = vectorN.getName();
-                    }
-
-                    ArrayList<String> compositionN = neighbor.getComposition();
-                    ArrayList<String> directionN = neighbor.getDirection();
-                    ArrayList<String> scarsN = neighbor.getScars();
-                    String lOverhangN = neighbor.getLOverhang();
-                    String rOverhangN = neighbor.getROverhang();
-                    String nodeIDN = compositionN + "|" + directionN + "|" + scarsN + "|" + lOverhangN + "|" + rOverhangN + "|" + vecNameN;
-                    edgeLines = edgeLines + "\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"" + "\n";
-                }
-            }
-        }
-
-        //Write edge lines
-        weyekinText.append(edgeLines);
-        weyekinText.append("}");
-        return weyekinText.toString();
-    }
     //returns a json string that can be parsed by the client
 
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, String designCount, String path) throws Exception {
-//        HashMap<String, String> imageURLs = new HashMap();
-//        HashSet<String> edgeSet = new HashSet();
         HashMap<String, Integer> idCountMap = new HashMap();
         int nodeCount = 0;
         JSONArray nodes = new JSONArray();
@@ -774,7 +629,6 @@ public class RGraph {
                 String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
                 int nodeIDCount = nodeCount + 1;
                 idCountMap.put(nodeID, nodeIDCount);
-//                imageURLs.put(nodeID, generatePigeonCode(nodeCount, path, composition, type, direction, scars, lOverhang, rOverhang, vecName));
                 nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, lOverhang, rOverhang, vecName));
                 nodeCount++;
                 //Add PCR edges for level 0 nodes
@@ -786,9 +640,7 @@ public class RGraph {
                     idCountMap.put(nodeIDB, nodeIDBCount);
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
-//                        edgeSet.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
                         edges.put(createD3Edge(nodeIDBCount, nodeIDCount));
-//                        imageURLs.put(nodeIDB, createD3Node(composition, type, direction, scars, lOverhang, rOverhang, null));
                         nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, lOverhang, rOverhang, null));
                         nodeCount++;
                     } else {
@@ -802,9 +654,7 @@ public class RGraph {
                         String NnodeID = composition + "|" + direction + "|" + scars;
                         int NnodeIDCount = nodeCount + 1;
                         idCountMap.put(NnodeID, NnodeIDCount);
-//                        edgeSet.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
                         edges.put(createD3Edge(NnodeIDCount, nodeIDBCount));
-//                        imageURLs.put(NnodeID, createD3Node(composition, type, direction, scars, null, null, null));
                         nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, null, null, null));
                         nodeCount++;
                     }
@@ -818,18 +668,14 @@ public class RGraph {
                     String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
                     int vecIDCount = nodeCount + 1;
                     idCountMap.put(vecID, vecIDCount);
-//                    edgeSet.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
                     edges.put(createD3Edge(vecIDCount, nodeIDCount));
-//                    imageURLs.put(vecID, createD3Node(null, null, null, null, vecLO, vecRO, vecName));
                     nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, vecLO, vecRO, vecName));
                     nodeCount++;
                     if (!seenVectorKeys.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
                         int NvecIDCount = nodeCount + 1;
                         idCountMap.put(NvecID, NvecIDCount);
-//                       edgeSet.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
                         edges.put(createD3Edge(NvecIDCount, vecIDCount));
-//                        imageURLs.put(NvecID, createD3Node(null, null, null, null, null, null, vecName));
                         nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, null, null, vecName));
                         nodeCount++;
                     }
@@ -856,16 +702,13 @@ public class RGraph {
                         String lOverhangN = neighbor.getLOverhang();
                         String rOverhangN = neighbor.getROverhang();
                         String nodeIDN = compositionN + "|" + directionN + "|" + scarsN + "|" + lOverhangN + "|" + rOverhangN + "|" + vecNameN;
-//                        edges.put(createD3Edge(idCountMap.get(nodeID),idCountMap.get(nodeIDN)));
-//                        edgeSet.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
+                        edges.put(createD3Edge(idCountMap.get(nodeID),idCountMap.get(nodeIDN)));
                     }
                 }
             }
 
         }
         JSONObject graphData = new JSONObject();
-//        graphData.put("edges", edgeSet);
-//        graphData.put("images", imageURLs);
         graphData.put("edges", edges);
         graphData.put("nodes", nodes);
         return graphData;
@@ -985,106 +828,6 @@ public class RGraph {
 
         return toReturn;
     }
-
-    /**
-     * Pigeon code generation *
-     */
-    @Deprecated
-    public static String generatePigeonCodeOld(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
-
-        StringBuilder pigeonLine = new StringBuilder();
-        pigeonLine.append("PIGEON_START\n");
-        pigeonLine.append("\"").append(compLORO).append("\"\n");
-
-        //Assign left overhang if it exists                
-//        pigeonLine.append("3 ").append(LO).append("\n");
-        if (LO != null) {
-            if (!LO.isEmpty()) {
-                pigeonLine.append("5 ").append(LO).append("\n");
-            }
-        }
-
-        if (composition != null) {
-            for (int i = 0; i < composition.size(); i++) {
-
-                String name = composition.get(i);
-                String type = types.get(i);
-                String dir = "";
-
-                //Turn direction of glyph in reverse if reverse direction
-                if (!direction.isEmpty()) {
-                    dir = direction.get(i);
-                    if ("-".equals(dir)) {
-                        pigeonLine.append("<");
-                    }
-                }
-
-                //Write pigeon code for a recognized regular part type
-                if (type.equalsIgnoreCase("promoter") || type.equalsIgnoreCase("p")) {
-                    pigeonLine.append("P ").append(name).append(" 4" + "\n");
-                } else if (type.equalsIgnoreCase("RBS") || type.equalsIgnoreCase("r")) {
-                    pigeonLine.append("r ").append(name).append(" 5" + "\n");
-                } else if (type.equalsIgnoreCase("gene") || type.equalsIgnoreCase("g")) {
-                    pigeonLine.append("c ").append(name).append(" 1" + "\n");
-                } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("rep")) {
-                    pigeonLine.append("c ").append(name).append(" 2" + "\n");
-                } else if (type.equalsIgnoreCase("resistance") || type.equalsIgnoreCase("res")) {
-                    pigeonLine.append("g ").append(name).append(" 2" + "\n");
-                } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
-                    pigeonLine.append("T ").append(name).append(" 6" + "\n");
-                } else if (type.equalsIgnoreCase("invertase site") || type.equalsIgnoreCase("ins")) {
-                    if ("-".equals(dir)) {
-                        pigeonLine.append(" ").append(name).append(" 12" + "\n");
-                    } else {
-                        pigeonLine.append("> ").append(name).append(" 12" + "\n");
-                    }
-                } else if (type.equalsIgnoreCase("spacer") || type.equalsIgnoreCase("s")) {
-                    pigeonLine.append("s ").append(name).append(" 10" + "\n");
-                } else if (type.equalsIgnoreCase("origin") || type.equalsIgnoreCase("o")) {
-                    pigeonLine.append("z ").append(name).append(" 14" + "\n");
-                } else if (type.equalsIgnoreCase("fusion") || type.equalsIgnoreCase("fus")) {
-                    pigeonLine.append("f1");
-                    String[] fusionParts = name.split("-");
-                    for (int j = 1; j < fusionParts.length; j++) {
-                        int color = j % 13 + 1;
-                        pigeonLine.append("-").append(color);
-                    }
-                    pigeonLine.append(" ").append(name).append("\n");
-                } else {
-                    if ("-".equals(dir)) {
-                        pigeonLine.deleteCharAt(pigeonLine.length() - 1);
-                    }
-                    pigeonLine.append("? ").append(name).append(" 13" + "\n");
-                }
-
-                //Scars
-                if (!scars.isEmpty()) {
-                    if (i < composition.size() - 1) {
-                        if (!"_".equals(scars.get(i))) {
-                            pigeonLine.append("= ").append(scars.get(i)).append(" 14" + "\n");
-                        }
-                    }
-                }
-            }
-        }
-
-        //Assign right overhang                
-        if (RO != null) {
-            if (!RO.isEmpty()) {
-                pigeonLine.append("3 ").append(RO).append("\n");
-            }
-        }
-//        pigeonLine.append("5 ").append(RO).append("\n");
-
-        //Vectors
-        if (vecName != null) {
-            pigeonLine.append("v ").append(vecName).append("\n");
-        }
-        pigeonLine.append("# Arcs\n");
-        pigeonLine.append("PIGEON_END\n\n");
-        return pigeonLine.toString();
-    }
-
     /**
      * Merge multiple arc files into one file with one graph *
      */
