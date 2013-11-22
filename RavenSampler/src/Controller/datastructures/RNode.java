@@ -13,7 +13,10 @@ import java.util.Collections;
  */
 public class RNode {
 
-    /** SDSNode constructor, no neighbors, parent or children or meta-data specified **/
+    /**
+     * SDSNode constructor, no neighbors, parent or children or meta-data
+     * specified *
+     */
     public RNode() {
         _recommended = false;
         _discouraged = false;
@@ -34,7 +37,10 @@ public class RNode {
         _nodeCount++;
     }
 
-    /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
+    /**
+     * SDSNode constructor for intermediates with meta-data, neighbors and
+     * composition, but no part*
+     */
     public RNode(boolean recommended, boolean discouraged, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, String lOverhang, String rOverhang, int successCnt, int failureCnt, RVector vector) {
         _uuid = null;
         _recommended = recommended;
@@ -54,11 +60,13 @@ public class RNode {
         _nodeID = _nodeCount;
         _nodeCount++;
     }
-    
-    /** Clone nodes of a graph by traversing and copying nodes **/
+
+    /**
+     * Clone nodes of a graph by traversing and copying nodes *
+     */
     @Override
     public RNode clone() {
-        
+
         RNode clone = new RNode();
         clone._recommended = this._recommended;
         clone._discouraged = this._discouraged;
@@ -77,16 +85,16 @@ public class RNode {
         clone._failureCnt = this._failureCnt;
         ArrayList<RNode> neighbors = this._neighbors;
         cloneHelper(clone, this, neighbors);
-        
+
         return clone;
     }
-    
+
     private void cloneHelper(RNode parentClone, RNode parent, ArrayList<RNode> children) {
-        
+
         for (int i = 0; i < children.size(); i++) {
-            
+
             RNode child = children.get(i);
-            
+
             RNode childClone = new RNode();
             childClone._recommended = child._recommended;
             childClone._discouraged = child._discouraged;
@@ -103,10 +111,10 @@ public class RNode {
             childClone._efficiency = child._efficiency;
             childClone._successCnt = child._successCnt;
             childClone._failureCnt = child._failureCnt;
-            
+
             parentClone.addNeighbor(childClone);
             childClone.addNeighbor(parentClone);
-            
+
             if (child.getStage() > 0) {
                 ArrayList<RNode> grandChildren = new ArrayList<RNode>();
                 grandChildren.addAll(child.getNeighbors());
@@ -119,139 +127,176 @@ public class RNode {
             }
         }
     }
-    
-    /**************************************************************************
-     * 
+
+    /**
+     * ************************************************************************
+     *
      * GETTER AND SETTER METHODS
-     * 
-    **************************************************************************/
-    
+     *
+     *************************************************************************
+     */
     public int getNodeID() {
         return _nodeID;
     }
-    
-    /** Determine if part at node is recommended **/
+
+    /**
+     * Determine if part at node is recommended *
+     */
     public boolean getRecommended() {
         return _recommended;
     }
 
-    /** Determine if part at node is recommended **/
+    /**
+     * Determine if part at node is recommended *
+     */
     public boolean getDiscouraged() {
         return _discouraged;
     }
-    
-    /** Get Clotho UUID **/
+
+    /**
+     * Get Clotho UUID *
+     */
     public String getUUID() {
         return _uuid;
     }
 
-    /** Get part feature type **/
+    /**
+     * Get part feature type *
+     */
     public ArrayList<String> getType() {
         return _type;
     }
-    
-    /** Get left overhang **/
+
+    /**
+     * Get left overhang *
+     */
     public String getLOverhang() {
         return _lOverhang;
     }
-    
-    /** Get right overhang **/
+
+    /**
+     * Get right overhang *
+     */
     public String getROverhang() {
         return _rOverhang;
     }
-    
-    /** Get node neighbors **/
+
+    /**
+     * Get node neighbors *
+     */
     public ArrayList<RNode> getNeighbors() {
         return _neighbors;
     }
 
-    /** Get node composition **/
+    /**
+     * Get node composition *
+     */
     public ArrayList<String> getComposition() {
         return _composition;
     }
-    
-    /** Get vector **/
+
+    /**
+     * Get vector *
+     */
     public RVector getVector() {
         return _vector;
     }
-    
-    /** Get name **/
+
+    /**
+     * Get name *
+     */
     public String getName() {
         return _name;
     }
-    
-    /** Get stage **/
+
+    /**
+     * Get stage *
+     */
     public int getStage() {
         return _stage;
     }
-    
-    /** Get efficiency **/
+
+    /**
+     * Get efficiency *
+     */
     public double getEfficiency() {
         return _efficiency;
     }
-    
-    /** Get modularity **/
+
+    /**
+     * Get modularity *
+     */
     public double getModularity() {
         return _modularity;
     }
-    
-    /** Return success count - for debugging **/
+
+    /**
+     * Return success count - for debugging *
+     */
     public int getSuccessCnt() {
         return _successCnt;
     }
-    
-    /** Return failure count - for debugging **/
+
+    /**
+     * Return failure count - for debugging *
+     */
     public int getFailureCnt() {
         return _failureCnt;
     }
-    
-    /** Get the direction of the node's composition **/
+
+    /**
+     * Get the direction of the node's composition *
+     */
     public ArrayList<String> getDirection() {
         return _direction;
     }
-    
-    /** Get the scars of a part **/
+
+    /**
+     * Get the scars of a part *
+     */
     public ArrayList<String> getScars() {
         return _scars;
     }
-    
-    /** Get node keys for either forward or reverse direction **/
+
+    /**
+     * Get node keys for either forward or reverse direction *
+     */
     public String getNodeKey(String dir) {
-        
+
         //Forward key information
         ArrayList<String> composition = this._composition;
         ArrayList<String> directions = this._direction;
         ArrayList<String> scars = this._scars;
         String leftOverhang = this._lOverhang;
         String rightOverhang = this._rOverhang;
-        
-        if (dir.equals("+")) {           
+
+        if (dir.equals("+")) {
             String aPartLOcompRO = composition + "|" + directions + "|" + scars + "|" + leftOverhang + "|" + rightOverhang;
             return aPartLOcompRO;
         } else {
-            
+
             //Backward key information
             ArrayList<String> revComp = (ArrayList<String>) composition.clone();
             Collections.reverse(revComp);
-            
+
             ArrayList<String> invertedDirections = new ArrayList();
 
-            for(String d: directions) {
-                if(d.equals("+")) {
-                    invertedDirections.add(0,"-");
+            for (String d : directions) {
+                if (d.equals("+")) {
+                    invertedDirections.add(0, "-");
                 } else {
-                    invertedDirections.add(0,"+");
+                    invertedDirections.add(0, "+");
                 }
             }
-            
+
             ArrayList<String> invertedScars = new ArrayList();
-            for (String scar: scars) {
+            for (String scar : scars) {
                 if (scar.contains("*")) {
                     scar = scar.replace("*", "");
-                    invertedScars.add(0,scar);
+                    invertedScars.add(0, scar);
                 } else {
                     scar = scar + "*";
-                    invertedScars.add(0,scar);
+                    invertedScars.add(0, scar);
                 }
             }
 
@@ -262,115 +307,152 @@ public class RNode {
             } else {
                 invertedLeftOverhang = invertedLeftOverhang + "*";
             }
-            if (invertedRightOverhang.contains("*")) {
-                invertedRightOverhang = invertedRightOverhang.replace("*", "");
-            } else {
-                invertedRightOverhang = invertedRightOverhang + "*";
-            }
+                if (invertedRightOverhang.contains("*")) {
+                    invertedRightOverhang = invertedRightOverhang.replace("*", "");
+                } else {
+                    invertedRightOverhang = invertedRightOverhang + "*";
+                }
             
             String aPartCompDirScarLOROR = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
             return aPartCompDirScarLOROR;
         }
     }
-    
-    /** Set part as recommended or not required **/
+
+    /**
+     * Set part as recommended or not required *
+     */
     public void setRecommended(boolean recommended) {
         _recommended = recommended;
     }
-    
-    /** Set part as discouraged or not required **/
+
+    /**
+     * Set part as discouraged or not required *
+     */
     public void setDiscouraged(boolean discouraged) {
         _discouraged = discouraged;
     }
-    
-    /** Set Clotho UUID **/
+
+    /**
+     * Set Clotho UUID *
+     */
     public void setUUID(String newuuid) {
         _uuid = newuuid;
     }
 
-    /** Set part feature type **/
+    /**
+     * Set part feature type *
+     */
     public void setType(ArrayList<String> type) {
         _type = type;
     }
-    
-    /** Set left overhang **/
+
+    /**
+     * Set left overhang *
+     */
     public void setLOverhang(String overhang) {
         _lOverhang = overhang;
     }
-    
-    /** Set right overhang **/
+
+    /**
+     * Set right overhang *
+     */
     public void setROverhang(String overhang) {
         _rOverhang = overhang;
     }
-    
-    /** Add neighbor node to end of the list **/
+
+    /**
+     * Add neighbor node to end of the list *
+     */
     public void addNeighbor(RNode newNeighbor) {
         _neighbors.add(newNeighbor);
     }
-    
-    /** Remove a node's neighbor **/
+
+    /**
+     * Remove a node's neighbor *
+     */
     public void removeNeighbor(RNode neighbor) {
         _neighbors.remove(neighbor);
     }
 
-    
-    /** Replace a neighbor with the same composition at an exact point in the list to conserve order **/
+    /**
+     * Replace a neighbor with the same composition at an exact point in the
+     * list to conserve order *
+     */
     public void replaceNeighbor(RNode oldNode, RNode newNode) {
         int indexOf = _neighbors.indexOf(oldNode);
         _neighbors.remove(indexOf);
         _neighbors.add(indexOf, newNode);
     }
-    
-    /** Set node composition **/
+
+    /**
+     * Set node composition *
+     */
     public void setComposition(ArrayList<String> comp) {
         _composition = comp;
     }
-    
-    /** Set vector **/
+
+    /**
+     * Set vector *
+     */
     public void setVector(RVector vector) {
         _vector = vector;
     }
-    
-    /** Set name **/
+
+    /**
+     * Set name *
+     */
     public void setName(String name) {
         _name = name;
     }
-    
-    /** Set stage of the node **/
+
+    /**
+     * Set stage of the node *
+     */
     public void setStage(int stage) {
         _stage = stage;
     }
-    
-    /** Set the efficiency of a node **/
+
+    /**
+     * Set the efficiency of a node *
+     */
     public void setEfficiency(double eff) {
         _efficiency = eff;
     }
-    
-    /** Set the modularity of a node **/
+
+    /**
+     * Set the modularity of a node *
+     */
     public void setModularity(double mod) {
         _modularity = mod;
     }
-    
-    /** Set success count **/
+
+    /**
+     * Set success count *
+     */
     public void setSuccessCnt(int success) {
         _successCnt = success;
     }
-    
-    /** Set failure count **/
+
+    /**
+     * Set failure count *
+     */
     public void setFailureCnt(int failure) {
         _failureCnt = failure;
     }
-    
-    /** Set the direction of the node composition **/
+
+    /**
+     * Set the direction of the node composition *
+     */
     public void setDirection(ArrayList<String> direction) {
         _direction = direction;
     }
-    
-    /** Set the scars for a node **/
+
+    /**
+     * Set the scars for a node *
+     */
     public void setScars(ArrayList<String> scars) {
         _scars = scars;
     }
-    
     //FIELDS
     private int _successCnt;
     private int _failureCnt;

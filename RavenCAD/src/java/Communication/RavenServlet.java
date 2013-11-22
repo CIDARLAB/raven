@@ -107,8 +107,12 @@ public class RavenServlet extends HttpServlet {
             } else if (command.equals("run")) {
                 response.setContentType("application/json");
                 String[] targetIDs = request.getParameter("targets").split(",");
-                String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
-                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
+//                String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
+//                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
+                
+                String[] partLibraryIDs = new String[0];
+                String[] vectorLibraryIDs = new String[0];
+                
                 String[] recArray = request.getParameter("recommended").split(";");
                 String[] reqArray = request.getParameter("required").split(";");
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");

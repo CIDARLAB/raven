@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package overhangsampler;
+package RavenSampler;
 
 import Communication.RavenController;
 import java.io.File;
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author jenhan
  */
-public class OverhangSampler {
+public class RavenSampler {
 
     /**
      * @param args the command line arguments
@@ -21,17 +21,18 @@ public class OverhangSampler {
     public static void main(String[] args) {
         RavenController controller = new RavenController();
         File selectedFile = new File(args[0]);
-//        File selectedFile = new File("/Users/evanappleton/Dropbox/Raven_Paper/data/literature_devices/complete/voigt_spacers_d_p.csv");
-        
-        try {
-
-            controller.parseRavenFile(selectedFile);
-            //method, number of parts, number of runs, sample partitioning?, sample overhangs?
-//            controller.run("gibson", 191, 1, false, false);
-            controller.run(args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Boolean.parseBoolean(args[4]),Boolean.parseBoolean(args[5]));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Logger.getLogger(OverhangSampler.class.getName()).log(Level.SEVERE, null, ex);
+//        File selectedFile = new File("/host/Users/Admin/Desktop/publication_dataset.csv");
+        if (selectedFile != null) {
+            try {
+                
+                controller.parseRavenFile(selectedFile);
+                //method, number of parts, number of runs, sample partitioning?, sample overhangs?
+//                controller.run("moclo",20,10, false,true);
+                controller.run(args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Boolean.parseBoolean(args[4]),Boolean.parseBoolean(args[5]));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Logger.getLogger(RavenSampler.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
     }

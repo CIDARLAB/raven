@@ -415,10 +415,13 @@ public class RavenController {
         _efficiency = new HashMap();
         _efficiency.put(1, 1.0);
         _efficiency.put(2, 1.0);
-        _efficiency.put(3, 1.0);
-        _efficiency.put(4, 1.0);
-        _efficiency.put(5, 1.0);
-        _efficiency.put(6, 1.0);
+
+        if (!method.contains("biobricks")) {
+            _efficiency.put(3, 1.0);
+            _efficiency.put(4, 1.0);
+            _efficiency.put(5, 1.0);
+            _efficiency.put(6, 1.0);
+        }
 
         method = method.toLowerCase().trim();
         ArrayList<Part> allParts = _collector.getAllParts(true);
@@ -491,7 +494,7 @@ public class RavenController {
 
                 String imageURL = "";
                 imageURL = WeyekinPoster.getmGraphVizURI().toString();
-                
+
                 System.out.println(imageURL);
             }
             error = false;

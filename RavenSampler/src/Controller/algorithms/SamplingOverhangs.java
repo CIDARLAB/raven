@@ -24,7 +24,8 @@ public class SamplingOverhangs {
     public static void sampleOverhangs(ArrayList<RGraph> optimalGraphs) {
         HashMap<String, String> finalOverhangHash = new HashMap();
         //link graphs together using basic assignment
-        basicOverhangAssignment(optimalGraphs);
+//        basicOverhangAssignment(optimalGraphs);
+        enforceOverhangRules(optimalGraphs);
         //for each graph, compute the max number of overhangs
         int maxOverhangs = 1;
         for (RGraph graph : optimalGraphs) {
@@ -40,7 +41,7 @@ public class SamplingOverhangs {
         for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> basicNodes = rootBasicNodeHash.get(graph.getRootNode());
             ArrayList<Integer> currentAvailable = (ArrayList<Integer>) available.clone();
-            Collections.shuffle(currentAvailable);
+//            Collections.shuffle(currentAvailable);
             for (RNode node : basicNodes) {
                 int rand = 0;//(int)(Math.random() * ((node.getComposition().size()) + 1))/2;
                 if (basicNodes.indexOf(node) == 0) {
@@ -263,6 +264,99 @@ public class SamplingOverhangs {
             }
         }
     }
+    
+    
+    
+     /**
+     * First step of overhang assignment - enforce numeric place holders for
+     * overhangs, ie no overhang redundancy in any step *
+     */
+    private static void enforceOverhangRules(ArrayList<RGraph> optimalGraphs) {
+
+        //Initialize fields that record information to save complexity for future steps
+        parentHash = new HashMap<RNode, RNode>();
+        rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
+        int count = 0;
+
+        //Loop through each optimal graph and grab the root node to prime for the traversal
+        for (RGraph graph : optimalGraphs) {
+
+            RNode root = graph.getRootNode();
+            ArrayList<RNode> l0nodes = new ArrayList<RNode>();
+            rootBasicNodeHash.put(root, l0nodes);
+            root.setLOverhang(Integer.toString(count));
+            count++;
+            root.setROverhang(Integer.toString(count));
+            count++;
+            ArrayList<RNode> neighbors = root.getNeighbors();
+            count = enforceOverhangRulesHelper(root, neighbors, root, count);
+        }
+
+    }
+
+    /**
+     * This helper method executes the loops necessary to enforce overhangs for
+     * each graph in enforceOverhangRules *
+     */
+    private static int enforceOverhangRulesHelper(RNode parent, ArrayList<RNode> children, RNode root, int count) {
+
+        String nextLOverhang = new String();
+
+        //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
+        for (int i = 0; i < children.size(); i++) {
+
+            RNode child = children.get(i);
+            parentHash.put(child, parent);
+
+            //Pass numeric overhangs down from the parent to the correct child
+            if (i == 0) {
+                child.setLOverhang(parent.getLOverhang());
+            } else if (i == children.size() - 1) {
+                child.setROverhang(parent.getROverhang());
+            }
+
+            //Assign new left overhang if empty
+            if (child.getLOverhang().isEmpty()) {
+
+                //If the nextLOverhangVariable has an overhang waiting
+                if (!nextLOverhang.isEmpty()) {
+                    child.setLOverhang(nextLOverhang);
+                    nextLOverhang = "";
+                } else {
+                    child.setLOverhang(Integer.toString(count));
+                    count++;
+                }
+            }
+
+            //Assign new right overhang if empty
+            if (child.getROverhang().isEmpty()) {
+                child.setROverhang(Integer.toString(count));
+                nextLOverhang = Integer.toString(count);
+                count++;
+            }
+
+            //Make recursive call
+            if (child.getStage() > 0) {
+                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
+                grandChildren.addAll(child.getNeighbors());
+
+                //Remove the current parent from the list
+                if (grandChildren.contains(parent)) {
+                    grandChildren.remove(parent);
+                }
+                count = enforceOverhangRulesHelper(child, grandChildren, root, count);
+
+                //Or record the level zero parts
+            } else {
+                ArrayList<RNode> l0nodes = rootBasicNodeHash.get(root);
+                l0nodes.add(child);
+                rootBasicNodeHash.put(root, l0nodes);
+            }
+        }
+
+        return count;
+    }
+
     private static HashSet encounteredCompositions;
     private static HashMap parentHash;
     private static HashMap<RNode, ArrayList<RNode>> rootBasicNodeHash;
