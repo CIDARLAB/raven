@@ -4,9 +4,11 @@
  */
 package Controller.datastructures;
 
+import Communication.ImageDownloader;
 import Communication.WeyekinPoster;
 import Controller.accessibility.ClothoReader;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Stack;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -727,11 +730,12 @@ public class RGraph {
         weyekinText.append("}");
         return weyekinText.toString();
     }
-
     //returns a json string that can be parsed by the client
+
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, String designCount, String path) throws Exception {
-        HashMap<String, String> imageURLs = new HashMap();
-        HashSet<String> edgeSet = new HashSet();
+//        HashMap<String, String> imageURLs = new HashMap();
+//        HashSet<String> edgeSet = new HashSet();
+        HashMap<String, Integer> idCountMap = new HashMap();
         int nodeCount = 0;
         JSONArray nodes = new JSONArray();
         JSONArray edges = new JSONArray();
@@ -739,12 +743,11 @@ public class RGraph {
         HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
 
         //create directory for images in scratch directory
-        
-//        _user = user;
-//        File file = new File(_path + _user);
-//        if (!file.exists() || !file.isDirectory()) {
-//            file.mkdirs();
-//        }
+        String filePath = path + "/scratch/" + designCount + "/";
+        File file = new File(filePath);
+        if (!file.exists() || !file.isDirectory()) {
+            file.mkdirs();
+        }
 
         for (RGraph graph : graphs) {
             HashSet<RNode> seenNodes = new HashSet<RNode>();
@@ -769,19 +772,25 @@ public class RGraph {
                 String lOverhang = current.getLOverhang();
                 String rOverhang = current.getROverhang();
                 String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-                imageURLs.put(nodeID, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, vecName));
-
+                int nodeIDCount = nodeCount + 1;
+                idCountMap.put(nodeID, nodeIDCount);
+//                imageURLs.put(nodeID, generatePigeonCode(nodeCount, path, composition, type, direction, scars, lOverhang, rOverhang, vecName));
+                nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, lOverhang, rOverhang, vecName));
+                nodeCount++;
                 //Add PCR edges for level 0 nodes
                 if (current.getStage() == 0) {
 
                     boolean basicNode = false;
                     String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-
+                    int nodeIDBCount = nodeCount + 1;
+                    idCountMap.put(nodeIDB, nodeIDBCount);
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
-                        edgeSet.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
-                        imageURLs.put(nodeIDB, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, null));
-
+//                        edgeSet.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
+                        edges.put(createD3Edge(nodeIDBCount, nodeIDCount));
+//                        imageURLs.put(nodeIDB, createD3Node(composition, type, direction, scars, lOverhang, rOverhang, null));
+                        nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, lOverhang, rOverhang, null));
+                        nodeCount++;
                     } else {
                         basicNode = true;
                     }
@@ -791,8 +800,13 @@ public class RGraph {
                             nodeIDB = nodeID;
                         }
                         String NnodeID = composition + "|" + direction + "|" + scars;
-                        edgeSet.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
-                        imageURLs.put(NnodeID, generatePigeonCode(composition, type, direction, scars, null, null, null));
+                        int NnodeIDCount = nodeCount + 1;
+                        idCountMap.put(NnodeID, NnodeIDCount);
+//                        edgeSet.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
+                        edges.put(createD3Edge(NnodeIDCount, nodeIDBCount));
+//                        imageURLs.put(NnodeID, createD3Node(composition, type, direction, scars, null, null, null));
+                        nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, null, null, null));
+                        nodeCount++;
                     }
                 }
 
@@ -802,13 +816,22 @@ public class RGraph {
                     String vecRO = vector.getROverhang();
                     int vecL = vector.getLevel();
                     String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
-                    edgeSet.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
-                    imageURLs.put(vecID, generatePigeonCode(null, null, null, null, vecLO, vecRO, vecName));
-
+                    int vecIDCount = nodeCount + 1;
+                    idCountMap.put(vecID, vecIDCount);
+//                    edgeSet.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
+                    edges.put(createD3Edge(vecIDCount, nodeIDCount));
+//                    imageURLs.put(vecID, createD3Node(null, null, null, null, vecLO, vecRO, vecName));
+                    nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, vecLO, vecRO, vecName));
+                    nodeCount++;
                     if (!seenVectorKeys.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
-                        edgeSet.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
-                        imageURLs.put(NvecID, generatePigeonCode(null, null, null, null, null, null, vecName));
+                        int NvecIDCount = nodeCount + 1;
+                        idCountMap.put(NvecID, NvecIDCount);
+//                       edgeSet.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
+                        edges.put(createD3Edge(NvecIDCount, vecIDCount));
+//                        imageURLs.put(NvecID, createD3Node(null, null, null, null, null, null, vecName));
+                        nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, null, null, vecName));
+                        nodeCount++;
                     }
                 }
 
@@ -833,7 +856,8 @@ public class RGraph {
                         String lOverhangN = neighbor.getLOverhang();
                         String rOverhangN = neighbor.getROverhang();
                         String nodeIDN = compositionN + "|" + directionN + "|" + scarsN + "|" + lOverhangN + "|" + rOverhangN + "|" + vecNameN;
-                        edgeSet.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
+//                        edges.put(createD3Edge(idCountMap.get(nodeID),idCountMap.get(nodeIDN)));
+//                        edgeSet.add("\"" + nodeID + "\"" + " -> " + "\"" + nodeIDN + "\"");
                     }
                 }
             }
@@ -848,11 +872,19 @@ public class RGraph {
 
     }
 
-    private static String generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
+    private static JSONObject createD3Edge(int source, int target) throws JSONException {
+        JSONObject toReturn = new JSONObject();
+        toReturn.put("source", source);
+        toReturn.put("target", target);
+        return toReturn;
+    }
+
+    //creates a node for the D3 graph representation
+    //makes appropriate calls to pigeonCAD to create pigeon image
+    private static JSONObject createD3Node(int nodeCount, String path, ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) throws JSONException, IOException {
 
         StringBuilder pigeonLine = new StringBuilder();
         //Assign left overhang if it exists                
-//        pigeonLine.append("3 ").append(LO).append("\n");
         if (LO != null) {
             pigeonLine.append("5 ").append(LO).append("\n");
         }
@@ -920,7 +952,6 @@ public class RGraph {
         if (RO != null) {
             pigeonLine.append("3 ").append(RO).append("\n");
         }
-//        pigeonLine.append("5 ").append(RO).append("\n");
 
         //Vectors
         if (vecName != null) {
@@ -929,7 +960,30 @@ public class RGraph {
         pigeonLine.append("# Arcs\n");
         WeyekinPoster.setPigeonText(pigeonLine.toString());
         WeyekinPoster.postMyBird();
-        return WeyekinPoster.getmPigeonURI().toString();
+        String imageUrl = WeyekinPoster.getmPigeonURI().toString();
+
+        //download image; note pigeon images are given in png format
+        String imageName = ImageDownloader.downloadImage(imageUrl, path, nodeCount + ".png");
+
+        //create the JSONObject
+        JSONObject toReturn = new JSONObject();
+        if (composition != null) {
+            toReturn.put("composition", composition.toString());
+        }
+        if (LO != null) {
+            toReturn.put("LO", LO);
+        }
+        if (RO != null) {
+            toReturn.put("RO", RO);
+        }
+        if (vecName != null) {
+            toReturn.put("Vector", vecName);
+        }
+        toReturn.put("url", imageUrl);
+        toReturn.put("file", path+imageName);
+
+
+        return toReturn;
     }
 
     /**

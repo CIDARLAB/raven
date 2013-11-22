@@ -16,10 +16,10 @@ import java.net.URL;
  */
 public class ImageDownloader {
 
-    public static void downloadImage(String urlString, String outputFileName) throws IOException {
+    public static String downloadImage(String urlString, String path, String outputFileName) throws IOException {
         URL imageURL = new URL(urlString);
         InputStream inputStream = imageURL.openStream();
-        OutputStream out = new FileOutputStream("/home/jenhan/Desktop/test.jpg");
+        OutputStream out = new FileOutputStream(path + outputFileName);
 
         byte[] b = new byte[2048];
         int length;
@@ -30,5 +30,6 @@ public class ImageDownloader {
 
         inputStream.close();
         out.close();
+        return outputFileName;
     }
 }
