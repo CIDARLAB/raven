@@ -720,6 +720,8 @@ public class RGraph {
         JSONObject toReturn = new JSONObject();
         toReturn.put("source", source);
         toReturn.put("target", target);
+        toReturn.put("left", false);
+        toReturn.put("right", true);
         return toReturn;
     }
 
