@@ -589,7 +589,7 @@ public class RGraph {
 
     //returns a json string that can be parsed by the client
 
-    public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, String designCount, String path) throws Exception {
+    public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, String designCount, String path, String user) throws Exception {
         HashMap<String, Integer> idCountMap = new HashMap();
         int nodeCount = 0;
         JSONArray nodes = new JSONArray();
@@ -598,11 +598,12 @@ public class RGraph {
         HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
 
         //create directory for images in scratch directory
-        String filePath = path + "/scratch/" + designCount + "/";
+        String filePath = path +user+ "/scratch/" + designCount + "/";
         File file = new File(filePath);
         if (!file.exists() || !file.isDirectory()) {
             file.mkdirs();
         }
+        String imagePath = "data/"+user+"/scratch/"+designCount + "/";
 
         for (RGraph graph : graphs) {
             HashSet<RNode> seenNodes = new HashSet<RNode>();
@@ -629,7 +630,7 @@ public class RGraph {
                 String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
                 int nodeIDCount = nodeCount;
                 idCountMap.put(nodeID, nodeIDCount);
-                nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, lOverhang, rOverhang, vecName));
+                nodes.put(createD3Node(nodeCount, imagePath, composition, type, direction, scars, lOverhang, rOverhang, vecName));
                 nodeCount++;
                 //Add PCR edges for level 0 nodes
                 if (current.getStage() == 0) {
@@ -641,7 +642,7 @@ public class RGraph {
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
                         edges.put(createD3Edge(nodeIDBCount, nodeIDCount));
-                        nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, lOverhang, rOverhang, null));
+                        nodes.put(createD3Node(nodeCount, imagePath, composition, type, direction, scars, lOverhang, rOverhang, null));
                         nodeCount++;
                     } else {
                         basicNode = true;
@@ -656,7 +657,7 @@ public class RGraph {
                         int NnodeIDCount = nodeCount;
                         idCountMap.put(NnodeID, NnodeIDCount);
                         edges.put(createD3Edge(NnodeIDCount, nodeIDBCount));
-                        nodes.put(createD3Node(nodeCount, filePath, composition, type, direction, scars, null, null, null));
+                        nodes.put(createD3Node(nodeCount, imagePath, composition, type, direction, scars, null, null, null));
                         nodeCount++;
                     }
                 }
@@ -670,14 +671,14 @@ public class RGraph {
                     int vecIDCount = nodeCount;
                     idCountMap.put(vecID, vecIDCount);
                     edges.put(createD3Edge(vecIDCount, nodeIDCount));
-                    nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, vecLO, vecRO, vecName));
+                    nodes.put(createD3Node(nodeCount, imagePath, null, null, null, null, vecLO, vecRO, vecName));
                     nodeCount++;
                     if (!seenVectorKeys.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
                         int NvecIDCount = nodeCount;
                         idCountMap.put(NvecID, NvecIDCount);
                         edges.put(createD3Edge(NvecIDCount, vecIDCount));
-                        nodes.put(createD3Node(nodeCount, filePath, null, null, null, null, null, null, vecName));
+                        nodes.put(createD3Node(nodeCount, imagePath, null, null, null, null, null, null, vecName));
                         nodeCount++;
                     }
                 }
@@ -804,12 +805,12 @@ public class RGraph {
             pigeonLine.append("v ").append(vecName).append("\n");
         }
         pigeonLine.append("# Arcs\n");
-//        WeyekinPoster.setPigeonText(pigeonLine.toString());
-//        WeyekinPoster.postMyBird();
-//        String imageUrl = WeyekinPoster.getmPigeonURI().toString();
-//
-//        //download image; note pigeon images are given in png format
-//        String imageName = ImageDownloader.downloadImage(imageUrl, path, nodeCount + ".png");
+        WeyekinPoster.setPigeonText(pigeonLine.toString());
+        WeyekinPoster.postMyBird();
+        String imageUrl = WeyekinPoster.getmPigeonURI().toString();
+
+        //download image; note pigeon images are given in png format
+        String imageName = ImageDownloader.downloadImage(imageUrl, path, nodeCount + ".png");
 
         //create the JSONObject
         JSONObject toReturn = new JSONObject();
@@ -826,8 +827,8 @@ public class RGraph {
             toReturn.put("Vector", vecName);
         }
         toReturn.put("id", nodeCount);
-//        toReturn.put("url", imageUrl);
-//        toReturn.put("file", path+imageName);
+        toReturn.put("url", imageUrl);
+        toReturn.put("file", path+imageName);
 
 
         return toReturn;

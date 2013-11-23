@@ -928,7 +928,7 @@ public class RavenController {
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
-        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary, designCount, _path + _user);
+        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary, designCount, _path , _user);
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
 
         //generate instructions
@@ -955,14 +955,6 @@ public class RavenController {
         out.write(mergedArcText);
         out.close();
 
-        //post request to graphviz
-//        WeyekinPoster.setDotText(mergedGraphText);
-//        WeyekinPoster.postMyVision();
-//        String imageURL = "";
-//        imageURL = WeyekinPoster.getmGraphVizURI().toString();
-//        JSONObject toReturn = new JSONObject();
-//        toReturn.put("images", imageURL);
-//        return toReturn;
         return d3Graph;
     }
 

@@ -315,7 +315,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         meltingTemperature: meltingTemperature,
                         targetLength: targetLength
                     })
-                    };
+                };
                 _runParameters[currentDesignCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {
                     interpretDesignResult(currentDesignCount, data);
@@ -784,7 +784,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 "partIDs": "" + partIDs, 
                 "vectorIDs": "" + vectorIDs, 
                 "writeSQL": "" + writeSQL
-                }, function(result) {
+            }, function(result) {
                 if (result === "saved data") {
                     $('#discardButton' + designNumber).attr("val", "saved");
                     $('#saveButton' + designNumber).prop('disabled', true);
@@ -855,20 +855,27 @@ $(document).ready(function() { //don't run javascript until page is loaded
             .enter().append("g")
             .attr("class", "node")
             .call(force.drag)
-            .append("circle").attr("r",10)
-            //            node.append("image")
-            //            .attr("xlink:href", "data/scratch/favicon.ico")
+            //            .append("circle").attr("r",10)
+  
+            node.append("image")
+            .attr("xlink:href", function(d) {return d.file})
             //            .attr("x",-8)
             //            .attr("y",-8)
-            //            .attr("width", 16)
-            //            .attr("height", 16);
+                        .attr("width", 50)
+                        .attr("height", 60);
             
             var link = svg.selectAll(".link")
             .data(data["graph"].edges)
             .enter().append("line")
             .attr("class", "link")
-            .style("stroke","black")
-            .style("stroke-width", 2);
+            .style("stroke","blue")
+            .style("stroke-width", 2).
+            style('marker-start', function(d) {
+                return d.left ? 'url(#start-arrow)' : '';
+            })
+            .style('marker-end', function(d) {
+                return d.right ? 'url(#end-arrow)' : '';
+            });
             
             
             node.append("title")
@@ -968,7 +975,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     "partIDs": "" + partIDs, 
                     "vectorIDs": "" + vectorIDs, 
                     "writeSQL": "" + writeSQL
-                    }, function(result) {
+                }, function(result) {
                     if (result === "saved data") {
                         $('#discardButton' + currentDesignCount).attr("val", "saved");
                         var saveButton = $('#saveButton' + designNumber);
@@ -1140,7 +1147,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     "partIDs": "" + toSaveParts, 
                     "vectorIDs": "" + toSaveVectors, 
                     "writeSQL": "" + false
-                    }, function(result) {
+                }, function(result) {
                     if (result === "saved data") {
                         //if successful parts succeeded, then run the redesign
                         //add waiting dialog
