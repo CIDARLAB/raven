@@ -630,7 +630,7 @@ public class RGraph {
                 String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
                 int nodeIDCount = nodeCount;
                 idCountMap.put(nodeID, nodeIDCount);
-                nodes.put(createD3Node(nodeCount, imagePath, composition, type, direction, scars, lOverhang, rOverhang, vecName));
+                nodes.put(createD3Node(nodeCount, filePath, imagePath, composition, type, direction, scars, lOverhang, rOverhang, vecName));
                 nodeCount++;
                 //Add PCR edges for level 0 nodes
                 if (current.getStage() == 0) {
@@ -642,7 +642,7 @@ public class RGraph {
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
                         edges.put(createD3Edge(nodeIDBCount, nodeIDCount));
-                        nodes.put(createD3Node(nodeCount, imagePath, composition, type, direction, scars, lOverhang, rOverhang, null));
+                        nodes.put(createD3Node(nodeCount, filePath, imagePath, composition, type, direction, scars, lOverhang, rOverhang, null));
                         nodeCount++;
                     } else {
                         basicNode = true;
@@ -657,7 +657,7 @@ public class RGraph {
                         int NnodeIDCount = nodeCount;
                         idCountMap.put(NnodeID, NnodeIDCount);
                         edges.put(createD3Edge(NnodeIDCount, nodeIDBCount));
-                        nodes.put(createD3Node(nodeCount, imagePath, composition, type, direction, scars, null, null, null));
+                        nodes.put(createD3Node(nodeCount, filePath, imagePath, composition, type, direction, scars, null, null, null));
                         nodeCount++;
                     }
                 }
@@ -671,14 +671,14 @@ public class RGraph {
                     int vecIDCount = nodeCount;
                     idCountMap.put(vecID, vecIDCount);
                     edges.put(createD3Edge(vecIDCount, nodeIDCount));
-                    nodes.put(createD3Node(nodeCount, imagePath, null, null, null, null, vecLO, vecRO, vecName));
+                    nodes.put(createD3Node(nodeCount,filePath, imagePath, null, null, null, null, vecLO, vecRO, vecName));
                     nodeCount++;
                     if (!seenVectorKeys.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
                         int NvecIDCount = nodeCount;
                         idCountMap.put(NvecID, NvecIDCount);
                         edges.put(createD3Edge(NvecIDCount, vecIDCount));
-                        nodes.put(createD3Node(nodeCount, imagePath, null, null, null, null, null, null, vecName));
+                        nodes.put(createD3Node(nodeCount, filePath, imagePath, null, null, null, null, null, null, vecName));
                         nodeCount++;
                     }
                 }
@@ -728,7 +728,7 @@ public class RGraph {
 
     //creates a node for the D3 graph representation
     //makes appropriate calls to pigeonCAD to create pigeon image
-    private static JSONObject createD3Node(int nodeCount, String path, ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) throws JSONException, IOException {
+    private static JSONObject createD3Node(int nodeCount, String absolutePath, String relativePath, ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) throws JSONException, IOException {
 
         StringBuilder pigeonLine = new StringBuilder();
         //Assign left overhang if it exists                
@@ -810,7 +810,7 @@ public class RGraph {
         String imageUrl = WeyekinPoster.getmPigeonURI().toString();
 
         //download image; note pigeon images are given in png format
-        String imageName = ImageDownloader.downloadImage(imageUrl, path, nodeCount + ".png");
+        String imageName = ImageDownloader.downloadImage(imageUrl, absolutePath, nodeCount + ".png");
 
         //create the JSONObject
         JSONObject toReturn = new JSONObject();
@@ -828,7 +828,7 @@ public class RGraph {
         }
         toReturn.put("id", nodeCount);
         toReturn.put("url", imageUrl);
-        toReturn.put("file", path+imageName);
+        toReturn.put("file", relativePath+imageName);
 
 
         return toReturn;

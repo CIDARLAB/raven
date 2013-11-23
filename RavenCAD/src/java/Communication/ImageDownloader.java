@@ -4,6 +4,7 @@
  */
 package Communication;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,10 +17,12 @@ import java.net.URL;
  */
 public class ImageDownloader {
 
-    public static String downloadImage(String urlString, String path, String outputFileName) throws IOException {
+    public static String downloadImage(String urlString, String absolutePath, String outputFileName) throws IOException {
         URL imageURL = new URL(urlString);
         InputStream inputStream = imageURL.openStream();
-        OutputStream out = new FileOutputStream(path + outputFileName);
+        File outFile = new File(absolutePath+outputFileName);
+        outFile.createNewFile();
+        OutputStream out = new FileOutputStream(absolutePath + outputFileName);
 
         byte[] b = new byte[2048];
         int length;

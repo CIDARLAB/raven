@@ -840,8 +840,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             var color = d3.scale.category20();
             
             var force = d3.layout.force()
-            .charge(-120)
-            .linkDistance(30)
+            .charge(-500)
+            .linkDistance(100)
             .size([width, height]);
             $("#resultImage" + currentDesignCount).html("");
             var svg = d3.select("#resultImage"+currentDesignCount).append("svg")
@@ -861,8 +861,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             .attr("xlink:href", function(d) {return d.file})
             //            .attr("x",-8)
             //            .attr("y",-8)
-                        .attr("width", 50)
-                        .attr("height", 60);
+                        .attr("width", 400)
+                        .attr("height", 200);
             
             var link = svg.selectAll(".link")
             .data(data["graph"].edges)
@@ -1067,7 +1067,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('div#resultImage' + currentDesignCount).html($('div#resultImage' + originalDesignNumber).html());
             $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
             $('div#partsListTab' + currentDesignCount).html();
-            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+//            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
             var targets = [];
             $('div#summaryTab' + originalDesignNumber + ' ul#targets li').each(function() {
                 targets.push($(this).text());
