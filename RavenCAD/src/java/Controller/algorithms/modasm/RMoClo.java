@@ -119,9 +119,11 @@ public class RMoClo extends RGeneral {
 
                 //Go up the parent hash until the parent doesn't have an overhang impacted by the child
                 while (l0Node.getLOverhang().equals(parent.getLOverhang()) || l0Node.getROverhang().equals(parent.getROverhang())) {
-                    level++;
+//                    level++;
                     if (_parentHash.containsKey(parent)) {
+                        level = parent.getStage();
                         parent = _parentHash.get(parent);
+//                        level = parent.getStage();
                     } else {
                         break;
                     }
