@@ -192,7 +192,7 @@ public class RavenController {
                 if (v != null) {
                     vectorName = v.getName();
                 }
-                out.write("\nLibrary," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
+                out.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             } else {
                 type = "composite";
                 Vector v = partVectorHash.get(p);
@@ -236,7 +236,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(2);
-                out.write("\nLibrary," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
+                out.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             }
             partList = partList
                     + "{\"uuid\":\"" + p.getUUID()
@@ -268,7 +268,7 @@ public class RavenController {
                         resistance = tags.get(k).substring(12);
                     }
                 }
-                out.write("\nLibrary," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+                out.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
                 partList = partList + "{\"uuid\":\"" + v.getUUID()
                         + "\",\"Name\":\"" + v.getName()
                         + "\",\"Sequence\":\"" + v.getSeq()
@@ -542,7 +542,7 @@ public class RavenController {
                     Vector toBreak = newVector.saveDefault(_collector);
                     
                     //Library logic
-                    if (tokens[0].trim().equals("Library")) {
+                    if (!tokens[0].trim().isEmpty()) {
                         _vectorLibrary.add(newVector);
                     }
                     
@@ -580,7 +580,7 @@ public class RavenController {
                         blankBasicPart.setTransientStatus(false);
                         
                         //Library logic
-                        if (tokens[0].trim().equals("Library")) {
+                        if (!tokens[0].trim().isEmpty()) {
                             _partLibrary.add(blankBasicPart);
                         }
                         
@@ -620,7 +620,7 @@ public class RavenController {
                     newBasicPart.setTransientStatus(false);
                    
                     //Library logic
-                    if (tokens[0].trim().equals("Library")) {
+                    if (!tokens[0].trim().isEmpty()) {
                         _partLibrary.add(newBasicPart);
                     }
                     
@@ -708,7 +708,7 @@ public class RavenController {
                 newComposite.setTransientStatus(false);
                 
                 //Library logic
-                if (tokens[0].trim().equals("Library")) {
+                if (!tokens[0].trim().isEmpty()) {
                     _partLibrary.add(newComposite);
                 }
                 
