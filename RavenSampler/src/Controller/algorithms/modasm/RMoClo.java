@@ -4,11 +4,10 @@
  */
 package Controller.algorithms.modasm;
 
-import Communication.RavenController;
 import Controller.accessibility.ClothoReader;
 import Controller.algorithms.RGeneral;
-import Controller.algorithms.SamplingOverhangs;
 import Controller.datastructures.*;
+import java.lang.Double;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,20 +52,26 @@ public class RMoClo extends RGeneral {
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, false);
 
+        //Positional scoring of transcriptional units
+//            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
+//            if (modular) {
+//                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
+//                positionScores = getPositionalScoring(TUs);
+//            }
+
+        //Add single transcriptional units to the required hash
+//            ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, 2);
+//            for (int i = 0; i < reqTUs.size(); i++) {
+//                required.add(reqTUs.get(i).toString());
+//            }
+
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         enforceOverhangRules(optimalGraphs);
-        HashMap<String, String> finalOverhangHash;
-        if (RavenController.sampleOverhangs) {
-            finalOverhangHash = new HashMap();
-            SamplingOverhangs.sampleOverhangs(optimalGraphs);
-        } else {
-            maximizeOverhangSharing(optimalGraphs);
-            finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
-            assignFinalOverhangs(optimalGraphs, finalOverhangHash);
-            assignScars(optimalGraphs);
-        }
-
+        maximizeOverhangSharing(optimalGraphs);
+        HashMap<String, String> finalOverhangHash = assignOverhangs(optimalGraphs, _forcedOverhangHash);
+        assignFinalOverhangs(optimalGraphs, finalOverhangHash);
+        assignScars(optimalGraphs);
 
         return optimalGraphs;
 
@@ -114,9 +119,11 @@ public class RMoClo extends RGeneral {
 
                 //Go up the parent hash until the parent doesn't have an overhang impacted by the child
                 while (l0Node.getLOverhang().equals(parent.getLOverhang()) || l0Node.getROverhang().equals(parent.getROverhang())) {
-                    level++;
+//                    level++;
                     if (_parentHash.containsKey(parent)) {
+                        level = parent.getStage();
                         parent = _parentHash.get(parent);
+//                        level = parent.getStage();
                     } else {
                         break;
                     }
@@ -692,7 +699,6 @@ public class RMoClo extends RGeneral {
         return scars;
     }
 
- 
     public void assignFinalOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
         HashMap<String, HashSet<String>> abstractConcreteHash = new HashMap<String, HashSet<String>>();
         HashMap<String, HashSet<String>> abstractLeftCompositionHash = new HashMap<String, HashSet<String>>(); //key: abstract overhang, value: set of all compositions associated with that composition
@@ -1072,7 +1078,7 @@ public class RMoClo extends RGeneral {
             }
         }
     }
-   //sets user specified overhangs before algorithm computes the rest
+    //sets user specified overhangs before algorithm computes the rest
 
     private HashMap<String, String> assignOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
@@ -1199,9 +1205,9 @@ public class RMoClo extends RGeneral {
         }
         return toReturn;
     }
-    /**
-     * Generation of new MoClo primers for parts *
-     */
+
+
+   
     //FIELDS
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private HashMap<RNode, HashSet<String>> _takenParentOHs; //key: parent node, value: all overhangs that have been seen in this step

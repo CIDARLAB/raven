@@ -253,7 +253,15 @@ public class RGeneral extends Modularity {
         //For all of the allowed index sets, find the best way to break it into even peices for 1 to the maximum number of neighbors 
         HashMap<Integer, ArrayList<int[]>> partitionSetByNBreaks;
         if (RavenController.samplePartitions) {
-            partitionSetByNBreaks = SamplingPartitioning.getPartitions(indexes, goalPartNode.getComposition().size() - 1);
+            //TODO: fix applied here
+            int maxNumBreaks = 2; //1 will get subtracted at the end so this is kind of a normalizing vlaue 
+            for (Integer key:efficiencies.keySet()) {
+                if(key>maxNumBreaks) {
+                    maxNumBreaks = key;
+                }
+            }
+            maxNumBreaks = maxNumBreaks - 1;
+            partitionSetByNBreaks = SamplingPartitioning.getPartitions(indexes, Math.min(goalPartNode.getComposition().size() - 1,maxNumBreaks));
         } else {
             partitionSetByNBreaks = new HashMap<Integer, ArrayList<int[]>>();
             for (int j = 0; j < libIndexes.size(); j++) {

@@ -21,13 +21,13 @@ public class RavenSampler {
     public static void main(String[] args) {
         RavenController controller = new RavenController();
         File selectedFile = new File(args[0]);
-//        File selectedFile = new File("/host/Users/Admin/Desktop/publication_dataset.csv");
+//        File selectedFile = new File("C:/Users/Admin/Desktop/complete/collins_counters_d_p.csv");
         if (selectedFile != null) {
             try {
                 
                 controller.parseRavenFile(selectedFile);
                 //method, number of parts, number of runs, sample partitioning?, sample overhangs?
-//                controller.run("moclo",20,10, false,true);
+//                controller.run("gibson",100,10, true,true);
                 controller.run(args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Boolean.parseBoolean(args[4]),Boolean.parseBoolean(args[5]));
             } catch (Exception ex) {
                 ex.printStackTrace();
