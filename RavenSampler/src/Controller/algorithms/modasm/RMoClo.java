@@ -1044,7 +1044,7 @@ public class RMoClo extends RGeneral {
                 }
             } else {
                 resistance = freeAntibiotics.get(0);
-                freeAntibiotics.remove(0);
+//                freeAntibiotics.remove(0);
             }
             levelResistanceHash.put(i, resistance);
         }
