@@ -27,8 +27,9 @@ public class RavenSampler {
                 
                 controller.parseRavenFile(selectedFile);
                 //method, number of parts, number of runs, sample partitioning?, sample overhangs?
-//                controller.run("moclo",1000,1, false,false);
-                controller.run(args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Boolean.parseBoolean(args[4]),Boolean.parseBoolean(args[5]));
+                controller.run("gibson",1000,1, true,true);
+                controller.run("gibson",1000,1, false,false);
+//                controller.run(args[1],Integer.parseInt(args[2]),Integer.parseInt(args[3]),Boolean.parseBoolean(args[4]),Boolean.parseBoolean(args[5]));
             } catch (Exception ex) {
                 ex.printStackTrace();
                 Logger.getLogger(RavenSampler.class.getName()).log(Level.SEVERE, null, ex);
