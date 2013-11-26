@@ -1168,7 +1168,7 @@ public class RMoClo extends RGeneral {
                     HashMap<String, Integer> rightFrequencyHash = new HashMap();
                     for (int i = 0; i < parent.getNeighbors().size(); i++) {
                         RNode child = parent.getNeighbors().get(i);
-                        if (!seenNodes.contains(child)) {
+                        if (!seenNodes.contains(child) && parent.getComposition().size()>child.getComposition().size()) {
                             if (leftFrequencyHash.get(child.getLOverhang()) != null) {
                                 leftFrequencyHash.put(child.getLOverhang(), leftFrequencyHash.get(child.getLOverhang()) + 1);
                             } else {

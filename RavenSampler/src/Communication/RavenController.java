@@ -534,6 +534,7 @@ public class RavenController {
             }
             eff = sum / effArray.size();
             System.out.println(steps + "," + stages + "," + shr + "," + rxn);
+//            System.out.println(RMoClo.validateOverhangs(_assemblyGraphs));
         }
     }
     //FIELDS
