@@ -22,52 +22,104 @@ and open the template in the editor.
     </head>
     <body>
         <script>
-            var testGraph ={"edges":[{"source":1,"target":0},{"source":2,"target":1},{"source":4,"target":3},{"source":5,"target":3},{"source":6,"target":5},{"source":3,"target":0},{"source":8,"target":7},{"source":9,"target":7},{"source":10,"target":9},{"source":7,"target":0},{"source":12,"target":11},{"source":13,"target":11},{"source":14,"target":13},{"source":11,"target":0},{"source":16,"target":15},{"source":17,"target":15},{"source":18,"target":17},{"source":15,"target":0}],"nodes":[{"id":0,"LO":"3","composition":"[pT7, dicRBS, gfp, T1]","RO":"4","Vector":"DVL1"},{"id":1,"LO":"3","RO":"4","Vector":"DVL1"},{"id":2,"Vector":"DVL1"},{"id":3,"LO":"3","composition":"[pT7]","RO":"0","Vector":"DVL0"},{"id":4,"composition":"[pT7]"},{"id":5,"LO":"3","RO":"0","Vector":"DVL0"},{"id":6,"Vector":"DVL0"},{"id":7,"LO":"0","composition":"[dicRBS]","RO":"1","Vector":"DVL0"},{"id":8,"composition":"[dicRBS]"},{"id":9,"LO":"0","RO":"1","Vector":"DVL0"},{"id":10,"Vector":"DVL0"},{"id":11,"LO":"1","composition":"[gfp]","RO":"2","Vector":"DVL0"},{"id":12,"composition":"[gfp]"},{"id":13,"LO":"1","RO":"2","Vector":"DVL0"},{"id":14,"Vector":"DVL0"},{"id":15,"LO":"2","composition":"[T1]","RO":"4","Vector":"DVL0"},{"id":16,"composition":"[T1]"},{"id":17,"LO":"2","RO":"4","Vector":"DVL0"},{"id":18,"Vector":"DVL0"}]}
-                        
-            var width = 640,
-            height = 480;
-            var color = d3.scale.category20();
-            
-            var force = d3.layout.force()
-            .charge(-120)
-            .linkDistance(30)
-            .size([width, height]);
-            
-            var svg = d3.select("body").append("svg")
-            .attr("width", width)
-            .attr("height", height);
-            
-            force.nodes(testGraph.nodes).links(testGraph.edges).start();
-            
-            var link = svg.selectAll(".link")
-            .data(testGraph.edges)
-            .enter().append("line")
-            .attr("class", "link")
-            .style("stroke-width", 2);
+            var data ={"graph":{"edges":[{"source":1,"target":0,"left":false,"right":true},{"source":2,"target":1,"left":false,"right":true},{"source":4,"target":3,"left":false,"right":true},{"source":5,"target":4,"left":false,"right":true},{"source":3,"target":0,"left":false,"right":true},{"source":7,"target":6,"left":false,"right":true},{"source":8,"target":7,"left":false,"right":true},{"source":6,"target":0,"left":false,"right":true},{"source":10,"target":9,"left":false,"right":true},{"source":11,"target":9,"left":false,"right":true},{"source":12,"target":11,"left":false,"right":true},{"source":9,"target":3,"left":false,"right":true},{"source":14,"target":13,"left":false,"right":true},{"source":15,"target":13,"left":false,"right":true},{"source":16,"target":15,"left":false,"right":true},{"source":13,"target":3,"left":false,"right":true},{"source":18,"target":17,"left":false,"right":true},{"source":19,"target":17,"left":false,"right":true},{"source":20,"target":19,"left":false,"right":true},{"source":17,"target":6,"left":false,"right":true},{"source":22,"target":21,"left":false,"right":true},{"source":23,"target":21,"left":false,"right":true},{"source":24,"target":23,"left":false,"right":true},{"source":21,"target":6,"left":false,"right":true}],"nodes":[{"id":0,"file":"testData/jenhan/scratch/1/0.png","LO":"EX","composition":"[pT7, rtcRBS, gfp, Tphi]","RO":"SP","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665351-trans.png","Vector":"pBAC"},{"id":1,"file":"testData/jenhan/scratch/1/1.png","LO":"","RO":"","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665355-trans.png","Vector":"pBAC"},{"id":2,"file":"testData/jenhan/scratch/1/2.png","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665358-trans.png","Vector":"pBAC"},{"id":3,"file":"testData/jenhan/scratch/1/3.png","LO":"EX","composition":"[pT7, rtcRBS]","RO":"SP","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665361-trans.png","Vector":"pBAC"},{"id":4,"file":"testData/jenhan/scratch/1/4.png","LO":"","RO":"","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665364-trans.png","Vector":"pBAC"},{"id":5,"file":"testData/jenhan/scratch/1/5.png","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665367-trans.png","Vector":"pBAC"},{"id":6,"file":"testData/jenhan/scratch/1/6.png","LO":"EX","composition":"[gfp, Tphi]","RO":"SP","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665370-trans.png","Vector":"pBAC"},{"id":7,"file":"testData/jenhan/scratch/1/7.png","LO":"","RO":"","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665374-trans.png","Vector":"pBAC"},{"id":8,"file":"testData/jenhan/scratch/1/8.png","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665377-trans.png","Vector":"pBAC"},{"id":9,"file":"testData/jenhan/scratch/1/9.png","LO":"EX","composition":"[pT7]","RO":"SP","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665380-trans.png","Vector":"pBAC"},{"id":10,"file":"testData/jenhan/scratch/1/10.png","composition":"[pT7]","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665383-trans.png"},{"id":11,"file":"testData/jenhan/scratch/1/11.png","LO":"","RO":"","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665386-trans.png","Vector":"pBAC"},{"id":12,"file":"testData/jenhan/scratch/1/12.png","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665390-trans.png","Vector":"pBAC"},{"id":13,"file":"testData/jenhan/scratch/1/13.png","LO":"EX","composition":"[rtcRBS]","RO":"SP","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665393-trans.png","Vector":"pBAC"},{"id":14,"file":"testData/jenhan/scratch/1/14.png","composition":"[rtcRBS]","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665397-trans.png"},{"id":15,"file":"testData/jenhan/scratch/1/15.png","LO":"","RO":"","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665400-trans.png","Vector":"pBAC"},{"id":16,"file":"testData/jenhan/scratch/1/16.png","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665403-trans.png","Vector":"pBAC"},{"id":17,"file":"testData/jenhan/scratch/1/17.png","LO":"EX","composition":"[gfp]","RO":"SP","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665406-trans.png","Vector":"pBAC"},{"id":18,"file":"testData/jenhan/scratch/1/18.png","composition":"[gfp]","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665409-trans.png"},{"id":19,"file":"testData/jenhan/scratch/1/19.png","LO":"","RO":"","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665412-trans.png","Vector":"pBAC"},{"id":20,"file":"testData/jenhan/scratch/1/20.png","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665415-trans.png","Vector":"pBAC"},{"id":21,"file":"testData/jenhan/scratch/1/21.png","LO":"EX","composition":"[Tphi]","RO":"SP","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665418-trans.png","Vector":"pBAC"},{"id":22,"file":"testData/jenhan/scratch/1/22.png","composition":"[Tphi]","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665422-trans.png"},{"id":23,"file":"testData/jenhan/scratch/1/23.png","LO":"","RO":"","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665425-trans.png","Vector":"pBAC"},{"id":24,"file":"testData/jenhan/scratch/1/24.png","url":"http://cidar1.bu.edu:5801/scratch/file.98.155.78.11665428-trans.png","Vector":"pBAC"}]}};
 
-            var node = svg.selectAll(".node")
-            .data(testGraph.nodes)
-            .enter().append("g")
-            .attr("class", "node")
-            .call(force.drag)
-            .append("circle").attr("r",10)
-//            node.append("image")
-//            .attr("xlink:href", "data/scratch/favicon.ico")
-//            .attr("x",-8)
-//            .attr("y",-8)
-//            .attr("width", 16)
-//            .attr("height", 16);
-            
+                        
+  var width = 640,
+                    height = 480;
+            var color = d3.scale.category20();
+// mouse event vars
+            var selected_node = null,
+                    selected_link = null,
+                    mousedown_link = null,
+                    mousedown_node = null,
+                    mouseup_node = null;
+
+            var force = d3.layout.force()
+                    .charge(-500)
+                    .linkDistance(100)
+                    .size([width, height]);
+            var outer = d3.select("body")
+                    .append("svg:svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("pointer-events", "all");
+
+            var vis = outer
+                    .append('svg:g')
+                    .call(d3.behavior.zoom().on("zoom", rescale))
+                    .on("dblclick.zoom", null)
+                    .append('svg:g')
+
+            vis.append('svg:rect')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('fill', 'white');
+
+            force.nodes(data["graph"].nodes).links(data["graph"].edges).start();
+
+            var node = vis.selectAll(".node")
+                    .data(data["graph"].nodes)
+                    .enter().append("g")
+                    .attr("class", "node")
+                    .call(force.drag)
+            //            .append("circle").attr("r",10)
+
+            node.append("image")
+                    .attr("xlink:href", function(d) {
+                        return d.file
+                    })
+                    .attr("x", -200)
+                    .attr("y", -100)
+                    .attr("width", 400)
+                    .attr("height", 200);
+
+            var link = vis.selectAll(".link")
+                    .data(data["graph"].edges)
+                    .enter().append("line")
+                    .attr("class", "link")
+                    .style("stroke", "blue")
+                    .style("stroke-width", 2).
+                    style('marker-start', function(d) {
+                        return d.left ? 'url(#start-arrow)' : '';
+                    })
+                    .style('marker-end', function(d) {
+                        return d.right ? 'url(#end-arrow)' : '';
+                    });
+
+
             node.append("title")
-            .text(function(d) { return JSON.stringify(d); });
+                    .text(function(d) {
+                        return JSON.stringify(d);
+                    });
 
             force.on("tick", function() {
-                link.attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
-                node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                link.attr("x1", function(d) {
+                    return d.source.x;
+                })
+                        .attr("y1", function(d) {
+                            return d.source.y;
+                        })
+                        .attr("x2", function(d) {
+                            return d.target.x;
+                        })
+                        .attr("y2", function(d) {
+                            return d.target.y;
+                        });
+                node.attr("transform", function(d) {
+                    return "translate(" + d.x + "," + d.y + ")";
+                });
             });
+            
+            
+            function rescale() {
+                trans = d3.event.translate;
+                scale = d3.event.scale;
+
+                vis.attr("transform",
+                        "translate(" + trans + ")"
+                        + " scale(" + scale + ")");
+            }
             
         </script>
 

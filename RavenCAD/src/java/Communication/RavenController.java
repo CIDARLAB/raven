@@ -943,11 +943,11 @@ public class RavenController {
 
         //write graph text file
         //TODO is there an equivalent for d3?
-//        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
-//        fw = new FileWriter(file);
-//        out = new BufferedWriter(fw);
-//        out.write(mergedGraphText);
-//        out.close();
+        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
+        fw = new FileWriter(file);
+        out = new BufferedWriter(fw);
+        out.write(d3Graph.toString());
+        out.close();
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);
