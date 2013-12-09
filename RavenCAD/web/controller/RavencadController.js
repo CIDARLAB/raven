@@ -846,21 +846,25 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     mouseup_node = null;
 
             var force = d3.layout.force()
-                    .charge(-500)
+                    .charge(-1500)
                     .linkDistance(100)
                     .size([width, height]);
             $("#resultImage" + currentDesignCount).html("");
-            var outer = d3.select("#resultImage"+currentDesignCount)
+            $("#resultImage"+currentDesignCount).removeClass("well")
+            var outer = d3.select("#resultImage" + currentDesignCount)
                     .append("svg:svg")
-                    .attr("width", width)
-                    .attr("height", height)
+                    .attr("background","white")
+                    .attr("width", "100%")
+                    .attr("height", "100%")
                     .attr("pointer-events", "all");
 
             var vis = outer
                     .append('svg:g')
+                    .attr('fill', 'white')
                     .call(d3.behavior.zoom().on("zoom", rescale))
                     .on("dblclick.zoom", null)
                     .append('svg:g')
+                    .attr('fill', 'white');
 
             vis.append('svg:rect')
                     .attr('width', width)
@@ -874,7 +878,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     .enter().append("g")
                     .attr("class", "node")
                     .call(force.drag)
-            //            .append("circle").attr("r",10)
 
             node.append("image")
                     .attr("xlink:href", function(d) {
@@ -889,7 +892,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     .data(data["graph"].edges)
                     .enter().append("line")
                     .attr("class", "link")
-                    .style("stroke", "blue")
+                    .style("stroke", "black")
                     .style("stroke-width", 2).
                     style('marker-start', function(d) {
                         return d.left ? 'url(#start-arrow)' : '';
@@ -921,8 +924,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     return "translate(" + d.x + "," + d.y + ")";
                 });
             });
-            
-            
+
+
             function rescale() {
                 trans = d3.event.translate;
                 scale = d3.event.scale;
