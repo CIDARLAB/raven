@@ -960,11 +960,11 @@ public class RavenController {
         out.close();
 
         //post request to graphviz
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
+//        WeyekinPoster.setDotText(mergedGraphText);
+//        WeyekinPoster.postMyVision();
 
         String imageURL = "";
-        imageURL = WeyekinPoster.getmGraphVizURI().toString();
+//        imageURL = WeyekinPoster.getmGraphVizURI().toString();
         JSONObject toReturn = new JSONObject();
         toReturn.put("images", imageURL);
         return toReturn;
