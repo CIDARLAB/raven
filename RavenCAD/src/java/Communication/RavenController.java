@@ -835,30 +835,30 @@ public class RavenController {
         _forbidden = forbidden;
         _discouraged = discouraged;
         _statistics = new Statistics();
-//        _vectorLibrary = new ArrayList<Vector>();
-//        _partLibrary = new ArrayList<Part>();
+        _vectorLibrary = new ArrayList<Vector>();
+        _partLibrary = new ArrayList<Part>();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
         method = method.toLowerCase().trim();
-//
-//        if (partLibraryIDs.length > 0) {
-//            for (int i = 0; i < partLibraryIDs.length; i++) {
-//                Part current = _collector.getPart(partLibraryIDs[i], false);
-//                if (current != null) {
-//                    _partLibrary.add(current);
-//                }
-//            }
-//        }
-//
-//        if (vectorLibraryIDs.length > 0) {
-//            for (int i = 0; i < vectorLibraryIDs.length; i++) {
-//                Vector current = _collector.getVector(vectorLibraryIDs[i], false);
-//                if (current != null) {
-//                    _vectorLibrary.add(current);
-//                }
-//            }
-//        }
+
+        if (partLibraryIDs.length > 0) {
+            for (int i = 0; i < partLibraryIDs.length; i++) {
+                Part current = _collector.getPart(partLibraryIDs[i], false);
+                if (current != null) {
+                    _partLibrary.add(current);
+                }
+            }
+        }
+
+        if (vectorLibraryIDs.length > 0) {
+            for (int i = 0; i < vectorLibraryIDs.length; i++) {
+                Vector current = _collector.getVector(vectorLibraryIDs[i], false);
+                if (current != null) {
+                    _vectorLibrary.add(current);
+                }
+            }
+        }
 
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
@@ -928,7 +928,7 @@ public class RavenController {
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
-        JSONObject d3Graph = new JSONObject();
+//        JSONObject d3Graph = new JSONObject();
 //        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
 
@@ -960,11 +960,11 @@ public class RavenController {
         out.close();
 
         //post request to graphviz
-//        WeyekinPoster.setDotText(mergedGraphText);
-//        WeyekinPoster.postMyVision();
+        WeyekinPoster.setDotText(mergedGraphText);
+        WeyekinPoster.postMyVision();
 
         String imageURL = "";
-//        imageURL = WeyekinPoster.getmGraphVizURI().toString();
+        imageURL = WeyekinPoster.getmGraphVizURI().toString();
         JSONObject toReturn = new JSONObject();
         toReturn.put("images", imageURL);
         return toReturn;
