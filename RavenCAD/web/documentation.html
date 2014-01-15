@@ -61,7 +61,7 @@
                         <p>
                             A unique feature of Raven is its ability to incorporate experimental data to drive the assembly solution. 
                             Raven allows the user to input efficiency information for a variety of parameters and bias or force certain assembly intermediates or overhangs from appearing in the assembly solution. 
-                            The tool comes with a set of default parameters that have been experimentally verified, but these values can be modified to the user’s specifications. 
+                            The tool comes with a set of default parameters that have been experimentally verified, but these values can be modified to the user's specifications. 
                             This user-interactivity based on experimental data allows users to tailor the assembly solutions to lab- and experiment-specific conditions and recalculate increasingly effective solutions.
                         </p>
                     </div>
@@ -81,7 +81,7 @@
                         </p>
                         <p>
                             Additional cloning-based assembly method and chemical synthesis assembly are not currently supported. 
-                            However, Raven’s core algorithm is highly generalizable and new methods can be added with relative ease. 
+                            However, Raven's core algorithm is highly generalizable and new methods can be added with relative ease. 
                             Please contact the developers if you are interested in an assembly method that is not currently supported.
                         </p>
                     </div>
@@ -114,7 +114,7 @@
                         <h3>Integrated Tool Chain</h3>
                         <hr/>
                         <p>
-                            Raven is implemented as a ‘stand-alone’ tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
+                            Raven is implemented as a 'stand-alone' tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
                             However, this tool is designed to connect to a larger tool-chain in the Clotho design automation platform. 
                             This tool chain uses a 'top-down' design flow and begins with the specification of device behavior and ends in physically implemented assembly. 
                         </p>    
@@ -135,7 +135,7 @@
                             </dt>
                             <dd>
                                 A user must minimally provide a list of target parts and all DNA parts that are needed to build the target parts. 
-                                Part sequences are not mandatory, but no primers will be incomplete on parts without sequence.
+                                Part sequences are not mandatory, but primers will be incomplete for parts without sequence.
                             </dd>
                             <dt>
                             What do I input into Raven?
@@ -216,7 +216,7 @@
                                 </div>
                                 <div id="detailedInput" class="accordion-body collapse out">
                                     <div class="accordion-inner">
-                                        <p>This is the full specification for the Raven input file. <strong>Files that do not conform to this standard may cause undesirable results</strong></p>
+                                        <p>This is the full specification for the Raven input file. <strong>Files that do not conform to this standard will result in upload errors</strong></p>
                                         <p>
                                             Each row represents a part or vector none of the columns need to be unique, but the collection of all columns in one row must be unique and if all columns are blank, the row is ignored.
                                         </p>
@@ -239,10 +239,10 @@
                                                     These fields mark the overhangs of the parts generated. 
                                                     These overhangs are variables and not sequences and re-use of parts based on their overhangs is used in the calculation of an optimized assembly plan. 
                                                     Composite parts, basic parts and vectors are all allowed to have overhangs. MoClo assembly plans only recognize overhangs with the numbers 1 -> 256 for re-use. 
-                                                    MoClo assembly plans also recognize overhangs with the “*” character as reverse compliments of the standard 256 possible MoClo overhangs (i.e. “1*” is the reverse overhang of overhang “1”).
+                                                    MoClo assembly plans also recognize overhangs with the '*' character as reverse compliments of the standard 256 possible MoClo overhangs (i.e. '1*' is the reverse overhang of overhang '1').
                                                 </p>
                                                 <p>
-                                                    BioBricks assembly plans only recognize “EX” for the left overhang and “SP” for the right overhang. 
+                                                    BioBricks assembly plans only recognize 'EX' for the left overhang and 'SP' for the right overhang. 
                                                     Upon input this field is completely optional, but most outputs contain parts and vectors with overhangs, as this is necessary for assembly.
                                                 </p>
                                             </li>
@@ -252,7 +252,7 @@
                                                 </strong>
                                                 <p>
                                                     This field is used to create assembly plan pictures using PigeonCAD auto-generated SBOLv-compliant device glyphs. 
-                                                    All composite parts must have the key string “composite” in this field and all vectors need the key string “vector”. 
+                                                    All composite parts must have the key string 'composite' in this field and all vectors need the key string 'vector'. 
                                                     All other entries are valid, and assumed to be basic part types.
                                                 </p>
                                                 <p>The following key strings are recognized for pigeon images for basic parts:</p>
@@ -274,8 +274,8 @@
                                                     </tbody>
                                                 </table>
                                                 <p>
-                                                    Parts with type “fusion” denote fusion proteins and the Name column is split with the “-” character to get all the fusion names. 
-                                                    Parts with type “resistance” denote a resistance cassette. 
+                                                    Parts with type 'fusion' denote fusion proteins and the Name column is split with the '-' character to get all the fusion names. 
+                                                    Parts with type 'resistance' denote a resistance cassette. 
                                                     This type is a legal basic part type but may cause invalid answers with restriction-based assembly cloning method that relies on cloning with destination vectors that also have anti-biotic resistance within them.
                                                 </p>
                                             </li>
@@ -292,7 +292,7 @@
                                                     Level
                                                 </strong>
                                                 <p>
-                                                    This field is used only for vectors. MoClo vectors with level and overhangs are re-used in a MoClo assembly plan if it saves time and cost. Levels start at “0” for MoClo and all vector names are formatted “DVLx”, where “x” equals its level.
+                                                    This field is used only for vectors. MoClo vectors with level and overhangs are re-used in a MoClo assembly plan if it saves time and cost. Levels start at '0' for MoClo and all vector names are formatted 'DVLx', where 'x' equals its level.
                                                 </p>
                                             </li>
                                             <li>
@@ -319,19 +319,19 @@
                                                     This field must be formatted in one of the following conventions:
                                                 </p>
                                                 <ul>
-                                                    <li>“partName|LeftOverhang|RightOverhang|Direction” </li>
-                                                    <li>“partName|Direction”</li>
-                                                    <li>“partName”</li>
+                                                    <li>'partName|LeftOverhang|RightOverhang|Direction' </li>
+                                                    <li>'partName|Direction'</li>
+                                                    <li>'partName'</li>
                                                 </ul>
                                                 <p>
                                                     The part name is mandatory. LeftOverhang and RightOverhang are optional and must agree with the Left Overhang and Right overhang specified in the other columns (see above). 
-                                                    Direction is how a user can specify the strand or “direction” of a part within a device. All parts are assumed to be forward or on the leading strand. 
-                                                    The two acceptable directions are “+” and “-”. 
-                                                    If a part in a device has Direction equal to “-” it is on the lagging or backward strand, all other entries mean the part will be forward. 
+                                                    Direction is how a user can specify the strand or 'direction' of a part within a device. All parts are assumed to be forward or on the leading strand. 
+                                                    The two acceptable directions are '+' and '-'. 
+                                                    If a part in a device has Direction equal to '-' it is on the lagging or backward strand, all other entries mean the part will be forward. 
                                                 </p>
                                                 <p>
                                                     This is also where overhang assignments may be forced in the calculation. 
-                                                    For example a device with part “partA|1|2|+” in the composition forces overhang “1” to be assigned to the Left Overhang of partA and overhang “2” to be assigned to the Right Overhang of partA.
+                                                    For example a device with part 'partA|1|2|+' in the composition forces overhang '1' to be assigned to the Left Overhang of partA and overhang '2' to be assigned to the Right Overhang of partA.
                                                     In the former, direction is assumed forward and any overhang from the calculation may be assigned. In the latter, direction is assigned, but overhangs are also unassigned.
                                                 </p>
                                             </li>
