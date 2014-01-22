@@ -808,7 +808,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             //render image
             //old method
             $("#resultImage" + currentDesignCount).html("<img src='" + data["graph"]["images"] + "'/>");
-            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+//            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+            $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom : true, zoomWindowWidth:640, zoomWindowHeight:360});
             //open each image for d3 in a new window
 //            $.each(data["graph"]["images"], function(key, value) {
 //                window.open(value,key);
@@ -972,7 +973,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('div#resultImage' + currentDesignCount).html($('div#resultImage' + originalDesignNumber).html());
             $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
             $('div#partsListTab' + currentDesignCount).html();
-            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+//            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+            $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom : true, zoomWindowWidth:640, zoomWindowHeight:360});
             var targets = [];
             $('div#summaryTab' + originalDesignNumber + ' ul#targets li').each(function() {
                 targets.push($(this).text());
