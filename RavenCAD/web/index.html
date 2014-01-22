@@ -2,8 +2,7 @@
 <html>
     <head>
         <title>Raven</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="shortcut icon" href="images/shortcutIcon.ico">
+        <link rel="shortcut icon" href="images/raven_ico.ico">
         <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
         <style>
@@ -19,6 +18,7 @@
             }
         </style>
     </head>
+    
     <body>
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
@@ -30,7 +30,8 @@
                         <li><a href="documentation.html">Documentation</a></li>
                         <li><a href="contact.html">Contact</a></li>
                     </ul>     
-                    <div id="loginArea"><form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
+                    <div id="loginArea">
+                        <form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
                             <input name="user" type="text" class="span2" placeholder="Login">
                             <input name="password" type="password" class="span2" placeholder="Password">
                             <input type="submit" value="Login" class="btn"/>
@@ -40,8 +41,8 @@
             </div>
         </div>
         <div class="container">
-            <div class="page-header" style="margin-top:50px">
-                <h1>Raven <small>A simple and intuitive tool for designing your cloning experiment</small></h1>
+            <div class="page-header" style="margin-top:60px">
+                <h1><img style="width: 135px; height: 40px; margin-bottom:5px" src="images/raven.png"> <small>A simple and intuitive tool for designing your cloning experiment</small></h1>
             </div>
             <div class="hero-unit" align="center">
                 <h2>Welcome to</h2>

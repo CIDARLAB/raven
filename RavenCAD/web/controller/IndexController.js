@@ -52,7 +52,7 @@ $(document).ready(function() {
     }
 
     if (getCookie("authenticate") === "authenticated") {
-        $('#loginArea').html('<p class="pull-right">You are logged in as <strong>' + getCookie("user") + '</strong> <a id="logout">Log Out</a></p>');
+        $('#loginArea').html('<p class="pull-right" style="margin-top:10px">You are logged in as <strong>' + getCookie("user") + '</strong> <a id="logout">Log Out</a></p>');
         $('#startLink').attr("href", "documentation.html");
         $('#logout').click(function() {
             $.get("RavenServlet", {"command": "logout"}, function() {

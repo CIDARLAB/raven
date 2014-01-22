@@ -26,11 +26,11 @@ public class CartesianNode {
         count++;
     }
 
-    public String getConcreteOverhang() {
+    public String getLibraryOverhang() {
         return concreteOverhang;
     }
 
-    public void setConcreteOverhang(String overhang) {
+    public void setLibraryOverhang(String overhang) {
         this.concreteOverhang = overhang;
     }
 
@@ -66,7 +66,7 @@ public class CartesianNode {
         return abstractOverhang;
     }
 
-    public void setAbstractOverhang(String abstractOverhang) {
+    public void setNodeOverhang(String abstractOverhang) {
         this.abstractOverhang = abstractOverhang;
     }
     //fields
