@@ -4,6 +4,16 @@
 *.war
 *.ear
 
+# mac config files
+.DS_Store
+MocloCartesianGraphAssigner/.DS_Store
+OverhangSequenceSelector/.DS_Store
+RavenCAD/.DS_Store
+RavenCAD/web/.DS_Store
+RavenCAD/web/WEB-INF/.DS_Store
+RavenCAD/web/data/.DS_Store
+RavenSampler/.DS_Store
+
 # Private Config Directories #
 /RavenCAD/nbproject/private/
 
