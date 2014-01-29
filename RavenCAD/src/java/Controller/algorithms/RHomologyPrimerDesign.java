@@ -2,9 +2,8 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controller.algorithms.nonmodasm;
+package Controller.algorithms;
 
-import Controller.algorithms.PrimerDesign;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
 import Controller.datastructures.RNode;

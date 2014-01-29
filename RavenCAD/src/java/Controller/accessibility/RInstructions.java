@@ -7,7 +7,7 @@ package Controller.accessibility;
 import Controller.algorithms.modasm.RBioBricks;
 import Controller.algorithms.modasm.RGoldenGate;
 import Controller.algorithms.modasm.RMoClo;
-import Controller.algorithms.nonmodasm.RHomologyPrimerDesign;
+import Controller.algorithms.RHomologyPrimerDesign;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
 import Controller.datastructures.RNode;

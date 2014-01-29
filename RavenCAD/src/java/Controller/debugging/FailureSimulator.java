@@ -5,7 +5,6 @@
 package Controller.debugging;
 
 import Controller.datastructures.RGraph;
-import Controller.algorithms.Modularity;
 import Controller.datastructures.RNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +21,7 @@ public class FailureSimulator {
     /** Simulate experimental assembly results **/
     public void simulateResults(ArrayList<RGraph> solutionGraphs, Integer allowedAttempts) {
         
-        HashMap<Integer, ArrayList<RNode>> stageHash = Modularity.getStageHash(solutionGraphs);
+        HashMap<Integer, ArrayList<RNode>> stageHash = getStageHash(solutionGraphs);
         Set<Integer> keySet = stageHash.keySet();
         ArrayList<Integer> stages = new ArrayList<Integer>(keySet);
         Collections.sort(stages);
@@ -76,4 +75,66 @@ public class FailureSimulator {
         }
     }
     
+    
+    /**
+     * Get the stage hash for a set of optimal graphs *
+     */
+    public static HashMap<Integer, ArrayList<RNode>> getStageHash(ArrayList<RGraph> optimalGraphs) {
+
+        HashMap<Integer, ArrayList<RNode>> stageHash = new HashMap<Integer, ArrayList<RNode>>();
+        ArrayList<RNode> stageNodes = new ArrayList<RNode>();
+
+        for (int i = 0; i < optimalGraphs.size(); i++) {
+
+            //Traverse one graph and store the nodes
+            RGraph graph = optimalGraphs.get(i);
+            RNode rootNode = graph.getRootNode();
+            if (stageHash.containsKey(rootNode.getStage())) {
+                stageNodes = stageHash.get(rootNode.getStage());
+            }
+            stageNodes.add(rootNode);
+            stageHash.put(rootNode.getStage(), stageNodes);
+            stageHash = getStageHashHelper(rootNode, rootNode.getNeighbors(), stageHash);
+
+            //Put an extra node on the end of all stage of each optimal graph... nodes from adjacent graphs are not neighbors
+            if (i != (optimalGraphs.size() - 1)) {
+                Set<Integer> keySet = stageHash.keySet();
+                for (Integer stage : keySet) {
+                    ArrayList<RNode> finalStageNodes = new ArrayList<RNode>();
+                    finalStageNodes.addAll(stageHash.get(stage));
+                    RNode spacer = new RNode();
+                    finalStageNodes.add(spacer);
+                    stageHash.put(stage, finalStageNodes);
+                }
+            }
+        }
+
+        return stageHash;
+    }
+
+    private static HashMap<Integer, ArrayList<RNode>> getStageHashHelper(RNode parent, ArrayList<RNode> neighbors, HashMap<Integer, ArrayList<RNode>> stageHash) {
+
+        //Check the current stageHash to get nodes that are already in there
+        ArrayList<RNode> stageNodes = new ArrayList<RNode>();
+        if (stageHash.containsKey(parent.getStage() - 1)) {
+            stageNodes = stageHash.get(parent.getStage() - 1);
+        }
+
+        for (int i = 0; i < neighbors.size(); i++) {
+            RNode neighbor = neighbors.get(i);
+            stageNodes.add(neighbor);
+            if (neighbor.getStage() > 0) {
+                ArrayList<RNode> orderedChildren = new ArrayList<RNode>();
+                orderedChildren.addAll(neighbor.getNeighbors());
+
+                //Remove the current parent from the list
+                if (orderedChildren.contains(parent)) {
+                    orderedChildren.remove(parent);
+                }
+                stageHash = getStageHashHelper(neighbor, orderedChildren, stageHash);
+            }
+        }
+        stageHash.put(parent.getStage() - 1, stageNodes);
+        return stageHash;
+    }
 }
