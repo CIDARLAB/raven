@@ -67,10 +67,10 @@ public class RMoClo extends RGeneral {
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-        enforceOverhangRules(optimalGraphs);
+        enforceAssignmentRules(optimalGraphs);
         maximizeOverhangSharing(optimalGraphs);
         HashMap<String, String> finalOverhangHash = assignForcedOverhangs(optimalGraphs, _forcedOverhangHash);
-        assignLibraryOverhangs(optimalGraphs, finalOverhangHash);
+        cartesianLibraryAssignment(optimalGraphs, finalOverhangHash);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
@@ -81,18 +81,17 @@ public class RMoClo extends RGeneral {
      * First step of overhang assignment - enforce numeric place holders for
      * overhangs, ie no overhang redundancy in any step *
      */
-    private void enforceOverhangRules(ArrayList<RGraph> optimalGraphs) {
+    private void enforceAssignmentRules(ArrayList<RGraph> optimalGraphs) {
 
         //Initialize fields that record information to save complexity for future steps
         _parentHash = new HashMap<RNode, RNode>();
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
         _stageDirectionAssignHash = new HashMap<Integer, HashMap<String, ArrayList<RNode>>>();
         _OHexclusionHash = new HashMap<String, HashSet<String>>(); //key: 1st pass overhang value: all overhangs that cannot be the same
+
+        //Loop through each optimal graph and assign first-pass overhangs recursively
         int count = 0;
-
-        //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
-
             RNode root = graph.getRootNode();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
@@ -101,10 +100,158 @@ public class RMoClo extends RGeneral {
             root.setROverhang(Integer.toString(count));
             count++;
             ArrayList<RNode> neighbors = root.getNeighbors();
-            count = enforceOverhangRulesHelper(root, neighbors, root, count);
+            count = assignPrimaryOverhangs(root, neighbors, root, count);
+        }
+        
+        getStageDirectionAssignHash(optimalGraphs);
+    }
+
+    /**
+     * New overhang sharing method. Nodes that can be shared are determined
+     * during this step. Nodes are assigned by stage of impact and direction (strand) 
+     *
+     */
+    private void maximizeOverhangSharing(ArrayList<RGraph> optimalGraphs) {
+
+        ArrayList<RNode> roots = new ArrayList<RNode>();
+        for (RGraph graph : optimalGraphs) {
+            roots.add(graph.getRootNode());
         }
 
-        //Determine which nodes impact which level to form the stageDirectionAssignHash
+        _typeLOHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
+        _typeROHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
+        _numberHash = new HashMap<String, String>(); //key: overhang from round 1, value: overhang from round 2
+        _allLevelOHs = new HashSet<String>();
+
+        Set<Integer> allLevels = _stageDirectionAssignHash.keySet();
+        ArrayList<Integer> levels = new ArrayList<Integer>(allLevels);
+        Collections.sort(levels);
+
+        //Assign by levels of impact starting from lowest level of impact
+        for (Integer level : levels) {
+            HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(level);
+            HashSet<String> currentLevelOHs = new HashSet<String>();
+
+            //Visit each basic node to assign overhangs, assigning forward nodes first going left to right first, then right to left
+            ArrayList<RNode> fwdNodes = new ArrayList<RNode>();
+            ArrayList<RNode> bkwdNodes = new ArrayList<RNode>();
+            if (directionHash.containsKey("+")) {
+                fwdNodes = directionHash.get("+");
+            }
+            if (directionHash.containsKey("-")) {
+                bkwdNodes = directionHash.get("-");
+                Collections.reverse(bkwdNodes);
+            }
+            
+            //Assign nodes in the forward direction first
+            currentLevelOHs = assignSecondaryOverhangs(fwdNodes, "Left", "+", currentLevelOHs, roots);
+            currentLevelOHs = assignSecondaryOverhangs(fwdNodes, "Right", "+", currentLevelOHs, roots);
+            currentLevelOHs = assignSecondaryOverhangs(bkwdNodes, "Right", "-", currentLevelOHs, roots);
+            currentLevelOHs = assignSecondaryOverhangs(bkwdNodes, "Left", "-", currentLevelOHs, roots);
+
+            //Add all overhangs seen in this level to the taken overhang hash of each node
+            _allLevelOHs.addAll(currentLevelOHs);
+        }
+
+        mapNumberHash(optimalGraphs);
+    }
+    
+    /* 
+     * Third step of overhang assignment - A partial cartesian product given a library of parts
+     */   
+    private void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
+        
+        //Initialize all hashes for the third pass of overhang assignment
+        _nodeOHlibraryOHHash = new HashMap<String, HashSet<String>>();
+        _nodeLCompHash = new HashMap<String, HashSet<String>>(); //key: abstract overhang, value: set of all compositions associated with that overhang
+        _nodeRCompHash = new HashMap<String, HashSet<String>>(); //key: abstract overhang, value: set of all compositions associated with that overhang
+        _invertedOverhangs = new HashSet<String>(); //inverted (*) overhangs from second pass
+        _libraryLCompHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all abstract overhangs associated with that composition
+        _libraryRCompHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all abstract overhangs associated with that composition       
+        
+        //Initialize node and library overhang hashes
+        initializeNodeOHHashes(graphs);
+        HashSet<String> libCompOHDirHash = initializeLibraryOHHashes();
+    
+        //Make a sorted list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
+        ArrayList<String> sortedNodeOverhangs = new ArrayList(_nodeOHlibraryOHHash.keySet());
+        Collections.sort(sortedNodeOverhangs); 
+        
+        //Perform a partial cartesian product on library re-use
+        ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs);
+        ArrayList<ArrayList<String>> completeAssignments = traverseCertesianGraph (cartestianRootNodes, sortedNodeOverhangs.size());
+        HashMap<String, String> bestAssignment = scoreAssignments(completeAssignments, sortedNodeOverhangs, finalOverhangHash, libCompOHDirHash);
+        
+        //Assign overhang to nodes and vectors
+        assignFinalOverhangs(bestAssignment, sortedNodeOverhangs);
+        assignVectors(graphs, bestAssignment);
+    }
+
+    /**
+     * This helper method executes the loops necessary to assign overhangs recursively based on parents and children
+     */
+    private int assignPrimaryOverhangs(RNode parent, ArrayList<RNode> children, RNode root, int count) {
+
+        String nextLOverhang = new String();
+
+        //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
+        for (int i = 0; i < children.size(); i++) {
+
+            RNode child = children.get(i);
+            _parentHash.put(child, parent);
+
+            //Pass numeric overhangs down from the parent to the correct child
+            if (i == 0) {
+                child.setLOverhang(parent.getLOverhang());
+            } else if (i == children.size() - 1) {
+                child.setROverhang(parent.getROverhang());
+            }
+
+            //Assign new left overhang if empty
+            if (child.getLOverhang().isEmpty()) {
+
+                //If the nextLOverhangVariable has an overhang waiting
+                if (!nextLOverhang.isEmpty()) {
+                    child.setLOverhang(nextLOverhang);
+                    nextLOverhang = "";
+                } else {
+                    child.setLOverhang(Integer.toString(count));
+                    count++;
+                }
+            }
+
+            //Assign new right overhang if empty
+            if (child.getROverhang().isEmpty()) {
+                child.setROverhang(Integer.toString(count));
+                nextLOverhang = Integer.toString(count);
+                count++;
+            }
+
+            //Make recursive call
+            if (child.getStage() > 0) {
+                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
+                grandChildren.addAll(child.getNeighbors());
+
+                //Remove the current parent from the list
+                if (grandChildren.contains(parent)) {
+                    grandChildren.remove(parent);
+                }
+                count = assignPrimaryOverhangs(child, grandChildren, root, count);
+
+                //Or record the level zero parts
+            } else {
+                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
+                l0nodes.add(child);
+                _rootBasicNodeHash.put(root, l0nodes);
+            }
+        }
+
+        return count;
+    }
+    
+    private void getStageDirectionAssignHash (ArrayList<RGraph> optimalGraphs) {
+        
+         //Determine which nodes impact which level to form the stageDirectionAssignHash
         for (RGraph graph : optimalGraphs) {
             RNode root = graph.getRootNode();
             ArrayList<String> rootDir = new ArrayList<String>();
@@ -199,151 +346,10 @@ public class RMoClo extends RGeneral {
                 _stageDirectionAssignHash.put(level, directionHash);
             }
         }
+        
     }
-
-    /**
-     * This helper method executes the loops necessary to enforce overhangs for
-     * each graph in enforceOverhangRules *
-     */
-    private int enforceOverhangRulesHelper(RNode parent, ArrayList<RNode> children, RNode root, int count) {
-
-        String nextLOverhang = new String();
-
-        //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
-        for (int i = 0; i < children.size(); i++) {
-
-            RNode child = children.get(i);
-            _parentHash.put(child, parent);
-
-            //Pass numeric overhangs down from the parent to the correct child
-            if (i == 0) {
-                child.setLOverhang(parent.getLOverhang());
-            } else if (i == children.size() - 1) {
-                child.setROverhang(parent.getROverhang());
-            }
-
-            //Assign new left overhang if empty
-            if (child.getLOverhang().isEmpty()) {
-
-                //If the nextLOverhangVariable has an overhang waiting
-                if (!nextLOverhang.isEmpty()) {
-                    child.setLOverhang(nextLOverhang);
-                    nextLOverhang = "";
-                } else {
-                    child.setLOverhang(Integer.toString(count));
-                    count++;
-                }
-            }
-
-            //Assign new right overhang if empty
-            if (child.getROverhang().isEmpty()) {
-                child.setROverhang(Integer.toString(count));
-                nextLOverhang = Integer.toString(count);
-                count++;
-            }
-
-            //Make recursive call
-            if (child.getStage() > 0) {
-                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
-                grandChildren.addAll(child.getNeighbors());
-
-                //Remove the current parent from the list
-                if (grandChildren.contains(parent)) {
-                    grandChildren.remove(parent);
-                }
-                count = enforceOverhangRulesHelper(child, grandChildren, root, count);
-
-                //Or record the level zero parts
-            } else {
-                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
-                l0nodes.add(child);
-                _rootBasicNodeHash.put(root, l0nodes);
-            }
-        }
-
-        return count;
-    }
-
-    /**
-     * New overhang sharing method. Nodes that can be shared are determined
-     * during this step. Nodes are assigned by stage of impact. Within that loop
-     * are four steps: 1. All forward oriented nodes first get left overhang
-     * assigned going from right to left 2. The remaining forward nodes get
-     * right assigned 3. All backward oriented get assigned going from left to
-     * right where the right one is assigned first 4. The remaining backwards
-     * nodes get left overhang assigned
-     *
-     */
-    private void maximizeOverhangSharing(ArrayList<RGraph> optimalGraphs) {
-
-        ArrayList<RNode> roots = new ArrayList<RNode>();
-        for (RGraph graph : optimalGraphs) {
-            roots.add(graph.getRootNode());
-        }
-
-        _typeLOHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
-        _typeROHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
-        _numberHash = new HashMap<String, String>(); //key: overhang from round 1, value: overhang from round 2
-        _allLevelOHs = new HashSet<String>();
-
-        Set<Integer> allLevels = _stageDirectionAssignHash.keySet();
-        ArrayList<Integer> levels = new ArrayList<Integer>(allLevels);
-        Collections.sort(levels);
-
-        //Assign by levels of impact starting from lowest level of impact
-        for (Integer level : levels) {
-            HashMap<String, ArrayList<RNode>> directionHash = _stageDirectionAssignHash.get(level);
-            HashSet<String> currentLevelOHs = new HashSet<String>();
-
-            //Visit each basic node to assign overhangs, assigning forward nodes first going left to right first, then right to left
-            ArrayList<RNode> fwdNodes = new ArrayList<RNode>();
-            ArrayList<RNode> bkwdNodes = new ArrayList<RNode>();
-            if (directionHash.containsKey("+")) {
-                fwdNodes = directionHash.get("+");
-            }
-            if (directionHash.containsKey("-")) {
-                bkwdNodes = directionHash.get("-");
-                Collections.reverse(bkwdNodes);
-            }
-            
-            //Assign nodes in the forward direction first
-            currentLevelOHs = assignOverhangs(fwdNodes, "Left", "+", currentLevelOHs, roots);
-            currentLevelOHs = assignOverhangs(fwdNodes, "Right", "+", currentLevelOHs, roots);
-            currentLevelOHs = assignOverhangs(bkwdNodes, "Right", "-", currentLevelOHs, roots);
-            currentLevelOHs = assignOverhangs(bkwdNodes, "Left", "-", currentLevelOHs, roots);
-
-            //Add all overhangs seen in this level to the taken overhang hash of each node
-            _allLevelOHs.addAll(currentLevelOHs);
-        }
-
-        /**
-         * Assign all assignments within numberHash map. *
-         */
-        for (RGraph graph : optimalGraphs) {
-            ArrayList<RNode> queue = new ArrayList<RNode>();
-            HashSet<RNode> seenNodes = new HashSet<RNode>();
-            queue.add(graph.getRootNode());
-
-            //Traverse graph and assign letter overhang to corresponding number placeholder from rule assignment
-            while (!queue.isEmpty()) {
-                RNode currentNode = queue.get(0);
-                queue.remove(0);
-                currentNode.setLOverhang(_numberHash.get(currentNode.getLOverhang()));
-                currentNode.setROverhang(_numberHash.get(currentNode.getROverhang()));
-                seenNodes.add(currentNode);
-                ArrayList<RNode> neighbors = currentNode.getNeighbors();
-
-                for (RNode neighbor : neighbors) {
-                    if (!seenNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                        seenNodes.add(neighbor);
-                    }
-                }
-            }
-        }
-    }
-
-    private HashSet<String> assignOverhangs(ArrayList<RNode> nodes, String LR, String direction, HashSet<String> currentLevelOHs, ArrayList<RNode> roots) {
+    
+    private HashSet<String> assignSecondaryOverhangs(ArrayList<RNode> nodes, String LR, String direction, HashSet<String> currentLevelOHs, ArrayList<RNode> roots) {
  
         for (int j = 0; j < nodes.size(); j++) {
 
@@ -661,27 +667,41 @@ public class RMoClo extends RGeneral {
         parent.setScars(scars);
         return scars;
     }
+    
+    /**
+     * Assign all assignments within numberHash map 
+     */
+    private void mapNumberHash (ArrayList<RGraph> optimalGraphs) {
+        
+        for (RGraph graph : optimalGraphs) {
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
+            queue.add(graph.getRootNode());
 
-    /* 
-     * Third step of overhang assignment - A partial cartesian product given a library of parts
-     */   
-    public void assignLibraryOverhangs(ArrayList<RGraph> graphs, HashMap<String, String> finalOverhangHash) {
-        
-        //Initialize all hashes for the third pass of overhang assignment
-        HashMap<String, HashSet<String>> nodeOHlibraryOHHash = new HashMap<String, HashSet<String>>();
-        HashMap<String, HashSet<String>> nodeLCompHash = new HashMap<String, HashSet<String>>(); //key: abstract overhang, value: set of all compositions associated with that overhang
-        HashMap<String, HashSet<String>> nodeRCompHash = new HashMap<String, HashSet<String>>(); //key: abstract overhang, value: set of all compositions associated with that overhang
-        
-        HashMap<String, HashSet<String>> libraryLCompHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all abstract overhangs associated with that composition
-        HashMap<String, HashSet<String>> libraryRCompHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all abstract overhangs associated with that composition
-        
-        HashSet<String> libCompOHDirHash = new HashSet<String>(); //concatentation of composition Overhang and direction seen in the partLibrary
-        HashMap<Integer, String> levelResistanceHash = new HashMap<Integer, String>(); //key: level, value: antibiotic resistance
-        HashSet<String> invertedOverhangs = new HashSet<String>();
+            //Traverse graph and assign letter overhang to corresponding number placeholder from rule assignment
+            while (!queue.isEmpty()) {
+                RNode currentNode = queue.get(0);
+                queue.remove(0);
+                currentNode.setLOverhang(_numberHash.get(currentNode.getLOverhang()));
+                currentNode.setROverhang(_numberHash.get(currentNode.getROverhang()));
+                seenNodes.add(currentNode);
+                ArrayList<RNode> neighbors = currentNode.getNeighbors();
 
-        /*
-         * Build map of node overhangs (i.e. LO & RO) to library overhangs
-         */
+                for (RNode neighbor : neighbors) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                        seenNodes.add(neighbor);
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    /*
+     * For each of the graphs in the solution set, create a hash of overhangs (left and right) seen for each level 0 node's composition
+     */    
+    private void initializeNodeOHHashes (ArrayList<RGraph> graphs) {
         
         //For each of the graphs in the solution set, create a hash of overhangs (left and right) seen for each level 0 node's composition
         for (RGraph graph : graphs) {
@@ -695,40 +715,48 @@ public class RMoClo extends RGeneral {
                 //If the left overhang is forward (i.e. not inverted), put it in the abstractConcrete hash and the abstractLeftComposisiton hash
                 if (LO.indexOf("*") < 0) {
 
-                    nodeOHlibraryOHHash.put(LO, new HashSet());
+                    _nodeOHlibraryOHHash.put(LO, new HashSet());
 
                     //Add left overhang to abstractLeftComposisiton hash if this overhang is already in the map, otherwise initialize with this composition
-                    if (nodeLCompHash.containsKey(LO)) {
-                        nodeLCompHash.get(LO).add(l0Node.getComposition().toString());
+                    if (_nodeLCompHash.containsKey(LO)) {
+                        _nodeLCompHash.get(LO).add(l0Node.getComposition().toString());
                     } else {
                         HashSet<String> toAddLeft = new HashSet();
                         toAddLeft.add(l0Node.getComposition().toString());
-                        nodeLCompHash.put(LO, toAddLeft);
+                        _nodeLCompHash.put(LO, toAddLeft);
                     }
                 
                 } else {
-                    invertedOverhangs.add(LO);
+                    _invertedOverhangs.add(LO);
                 }
                 
                 //If the right overhang is forward (i.e. not inverted), put it in the abstractConcrete hash and the abstractRightComposisiton hash
                 if (RO.indexOf("*") < 0) {
 
-                    nodeOHlibraryOHHash.put(RO, new HashSet());
+                    _nodeOHlibraryOHHash.put(RO, new HashSet());
                     
                     //Add right overhang to abstractRightComposisiton hash if this overhang is already in the map, otherwise initialize with this composition
-                    if (nodeRCompHash.containsKey(RO)) {
-                        nodeRCompHash.get(RO).add(l0Node.getComposition().toString());
+                    if (_nodeRCompHash.containsKey(RO)) {
+                        _nodeRCompHash.get(RO).add(l0Node.getComposition().toString());
                     } else {
                         HashSet<String> toAddRight = new HashSet();
                         toAddRight.add(l0Node.getComposition().toString());
-                        nodeRCompHash.put(RO, toAddRight);
+                        _nodeRCompHash.put(RO, toAddRight);
                     }
                 
                 } else {
-                    invertedOverhangs.add(RO);
+                    _invertedOverhangs.add(RO);
                 }
             }
         }
+    }
+    
+    /*
+     * For each of the parts in the library, create a hash of overhangs (left and right) seen for each level 0 node's composition
+     */
+    private HashSet<String> initializeLibraryOHHashes() {
+        
+        HashSet<String> libCompOHDirHash = new HashSet<String>(); //concatentation of composition Overhang and direction seen in the partLibrary
         
         //For each part in the library, build hash of overhangs for each composition
         for (Part libraryPart : _partLibrary) {
@@ -737,74 +765,74 @@ public class RMoClo extends RGeneral {
             String composition = libraryPart.getStringComposition().toString();
             
             //If the library part composition is seen in the left hash, add it or put a new entry for the composition
-            if (libraryLCompHash.containsKey(composition)) {
-                libraryLCompHash.get(composition).add(libraryPart.getLeftOverhang());                
+            if (_libraryLCompHash.containsKey(composition)) {
+                _libraryLCompHash.get(composition).add(libraryPart.getLeftOverhang());                
             } else {
                 HashSet<String> toAddLeft = new HashSet();
                 toAddLeft.add(libraryPart.getLeftOverhang());
-                libraryLCompHash.put(composition, toAddLeft);
+                _libraryLCompHash.put(composition, toAddLeft);
             }
                 
             //If the library part composition is seen in the right hash, add it or put a new entry for the composition    
-            if (libraryRCompHash.containsKey(composition))  {
-                libraryRCompHash.get(composition).add(libraryPart.getRightOverhang());            
+            if (_libraryRCompHash.containsKey(composition))  {
+                _libraryRCompHash.get(composition).add(libraryPart.getRightOverhang());            
             } else {
                 HashSet<String> toAddRight = new HashSet();
                 toAddRight.add(libraryPart.getRightOverhang());
-                libraryRCompHash.put(composition, toAddRight);
+                _libraryRCompHash.put(composition, toAddRight);
             }
         }
         
         //For each left overhang in the node hash, loop through associated node compositions and for each composition, build the nodeLO to libraryLO hash 
-        for (String nodeLO : nodeLCompHash.keySet()) {
+        for (String nodeLO : _nodeLCompHash.keySet()) {
             
-            for (String nodeComp : nodeLCompHash.get(nodeLO)) {
+            for (String nodeComp : _nodeLCompHash.get(nodeLO)) {
                 
                 //If any of the node composition are seen in the library, add all library LOs to the node-library hash map that are not blank
-                if (libraryLCompHash.get(nodeComp) != null) {
+                if (_libraryLCompHash.get(nodeComp) != null) {
                     
-                    for (String libraryLO : libraryLCompHash.get(nodeComp)) {
+                    for (String libraryLO : _libraryLCompHash.get(nodeComp)) {
                         if (!libraryLO.equals("")) {
-                            nodeOHlibraryOHHash.get(nodeLO).add(libraryLO);
+                            _nodeOHlibraryOHHash.get(nodeLO).add(libraryLO);
                         }
                     }
                 }
             }
             
             //Each node LO gets all library matches based on composition and one additional placeholder
-            nodeOHlibraryOHHash.get(nodeLO).add("#");
+            _nodeOHlibraryOHHash.get(nodeLO).add("#");
         }
         
         //For each right overhang in the node hash, loop through associated node compositions and for each composition, build the nodeRO to libraryRO hash
-        for (String nodeRO : nodeRCompHash.keySet()) {
+        for (String nodeRO : _nodeRCompHash.keySet()) {
             
-            for (String nodeComp : nodeRCompHash.get(nodeRO)) {
+            for (String nodeComp : _nodeRCompHash.get(nodeRO)) {
                 
                 //If any of the node composition are seen in the library, add all library ROs to the node-library hash map that are not blank
-                if (libraryRCompHash.get(nodeComp) != null) {
+                if (_libraryRCompHash.get(nodeComp) != null) {
                     
-                    for (String libraryRO : libraryRCompHash.get(nodeComp)) {
+                    for (String libraryRO : _libraryRCompHash.get(nodeComp)) {
                         if (!libraryRO.equals("")) {
-                            nodeOHlibraryOHHash.get(nodeRO).add(libraryRO);
+                            _nodeOHlibraryOHHash.get(nodeRO).add(libraryRO);
                         }
                     }
                 }
             }
             
             //Each node RO gets all library matches based on composition and one additional placeholder
-            nodeOHlibraryOHHash.get(nodeRO).add("#");
+            _nodeOHlibraryOHHash.get(nodeRO).add("#");
         }
-
-        /*
-         * Begin Cartesian Graph Space
-         */         
+        
+        return libCompOHDirHash;
+    }
+    
+    /*
+     * Create Cartesian Graph Space
+     */ 
+    private ArrayList<CartesianNode> makeCartesianGraph(ArrayList<String> sortedNodeOverhangs) {
         
         ArrayList<CartesianNode> previousNodes = null;
         ArrayList<CartesianNode> cartestianRootNodes = new ArrayList<CartesianNode>();
-        
-        //Make a sorted list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
-        ArrayList<String> sortedNodeOverhangs = new ArrayList(nodeOHlibraryOHHash.keySet());
-        Collections.sort(sortedNodeOverhangs);
         
         int level = 0;
 
@@ -812,7 +840,7 @@ public class RMoClo extends RGeneral {
         for (String nodeOverhang : sortedNodeOverhangs) {
             
             ArrayList<CartesianNode> currentNodes = new ArrayList<CartesianNode>();
-            HashSet<String> libraryOverhangs = nodeOHlibraryOHHash.get(nodeOverhang);
+            HashSet<String> libraryOverhangs = _nodeOHlibraryOHHash.get(nodeOverhang);
             
             //For all library overhangs mapping to this node overhang, make cartesian nodes
             for (String libraryOverhang : libraryOverhangs) {
@@ -845,13 +873,16 @@ public class RMoClo extends RGeneral {
             
             previousNodes = currentNodes;
             level++;
-        }
+        }      
         
-        /*
-         * Traverse Cartesian graph to find best score
-         */
+        return cartestianRootNodes;
+    }
+    
+    /*
+     * Traverse cartesian graph to produce all complete candidate assignments
+     */
+    private ArrayList<ArrayList<String>> traverseCertesianGraph (ArrayList<CartesianNode> cartestianRootNodes, Integer targetLength) {
         
-        int targetLength = sortedNodeOverhangs.size();
         ArrayList<ArrayList<String>> completeAssignments = new ArrayList<ArrayList<String>>();
         HashMap<CartesianNode, CartesianNode> parentHash = new HashMap<CartesianNode, CartesianNode>(); //key: node, value: parent node
         ArrayList<String> currentSolution;
@@ -923,6 +954,14 @@ public class RMoClo extends RGeneral {
             }
         }
         
+        return completeAssignments;
+    }
+    
+    /*
+     * Score all complete assignments for overhang assignment
+     */
+    private HashMap<String, String> scoreAssignments(ArrayList<ArrayList<String>> completeAssignments, ArrayList<String> sortedNodeOverhangs, HashMap<String, String> finalOverhangHash, HashSet<String> libCompOHDirHash) {
+        
         //Get all basic nodes into a list and initialize arbitrarily high best score
         ArrayList<RNode> basicNodes = new ArrayList();
         for (RNode rootNodes : _rootBasicNodeHash.keySet()) {
@@ -954,7 +993,7 @@ public class RMoClo extends RGeneral {
             
             //TODO: DEAL WITH THIS
             //handle inverted overhangs
-            for (String invertedOverhang : invertedOverhangs) {
+            for (String invertedOverhang : _invertedOverhangs) {
                 
                 //If the inverted overhang is forced put it in the current assignment
                 if (finalOverhangHash.containsKey(invertedOverhang)) {
@@ -1005,7 +1044,12 @@ public class RMoClo extends RGeneral {
                 bestAssignment = currentAssignment;
             } 
         }
-
+        
+        return bestAssignment;
+    }
+    
+    private void assignFinalOverhangs (HashMap<String, String> bestAssignment, ArrayList<String> sortedNodeOverhangs) {
+        
         //generate new overhangs
         HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
         int newOverhang = 0;
@@ -1021,7 +1065,7 @@ public class RMoClo extends RGeneral {
         }
 
         //generate matching new overhangs for inverted overhans
-        for (String invertedOverhang : invertedOverhangs) {
+        for (String invertedOverhang : _invertedOverhangs) {
             
             if (bestAssignment.get(invertedOverhang).equals("#")) {
                 String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
@@ -1036,26 +1080,32 @@ public class RMoClo extends RGeneral {
                     assignedOverhangs.add(String.valueOf(newOverhang));
                 }
             }
-        }
+        }        
+    }
+    
+    /*
+     * Assign vectors to each node on a graph given the final overhang assignments
+     */
+    private void assignVectors(ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment) {
         
-        //traverse graph and assign overhangs generate vectors
-        finalOverhangHash = bestAssignment;
+        //traverse graph and assign overhangs generate vectors        
+        HashMap<Integer, String> levelResistanceHash = new HashMap<Integer, String>(); //key: level, value: antibiotic resistance
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
-        
-        for (Vector v : _vectorLibrary) {
-            
-            if (!existingAntibiotics.contains(v.getResistance())) {
-                existingAntibiotics.add(v.getResistance());
-                
-                if (existingAntibioticsHash.get(v.getLevel()) == null) {
-                    existingAntibioticsHash.put(v.getLevel(), new ArrayList());
+
+        for (Vector vector : _vectorLibrary) {
+
+            if (!existingAntibiotics.contains(vector.getResistance())) {
+                existingAntibiotics.add(vector.getResistance());
+
+                if (existingAntibioticsHash.get(vector.getLevel()) == null) {
+                    existingAntibioticsHash.put(vector.getLevel(), new ArrayList());
                 }
-                if (!existingAntibioticsHash.get(v.getLevel()).contains(v.getResistance())) {
-                    existingAntibioticsHash.get(v.getLevel()).add(v.getResistance());
+                if (!existingAntibioticsHash.get(vector.getLevel()).contains(vector.getResistance())) {
+                    existingAntibioticsHash.get(vector.getLevel()).add(vector.getResistance());
                 }
-                freeAntibiotics.remove(v.getResistance());
+                freeAntibiotics.remove(vector.getResistance());
             }
         }
         int maxStage = 0;
@@ -1065,10 +1115,10 @@ public class RMoClo extends RGeneral {
                 maxStage = graph.getStages();
             }
         }
-        
+
         for (int i = 0; i <= maxStage; i++) {
             String resistance = "";
-            
+
             if (existingAntibioticsHash.get(i) != null) {
                 if (existingAntibioticsHash.get(i).size() > 0) {
                     resistance = existingAntibioticsHash.get(i).get(0);
@@ -1099,8 +1149,8 @@ public class RMoClo extends RGeneral {
 
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
-                current.setLOverhang(finalOverhangHash.get(currentLeftOverhang));
-                current.setROverhang(finalOverhangHash.get(currentRightOverhang));
+                current.setLOverhang(bestAssignment.get(currentLeftOverhang));
+                current.setROverhang(bestAssignment.get(currentRightOverhang));
                 currentLeftOverhang = current.getLOverhang();
                 currentRightOverhang = current.getROverhang();
 
@@ -1329,10 +1379,18 @@ public class RMoClo extends RGeneral {
     private HashMap<String, ArrayList<String>> _typeROHHash; //key: part type, value: all right overhangs seen for this part type
     private HashMap<String, ArrayList<String>> _typeLOHHash; //key: part type, value: all left overhangs seen for this part type
     private HashSet<String> _allLevelOHs;
-    private HashMap<String, String> _numberHash;
+    private HashMap<String, String> _numberHash; //key: rule enforcement overhang, value: assigned overhang in second pass
     private HashMap<Integer, HashMap<String, ArrayList<RNode>>> _stageDirectionAssignHash; //key: stage, value: HashMap: key: direction, value: nodes to visit
     private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>(); //key: composite part composition
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
+    
+    private HashMap<String, HashSet<String>> _nodeOHlibraryOHHash;
+    private HashMap<String, HashSet<String>> _nodeLCompHash; //key: abstract overhang, value: set of all compositions associated with that overhang
+    private HashMap<String, HashSet<String>> _nodeRCompHash; //key: abstract overhang, value: set of all compositions associated with that overhang
+    private HashMap<String, HashSet<String>> _libraryLCompHash;
+    private HashMap<String, HashSet<String>> _libraryRCompHash;
+    private HashSet<String> _invertedOverhangs; //all overhangs that are assigned as inverted
+    
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
 }
