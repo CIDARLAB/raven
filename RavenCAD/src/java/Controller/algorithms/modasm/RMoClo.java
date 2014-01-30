@@ -67,8 +67,8 @@ public class RMoClo extends RGeneral {
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         propagatePrimaryOverhangs(optimalGraphs);
         maximizeOverhangSharing(optimalGraphs);
-        HashMap<String, String> finalOverhangHash = assignForcedOverhangs(optimalGraphs, _forcedOverhangHash);
-        cartesianLibraryAssignment(optimalGraphs, finalOverhangHash);
+        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs, _forcedOverhangHash);
+        cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
