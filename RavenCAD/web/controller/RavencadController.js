@@ -9,6 +9,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var _runParameters = {};
     var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
     var _destination = ""; //stores the url a user was navigating towards
+    var currentActiveTab = 0;
     /********************EVENT HANDLERS********************/
     //prompt dialog when navigating away from design page with unsaved parts
     $('a.losePartLink').click(function(event) {
@@ -244,7 +245,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (targets.length > 1) {
                 canRun = false; //can only run one design at once
                 var currentDesignCount = addDesignTab();
-
+                currentActiveTab = currentDesignCount
 
                 var partLibrary = ""; //parts to use in library
                 var vectorLibrary = ""; //vectors to use in library
@@ -679,7 +680,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
     var addDesignTab = function() {
         _designCount = _designCount + 1;
-        $('#designTabHeader').append('<li><a id="designTabHeader' + _designCount + '" href="#designTab' + _designCount + '" data-toggle="tab">Design ' + _designCount +
+        $('#designTabHeader').append('<li><a id="designTabHeader_' + _designCount + '" href="#designTab' + _designCount + '" data-toggle="tab">Design ' + _designCount +
                 '</a></li>');
         $('#designTabContent').append('<div class="tab-pane" id="designTab' + _designCount + '">');
         $('#designTabHeader a:last').tab('show');
@@ -725,6 +726,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<p><a target="_blank" id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>'
 
                 );
+        $('#designTabHeader li a#designTabHeader_' + _designCount).click(function() {
+            var id = $(this).attr("id").toString();
+            var tabNumber = id.substring(id.indexOf("_") + 1);
+            changeImage(tabNumber);
+        });
         //event handler for discard modal dialog
         $('#discardButton' + _designCount).click(function() {
             var designNumber = $(this).attr("name");
@@ -806,14 +812,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var user = getCookie("user");
         if (data["status"] === "good") {
             //render image
-            //old method
             $("#resultImage" + currentDesignCount).html("<img src='" + data["graph"]["images"] + "'/>");
-//            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-            $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom : true, zoomWindowWidth:640, zoomWindowHeight:360});
-            //open each image for d3 in a new window
-//            $.each(data["graph"]["images"], function(key, value) {
-//                window.open(value,key);
-//            });
+            $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom: true, zoomWindowWidth: 640, zoomWindowHeight: 360});
+
 
             $('#instructionArea' + currentDesignCount).html('<div>' + data["instructions"] + '</div>');
             var status = '';
@@ -962,6 +963,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var redesign = function(originalDesignNumber) {
         if (canRun) {
             var currentDesignCount = addDesignTab();
+            currentActiveTab = currentDesignCount;
             _redesignDesignHash[currentDesignCount] = originalDesignNumber;
             $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
             $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
@@ -974,7 +976,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
             $('div#partsListTab' + currentDesignCount).html();
 //            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
-            $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom : true, zoomWindowWidth:640, zoomWindowHeight:360});
+            $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom: true, zoomWindowWidth: 640, zoomWindowHeight: 360});
             var targets = [];
             $('div#summaryTab' + originalDesignNumber + ' ul#targets li').each(function() {
                 targets.push($(this).text());
@@ -1054,6 +1056,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         //if successful parts succeeded, then run the redesign
                         //add waiting dialog
                         forbid = forbid.substring(0, forbid.length - 1);
+
                         redesignInput["designCount"] = (parseInt(redesignInput["designCount"]) + 1) + "";
                         redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
                         redesignInput["partLibrary"] = redesignInput["partLibrary"] + toAddToPartLibrary;
@@ -1092,7 +1095,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $(this).addClass("btn-success");
                     $(this).text("Succeeded");
                 } else {
-                    //return to neither
+                    //return to neither 
                     $(this).attr("name", "neither");
                     $(this).removeClass("btn-danger");
                     $(this).text("Succeeded or Failed?");//add to forbidden
@@ -1116,6 +1119,25 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#waitModal').modal();
         }
     };
+    $('#designTabHeader li a#designTabHeader_0').click(function() {
+        var id = $(this).attr("id").toString();
+        var tabNumber = id.substring(id.indexOf("_") + 1);
+        changeImage(tabNumber);
+    });
+
+    function changeImage(tabNumber) {
+        if (currentActiveTab > 0) {
+            var image = $('div#resultImage' + currentActiveTab + ' img');
+            $.removeData(image, 'elevateZoom');//remove zoom instance from image
+            $('.zoomContainer').remove();// remove zoom container from DOM
+        }
+        if (tabNumber > 0) {
+            var zoomImage = $('div#resultImage' + tabNumber + ' img');
+            zoomImage.elevateZoom({zoomWindowPosition: 6, scrollZoom: true, zoomWindowWidth: 640, zoomWindowHeight: 360});
+        }
+        currentActiveTab = tabNumber;
+
+    }
 });
 
 
