@@ -422,7 +422,7 @@ public class RGraph {
         //Go through vectors library, put all compositions into hash of things that already exist
         for (Vector aVec : vectorLib) {
 
-            String lOverhang = aVec.getLeftoverhang();
+            String lOverhang = aVec.getLeftOverhang();
             String rOverhang = aVec.getRightOverhang();
             int stage = aVec.getLevel();
             String name = aVec.getName();

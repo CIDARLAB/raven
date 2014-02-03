@@ -252,14 +252,14 @@ public class RInstructions {
                             vectorOligoNamesForNode.add(reverseOligoName);
 
                             vectorOligoHash.put(vector.getVectorKey("+"), vectorOligoNamesForNode);
-                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
+                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
 
                         } else {
                             ArrayList<String> oligoHash = vectorOligoHash.get(vector.getVectorKey("+"));
-                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
+                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                         }
                     } else {
-                        instructions = instructions + "\nPCR " + currentVector.getName() + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftoverhang() + "|" + currentVector.getRightOverhang();
+                        instructions = instructions + "\nPCR " + currentVector.getName() + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                     }
                 }
             }

@@ -83,7 +83,7 @@ public class Vector {
         return toReturn;
     }
 
-    public String getLeftoverhang() {
+    public String getLeftOverhang() {
         String toReturn = "";
         for (String tag : this.searchTags) {
             if (tag.startsWith("LO:")) {

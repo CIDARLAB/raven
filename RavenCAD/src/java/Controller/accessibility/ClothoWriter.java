@@ -434,7 +434,7 @@ public class ClothoWriter {
         for (Vector vector : _allVectors) {
 
             //If the vector keys match, return the same vector
-            String vectorKey = vector.getName() + "|" + vector.getLeftoverhang() + "|" + vector.getLevel() + "|" + vector.getRightOverhang();
+            String vectorKey = vector.getName() + "|" + vector.getLeftOverhang() + "|" + vector.getLevel() + "|" + vector.getRightOverhang();
             if (thisVecKey.equals(vectorKey)) {
                 return vector;
             }

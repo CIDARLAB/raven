@@ -251,13 +251,10 @@ public class Modularity extends Partitioning {
      * First step of overhang assignment - propagate numeric place holders for overhangs, ie no overhang redundancy in any step
      */
     protected void propagatePrimaryOverhangs(ArrayList<RGraph> optimalGraphs) {
-
-        //Initialize fields that record information to save complexity for future steps
+        
         _parentHash = new HashMap<RNode, RNode>();
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
-        _stageDirectionAssignHash = new HashMap<Integer, HashMap<String, ArrayList<RNode>>>();
-        _OHexclusionHash = new HashMap<String, HashSet<String>>(); //key: 1st pass overhang value: all overhangs that cannot be the same
-
+        
         //Loop through each optimal graph and assign first-pass overhangs recursively
         int count = 0;
         for (RGraph graph : optimalGraphs) {
@@ -288,7 +285,7 @@ public class Modularity extends Partitioning {
 
         _typeLOHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
         _typeROHHash = new HashMap<String, ArrayList<String>>(); //key: string type, value: arrayList of abstract overhangs 'reserved' for that composition
-        _numberHash = new HashMap<String, String>(); //key: overhang from round 1, value: overhang from round 2
+        _firstPassSecondPassHash = new HashMap<String, String>(); //key: overhang from round 1, value: overhang from round 2
         _allLevelOHs = new HashSet<String>();
 
         Set<Integer> allLevels = _stageDirectionAssignHash.keySet();
@@ -320,39 +317,34 @@ public class Modularity extends Partitioning {
             //Add all overhangs seen in this level to the taken overhang hash of each node
             _allLevelOHs.addAll(currentLevelOHs);
         }
-
-        mapNumberHash(optimalGraphs);
+        
+        mapSharedOverhangs(optimalGraphs);
     }
     
     /* 
      * Third step of overhang assignment - A partial cartesian product given a library of parts
      */   
     protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash) {
-        
-        //Initialize all hashes for the third pass of overhang assignment
-        _nodeOHlibraryOHHash = new HashMap<String, HashSet<String>>(); //key: node overhang, value: set of all library part overhangs that match composition
-        _nodeLCompHash = new HashMap<String, HashSet<String>>(); //key: node left overhang, value: set of all compositions associated with that overhang
-        _nodeRCompHash = new HashMap<String, HashSet<String>>(); //key: node right overhang, value: set of all compositions associated with that overhang
-        _invertedOverhangs = new HashSet<String>(); //inverted (*) overhangs from second pass
-        _libraryLCompHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all node left overhangs associated with that composition
-        _libraryRCompHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all node right overhangs associated with that composition       
-        
         //Initialize node and library overhang hashes
-        initializeNodeOHHashes(graphs);
-        HashSet<String> libCompOHDirHash = initializeLibraryPartOHHashes();
+        HashMap<String, HashSet<String>> nodePartOHHashes = initializPartOHHashes(graphs);
+        HashMap<String, HashSet<String>> nodeVectorOHHash = initializeVectorOHHashes(graphs);
     
-        //Make a sorted list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
-        ArrayList<String> sortedNodeOverhangs = new ArrayList(_nodeOHlibraryOHHash.keySet());
+        //Sort list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
+        ArrayList<String> sortedNodeOverhangs = new ArrayList(nodePartOHHashes.keySet());
         Collections.sort(sortedNodeOverhangs); 
         
         //Perform a partial cartesian product on library re-use
-        ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs);
+        ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs, nodePartOHHashes);
         ArrayList<ArrayList<String>> completeAssignments = traverseCertesianGraph (cartestianRootNodes, sortedNodeOverhangs.size());
-        HashMap<String, String> bestAssignment = scoreAssignments(completeAssignments, sortedNodeOverhangs, forcedOverhangHash, libCompOHDirHash);
+        HashMap<String, String> bestAssignment = scoreAssignments(completeAssignments, sortedNodeOverhangs, forcedOverhangHash);
+        
+        System.out.println("BEST ASSIGNMENT KEYS: " + bestAssignment.keySet());
+        System.out.println("BEST ASSIGNMENT VALUES: " + bestAssignment.values());
         
         //Assign overhang to nodes and vectors
-        assignFinalOverhangs(bestAssignment, sortedNodeOverhangs);
-        assignVectors(graphs, bestAssignment);
+        assignNewOverhangs(bestAssignment, sortedNodeOverhangs);
+        HashMap<Integer, String> levelResistanceHash = getLevelResistance(graphs, bestAssignment);
+        mapFinalOverhangs (graphs, bestAssignment, levelResistanceHash);
     }
     
     /**
@@ -427,6 +419,10 @@ public class Modularity extends Partitioning {
     
     private void getStageDirectionAssignHash (ArrayList<RGraph> optimalGraphs) {
         
+        _stageDirectionAssignHash = new HashMap<Integer, HashMap<String, ArrayList<RNode>>>();
+        _nodeStagesHash = new HashMap<RNode, ArrayList<Integer>>();
+        _OHexclusionHash = new HashMap<String, HashSet<String>>(); //key: 1st pass overhang value: all overhangs that cannot be the same
+        
          //Determine which nodes impact which level to form the stageDirectionAssignHash
         for (RGraph graph : optimalGraphs) {
             RNode root = graph.getRootNode();
@@ -453,10 +449,16 @@ public class Modularity extends Partitioning {
                     }
                 }
 
+                //Tabulate all stages of impact for part 3 of overhang assignment
+                ArrayList<Integer> stagesOfImpact = new ArrayList<Integer>();
+                _nodeStagesHash.put(l0Node, stagesOfImpact);
+                stagesOfImpact.add(level);
+                
                 //Go up the parent hash until the parent doesn't have an overhang impacted by the child
                 RNode ancestor = parent;
                 while (l0Node.getLOverhang().equals(ancestor.getLOverhang()) || l0Node.getROverhang().equals(ancestor.getROverhang())) {                    
                     level = ancestor.getStage();
+                    stagesOfImpact.add(level);
                     
                     if (_parentHash.containsKey(ancestor)) {
                         ancestor = _parentHash.get(ancestor);
@@ -475,7 +477,7 @@ public class Modularity extends Partitioning {
                         break;
                     }
                 }
-
+                
                 //Add to exclusion hash for the left OH
                 if (_OHexclusionHash.containsKey(l0Node.getLOverhang())) {
                     HashSet<String> exL = _OHexclusionHash.get(l0Node.getLOverhang());
@@ -492,7 +494,7 @@ public class Modularity extends Partitioning {
                     _OHexclusionHash.put(l0Node.getROverhang(), exclusiveR);
                 }
                 
-                //Determine direction and enter into hash               
+                //Determine direction                
                 String l0Direction = rootDir.get(0);
                 if (l0Node.getComposition().size() == 1) {
                     ArrayList<String> l0Dir = new ArrayList<String>();
@@ -502,6 +504,7 @@ public class Modularity extends Partitioning {
                 int size = l0Node.getDirection().size();
                 rootDir.subList(0, size).clear();
 
+                //Enter node into stage direction hash
                 HashMap<String, ArrayList<RNode>> directionHash;
                 ArrayList<RNode> nodeList;
 
@@ -534,7 +537,8 @@ public class Modularity extends Partitioning {
      */
     
     private HashSet<String> assignSecondaryOverhangs(ArrayList<RNode> nodes, String LR, String direction, HashSet<String> currentLevelOHs, ArrayList<RNode> roots) {
- 
+        
+        //Loop through all nodes and assign second pass overhangs based on type direction and assigning from left to right
         for (int j = 0; j < nodes.size(); j++) {
 
             RNode node = nodes.get(j);
@@ -561,15 +565,15 @@ public class Modularity extends Partitioning {
             }
             
             //Assign left overhang if it is not selected yet
-            if (!_numberHash.containsKey(numberHashOH)) {
+            if (!_firstPassSecondPassHash.containsKey(numberHashOH)) {
                 
                 String OH = selectOH(reusableOHs, takenOHs);
                 
                 if (!direction.equals("+")) {
                     String hashOH = OH + "*";
-                    _numberHash.put(numberHashOH, hashOH);
+                    _firstPassSecondPassHash.put(numberHashOH, hashOH);
                 } else {
-                    _numberHash.put(numberHashOH, OH);
+                    _firstPassSecondPassHash.put(numberHashOH, OH);
                     currentLevelOHs.add(OH);
                 }                
 
@@ -605,9 +609,9 @@ public class Modularity extends Partitioning {
         //Search all other overhangs exclusive to this one and add their assigned second overhang to taken OHs
         HashSet<String> exclusiveOHs = _OHexclusionHash.get(OH);
         for (String exclusiveOH : exclusiveOHs) {
-            if (_numberHash.containsKey(exclusiveOH)) {
+            if (_firstPassSecondPassHash.containsKey(exclusiveOH)) {
                 
-                String exclude = _numberHash.get(exclusiveOH);
+                String exclude = _firstPassSecondPassHash.get(exclusiveOH);
                 takenOHs.add(exclude);
                 
                 if (exclude.contains("*")) {
@@ -788,7 +792,7 @@ public class Modularity extends Partitioning {
     /**
      * Assign all assignments within numberHash map 
      */
-    private void mapNumberHash (ArrayList<RGraph> optimalGraphs) {
+    private void mapSharedOverhangs (ArrayList<RGraph> optimalGraphs) {
         
         for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> queue = new ArrayList<RNode>();
@@ -799,8 +803,8 @@ public class Modularity extends Partitioning {
             while (!queue.isEmpty()) {
                 RNode currentNode = queue.get(0);
                 queue.remove(0);
-                currentNode.setLOverhang(_numberHash.get(currentNode.getLOverhang()));
-                currentNode.setROverhang(_numberHash.get(currentNode.getROverhang()));
+                currentNode.setLOverhang(_firstPassSecondPassHash.get(currentNode.getLOverhang()));
+                currentNode.setROverhang(_firstPassSecondPassHash.get(currentNode.getROverhang()));
                 seenNodes.add(currentNode);
                 ArrayList<RNode> neighbors = currentNode.getNeighbors();
 
@@ -824,9 +828,17 @@ public class Modularity extends Partitioning {
      */
     
     /*
-     * For each of the graphs in the solution set, create a hash of overhangs (left and right) seen for each level 0 node's composition
+     * For each of the graphs in the solution set, create a hash of mapping all overhang positions to possible overhang matches in the partLibrary based on composition
      */    
-    private void initializeNodeOHHashes (ArrayList<RGraph> graphs) {
+    private HashMap<String, HashSet<String>> initializPartOHHashes (ArrayList<RGraph> graphs) {
+        
+        _partKeys = new HashSet<String>(); //concatentation of composition Overhang and direction seen in the partLibrary
+        HashMap<String, HashSet<String>> nodeOHpartOHHash = new HashMap<String, HashSet<String>>(); //key: node overhang, value: set of all library part overhangs that match composition
+        HashMap<String, HashSet<String>> nodeLCompHash = new HashMap<String, HashSet<String>>(); //key: node left overhang, value: set of all compositions associated with that overhang
+        HashMap<String, HashSet<String>> nodeRCompHash = new HashMap<String, HashSet<String>>(); //key: node right overhang, value: set of all compositions associated with that overhang
+        HashMap<String, HashSet<String>> partCompLHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all part left overhangs associated with that composition
+        HashMap<String, HashSet<String>> partCompRHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all part right overhangs associated with that composition
+        _invertedOverhangs = new HashSet<String>(); //inverted (*) overhangs from second pass   
         
         //For each of the graphs in the solution set, create a hash of overhangs (left and right) seen for each level 0 node's composition
         for (RGraph graph : graphs) {
@@ -839,16 +851,15 @@ public class Modularity extends Partitioning {
                 
                 //If the left overhang is forward (i.e. not inverted), put it in the abstractConcrete hash and the abstractLeftComposisiton hash
                 if (LO.indexOf("*") < 0) {
-
-                    _nodeOHlibraryOHHash.put(LO, new HashSet());
-
+                    
                     //Add left overhang to abstractLeftComposisiton hash if this overhang is already in the map, otherwise initialize with this composition
-                    if (_nodeLCompHash.containsKey(LO)) {
-                        _nodeLCompHash.get(LO).add(l0Node.getComposition().toString());
+                    nodeOHpartOHHash.put(LO, new HashSet());
+                    if (nodeLCompHash.containsKey(LO)) {
+                        nodeLCompHash.get(LO).add(l0Node.getComposition().toString());
                     } else {
                         HashSet<String> toAddLeft = new HashSet();
                         toAddLeft.add(l0Node.getComposition().toString());
-                        _nodeLCompHash.put(LO, toAddLeft);
+                        nodeLCompHash.put(LO, toAddLeft);
                     }
                 
                 } else {
@@ -858,104 +869,225 @@ public class Modularity extends Partitioning {
                 //If the right overhang is forward (i.e. not inverted), put it in the abstractConcrete hash and the abstractRightComposisiton hash
                 if (RO.indexOf("*") < 0) {
 
-                    _nodeOHlibraryOHHash.put(RO, new HashSet());
-                    
                     //Add right overhang to abstractRightComposisiton hash if this overhang is already in the map, otherwise initialize with this composition
-                    if (_nodeRCompHash.containsKey(RO)) {
-                        _nodeRCompHash.get(RO).add(l0Node.getComposition().toString());
+                    nodeOHpartOHHash.put(RO, new HashSet());
+                    if (nodeRCompHash.containsKey(RO)) {
+                        nodeRCompHash.get(RO).add(l0Node.getComposition().toString());
                     } else {
                         HashSet<String> toAddRight = new HashSet();
                         toAddRight.add(l0Node.getComposition().toString());
-                        _nodeRCompHash.put(RO, toAddRight);
+                        nodeRCompHash.put(RO, toAddRight);
                     }
-                
+
                 } else {
                     _invertedOverhangs.add(RO);
                 }
             }
         }
-    }
-    
-    /*
-     * For each of the parts in the library, create a hash of overhangs (left and right) seen for each level 0 node's composition
-     */
-    private HashSet<String> initializeLibraryPartOHHashes() {
         
-        HashSet<String> libCompOHDirHash = new HashSet<String>(); //concatentation of composition Overhang and direction seen in the partLibrary
-        
+        //For each of the parts in the library, create a hash of overhangs (left and right) seen for each level 0 node's composition             
         //For each part in the library, build hash of overhangs for each composition
         for (Part libraryPart : _partLibrary) {
-            
-            libCompOHDirHash.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+
+            _partKeys.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
             String composition = libraryPart.getStringComposition().toString();
-            
+
             //If the library part composition is seen in the left hash, add it or put a new entry for the composition
-            if (_libraryLCompHash.containsKey(composition)) {
-                _libraryLCompHash.get(composition).add(libraryPart.getLeftOverhang());                
+            if (partCompLHash.containsKey(composition)) {
+                partCompLHash.get(composition).add(libraryPart.getLeftOverhang());
             } else {
                 HashSet<String> toAddLeft = new HashSet();
                 toAddLeft.add(libraryPart.getLeftOverhang());
-                _libraryLCompHash.put(composition, toAddLeft);
+                partCompLHash.put(composition, toAddLeft);
             }
-                
+
             //If the library part composition is seen in the right hash, add it or put a new entry for the composition    
-            if (_libraryRCompHash.containsKey(composition))  {
-                _libraryRCompHash.get(composition).add(libraryPart.getRightOverhang());            
+            if (partCompRHash.containsKey(composition)) {
+                partCompRHash.get(composition).add(libraryPart.getRightOverhang());
             } else {
                 HashSet<String> toAddRight = new HashSet();
                 toAddRight.add(libraryPart.getRightOverhang());
-                _libraryRCompHash.put(composition, toAddRight);
+                partCompRHash.put(composition, toAddRight);
             }
         }
         
-        //MATCH LIBRARY OVERHANGS TO NODE OVERHANGS
+        //MAP LIBRARY OVERHANGS TO NODE OVERHANGS
         //For each left overhang in the node hash, loop through associated node compositions and for each composition, build the nodeLO to libraryLO hash 
-        for (String nodeLO : _nodeLCompHash.keySet()) {
+        for (String nodeLO : nodeLCompHash.keySet()) {
             
-            for (String nodeComp : _nodeLCompHash.get(nodeLO)) {
+            for (String nodeComp : nodeLCompHash.get(nodeLO)) {
                 
                 //If any of the node composition are seen in the library, add all library LOs to the node-library hash map that are not blank
-                if (_libraryLCompHash.get(nodeComp) != null) {
+                if (partCompLHash.get(nodeComp) != null) {
                     
-                    for (String libraryLO : _libraryLCompHash.get(nodeComp)) {
+                    for (String libraryLO : partCompLHash.get(nodeComp)) {
                         if (!libraryLO.equals("")) {
-                            _nodeOHlibraryOHHash.get(nodeLO).add(libraryLO);
+                            nodeOHpartOHHash.get(nodeLO).add(libraryLO);
                         }
                     }
                 }
             }
             
             //Each node LO gets all library matches based on composition and one additional placeholder
-            _nodeOHlibraryOHHash.get(nodeLO).add("#");
+            nodeOHpartOHHash.get(nodeLO).add("#");
         }
         
         //For each right overhang in the node hash, loop through associated node compositions and for each composition, build the nodeRO to libraryRO hash
-        for (String nodeRO : _nodeRCompHash.keySet()) {
+        for (String nodeRO : nodeRCompHash.keySet()) {
             
-            for (String nodeComp : _nodeRCompHash.get(nodeRO)) {
+            for (String nodeComp : nodeRCompHash.get(nodeRO)) {
                 
                 //If any of the node composition are seen in the library, add all library ROs to the node-library hash map that are not blank
-                if (_libraryRCompHash.get(nodeComp) != null) {
+                if (partCompRHash.get(nodeComp) != null) {
                     
-                    for (String libraryRO : _libraryRCompHash.get(nodeComp)) {
+                    for (String libraryRO : partCompRHash.get(nodeComp)) {
                         if (!libraryRO.equals("")) {
-                            _nodeOHlibraryOHHash.get(nodeRO).add(libraryRO);
+                            nodeOHpartOHHash.get(nodeRO).add(libraryRO);
                         }
                     }
                 }
             }
             
             //Each node RO gets all library matches based on composition and one additional placeholder
-            _nodeOHlibraryOHHash.get(nodeRO).add("#");
+            nodeOHpartOHHash.get(nodeRO).add("#");
+        }    
+
+        return nodeOHpartOHHash;     
+    }
+    
+    /*
+     * For each of the graphs in the solution set, create a hash of mapping all overhang positions to possible overhang matches in the vectorLibrary based on stage
+     */ 
+    private HashMap<String, HashSet<String>> initializeVectorOHHashes(ArrayList<RGraph> graphs) {
+        
+        _vectorKeys = new HashSet<String>(); //concatentation of stage and overhangs
+        HashMap<String, HashSet<String>> nodeOHvectorOHHash = new HashMap<String, HashSet<String>>(); //key: node overhang, value: set of all library vector overhangs that match composition
+        HashMap<String, HashSet<Integer>> nodeLStageHash = new HashMap<String, HashSet<Integer>>(); //key: node left overhang, value: set of all stages impacted by that overhang
+        HashMap<String, HashSet<Integer>> nodeRStageHash = new HashMap<String, HashSet<Integer>>(); //key: node right overhang, value: set of all stages impacted by that overhang
+        HashMap<Integer, HashSet<String>> vectorStageLHash = new HashMap<Integer, HashSet<String>>(); //key: stage, value: set of all vector left overhangs associated with that stage
+        HashMap<Integer, HashSet<String>> vectorStageRHash = new HashMap<Integer, HashSet<String>>(); //key: stage, value: set of all vector right overhangs associated with that stage
+        
+        //For each of the graphs in the solution set, create a hash of overhangs (left and right) seen for each level 0 node's composition
+        for (RGraph graph : graphs) {
+            
+            //For each of the l0Nodes in the graph, build hash of overhangs for each composition, ignoring reverse overhangs 
+            for (RNode l0Node : _rootBasicNodeHash.get(graph.getRootNode())) {
+                
+                String LO = l0Node.getLOverhang();
+                String RO = l0Node.getROverhang();
+                
+                //If the left overhang is forward (i.e. not inverted), put it in the abstractConcrete hash and the abstractLeftComposisiton hash
+                if (LO.indexOf("*") < 0) {
+                    
+                    //Add left overhang to nodeLStage hash if this overhang is already in the map, otherwise initialize with this composition
+                    nodeOHvectorOHHash.put(LO, new HashSet());
+                    if (nodeLStageHash.containsKey(LO)) {
+                        nodeLStageHash.get(LO).addAll(_nodeStagesHash.get(l0Node));
+                    } else {
+                        HashSet<Integer> toAddLeft = new HashSet();
+                        toAddLeft.addAll(_nodeStagesHash.get(l0Node));
+                        nodeLStageHash.put(LO, toAddLeft);
+                    }
+                
+                } else {
+                    _invertedOverhangs.add(LO);
+                }
+                
+                //If the right overhang is forward (i.e. not inverted), put it in the abstractConcrete hash and the abstractRightComposisiton hash
+                if (RO.indexOf("*") < 0) {
+
+                    //Add left overhang to nodeLStage hash if this overhang is already in the map, otherwise initialize with this composition
+                    nodeOHvectorOHHash.put(RO, new HashSet());
+                    if (nodeRStageHash.containsKey(RO)) {
+                        nodeRStageHash.get(RO).addAll(_nodeStagesHash.get(l0Node));
+                    } else {
+                        HashSet<Integer> toAddRight = new HashSet();
+                        toAddRight.addAll(_nodeStagesHash.get(l0Node));
+                        nodeRStageHash.put(RO, toAddRight);
+                    }
+
+                } else {
+                    _invertedOverhangs.add(RO);
+                }
+            }
+        }
+                
+        //For each part in the library, build hash of overhangs for each composition
+        for (Vector libraryVector : _vectorLibrary) {
+            
+            _vectorKeys.add(libraryVector.getLevel() + "|" + libraryVector.getLeftOverhang() + "|" + libraryVector.getRightOverhang());
+            int level = libraryVector.getLevel();
+            
+            //If the library vector stage is seen in the left hash, add it or put a new entry for the stage
+            if (vectorStageLHash.containsKey(level)) {
+                vectorStageLHash.get(level).add(libraryVector.getLeftOverhang());
+            } else {
+                HashSet<String> toAddLeft = new HashSet();
+                toAddLeft.add(libraryVector.getLeftOverhang());
+                vectorStageLHash.put(level, toAddLeft);
+            }
+                
+            //If the library vector stage is seen in the right hash, add it or put a new entry for the stage
+            if (vectorStageRHash.containsKey(level)) {
+               vectorStageRHash.get(level).add(libraryVector.getRightOverhang());
+            } else {
+                HashSet<String> toAddRight = new HashSet();
+                toAddRight.add(libraryVector.getRightOverhang());
+                vectorStageRHash.put(level, toAddRight);
+            }
         }
         
-        return libCompOHDirHash;
+        
+        
+        //MAP LIBRARY OVERHANGS TO NODE OVERHANGS
+        //For each left overhang in the node hash, loop through associated node compositions and for each composition, build the nodeLO to libraryLO hash 
+        for (String nodeLO : nodeLStageHash.keySet()) {
+            
+            for (Integer stage : nodeLStageHash.get(nodeLO)) {
+                
+                //If any of the node composition are seen in the library, add all library LOs to the node-library hash map that are not blank
+                if (vectorStageLHash.get(stage) != null) {
+                    
+                    for (String libraryLO : vectorStageLHash.get(stage)) {
+                        if (!libraryLO.equals("")) {
+                            nodeOHvectorOHHash.get(nodeLO).add(libraryLO);
+                        }
+                    }
+                }
+            }
+            
+            //Each node LO gets all library matches based on composition and one additional placeholder
+            nodeOHvectorOHHash.get(nodeLO).add("#");
+        }
+        
+        //For each right overhang in the node hash, loop through associated node compositions and for each composition, build the nodeRO to libraryRO hash
+        for (String nodeRO : nodeRStageHash.keySet()) {
+            
+            for (Integer stage : nodeRStageHash.get(nodeRO)) {
+                
+                //If any of the node composition are seen in the library, add all library ROs to the node-library hash map that are not blank
+                if (vectorStageRHash.get(stage) != null) {
+                    
+                    for (String libraryRO : vectorStageRHash.get(stage)) {
+                        if (!libraryRO.equals("")) {
+                            nodeOHvectorOHHash.get(nodeRO).add(libraryRO);
+                        }
+                    }
+                }
+            }
+            
+            //Each node RO gets all library matches based on composition and one additional placeholder
+            nodeOHvectorOHHash.get(nodeRO).add("#");
+        }    
+        
+        
+        return nodeOHvectorOHHash;      
     }
     
     /*
      * Create Cartesian Graph Space
      */ 
-    private ArrayList<CartesianNode> makeCartesianGraph(ArrayList<String> sortedNodeOverhangs) {
+    private ArrayList<CartesianNode> makeCartesianGraph(ArrayList<String> sortedNodeOverhangs, HashMap<String, HashSet<String>> nodeOHpartOHHash) {
         
         ArrayList<CartesianNode> previousNodes = null;
         ArrayList<CartesianNode> cartestianRootNodes = new ArrayList<CartesianNode>();
@@ -966,7 +1098,7 @@ public class Modularity extends Partitioning {
         for (String nodeOverhang : sortedNodeOverhangs) {
             
             ArrayList<CartesianNode> currentNodes = new ArrayList<CartesianNode>();
-            HashSet<String> libraryOverhangs = _nodeOHlibraryOHHash.get(nodeOverhang);
+            HashSet<String> libraryOverhangs = nodeOHpartOHHash.get(nodeOverhang);
             
             //For all library overhangs mapping to this node overhang, make cartesian nodes
             for (String libraryOverhang : libraryOverhangs) {
@@ -1086,7 +1218,7 @@ public class Modularity extends Partitioning {
     /*
      * Score all complete assignments for overhang assignment
      */
-    private HashMap<String, String> scoreAssignments(ArrayList<ArrayList<String>> completeAssignments, ArrayList<String> sortedNodeOverhangs, HashMap<String, String> forcedOHHash, HashSet<String> libCompOHDirHash) {
+    private HashMap<String, String> scoreAssignments(ArrayList<ArrayList<String>> completeAssignments, ArrayList<String> sortedNodeOverhangs, HashMap<String, String> forcedOHHash) {
         
         //Get all basic nodes into a list and initialize arbitrarily high best score
         ArrayList<RNode> basicNodes = new ArrayList();
@@ -1097,7 +1229,8 @@ public class Modularity extends Partitioning {
                 }
             }
         }
-        int bestScore = 1000000000;
+//        int bestScore = 1000000000;
+        int bestScore = basicNodes.size() + 1;
         HashMap<String, String> bestAssignment = null;
         
         //Loop through each complete assignment and score the solutions
@@ -1117,7 +1250,6 @@ public class Modularity extends Partitioning {
                 }
             }
             
-            //TODO: DEAL WITH THIS
             //handle inverted overhangs
             for (String invertedOverhang : _invertedOverhangs) {
                 
@@ -1151,15 +1283,24 @@ public class Modularity extends Partitioning {
                 }
             }
             
-            HashSet<String> matched = new HashSet();
+            HashSet<String> matched = new HashSet<String>();
             
             //Score this assignment for each basic node
             for (RNode basicNode : basicNodes) {
                 String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
-                if (!libCompOHDirHash.contains(compositionOverhangDirectionString)) {
+                
+                //If this node matches up to a part contained in the library, add it to the matched score, which will be deducted for the currentScore
+                if (!_partKeys.contains(compositionOverhangDirectionString)) {
                     currentScore++;
                 } else {
                     matched.add(compositionOverhangDirectionString);
+                }
+                
+                //If this node matches up to a vector contained in the library, add it to the matched score, which will be deducted for the currentScore
+                if (false) {
+                    
+                } else {
+                    
                 }
             }
             currentScore = currentScore - matched.size();
@@ -1174,35 +1315,42 @@ public class Modularity extends Partitioning {
         return bestAssignment;
     }
     
-    private void assignFinalOverhangs (HashMap<String, String> bestAssignment, ArrayList<String> sortedNodeOverhangs) {
-        
-        //generate new overhangs
+    /*
+     * Assign new overhang to all wildcard positions from the best assignment
+     */
+    private void assignNewOverhangs (HashMap<String, String> bestAssignment, ArrayList<String> sortedNodeOverhangs) {
+
         HashSet<String> assignedOverhangs = new HashSet(bestAssignment.values());
         int newOverhang = 0;
-        
-        for (String starAbstract : sortedNodeOverhangs) {
-            if (bestAssignment.get(starAbstract).equals("#")) {
+
+        //Generate new overhangs for all forward versions with a wildcard
+        //sortedNodeOverhangs variable used as an alternative
+        for (String overhang : sortedNodeOverhangs) {
+            if (bestAssignment.get(overhang).equals("#")) {
                 while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
                     newOverhang++;
                 }
-                bestAssignment.put(starAbstract, String.valueOf(newOverhang));
+                bestAssignment.put(overhang, String.valueOf(newOverhang));
                 assignedOverhangs.add(String.valueOf(newOverhang));
             }
         }
 
-        //generate matching new overhangs for inverted overhans
+        //Generate matching new overhangs for inverted overhangs with a wildcard
         for (String invertedOverhang : _invertedOverhangs) {
             
+            //If the inverted overhang maps to a new overhang, get the normal version and find what that maps to
             if (bestAssignment.get(invertedOverhang).equals("#")) {
-                String uninvertedOverhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
+                String overhang = invertedOverhang.substring(0, invertedOverhang.indexOf("*"));
                 
-                if (bestAssignment.containsKey(uninvertedOverhang)) {
-                    bestAssignment.put(invertedOverhang, bestAssignment.get(uninvertedOverhang) + "*");
+                //Map to forward assignment unless there is no mapping to the un-inverted version, then create a new overhang 
+                if (bestAssignment.containsKey(overhang)) {
+                    bestAssignment.put(invertedOverhang, bestAssignment.get(overhang) + "*");
                 } else {
+                    
                     while (assignedOverhangs.contains(String.valueOf(newOverhang))) {
                         newOverhang++;
                     }
-                    bestAssignment.put(invertedOverhang, String.valueOf(newOverhang));
+                    bestAssignment.put(invertedOverhang, String.valueOf(newOverhang) + "*");
                     assignedOverhangs.add(String.valueOf(newOverhang));
                 }
             }
@@ -1210,18 +1358,19 @@ public class Modularity extends Partitioning {
     }
     
     /*
-     * Assign vectors to each node on a graph given the final overhang assignments
+     * Create vectors for each node on a graph given the final overhang assignments
      */
-    private void assignVectors(ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment) {
+    private HashMap<Integer, String> getLevelResistance(ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment) {
         
-        //traverse graph and assign overhangs generate vectors        
         HashMap<Integer, String> levelResistanceHash = new HashMap<Integer, String>(); //key: level, value: antibiotic resistance
         ArrayList<String> freeAntibiotics = new ArrayList(Arrays.asList("ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin, ampicillin, kanamycin".toLowerCase().split(", "))); //overhangs that don't exist in part or vector library
         ArrayList<String> existingAntibiotics = new ArrayList<String>();
         HashMap<Integer, ArrayList<String>> existingAntibioticsHash = new HashMap();
 
+        //For each vector in the library, add the resistance if it is not included in the existing antibiotics set
         for (Vector vector : _vectorLibrary) {
 
+            //Determine destination vector level based on input level
             if (!existingAntibiotics.contains(vector.getResistance())) {
                 existingAntibiotics.add(vector.getResistance());
 
@@ -1234,14 +1383,15 @@ public class Modularity extends Partitioning {
                 freeAntibiotics.remove(vector.getResistance());
             }
         }
+        
         int maxStage = 0;
-
         for (RGraph graph : graphs) {
             if (graph.getStages() > maxStage) {
                 maxStage = graph.getStages();
             }
         }
 
+        //Map level to antibiotic resitance
         for (int i = 0; i <= maxStage; i++) {
             String resistance = "";
 
@@ -1256,8 +1406,16 @@ public class Modularity extends Partitioning {
             }
             levelResistanceHash.put(i, resistance);
         }
-
-        //Assign vectors for all graphs
+        
+        return levelResistanceHash;
+    }
+    
+    /*
+     * Traverse the graphs and assign all final overhangs from map of second to third pass overhangs
+     */
+    private void mapFinalOverhangs (ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment, HashMap<Integer, String> levelResistanceHash) {
+        
+        //Assign final overhangs for all graphs
         for (RGraph graph : graphs) {
             ArrayList<RNode> queue = new ArrayList();
             HashSet<RNode> seenNodes = new HashSet();
@@ -1285,6 +1443,7 @@ public class Modularity extends Partitioning {
                 current.setVector(newVector);
             }
         }
+        
     }
     
     /**
@@ -1356,23 +1515,21 @@ public class Modularity extends Partitioning {
     
     //FIELDS
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
-    private HashMap<Integer, HashMap<String, ArrayList<RNode>>> _stageDirectionAssignHash; //key: stage, value: HashMap: key: direction, value: nodes to visit    
+    private HashMap<Integer, HashMap<String, ArrayList<RNode>>> _stageDirectionAssignHash; //key: stage, value: (key: direction, value: nodes to visit)
+    private HashMap<RNode, ArrayList<Integer>> _nodeStagesHash; //key: level 0 node, value: all the stages this node impacts
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
     
     private HashMap<String, HashSet<String>> _OHexclusionHash; //key: parent node, value: all overhangs that have been seen in this step
     private HashMap<String, ArrayList<String>> _typeROHHash; //key: part type, value: all right overhangs seen for this part type
     private HashMap<String, ArrayList<String>> _typeLOHHash; //key: part type, value: all left overhangs seen for this part type
+    private HashMap<String, String> _firstPassSecondPassHash; //key: first pass overhang, value: second pass overhang
     private HashSet<String> _allLevelOHs;
-    private HashMap<String, String> _numberHash; //key: first pass overhang, value: assigned overhang in second pass
     
-    private HashMap<String, HashSet<String>> _nodeOHlibraryOHHash; //key: node overhang, value: set of all library part overhangs that match composition
-    private HashMap<String, HashSet<String>> _nodeLCompHash; //key: node overhang, value: set of all compositions associated with that overhang
-    private HashMap<String, HashSet<String>> _nodeRCompHash; //key: node overhang, value: set of all compositions associated with that overhang
-    private HashMap<String, HashSet<String>> _libraryLCompHash; //key: composition, value: set of all abstract overhangs associated with that composition
-    private HashMap<String, HashSet<String>> _libraryRCompHash; //key: composition, value: set of all abstract overhangs associated with that composition
     protected HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>(); //key: composite part composition, value: forced overhang set
     private HashSet<String> _invertedOverhangs; //all overhangs that are assigned as inverted
     
+    private HashSet<String> _vectorKeys;
+    private HashSet<String> _partKeys;
     protected ArrayList<Part> _partLibrary = new ArrayList<Part>();
     protected ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
 }

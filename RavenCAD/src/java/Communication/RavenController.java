@@ -272,7 +272,7 @@ public class RavenController {
                 partList = partList + "{\"uuid\":\"" + v.getUUID()
                         + "\",\"Name\":\"" + v.getName()
                         + "\",\"Sequence\":\"" + v.getSeq()
-                        + "\",\"LO\":\"" + v.getLeftoverhang()
+                        + "\",\"LO\":\"" + v.getLeftOverhang()
                         + "\",\"RO\":\"" + v.getRightOverhang()
                         + "\",\"Type\":\"vector\",\"Composition\":\"\""
                         + ",\"Vector\":\"\""
@@ -386,7 +386,7 @@ public class RavenController {
             toReturn = toReturn + "{\"uuid\":\"" + v.getUUID()
                     + "\",\"Name\":\"" + v.getName()
                     + "\",\"Sequence\":\"" + v.getSeq()
-                    + "\",\"LO\":\"" + v.getLeftoverhang()
+                    + "\",\"LO\":\"" + v.getLeftOverhang()
                     + "\",\"RO\":\"" + v.getRightOverhang()
                     + "\",\"Type\":\"vector\",\"Composition\":\"\""
                     + ",\"Resistance\":\"" + v.getResistance()
@@ -694,7 +694,7 @@ public class RavenController {
                 ArrayList<Vector> vectors = _collector.getAllVectorsWithName(vectorName, true);
                 if (vectors.size() > 0) {
                     for (Vector vec : vectors) {
-                        if (vec.getLeftoverhang().equals(leftOverhang) && vec.getRightOverhang().equals(rightOverhang)) {
+                        if (vec.getLeftOverhang().equals(leftOverhang) && vec.getRightOverhang().equals(rightOverhang)) {
                             vector = vec;
                         }
                     }
