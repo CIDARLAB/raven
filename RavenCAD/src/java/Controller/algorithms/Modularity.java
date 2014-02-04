@@ -21,7 +21,7 @@ public class Modularity extends Partitioning {
      /**
      * ************************************************************************
      *
-     * THIS CLASS HAS MOSTLY SHARING AND HELPER METHODS FOR MAIN ALGORITHM
+     * THIS CLASS HAS MODULARITY METHODS (OVERHANG ASSIGNMENT)
      *
      *************************************************************************
      */
@@ -252,6 +252,7 @@ public class Modularity extends Partitioning {
      */
     protected void propagatePrimaryOverhangs(ArrayList<RGraph> optimalGraphs) {
         
+        _allNodes = new HashSet<RNode>();
         _parentHash = new HashMap<RNode, RNode>();
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
         
@@ -261,6 +262,7 @@ public class Modularity extends Partitioning {
             RNode root = graph.getRootNode();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
+            _allNodes.add(root);
             root.setLOverhang(Integer.toString(count));
             count++;
             root.setROverhang(Integer.toString(count));
@@ -328,18 +330,31 @@ public class Modularity extends Partitioning {
         //Initialize node and library overhang hashes
         HashMap<String, HashSet<String>> nodePartOHHashes = initializPartOHHashes(graphs);
         HashMap<String, HashSet<String>> nodeVectorOHHash = initializeVectorOHHashes(graphs);
+        
+//        System.out.println("nodePartOHHashes keys: " + nodePartOHHashes.keySet());
+//        System.out.println("nodePartOHHashes values: " + nodePartOHHashes.values());
+//        System.out.println("nodeVectorOHHash keys: " + nodeVectorOHHash.keySet());
+//        System.out.println("nodeVectorOHHash values: " + nodeVectorOHHash.values());
     
         //Sort list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
         ArrayList<String> sortedNodeOverhangs = new ArrayList(nodePartOHHashes.keySet());
         Collections.sort(sortedNodeOverhangs); 
         
         //Perform a partial cartesian product on library re-use
-        ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs, nodePartOHHashes);
+        ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs, nodePartOHHashes, nodeVectorOHHash);
+        
+//        System.out.println("MADE CARTESIAN GRAPH!");
+        
         ArrayList<ArrayList<String>> completeAssignments = traverseCertesianGraph (cartestianRootNodes, sortedNodeOverhangs.size());
+        
+//        System.out.println("FOUND COMPLETE ASSIGNMENTS!");
+        
         HashMap<String, String> bestAssignment = scoreAssignments(completeAssignments, sortedNodeOverhangs, forcedOverhangHash);
         
-        System.out.println("BEST ASSIGNMENT KEYS: " + bestAssignment.keySet());
-        System.out.println("BEST ASSIGNMENT VALUES: " + bestAssignment.values());
+//        System.out.println("SCORED ASSIGNMENTS!");
+//        
+//        System.out.println("BEST ASSIGNMENT KEYS: " + bestAssignment.keySet());
+//        System.out.println("BEST ASSIGNMENT VALUES: " + bestAssignment.values());
         
         //Assign overhang to nodes and vectors
         assignNewOverhangs(bestAssignment, sortedNodeOverhangs);
@@ -366,6 +381,7 @@ public class Modularity extends Partitioning {
         for (int i = 0; i < children.size(); i++) {
 
             RNode child = children.get(i);
+            _allNodes.add(child);
             _parentHash.put(child, parent);
 
             //Pass numeric overhangs down from the parent to the correct child
@@ -417,6 +433,9 @@ public class Modularity extends Partitioning {
         return count;
     }
     
+    /*
+     * Get the hash which determines the order in which overhangs will visited in the second pass
+     */
     private void getStageDirectionAssignHash (ArrayList<RGraph> optimalGraphs) {
         
         _stageDirectionAssignHash = new HashMap<Integer, HashMap<String, ArrayList<RNode>>>();
@@ -1037,7 +1056,10 @@ public class Modularity extends Partitioning {
             }
         }
         
-        
+//        System.out.println("vectorStageRHash keys: " + vectorStageRHash.keySet());
+//        System.out.println("vectorStageRHash values: " + vectorStageRHash.values());
+//        System.out.println("vectorStageLHash keys: " + vectorStageLHash.keySet());
+//        System.out.println("vectorStageRHash values: " + vectorStageLHash.values());
         
         //MAP LIBRARY OVERHANGS TO NODE OVERHANGS
         //For each left overhang in the node hash, loop through associated node compositions and for each composition, build the nodeLO to libraryLO hash 
@@ -1087,7 +1109,7 @@ public class Modularity extends Partitioning {
     /*
      * Create Cartesian Graph Space
      */ 
-    private ArrayList<CartesianNode> makeCartesianGraph(ArrayList<String> sortedNodeOverhangs, HashMap<String, HashSet<String>> nodeOHpartOHHash) {
+    private ArrayList<CartesianNode> makeCartesianGraph(ArrayList<String> sortedNodeOverhangs, HashMap<String, HashSet<String>> nodeOHpartOHHash, HashMap<String, HashSet<String>> nodeOHvectorOHHash) {
         
         ArrayList<CartesianNode> previousNodes = null;
         ArrayList<CartesianNode> cartestianRootNodes = new ArrayList<CartesianNode>();
@@ -1099,6 +1121,7 @@ public class Modularity extends Partitioning {
             
             ArrayList<CartesianNode> currentNodes = new ArrayList<CartesianNode>();
             HashSet<String> libraryOverhangs = nodeOHpartOHHash.get(nodeOverhang);
+//            libraryOverhangs.addAll(nodeOHvectorOHHash.get(nodeOverhang));
             
             //For all library overhangs mapping to this node overhang, make cartesian nodes
             for (String libraryOverhang : libraryOverhangs) {
@@ -1229,14 +1252,13 @@ public class Modularity extends Partitioning {
                 }
             }
         }
-//        int bestScore = 1000000000;
-        int bestScore = basicNodes.size() + 1;
+        
+        int bestScore = basicNodes.size() + _allNodes.size() + 1;
         HashMap<String, String> bestAssignment = null;
         
         //Loop through each complete assignment and score the solutions
         for (ArrayList<String> assignment : completeAssignments) {
             HashMap<String, String> currentAssignment = new HashMap();
-            int currentScore = 0;
             
             //Forced overhangs
             for (int i = 0; i < sortedNodeOverhangs.size(); i++) {
@@ -1283,27 +1305,30 @@ public class Modularity extends Partitioning {
                 }
             }
             
-            HashSet<String> matched = new HashSet<String>();
+//            HashSet<String> matched = new HashSet<String>();
             
-            //Score this assignment for each basic node
+            //Score this assignment for parts for each basic node
+            int currentScore = 0;
             for (RNode basicNode : basicNodes) {
                 String compositionOverhangDirectionString = basicNode.getComposition() + "|" + currentAssignment.get(basicNode.getLOverhang()) + "|" + currentAssignment.get(basicNode.getROverhang()) + "|" + basicNode.getDirection();
                 
                 //If this node matches up to a part contained in the library, add it to the matched score, which will be deducted for the currentScore
                 if (!_partKeys.contains(compositionOverhangDirectionString)) {
                     currentScore++;
-                } else {
-                    matched.add(compositionOverhangDirectionString);
-                }
+                }               
+            }
+            
+            //Score this assignment for parts for all nodes
+            for (RNode node : _allNodes) {
+                String levelOHString = node.getStage() + "|" + currentAssignment.get(node.getLOverhang()) + "|" + currentAssignment.get(node.getROverhang());
                 
                 //If this node matches up to a vector contained in the library, add it to the matched score, which will be deducted for the currentScore
-                if (false) {
-                    
-                } else {
-                    
+                if (!_vectorKeys.contains(levelOHString)) {
+                    currentScore++;
                 }
             }
-            currentScore = currentScore - matched.size();
+                
+//            currentScore = currentScore - matched.size();
             
             //If this is the new best score, replace the former best score and assignment
             if (currentScore < bestScore) {
@@ -1518,6 +1543,7 @@ public class Modularity extends Partitioning {
     private HashMap<Integer, HashMap<String, ArrayList<RNode>>> _stageDirectionAssignHash; //key: stage, value: (key: direction, value: nodes to visit)
     private HashMap<RNode, ArrayList<Integer>> _nodeStagesHash; //key: level 0 node, value: all the stages this node impacts
     private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
+    private HashSet<RNode> _allNodes; //all nodes in all graphs
     
     private HashMap<String, HashSet<String>> _OHexclusionHash; //key: parent node, value: all overhangs that have been seen in this step
     private HashMap<String, ArrayList<String>> _typeROHHash; //key: part type, value: all right overhangs seen for this part type

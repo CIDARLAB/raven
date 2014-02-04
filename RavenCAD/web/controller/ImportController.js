@@ -150,8 +150,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $('#errorArea').removeClass("hidden");
                 }
             }
-            drawTable();
+            drawTable();            
         });
+//        vectorTable.fnAdjustColumnSizing();
+        
     };
     //EVENT HANDLERS
     $('#clotho3Import').click(function() {
@@ -205,18 +207,24 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#uploadModal').modal();
         }
     });
+    
+//    allTable.fnAdjustColumnSizing();
     $('#allTableArea').mouseenter(function() {
         if (!tabResized) {
             allTable.fnAdjustColumnSizing();
             tabResized = true;
         }
     });
+    
+//    partTable.fnAdjustColumnSizing();
     $('#partTableArea').mouseenter(function() {
         if (!tabResized) {
             partTable.fnAdjustColumnSizing();
             tabResized = true;
         }
     });
+    
+//    vectorTable.fnAdjustColumnSizing();
     $('#vectorTableArea').mouseenter(function() {
         if (!tabResized) {
             vectorTable.fnAdjustColumnSizing();

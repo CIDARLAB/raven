@@ -33,6 +33,10 @@ public class RMoClo extends RGeneral {
             _vectorLibrary = new ArrayList();
         }
 
+//        for (Part part : partLibrary) {
+//            System.out.println("a part's composition: " + part.getStringComposition());
+//        }
+        
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
         Set<Integer> keySet = efficiencies.keySet();
@@ -51,11 +55,11 @@ public class RMoClo extends RGeneral {
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, false);
 
         //Positional scoring of transcriptional units
-//            HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-//            if (modular) {
-//                ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-//                positionScores = getPositionalScoring(TUs);
-//            }
+        HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
+        if (modular) {
+            ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
+            positionScores = getPositionalScoring(TUs);
+        }
 
         //Add single transcriptional units to the required hash
 //            ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, 2);

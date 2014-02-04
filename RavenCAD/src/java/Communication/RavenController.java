@@ -542,7 +542,9 @@ public class RavenController {
                     Vector toBreak = newVector.saveDefault(_collector);
                     
                     //Library logic
+//                    System.out.println("tokens[0].trim(): " + tokens[0].trim());
                     if (!tokens[0].trim().isEmpty()) {
+//                        System.out.println("not empty, in library");
                         _vectorLibrary.add(newVector);
                     }
                     
