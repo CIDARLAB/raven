@@ -1480,11 +1480,11 @@ public class Modularity extends Partitioning {
      */
     
     //sets user specified overhangs before algorithm computes the rest
-    protected HashMap<String, String> assignForcedOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, ArrayList<String>> forcedHash) {
+    protected HashMap<String, String> assignForcedOverhangs(ArrayList<RGraph> optimalGraphs) {
         HashMap<String, String> toReturn = new HashMap(); //precursor for the finalOverhangHash used in the optimizeOverhangVectors method
         for (RGraph graph : optimalGraphs) {
             RNode root = graph.getRootNode();
-            if (forcedHash.containsKey(root.getComposition().toString())) {
+            if (_forcedOverhangHash.containsKey(root.getComposition().toString())) {
                 
                 //traverse the graph and find all of the basic parts and then put them in order
                 ArrayList<RNode> stack = new ArrayList();
@@ -1507,7 +1507,7 @@ public class Modularity extends Partitioning {
                         }
                     }
                 }
-                ArrayList<String> forcedOverhangs = forcedHash.get(root.getComposition().toString());
+                ArrayList<String> forcedOverhangs = _forcedOverhangHash.get(root.getComposition().toString());
                 for (int i = 0; i < basicParts.size(); i++) {
                     String[] forcedTokens = forcedOverhangs.get(i).split("\\|");
                     String forcedLeft = forcedTokens[0].trim();

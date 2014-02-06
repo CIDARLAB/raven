@@ -988,7 +988,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
                 var isGoalPart = $.inArray(uuid, targets);
                 if (isGoalPart === -1) {
-                    redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Succeeded or Failed?</button></td>';
+                    redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Unattempted</button></td>';
                     $(this).find('td').each(function(key, value) {
                         if (key < 7) {
                             var cellData = $(this).text();
@@ -1023,6 +1023,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 var redesignInput = jQuery.extend(true, {}, _runParameters[originalDesignNumber]);
 
                 var forbid = "";
+                var require = "";
                 var toSaveParts = [];
                 var toSaveVectors = [];
                 var toAddToPartLibrary = "";
@@ -1036,7 +1037,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     if (type === "composite" && failSucceed === "failed") {
                         var toForbid = '[' + $(this).find('td:last').text() + ']';
                         forbid = forbid + toForbid + ";";
-                    } else if (failSucceed === "succeeded") {
+                    } else if (type === "composite" && failSucceed === "succeeded") {
+                        var toRequire = '[' + $(this).find('td:last').text() + ']';
+                        require = require + toRequire + ";";
+                    } 
+                    
+                    if (failSucceed === "succeeded") {
                         var uuid = $(this).find('td:nth-child(2)').text();
                         if (type === "vector") {
                             toSaveVectors.push(uuid);
@@ -1056,9 +1062,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         //if successful parts succeeded, then run the redesign
                         //add waiting dialog
                         forbid = forbid.substring(0, forbid.length - 1);
+                        require = require.substring(0, require.length - 1);
 
                         redesignInput["designCount"] = (parseInt(redesignInput["designCount"]) + 1) + "";
                         redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
+                        redesignInput["required"] = redesignInput["required"] + require;
                         redesignInput["partLibrary"] = redesignInput["partLibrary"] + toAddToPartLibrary;
                         redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + toAddToVectorLibrary;
                         _runParameters[designNumber] = redesignInput;
@@ -1077,28 +1085,30 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         alert("Failed to save parts");
                     }
                 });
-
-
             });
+            
             $('.reqForbidButton').click(function() {
                 var designNumber = $(this).attr("val");
                 var originalDesignNumber = _redesignDesignHash[designNumber];
                 if ($(this).attr("name") === "neither") {
-                    //add to require
-                    $(this).attr("name", "failed");
-                    $(this).addClass("btn-danger");
-                    $(this).text("Failed");
-                } else if ($(this).attr("name") === 'failed') {
-                    //add to forbidden
-                    $(this).removeClass("btn-danger");
+                    
+                    //add to library
                     $(this).attr("name", "succeeded");
                     $(this).addClass("btn-success");
                     $(this).text("Succeeded");
+                } else if ($(this).attr("name") === 'succeeded') {
+                    
+                    //add to forbidden
+                    $(this).removeClass("btn-success");
+                    $(this).attr("name", "failed");
+                    $(this).addClass("btn-danger");
+                    $(this).text("Failed");
                 } else {
+                    
                     //return to neither 
                     $(this).attr("name", "neither");
                     $(this).removeClass("btn-danger");
-                    $(this).text("Succeeded or Failed?");//add to forbidden
+                    $(this).text("Unattempted");
                     $(this).removeClass("btn-success");
                 }
                 $('#summaryTab' + designNumber + ' div ul.requiredList').html($('#summaryTab' + originalDesignNumber + ' div ul.requiredList').html());
@@ -1108,8 +1118,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     var type = $(this).find('td:nth-child(6)').text().toLowerCase();
                     if (forbidRequire === "failed" && type === "composite") {
                         $('#summaryTab' + designNumber + ' div ul.forbiddenList').append('<li>' + $(this).find('td:last').text() + '</li>');
-                    }
-                    else if (forbidRequire === "succeeded") {
+                    } else if (forbidRequire === "succeeded" && type === "composite") {
+                        $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');                    
+                    } else if (forbidRequire === "succeeded") {
                         $('#summaryTab' + designNumber + ' div ul.libraryList').append('<li>' + $(this).find('td:nth-child(3)').text() + '</li>');
                     }
                 });

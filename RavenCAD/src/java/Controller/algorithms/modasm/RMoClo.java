@@ -32,10 +32,6 @@ public class RMoClo extends RGeneral {
         if (_vectorLibrary == null) {
             _vectorLibrary = new ArrayList();
         }
-
-//        for (Part part : partLibrary) {
-//            System.out.println("a part's composition: " + part.getStringComposition());
-//        }
         
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -71,7 +67,7 @@ public class RMoClo extends RGeneral {
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         propagatePrimaryOverhangs(optimalGraphs);
         maximizeOverhangSharing(optimalGraphs);
-        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs, _forcedOverhangHash);
+        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
         cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash);
         assignScars(optimalGraphs);
 
