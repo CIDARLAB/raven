@@ -952,10 +952,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '<p>We appreciate your feedback. We\'re working to make your experience better</p><hr/>'
                     + data["result"] + '</div>');
             $('#discardButton' + currentDesignCount).click(function() {
-                var designNumber = $(this).attr("name");
+                var designNumber = $(this).attr("val");
                 $('#designTabHeader' + designNumber).remove();
                 $('#designTab' + designNumber).remove();
                 $('#designTabHeader a:first').tab('show');
+                
                 refreshData();
             });
         }
