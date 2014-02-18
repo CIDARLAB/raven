@@ -5,8 +5,11 @@
 package Communication;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,9 +39,8 @@ import org.json.JSONObject;
 public class RavenServlet extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP
-     * <code>GET</code> and
-     * <code>POST</code> methods.
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
      *
      * @param request servlet request
      * @param response servlet response
@@ -52,7 +54,6 @@ public class RavenServlet extends HttpServlet {
             String command = request.getParameter("command");
             user = getUser(request).toLowerCase();
             RavenController controller = _controllerHash.get(user);
-
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
                 _controllerHash.put(user, new RavenController(path, user));
@@ -107,13 +108,24 @@ public class RavenServlet extends HttpServlet {
                 }
             } else if (command.equals("run")) {
                 response.setContentType("application/json");
+                JSONObject params = new JSONObject();
+                params.put("targets", request.getParameter("targets"));
+                params.put("partLibrary", request.getParameter("partLibrary"));
+                params.put("vectorLibrary", request.getParameter("vectorLibrary"));
+                params.put("recommended", request.getParameter("recommended"));
+                params.put("required", request.getParameter("required"));
+                params.put("forbidden", request.getParameter("forbidden"));
+                params.put("discouraged", request.getParameter("discouraged"));
+                params.put("efficiency", request.getParameter("efficiency"));
+                params.put("primer", request.getParameter("primer"));
+                params.put("method", request.getParameter("method"));
+                
                 String[] targetIDs = request.getParameter("targets").split(",");
                 String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
-                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");               
-                
+                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
+
 //                String[] partLibraryIDs = new String[0];
 //                String[] vectorLibraryIDs = new String[0];
-                
                 String[] recArray = request.getParameter("recommended").split(";");
                 String[] reqArray = request.getParameter("required").split(";");
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
@@ -182,7 +194,7 @@ public class RavenServlet extends HttpServlet {
 
                 String designCount = request.getParameter("designCount");
                 JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
-                JSONArray partsList = controller.generatePartsList(designCount);
+                JSONArray partsList = controller.generatePartsList(designCount, params.toString());
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();
                 System.out.println("Stats: " + statString);
@@ -190,6 +202,7 @@ public class RavenServlet extends HttpServlet {
                 if (instructions.length() < 1) {
                     instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
                 }
+
                 JSONObject toReturn = new JSONObject();
                 toReturn.put("status", "good");
                 toReturn.put("statistics", statString);
@@ -271,7 +284,6 @@ public class RavenServlet extends HttpServlet {
                     writer.write("{\"result\":\"" + toReturn + "\",\"status\":\"" + toReturn + "\"}");
                 }
 
-
             } else {
                 ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
                 response.setContentType("text/plain");
@@ -327,8 +339,7 @@ public class RavenServlet extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
-     * Handles the HTTP
-     * <code>GET</code> method.
+     * Handles the HTTP <code>GET</code> method.
      *
      * @param request servlet request
      * @param response servlet response
@@ -339,8 +350,7 @@ public class RavenServlet extends HttpServlet {
     }
 
     /**
-     * Handles the HTTP
-     * <code>POST</code> method.
+     * Handles the HTTP <code>POST</code> method.
      *
      * @param request servlet request
      * @param response servlet response

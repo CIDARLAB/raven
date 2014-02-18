@@ -136,8 +136,9 @@ public class RavenController {
 
     //returns json array containing all objects in parts list; generates parts list file
     //input: design number refers to the design number on the client
-    public JSONArray generatePartsList(String designNumber) throws Exception {
-        File file = new File(_path + _user + "/partsList" + designNumber + ".csv");
+    public JSONArray generatePartsList(String designNumber, String params) throws Exception {
+        File partsListFile = new File(_path + _user + "/partsList" + designNumber + ".csv");
+        File configFile = new File(_path + _user + "/config" + designNumber + ".txt");
 
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
@@ -162,9 +163,13 @@ public class RavenController {
 
         //extract information from parts and write file
         String partList = "[";
-        FileWriter fw = new FileWriter(file);
-        BufferedWriter out = new BufferedWriter(fw);
-        out.write("Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
+        FileWriter partsListFileWriter = new FileWriter(partsListFile);
+        BufferedWriter partsListBufferedWriter = new BufferedWriter(partsListFileWriter);
+        partsListBufferedWriter.write("Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
+
+        FileWriter configFileWriter = new FileWriter(configFile);
+        BufferedWriter configBufferedWriter = new BufferedWriter(configFileWriter);
+        configBufferedWriter.write("Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
 
         for (Part p : usedParts) {
             ArrayList<String> tags = p.getSearchTags();
@@ -192,7 +197,8 @@ public class RavenController {
                 if (v != null) {
                     vectorName = v.getName();
                 }
-                out.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
+                partsListBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
+                configBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             } else {
                 type = "composite";
                 Vector v = partVectorHash.get(p);
@@ -236,7 +242,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(2);
-                out.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
+                configBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             }
             partList = partList
                     + "{\"uuid\":\"" + p.getUUID()
@@ -268,7 +274,8 @@ public class RavenController {
                         resistance = tags.get(k).substring(12);
                     }
                 }
-                out.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+                partsListBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+                configBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
                 partList = partList + "{\"uuid\":\"" + v.getUUID()
                         + "\",\"Name\":\"" + v.getName()
                         + "\",\"Sequence\":\"" + v.getSeq()
@@ -280,7 +287,12 @@ public class RavenController {
                         + "\",\"Level\":\"" + v.getLevel() + "\"},";
             }
         }
-        out.close();
+        // add run parameters to config file
+        configBufferedWriter.write("\n####\n");
+        configBufferedWriter.write(params);
+
+        configBufferedWriter.close();
+        partsListBufferedWriter.close();
         partList = partList.substring(0, partList.length() - 1);
         partList = partList + "]";
         return new JSONArray(partList);
@@ -431,6 +443,12 @@ public class RavenController {
         if (!appendScanMessage) {
             restrictionScanMessage = "";
         }
+        if (_preloadedParams != null) {
+            toReturn = toReturn + ",\"params\":" + _preloadedParams;
+//            _preloadedParams = null;
+        } else {
+            toReturn = toReturn + ",\"params\":\"none\"";
+        }
         if (_error.length() > 0) {
             _error = _error.replaceAll("[\r\n\t]+", "<br/>");
             toReturn = "{\"result\":" + toReturn + ",\"status\":\"bad\",\"message\":\"" + _error + "\"}";
@@ -451,7 +469,7 @@ public class RavenController {
                 for (File currentFile : filesToRead) {
                     String filePath = currentFile.getAbsolutePath();
                     String fileExtension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length()).toLowerCase();
-                    if ("csv".equals(fileExtension)) {
+                    if ("csv".equals(fileExtension) || "txt".equals(fileExtension)) {
                         parseRavenFile(currentFile);
                     }
                 }
@@ -474,7 +492,7 @@ public class RavenController {
      * Parse an input Raven file *
      */
     private void parseRavenFile(File input) throws Exception {
-        
+
         _vectorLibrary = new ArrayList<Vector>();
         _partLibrary = new ArrayList<Part>();
         ArrayList<String> badLines = new ArrayList();
@@ -491,6 +509,11 @@ public class RavenController {
         while (line != null) {
             while (line.matches("^[\\s,]+")) {
                 line = reader.readLine();
+            }
+            if (line.contains("####")) {
+                //reached end of parts list
+                //break and read in params
+                break;
             }
             String[] tokens = line.split(",");
             int tokenCount = tokens.length; //keeps track of how many columns are filled by counting backwards
@@ -540,14 +563,14 @@ public class RavenController {
                     newVector.addSearchTag("Resistance: " + resistance);
                     newVector.setTransientStatus(false);
                     Vector toBreak = newVector.saveDefault(_collector);
-                    
+
                     //Library logic
 //                    System.out.println("tokens[0].trim(): " + tokens[0].trim());
                     if (!tokens[0].trim().isEmpty()) {
 //                        System.out.println("not empty, in library");
                         _vectorLibrary.add(newVector);
                     }
-                    
+
                     //save vector with no overhangs juse in case;
                     if (toBreak == null) {
                         break;
@@ -573,19 +596,19 @@ public class RavenController {
 
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
-                    
+
                     //save part with no scars or overhangs juse in case;
                     if (leftOverhang.length() > 0 && rightOverhang.length() > 0 && !seenPartNames.contains(name)) {
                         Part blankBasicPart = Part.generateBasic(name, sequence);
                         blankBasicPart.addSearchTag("Type: " + type);
                         blankBasicPart.saveDefault(_collector);
                         blankBasicPart.setTransientStatus(false);
-                        
+
                         //Library logic
                         if (!tokens[0].trim().isEmpty()) {
                             _partLibrary.add(blankBasicPart);
                         }
-                        
+
                         seenPartNames.add(name);
                     }
                     if (toBreak == null) {
@@ -620,12 +643,12 @@ public class RavenController {
                     _compPartsVectors.put(newBasicPart, vector);
                     Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
-                   
+
                     //Library logic
                     if (!tokens[0].trim().isEmpty()) {
                         _partLibrary.add(newBasicPart);
                     }
-                    
+
                     if (toBreak == null) {
                         break;
                     }
@@ -640,6 +663,8 @@ public class RavenController {
             }
             line = reader.readLine();
         }
+        _preloadedParams = reader.readLine();
+
         reader.close();
 
         //Create the composite parts
@@ -708,12 +733,12 @@ public class RavenController {
                 newComposite.addSearchTag("Type: composite");
                 newComposite = newComposite.saveDefault(_collector);
                 newComposite.setTransientStatus(false);
-                
+
                 //Library logic
                 if (!tokens[0].trim().isEmpty()) {
                     _partLibrary.add(newComposite);
                 }
-                
+
             } catch (NullPointerException e) {
                 String badLine = "";
 
@@ -948,7 +973,6 @@ public class RavenController {
         out.close();
 
         //write graph text file
-        //TODO is there an equivalent for d3?
         file = new File(_path + _user + "/pigeon" + designCount + ".txt");
         fw = new FileWriter(file);
         out = new BufferedWriter(fw);
@@ -964,7 +988,6 @@ public class RavenController {
         //post request to graphviz
         WeyekinPoster.setDotText(mergedGraphText);
         WeyekinPoster.postMyVision();
-
         String imageURL = "";
         imageURL = WeyekinPoster.getmGraphVizURI().toString();
         JSONObject toReturn = new JSONObject();
@@ -1099,6 +1122,7 @@ public class RavenController {
     private String _user;
     private String _error = "";
     private boolean _valid = false;
+    private String _preloadedParams = null;
     private ArrayList<String> _databaseConfig = new ArrayList(); //0:database url, 1:database schema, 2:user, 3:password
     private ArrayList<RestrictionEnzyme> _restrictionEnzymes = RestrictionEnzyme.getBBGGMoCloEnzymes();
 }

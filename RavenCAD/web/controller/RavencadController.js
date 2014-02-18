@@ -361,6 +361,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $.getJSON("RavenServlet", {"command": "fetch"}, function(json) {
             _data = json;
             drawPartVectorLists();
+            if (json["params"] !== "none") {
+                //load preconfigured params
+                interpretParams(json["params"]);
+            }
+
             //generate uuidCompositionHash
             $.each(_data["result"], function() {
                 if (this["Type"].toLowerCase() !== "vector") {
@@ -723,7 +728,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<p><a target="_blank" id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
                 '<p><a target="_blank" id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
                 '<p><a target="_blank" id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
-                '<p><a target="_blank" id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>'
+                '<p><a target="_blank" id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>' +
+                '<p><a target="_blank" id="downloadConfig' + _designCount + '">Download Configuration File</a></p>'
 
                 );
         $('#designTabHeader li a#designTabHeader_' + _designCount).click(function() {
@@ -918,6 +924,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#downloadParts' + currentDesignCount).attr("href", "data/" + user + "/partsList" + currentDesignCount + ".csv");
             $('#downloadPigeon' + currentDesignCount).attr("href", "data/" + user + "/pigeon" + currentDesignCount + ".txt");
             $('#downloadArcs' + currentDesignCount).attr("href", "data/" + user + "/arcs" + currentDesignCount + ".txt");
+            $('#downloadConfig' + currentDesignCount).attr("href", "data/" + user + "/config" + currentDesignCount + ".txt");
 
             $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
             //render parts list
@@ -956,7 +963,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $('#designTabHeader' + designNumber).remove();
                 $('#designTab' + designNumber).remove();
                 $('#designTabHeader a:first').tab('show');
-                
+
                 refreshData();
             });
         }
@@ -1041,8 +1048,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     } else if (type === "composite" && failSucceed === "succeeded") {
                         var toRequire = '[' + $(this).find('td:last').text() + ']';
                         require = require + toRequire + ";";
-                    } 
-                    
+                    }
+
                     if (failSucceed === "succeeded") {
                         var uuid = $(this).find('td:nth-child(2)').text();
                         if (type === "vector") {
@@ -1087,25 +1094,25 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     }
                 });
             });
-            
+
             $('.reqForbidButton').click(function() {
                 var designNumber = $(this).attr("val");
                 var originalDesignNumber = _redesignDesignHash[designNumber];
                 if ($(this).attr("name") === "neither") {
-                    
+
                     //add to library
                     $(this).attr("name", "succeeded");
                     $(this).addClass("btn-success");
                     $(this).text("Succeeded");
                 } else if ($(this).attr("name") === 'succeeded') {
-                    
+
                     //add to forbidden
                     $(this).removeClass("btn-success");
                     $(this).attr("name", "failed");
                     $(this).addClass("btn-danger");
                     $(this).text("Failed");
                 } else {
-                    
+
                     //return to neither 
                     $(this).attr("name", "neither");
                     $(this).removeClass("btn-danger");
@@ -1120,7 +1127,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     if (forbidRequire === "failed" && type === "composite") {
                         $('#summaryTab' + designNumber + ' div ul.forbiddenList').append('<li>' + $(this).find('td:last').text() + '</li>');
                     } else if (forbidRequire === "succeeded" && type === "composite") {
-                        $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');                    
+                        $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');
                     } else if (forbidRequire === "succeeded") {
                         $('#summaryTab' + designNumber + ' div ul.libraryList').append('<li>' + $(this).find('td:nth-child(3)').text() + '</li>');
                     }
@@ -1136,6 +1143,60 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var tabNumber = id.substring(id.indexOf("_") + 1);
         changeImage(tabNumber);
     });
+    function interpretParams(params) {
+        //populate required
+        var required = params["required"].split(";");
+        $.each(required, function(index, value) {
+            $("#intermediatesTypeAhead").val(value);
+            $("button#requireButton").click();
+        });
+        //populate forbidden
+        var forbidden = params["forbidden"].split(";");
+        $.each(forbidden, function(index, value) {
+            $("#intermediatesTypeAhead").val(value);
+            $("button#forbidButton").click();
+        });
+        //populate recommended
+        var forbidden = params["forbidden"].split(";");
+        $.each(forbidden, function(index, value) {
+            $("#intermediatesTypeAhead").val(value);
+            $("button#forbidButton").click();
+        });
+        //populate discouraged
+        var forbidden = params["forbidden"].split(";");
+        $.each(forbidden, function(index, value) {
+            $("#intermediatesTypeAhead").val(value);
+            $("button#forbidButton").click();
+        });
+        //populate target parts
+        //could be annoying for users - don't do for now
+        
+        //populate library parts
+        //not exposed to user anymore - will have to be done in file
+        //this should be done already
+                
+        //switch to correct method
+        $.each($('#methodTabHeader li'),function(){
+            $(this).removeClass('active');
+        });
+        $('#'+params["method"]+'TabHeader').parent().addClass('active')
+        $.each($('#methodTabs div'),function(){
+            $(this).removeClass('active');
+        });
+        $('#'+params["method"]+'Tab').addClass('active')
+        //populate primer parameters
+        $('input#oligoNameRoot').val(params["primer"]["oligoNameRoot"]);
+        $('input#meltingTemperature').val(params["primer"]["meltingTemperature"]);
+        $('input#targetLength').val(params["primer"]["targetLength"]);
+        
+        //populate efficiency
+       var table = $('#' + params["method"] + 'Tab table');
+        table.children("tbody").html("");
+        var efficiencies = params["efficiency"].split(",");
+        $.each(efficiencies,function(index,value){
+            table.children("tbody").append('<tr><td>'+(index+2)+'</td><td><input class="input-mini" placeholder="'+value+'"><td><tr>')
+        });
+    }
 
     function changeImage(tabNumber) {
         if (currentActiveTab > 0) {
