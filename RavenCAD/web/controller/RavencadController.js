@@ -1170,32 +1170,33 @@ $(document).ready(function() { //don't run javascript until page is loaded
         });
         //populate target parts
         //could be annoying for users - don't do for now
-        
+
         //populate library parts
         //not exposed to user anymore - will have to be done in file
         //this should be done already
-                
+
         //switch to correct method
-        $.each($('#methodTabHeader li'),function(){
+        $.each($('#methodTabHeader li'), function() {
             $(this).removeClass('active');
         });
-        $('#'+params["method"]+'TabHeader').parent().addClass('active')
-        $.each($('#methodTabs div'),function(){
+        $('#' + params["method"] + 'TabHeader').parent().addClass('active')
+        $.each($('#methodTabs div'), function() {
             $(this).removeClass('active');
         });
-        $('#'+params["method"]+'Tab').addClass('active')
+        $('#' + params["method"] + 'Tab').addClass('active')
         //populate primer parameters
         $('input#oligoNameRoot').val(params["primer"]["oligoNameRoot"]);
         $('input#meltingTemperature').val(params["primer"]["meltingTemperature"]);
         $('input#targetLength').val(params["primer"]["targetLength"]);
-        
+
         //populate efficiency
-       var table = $('#' + params["method"] + 'Tab table');
+        var table = $('#' + params["method"] + 'Tab table');
         table.children("tbody").html("");
         var efficiencies = params["efficiency"].split(",");
-        $.each(efficiencies,function(index,value){
-            table.children("tbody").append('<tr><td>'+(index+2)+'</td><td><input class="input-mini" placeholder="'+value+'"><td><tr>')
+        $.each(efficiencies, function(index, value) {
+            table.children("tbody").append('<tr><td>' + (index + 2) + '</td><td><input class="input-mini" placeholder="' + value + '"><td><tr>')
         });
+        updateSummary();
     }
 
     function changeImage(tabNumber) {
