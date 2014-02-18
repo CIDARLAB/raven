@@ -1144,6 +1144,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         changeImage(tabNumber);
     });
     function interpretParams(params) {
+        _method = params["method"]
         //populate required
         var required = params["required"].split(";");
         $.each(required, function(index, value) {
@@ -1194,7 +1195,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         table.children("tbody").html("");
         var efficiencies = params["efficiency"].split(",");
         $.each(efficiencies, function(index, value) {
-            table.children("tbody").append('<tr><td>' + (index + 2) + '</td><td><input class="input-mini" placeholder="' + value + '"><td><tr>')
+            table.children("tbody").append('<tr><td>' + (index + 2) + '</td><td><input class="input-mini" placeholder="' + value + '"></td><tr>')
         });
         updateSummary();
     }
