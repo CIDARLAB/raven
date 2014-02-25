@@ -46,8 +46,9 @@
                     <div id="sidebar">
                         <ul class=" well nav nav-list affix">
                             <li class="active"><a href="#method">Method</a></li>
-                            <li><a href="#target">Target</a></li>
+                            <li><a href="#target">Constructs</a></li>
                             <!--<li><a href="#library">Library</a></li>-->
+                            <li><a href="#vector">Vectors</a></li>
                             <li><a href="#primer">Primers</a></li>
                             <li><a href="#intermediate">Intermediates</a></li>
                             <li><a href="#run">Run</a></li>
@@ -63,7 +64,7 @@
                             <div id="currentDesign" class="tab-pane active">
                                 <div class="well" id="method">
                                     <h3>Assembly Method</h3>
-                                    <hr/>
+                                    <!--<hr/>-->
                                     <h4>Select the assembly method you want to use</h4>
                                     <div class="row-fluid">
                                         <div class="span12">
@@ -72,7 +73,7 @@
                                                     <li class="active"><a href="#biobricksTab" data-toggle="tab">BioBricks</a></li>
                                                     <li><a href="#cpecTab" data-toggle="tab">CPEC</a></li>
                                                     <li><a href="#gibsonTab" data-toggle="tab">Gibson</a></li>
-                                                    <li class ="hidden" ><a href="#goldengateTab" data-toggle="tab">Golden Gate</a></li>
+                                                    <li><a href="#goldengateTab" data-toggle="tab">Golden Gate</a></li>
                                                     <li><a href="#mocloTab" data-toggle="tab">MoClo</a></li>
                                                     <li><a href="#slicTab" data-toggle="tab">SLIC</a></li>
                                                 </ul>
@@ -83,7 +84,7 @@
                                                                 <h5>Description of Assembly Method</h5>
                                                                 <!--Description of BioBrick-->
                                                                 <p>
-                                                                    In Biobricks, all parts are preceded by EcoRI and XbaI restriction sites, and followed by SpeI and PstI.
+                                                                    In BioBricks, all parts are preceded by EcoRI and XbaI restriction sites, and followed by SpeI and PstI.
                                                                     Digesting these restriction sites produces common sticky ends, which allow 2 different BioBrick parts and their desitination vector to be assembled.                                                                    
                                                                 </p>
                                                                 <small>Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).</small>
@@ -166,7 +167,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="hidden tab-pane" id="goldengateTab">
+                                                    <div class="tab-pane" id="goldengateTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
                                                                 <h5>Description of Assembly Method</h5>
@@ -177,7 +178,7 @@
                                                                     which can be leveraged to generate unique overhangs.
                                                                     Parts with matching overhangs are first annealed and then ligated together using DNA ligase.
                                                                 </p>
-                                                                <small></small>
+                                                                <small>Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3 (2008).</small>
                                                             </div>
                                                             <div class="offset1 span5">
                                                                 <h5>Assembly Efficiency</h5>
@@ -267,9 +268,9 @@
                                     </div>
                                 </div>
                                 <div class="well" id="target">
-                                    <h3>Target</h3> 
-                                    <hr/>
-                                    <h4>Select the parts you want to assemble</h4>
+                                    <h3>Constructs</h3> 
+                                    <!--<hr/>-->
+                                    <h4>Select the constructs you want to build</h4>
                                     <div class="row-fluid">
                                         <div class="span4 text-center">
                                             <h5>Available Target Parts</h5>
@@ -297,7 +298,7 @@
                                 </div>
                                 <div class="hidden well" id="library">
                                     <h3>Library</h3>
-                                    <hr/>
+                                    <!--<hr/>-->
                                     <h4>Select the parts you want to include in your library</h4>
                                     <div class="tabbable">
                                         <ul id="libraryTabHeader" class="nav nav-tabs">
@@ -362,14 +363,19 @@
                                     </div>
                                 </div>
                                 <hr/>
+                                <div class="well" id="vector">
+                                    <h3>Vectors</h3>
+                                    <!--<hr/>-->
+                                    <h4>Specify vectors to be used for each cloning stage</h4>
+                                </div>
                                 <div class="well" id="primer">
-                                    <h3>Primer</h3>
-                                    <hr/>
+                                    <h3>Primers</h3>
+                                    <!--<hr/>-->
                                     <h4>Specify your requirements for primers that will be designed for your assembly</h4>
                                     <div class="row-fluid">
                                         <div class="span6">
                                             <table id="primerTable1" class="table table-condensed">
-                                                <tr><th>Oligo Name Root</th><td><input id="oligoNameRoot" placeholder="oligo"/></td></tr>
+                                                <tr><th>Oligo Name Prefix</th><td><input id="oligoNameRoot" placeholder="oligo"/></td></tr>
                                                 <tr><th>Target Melting Temperature</th><td><input id="meltingTemperature" placeholder="50.0"/></td></tr>
                                                 <tr><th>Target Primer Length</th><td><input id="targetLength" placeholder="20"/></td></tr>
                                             </table> 
@@ -378,8 +384,8 @@
                                 </div>
                                 <div class="well" id="intermediate">
                                     <h3>Intermediates</h3>
-                                    <hr/>
-                                    <h4>Modify the intermediates that appear in your assembly</h4>
+                                    <!--<hr/>-->
+                                    <h4>Force or bias, for or against certain cloning intermediates appearing in the plan</h4>
                                     <div id="intermediatesArea">
                                         <div class="row-fluid">
                                             <div class="span6">
@@ -432,7 +438,7 @@
                                 </div>
                                 <div class="well" id="run"> 
                                     <h3>Run</h3>
-                                    <hr/>
+                                    <!--<hr/>-->
                                     <h4>Summary of your design plan</h4>
                                     <div class ="well" ><div id="designSummaryArea" style="height:500px; overflow:auto">A summary of your assembly plan will appear here</div></div>
                                     <button id="runButton" type="button" class="btn btn-success">Design Assembly</button>

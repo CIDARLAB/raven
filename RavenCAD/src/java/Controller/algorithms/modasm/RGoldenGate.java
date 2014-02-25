@@ -40,10 +40,15 @@ public class RGoldenGate extends RGeneral {
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
-
+        HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
+        for (RNode root : gpsNodes) {
+            String nodeKey = root.getNodeKey("+");
+            keyVectors.put(nodeKey, root.getVector());
+        }
+        
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-        optimalGraphs = assignOverhangs(optimalGraphs);
+        assignOverhangs(optimalGraphs, keyVectors);
 
         return optimalGraphs;
     }
@@ -52,8 +57,104 @@ public class RGoldenGate extends RGeneral {
      * Optimize overhang assignments based on available parts and vectors with
      * overhangs *
      */
-    private ArrayList<RGraph> assignOverhangs(ArrayList<RGraph> optimalGraphs) {
-        return optimalGraphs;
+    /** Assign overhangs for scarless assembly **/
+    private void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<String, RVector> keyVectors) {
+        
+        //Initialize fields that record information to save complexity for future steps
+        _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
+        
+        for (int i = 0; i < asmGraphs.size(); i++) {
+            
+            RGraph graph = asmGraphs.get(i);
+            RNode root = graph.getRootNode();
+            RVector vector = keyVectors.get(root.getNodeKey("+"));
+            root.setVector(vector);
+            ArrayList<String> composition = root.getComposition();
+            
+            //Assign overhangs of vector and goal part if a vector exists
+            if (vector != null) {
+                root.setLOverhang(vector.getName() + "_L");
+                root.setROverhang(vector.getName() + "_R");
+                vector.setLOverhang(composition.get(0));
+                vector.setROverhang(composition.get(composition.size()-1));
+            } else {
+                root.setLOverhang(composition.get(composition.size() - 1));
+                root.setROverhang(composition.get(0));
+            }
+                        
+            ArrayList<RNode> neighbors = root.getNeighbors();
+            ArrayList<RNode> l0nodes = new ArrayList<RNode>();
+            _rootBasicNodeHash.put(root, l0nodes);
+            assignOverhangsHelper(root, neighbors, root);
+        }
+        
+        //Determine which nodes impact which level to form the stageDirectionAssignHash
+        for (RGraph graph : asmGraphs) {
+            RNode root = graph.getRootNode();
+            ArrayList<String> rootDir = new ArrayList<String>();
+            ArrayList<String> direction = root.getDirection();
+            rootDir.addAll(direction);
+            ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
+
+            //Determine which levels each basic node impacts            
+            for (int i = 0; i < l0Nodes.size(); i++) {
+
+                //Determine direction of basic level 0 nodes               
+                RNode l0Node = l0Nodes.get(i);               
+                String l0Direction = rootDir.get(0);               
+                if (l0Node.getComposition().size() == 1) {
+                    ArrayList<String> l0Dir = new ArrayList<String>();
+                    l0Dir.add(l0Direction);
+                    l0Node.setDirection(l0Dir);
+                }               
+                int size = l0Node.getDirection().size();
+                rootDir.subList(0, size).clear();
+            }
+        }
+        
+    }
+    
+    /** Overhang assignment helper **/
+    private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors, RNode root) {
+
+        ArrayList<RNode> children = new ArrayList<RNode>();
+        
+        //Get children
+        for (int i = 0; i < neighbors.size(); i++) {
+            RNode current = neighbors.get(i);
+            if (current.getStage() < parent.getStage()) {
+                children.add(current);
+            }            
+        }
+        
+        //For each of the children, assign overhangs based on neighbors
+        for (int j = 0; j < children.size(); j++) {
+            RNode child = children.get(j);
+            
+            if (j == 0) {
+                ArrayList<String> nextComp = children.get(j+1).getComposition();
+                child.setROverhang(nextComp.get(0));
+                child.setLOverhang(parent.getLOverhang());
+            } else if (j == children.size() - 1) {
+                ArrayList<String> prevComp = children.get(j-1).getComposition();
+                child.setLOverhang(prevComp.get(prevComp.size()-1));
+                child.setROverhang(parent.getROverhang());
+            } else {
+                ArrayList<String> nextComp = children.get(j + 1).getComposition();
+                ArrayList<String> prevComp = children.get(j - 1).getComposition();
+                child.setLOverhang(prevComp.get(prevComp.size() - 1));
+                child.setROverhang(nextComp.get(0));
+            }
+            
+            if (child.getStage() == 0) {
+                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
+                l0nodes.add(child);
+                _rootBasicNodeHash.put(root, l0nodes);
+            }
+            
+            ArrayList<RNode> grandChildren = child.getNeighbors();           
+            assignOverhangsHelper(child, grandChildren, root);
+        }
     }
 
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
@@ -120,4 +221,7 @@ public class RGoldenGate extends RGeneral {
 
         return oligos;
     }
+    
+    //FIELDS
+    private static HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }

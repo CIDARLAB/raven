@@ -152,11 +152,6 @@ public class RSLIC extends RGeneral {
         }
     }
     
-    /** Get the root basic node hash **/
-    public static HashMap<RNode, ArrayList<RNode>> getRootBasicNodeHash() {
-        return _rootBasicNodeHash;
-    }
-    
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }

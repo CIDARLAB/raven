@@ -83,7 +83,7 @@ public class RGibson extends RGeneral {
             assignOverhangsHelper(root, neighbors, root);
         }
         
-        //Determine which nodes impact which level to form the stageDirectionAssignHash
+        //
         for (RGraph graph : asmGraphs) {
             RNode root = graph.getRootNode();
             ArrayList<String> rootDir = new ArrayList<String>();
@@ -150,24 +150,6 @@ public class RGibson extends RGeneral {
             ArrayList<RNode> grandChildren = child.getNeighbors();           
             assignOverhangsHelper(child, grandChildren, root);
         }
-    }
-    
-    /** Get the root basic node hash **/
-    public static HashMap<RNode, ArrayList<RNode>> getRootBasicNodeHash() {
-        
-//        System.out.println("Retrieving _rootBasicNodeHash ********************");
-//        Set<RNode> keySet = _rootBasicNodeHash.keySet();
-//        for (RNode root : keySet) {
-//            System.out.println("root comp: " + root.getComposition() + " root uuid: " + root.getUUID());
-//            ArrayList<RNode> get = _rootBasicNodeHash.get(root);
-//            for (RNode node : get) {
-//                System.out.println("node comp: " + node.getComposition() + " node uuid: " + node.getUUID() + " node LO: " + node.getLOverhang() + " node RO: " + node.getROverhang());
-//            }
-//            System.out.println("******************************************");
-//        }
-//        System.out.println("Retrieving _rootBasicNodeHash ********************");
-        
-        return _rootBasicNodeHash;
     }
     
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
