@@ -134,6 +134,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#methodTabs div.active table tbody tr').last().remove();
         }
     });
+    $('.addStageButton').click(function() {
+        var table = $('#vectorTable table');
+        table.find('tbody').append('<tr><td>' + (table.find('tr').length) + '</td><td>0</td><td><input class="input-mini" placeholder="Kan"/></td></tr>');
+    });
+    $('.minusStageButton').click(function() {
+        if ($('#vectorTable table tbody tr').length > 1) {
+            $('#vectorTable table tbody tr').last().remove();
+        }
+    });
+    
     //target part button event handlers
     $('#targetSelectAllButton').click(function() {
         $("#availableTargetPartList option").each(function() {
