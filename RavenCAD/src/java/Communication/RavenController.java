@@ -200,7 +200,7 @@ public class RavenController {
                 partsListBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
                 configBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             } else {
-                type = "composite";
+                type = "plasmid";
                 Vector v = partVectorHash.get(p);
                 if (v != null) {
                     vectorName = v.getName();
@@ -395,14 +395,24 @@ public class RavenController {
         }
         ArrayList<Vector> allVectors = _collector.getAllVectors(false);
         for (Vector v : allVectors) {
+            
+            //Return blank string for level if it is -1 in the code
+            int level = v.getLevel();
+            String strLevel = Integer.toString(level);
+            if (level == -1) {
+                strLevel = "";
+            }
+            
             toReturn = toReturn + "{\"uuid\":\"" + v.getUUID()
                     + "\",\"Name\":\"" + v.getName()
                     + "\",\"Sequence\":\"" + v.getSeq()
                     + "\",\"LO\":\"" + v.getLeftOverhang()
                     + "\",\"RO\":\"" + v.getRightOverhang()
-                    + "\",\"Type\":\"vector\",\"Composition\":\"\""
-                    + ",\"Resistance\":\"" + v.getResistance()
-                    + "\",\"Level\":\"" + v.getLevel() + "\"},";
+                    + "\",\"Type\":\"" + v.getType()
+                    + "\",\"Vector\":\"" + ""
+                    + "\",\"Composition\":\"" + ""
+                    + "\",\"Resistance\":\"" + v.getResistance()
+                    + "\",\"Level\":\"" + strLevel + "\"},";
         }
         toReturn = toReturn.subSequence(0, toReturn.length() - 1) + "]";
         String restrictionScanMessage = "";
@@ -525,8 +535,10 @@ public class RavenController {
                 }
             }
 
+            String type = tokens[5].trim();
+            
             //Composite parts - read, but do not generate
-            if (tokenCount > 10) {
+            if (type.equalsIgnoreCase("plasmid")) {
 
                 try {
                     String[] trimmedTokens = new String[tokenCount];
@@ -537,7 +549,7 @@ public class RavenController {
                 }
 
                 //Vectors - read and generate new vector
-            } else if (tokenCount == 8 || tokenCount == 7) {
+            } else if (type.equalsIgnoreCase("vector")) {
 
                 try {
                     String name = tokens[1].trim();
@@ -545,120 +557,160 @@ public class RavenController {
                     String leftOverhang = tokens[3].trim();
                     String rightOverhang = tokens[4].trim();
                     String resistance = tokens[6].toLowerCase().trim();
+                    
+//                    int level;
+//                    if (tokens.length == 8) {
+//                        try {
+//                            level = Integer.parseInt(tokens[7]);
+//                        } catch (NumberFormatException e) {
+//                            level = -1;
+//                        }
+//                    } else {
+//                        level = -1;
+//                    }
+
+                    Vector newVector = Vector.generateVector(name, sequence);
+                    newVector.addSearchTag("LO: " + leftOverhang);
+                    newVector.addSearchTag("RO: " + rightOverhang);
+//                    newVector.addSearchTag("Level: " + level);
+                    newVector.addSearchTag("Type: " + type);
+                    newVector.addSearchTag("Resistance: " + resistance);
+                    
+                    //Library logic
+                    if (!tokens[0].trim().isEmpty()) {
+                        _vectorLibrary.add(newVector);
+                        newVector.saveDefault(_collector);
+                        newVector.setTransientStatus(false);
+                    }
+
+                } catch (Exception e) {
+                    badLines.add(line);
+                }
+
+                //Destinaiton Vectors - read and generate new vector
+            } else if (type.equalsIgnoreCase("destination vector")) {    
+                
+                try {
+                    String name = tokens[1].trim();
+                    String sequence = tokens[2].trim();
+                    String leftOverhang = tokens[3].trim();
+                    String rightOverhang = tokens[4].trim();
+                    String resistance = tokens[6].toLowerCase().trim();
+                    
                     int level;
-                    if (tokens.length == 8) {
+//                    if (tokens.length == 8) {
                         try {
                             level = Integer.parseInt(tokens[7]);
                         } catch (NumberFormatException e) {
                             level = -1;
                         }
-                    } else {
-                        level = -1;
-                    }
+//                    } else {
+//                        level = -1;
+//                    }
 
                     Vector newVector = Vector.generateVector(name, sequence);
                     newVector.addSearchTag("LO: " + leftOverhang);
                     newVector.addSearchTag("RO: " + rightOverhang);
                     newVector.addSearchTag("Level: " + level);
+                    newVector.addSearchTag("Type: " + type);
                     newVector.addSearchTag("Resistance: " + resistance);
-                    newVector.setTransientStatus(false);
-                    Vector toBreak = newVector.saveDefault(_collector);
-
+                    
                     //Library logic
-//                    System.out.println("tokens[0].trim(): " + tokens[0].trim());
                     if (!tokens[0].trim().isEmpty()) {
-//                        System.out.println("not empty, in library");
                         _vectorLibrary.add(newVector);
+                        newVector.saveDefault(_collector);
+                        newVector.setTransientStatus(false);
                     }
 
-                    //save vector with no overhangs juse in case;
-                    if (toBreak == null) {
-                        break;
-                    }
                 } catch (Exception e) {
                     badLines.add(line);
                 }
-
+                
+                //If there is no type field, the row is malformed
+            }  else if (type.isEmpty()) {
+                
+                //poorly formed line
+                badLines.add(line);        
+            
                 //Basic part - read and generate new part
-            } else if (tokenCount == 6) {
+            } else {
 
                 try {
                     String name = tokens[1].trim();
                     String sequence = tokens[2].trim();
                     String leftOverhang = tokens[3].trim();
                     String rightOverhang = tokens[4].trim();
-                    String type = tokens[5].trim();
+                    
                     Part newBasicPart = Part.generateBasic(name, sequence);
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
                     newBasicPart.addSearchTag("Direction: [+]");
 
-                    Part toBreak = newBasicPart.saveDefault(_collector);
-                    newBasicPart.setTransientStatus(false);
+                    //Library logic
+                    if (!tokens[0].trim().isEmpty()) {
+                        _partLibrary.add(newBasicPart);
+                        newBasicPart.saveDefault(_collector);
+                        newBasicPart.setTransientStatus(false);
+                    }
 
                     //save part with no scars or overhangs juse in case;
-                    if (leftOverhang.length() > 0 && rightOverhang.length() > 0 && !seenPartNames.contains(name)) {
-                        Part blankBasicPart = Part.generateBasic(name, sequence);
-                        blankBasicPart.addSearchTag("Type: " + type);
-                        blankBasicPart.saveDefault(_collector);
-                        blankBasicPart.setTransientStatus(false);
+//                    if (leftOverhang.length() > 0 && rightOverhang.length() > 0 && !seenPartNames.contains(name)) {
+//                        Part blankBasicPart = Part.generateBasic(name, sequence);
+//                        blankBasicPart.addSearchTag("Type: " + type);
+//                        blankBasicPart.saveDefault(_collector);
+//                        blankBasicPart.setTransientStatus(false);
 
-                        //Library logic
-                        if (!tokens[0].trim().isEmpty()) {
-                            _partLibrary.add(blankBasicPart);
-                        }
-
-                        seenPartNames.add(name);
-                    }
-                    if (toBreak == null) {
-                        break;
-                    }
+                    
+//
+//                        seenPartNames.add(name);
+//                    }
+                    
                 } catch (Exception e) {
                     badLines.add(line);
                 }
 
                 //Basic parts with direction and overhangs
-            } else if (tokenCount == 10) {
-
-                try {
-                    String name = tokens[1].trim();
-                    String sequence = tokens[2].trim();
-                    String leftOverhang = tokens[3].trim();
-                    String rightOverhang = tokens[4].trim();
-                    String type = tokens[5].trim();
-                    String vectorName = tokens[8].trim();
-                    String composition = tokens[9].trim();
-                    Part newBasicPart = Part.generateBasic(name, sequence);
-                    newBasicPart.addSearchTag("LO: " + leftOverhang);
-                    newBasicPart.addSearchTag("RO: " + rightOverhang);
-                    newBasicPart.addSearchTag("Direction: [+]");
-                    newBasicPart.addSearchTag("Type: " + type);
-                    Vector vector = null;
-                    ArrayList<Vector> allVectorsWithName = _collector.getAllVectorsWithName(vectorName, true);
-                    if (!allVectorsWithName.isEmpty()) {
-                        //TODO do i need an exact match?
-                        vector = allVectorsWithName.get(0);
-                    }
-                    _compPartsVectors.put(newBasicPart, vector);
-                    Part toBreak = newBasicPart.saveDefault(_collector);
-                    newBasicPart.setTransientStatus(false);
-
-                    //Library logic
-                    if (!tokens[0].trim().isEmpty()) {
-                        _partLibrary.add(newBasicPart);
-                    }
-
-                    if (toBreak == null) {
-                        break;
-                    }
-                } catch (Exception e) {
-                    badLines.add(line);
-                }
-
-            } else {
-                //poorly formed line
-                badLines.add(line);
+//            } else if (tokenCount == 10) {
+//
+//                try {
+//                    String name = tokens[1].trim();
+//                    String sequence = tokens[2].trim();
+//                    String leftOverhang = tokens[3].trim();
+//                    String rightOverhang = tokens[4].trim();
+//                    String vectorName = tokens[8].trim();
+//                    
+//                    Part newBasicPart = Part.generateBasic(name, sequence);
+//                    newBasicPart.addSearchTag("LO: " + leftOverhang);
+//                    newBasicPart.addSearchTag("RO: " + rightOverhang);
+//                    newBasicPart.addSearchTag("Direction: [+]");
+//                    newBasicPart.addSearchTag("Type: " + type);
+//                    
+//                    Vector vector = null;
+//                    ArrayList<Vector> allVectorsWithName = _collector.getAllVectorsWithName(vectorName, true);
+//                    if (!allVectorsWithName.isEmpty()) {
+//                        //TODO do i need an exact match?
+//                        vector = allVectorsWithName.get(0);
+//                    }
+//                    _compPartsVectors.put(newBasicPart, vector);
+//                    Part toBreak = newBasicPart.saveDefault(_collector);
+//                    newBasicPart.setTransientStatus(false);
+//
+//                    //Library logic
+//                    if (!tokens[0].trim().isEmpty()) {
+//                        _partLibrary.add(newBasicPart);
+//                    }
+//
+//                    if (toBreak == null) {
+//                        break;
+//                    }
+//                } catch (Exception e) {
+//                    badLines.add(line);
+//                }
+//
+//            } else {
+//                //poorly formed line
+//                badLines.add(line);
 
             }
             line = reader.readLine();
@@ -730,7 +782,7 @@ public class RavenController {
                 newComposite.addSearchTag("Direction: " + directions);
                 newComposite.addSearchTag("LO: " + leftOverhang);
                 newComposite.addSearchTag("RO: " + rightOverhang);
-                newComposite.addSearchTag("Type: composite");
+                newComposite.addSearchTag("Type: plasmid");
                 newComposite = newComposite.saveDefault(_collector);
                 newComposite.setTransientStatus(false);
 

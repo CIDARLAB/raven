@@ -345,7 +345,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var libraryPartListBody = '<select id="libraryPartList" multiple="multiple" class="fixedHeight">';
         var libraryVectorListBody = '<select id="libraryVectorList" multiple="multiple" class="fixedHeight">';
         $.each(_data["result"], function() {
-            if (this["Type"] === "composite") {
+            if (this["Type"] === "plasmid") {
                 targetListBody = targetListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else if (this["Type"] === "vector") {
                 libraryVectorListBody = libraryVectorListBody + '<option title="' + this["Name"] + '|' + this["LO"] + '|' + this["RO"] + '" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';

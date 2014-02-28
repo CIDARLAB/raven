@@ -78,7 +78,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     + this["Composition"] + "</td><td>"
                     + this["Resistance"] + "</td><td>"
                     + this["Level"] + "</td></tr>";
-            if (this["Type"] === "vector") {
+            if (this["Type"] === "vector" | this["Type"] === "destination vector") {
                 sequenceHash["vector_" + this["uuid"]] = this["sequence"];
                 vectorTableBody = vectorTableBody + "<tr><td>"
                         + this["uuid"] + "</td><td>"
