@@ -136,7 +136,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     });
     $('.addStageButton').click(function() {
         var table = $('#vectorTable table');
-        table.find('tbody').append('<tr><td>' + (table.find('tr').length) + '</td><td>0</td><td><input class="input-mini" placeholder="Kan"/></td></tr>');
+        table.find('tbody').append('<tr><td>' + "Every n + " + (table.find('tr').length) + '</td><td><div class="btn-group"><a class="btn dropdown-toggle" data-toggle="dropdown" href="#">Library Vectors<span class="caret"></span></a><ul class="dropdown-menu"></ul></div></td><td><input class="input-mini" placeholder="Kan"/></td></tr>');
     });
     $('.minusStageButton').click(function() {
         if ($('#vectorTable table tbody tr').length > 1) {
