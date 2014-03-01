@@ -119,7 +119,7 @@ public class RavenServlet extends HttpServlet {
                 params.put("efficiency", request.getParameter("efficiency"));
                 params.put("primer", request.getParameter("primer"));
                 params.put("method", request.getParameter("method"));
-                
+
                 String[] targetIDs = request.getParameter("targets").split(",");
                 String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
                 String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
@@ -131,6 +131,7 @@ public class RavenServlet extends HttpServlet {
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
                 String[] discouragedArray = request.getParameter("discouraged").split(";");
                 String[] efficiencyArray = request.getParameter("efficiency").split(",");
+
                 JSONObject primerParam = new JSONObject(request.getParameter("primer"));
                 String method = request.getParameter("method");
                 HashSet<String> required = new HashSet();
@@ -145,6 +146,11 @@ public class RavenServlet extends HttpServlet {
                 primerParameters.add(primerParam.getString("meltingTemperature"));
                 primerParameters.add(primerParam.getString("targetLength"));
 
+                String[] stageVectorArray = request.getParameter("stageVectors").split(","); 
+                HashMap<String,String> stageVectorHash = new HashMap(); //key - stage as string, value - vector uuid
+                for(int i=0 ;i<stageVectorArray.length;i++) {
+                    stageVectorHash.put(String.valueOf(i+1), stageVectorArray[i]);
+                }
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {
