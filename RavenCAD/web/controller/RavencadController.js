@@ -817,7 +817,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
         });
         $('#modalDiscardButton' + _designCount).click(function() {
-            var designNumber = $(this).attr("val");
+            var designNumber = $(this).attr("name");
             if ($('#discardButton' + designNumber).attr("val") === "notSaved") {
                 var toDeleteVectors = [];
                 var toDeleteParts = [];
