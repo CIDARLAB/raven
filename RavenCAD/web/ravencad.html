@@ -48,7 +48,7 @@
                             <li class="active"><a href="#method">Method</a></li>
                             <li><a href="#target">Constructs</a></li>
                             <!--<li><a href="#library">Library</a></li>-->
-                            <li><a href="#vector">Vectors</a></li>
+                            <!--<li><a href="#vector">Vectors</a></li>-->
                             <li><a href="#primer">Primers</a></li>
                             <li><a href="#intermediate">Intermediates</a></li>
                             <li><a href="#run">Run</a></li>
@@ -73,7 +73,7 @@
                                                     <li class="active"><a href="#biobricksTab" data-toggle="tab">BioBricks</a></li>
                                                     <li><a href="#cpecTab" data-toggle="tab">CPEC</a></li>
                                                     <li><a href="#gibsonTab" data-toggle="tab">Gibson</a></li>
-                                                    <li><a href="#goldengateTab" data-toggle="tab">Golden Gate</a></li>
+                                                    <!--<li><a href="#goldengateTab" data-toggle="tab">Golden Gate</a></li>-->
                                                     <li><a href="#mocloTab" data-toggle="tab">MoClo</a></li>
                                                     <li><a href="#slicTab" data-toggle="tab">SLIC</a></li>
                                                 </ul>
@@ -167,7 +167,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="tab-pane" id="goldengateTab">
+                                                    <div class="tab-pane hidden" id="goldengateTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
                                                                 <h5>Description of Assembly Method</h5>
@@ -363,20 +363,17 @@
                                     </div>
                                 </div>
                                 <hr/>
-                                <div class="well" id="vector">
+                                <div class="well hidden" id="vector">
                                     <h3>Vectors</h3>
                                     <!--<hr/>-->
                                     <h4>Specify vectors to be used for each cloning stage</h4>
-                                    <div id ="vectorTable">
-                                        <table class="table table-bordered table-condensed">
-                                            <thead><tr><th>Stage</th><th>Vector</th><th>Resistance</th></tr></thead>
-                                            <tbody>
-                                                <tr><td>Every n + 1</td><td><div class="btn-group"><a class="btn dropdown-toggle" data-toggle="dropdown" href="#">Library Vectors<span class="caret"></span></a><ul class="dropdown-menu"></ul></div></td><td><input class="input-mini" placeholder="Amp"/></td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <a class="btn addStageButton"><i class="icon-plus-sign"></i> stage</a>
-                                    <a class="btn minusStageButton"><i class="icon-minus-sign"></i> stage</a>
+                                    <table id ="vectorTable" class="table table-bordered table-condensed">
+                                        <thead><tr><th>Stage</th><th>Vector - Resistance</th></tr></thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                    <a class="btn addVectorStageButton"><i class="icon-plus-sign"></i> stage</a>
+                                    <a class="btn removeVectorStageButton"><i class="icon-minus-sign"></i> stage</a>
                                 </div>
                                 <div class="well" id="primer">
                                     <h3>Primers</h3>
@@ -498,12 +495,10 @@
         </div>
         <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
         <script src="jsLibraries/bootstrap.min.js"></script>
-        <script type="text/javascript" src="jsLibraries/dropdown.js"></script>
         <script type="text/javascript" src ="controller/RavencadController.js"></script> 
 
         <script src="jsLibraries/jquery.dataTables.min.js"></script>
         <script src="jsLibraries/jquery-ui.min.js"></script>
-        <!--<script src="jsLibraries/jquery.zoom-min.js"></script>-->
         <script src="jsLibraries/jquery.elevatezoom.js"></script>
         <footer>
             <div class="container" align="center">

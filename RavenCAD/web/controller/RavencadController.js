@@ -10,6 +10,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
     var _destination = ""; //stores the url a user was navigating towards
     var currentActiveTab = 0;
+    var _vectorStage =0;
     /********************EVENT HANDLERS********************/
     //prompt dialog when navigating away from design page with unsaved parts
     $('a.losePartLink').click(function(event) {
@@ -134,13 +135,21 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#methodTabs div.active table tbody tr').last().remove();
         }
     });
-    $('.addStageButton').click(function() {
-        var table = $('#vectorTable table');
-        table.find('tbody').append('<tr><td>' + "Every n + " + (table.find('tr').length) + '</td><td><div class="btn-group"><a class="btn dropdown-toggle" data-toggle="dropdown" href="#">Library Vectors<span class="caret"></span></a><ul class="dropdown-menu"></ul></div></td><td><input class="input-mini" placeholder="Kan"/></td></tr>');
+    $('.addVectorStageButton').click(function() {
+        var table = $('#vectorTable tbody');
+        _vectorStage = _vectorStage + 1;
+        var vectorOptions = '<select>';
+        $.each(_data["result"], function() {
+           if (this["Type"] === "vector") {
+               vectorOptions = vectorOptions +'<option id="'+this["uuid"]+'">'+this["Name"]+' - '+this["Resistance"]+'</option>';
+            }
+        });
+        vectorOptions = vectorOptions+'</select>';
+        table.append('<tr><td>' + _vectorStage + '</td><td>'+vectorOptions+'</td></tr>');
     });
-    $('.minusStageButton').click(function() {
-        if ($('#vectorTable table tbody tr').length > 1) {
-            $('#vectorTable table tbody tr').last().remove();
+    $('.removeVectorStageButton').click(function() {
+        if ($('#vectorTable tbody tr').length > 1) {
+            $('#vectorTable tbody tr').last().remove();
         }
     });
     
@@ -255,7 +264,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (targets.length > 1) {
                 canRun = false; //can only run one design at once
                 var currentDesignCount = addDesignTab();
-                currentActiveTab = currentDesignCount
+                currentActiveTab = currentDesignCount;
 
                 var partLibrary = ""; //parts to use in library
                 var vectorLibrary = ""; //vectors to use in library
@@ -307,9 +316,18 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 if (targetLength === "") {
                     targetLength = $('input#targetLength').attr("placeholder");
                 }
+                
+                //vector_uuid - stage pairs
+                var stageVectorArray = []
+                $('table#vectorTable tbody tr').each(function(){
+                    var stage = $(this).children('td:first').text();
+                    var vectoruuid = $(this).find('select option:selected').attr("id");
+                    stageVectorArray.push(vectoruuid);
+                })
                 var requestInput = {command: "run", designCount: "" + currentDesignCount, targets: "" + targets, method: ""
                             + _method, partLibrary: "" + partLibrary, vectorLibrary: "" + vectorLibrary, recommended: ""
                             + rec, required: "" + req, forbidden: "" + forbid, discouraged: "" + discourage,
+                    "stageVectors":""+stageVectorArray,
                     efficiency: "" + efficiencyArray,
                     "primer": JSON.stringify({oligoNameRoot: oligoNameRoot,
                         meltingTemperature: meltingTemperature,
