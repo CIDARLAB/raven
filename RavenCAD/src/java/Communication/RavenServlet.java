@@ -52,7 +52,8 @@ public class RavenServlet extends HttpServlet {
             RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
             out = response.getWriter();
             String command = request.getParameter("command");
-            user = getUser(request).toLowerCase();
+//            user = getUser(request).toLowerCase();
+            user = getUser(request);
             RavenController controller = _controllerHash.get(user);
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
@@ -280,7 +281,8 @@ public class RavenServlet extends HttpServlet {
             writer = response.getWriter();
             if (!ServletFileUpload.isMultipartContent(request)) {
                 String command = request.getParameter("command");
-                String user = getUser(request).toLowerCase();
+//                String user = getUser(request).toLowerCase();
+                String user = getUser(request);
                 RavenController controller = _controllerHash.get(user);
                 if (command.equals("importClotho")) {
                     response.setContentType("application/json");
