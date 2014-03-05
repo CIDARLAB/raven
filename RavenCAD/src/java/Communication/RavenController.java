@@ -562,19 +562,20 @@ public class RavenController {
                     newVector.addSearchTag("Level: " + level);
                     newVector.addSearchTag("Resistance: " + resistance);
                     newVector.setTransientStatus(false);
-                    Vector toBreak = newVector.saveDefault(_collector);
+//                    Vector toBreak = newVector.saveDefault(_collector);
 
                     //Library logic
 //                    System.out.println("tokens[0].trim(): " + tokens[0].trim());
                     if (!tokens[0].trim().isEmpty()) {
 //                        System.out.println("not empty, in library");
                         _vectorLibrary.add(newVector);
+                        Vector toBreak = newVector.saveDefault(_collector);
                     }
 
                     //save vector with no overhangs juse in case;
-                    if (toBreak == null) {
-                        break;
-                    }
+//                    if (toBreak == null) {
+//                        break;
+//                    }
                 } catch (Exception e) {
                     badLines.add(line);
                 }
@@ -594,7 +595,10 @@ public class RavenController {
                     newBasicPart.addSearchTag("Type: " + type);
                     newBasicPart.addSearchTag("Direction: [+]");
 
-                    Part toBreak = newBasicPart.saveDefault(_collector);
+                    //Library logic
+                    if (!tokens[0].trim().isEmpty()) {
+                        Part toBreak = newBasicPart.saveDefault(_collector);
+                    }
                     newBasicPart.setTransientStatus(false);
 
                     //save part with no scars or overhangs juse in case;
@@ -611,9 +615,9 @@ public class RavenController {
 
                         seenPartNames.add(name);
                     }
-                    if (toBreak == null) {
-                        break;
-                    }
+//                    if (toBreak == null) {
+//                        break;
+//                    }
                 } catch (Exception e) {
                     badLines.add(line);
                 }
@@ -641,17 +645,18 @@ public class RavenController {
                         vector = allVectorsWithName.get(0);
                     }
                     _compPartsVectors.put(newBasicPart, vector);
-                    Part toBreak = newBasicPart.saveDefault(_collector);
+//                    Part toBreak = newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
 
                     //Library logic
                     if (!tokens[0].trim().isEmpty()) {
                         _partLibrary.add(newBasicPart);
+                        Part toBreak = newBasicPart.saveDefault(_collector);
                     }
 
-                    if (toBreak == null) {
-                        break;
-                    }
+//                    if (toBreak == null) {
+//                        break;
+//                    }
                 } catch (Exception e) {
                     badLines.add(line);
                 }
