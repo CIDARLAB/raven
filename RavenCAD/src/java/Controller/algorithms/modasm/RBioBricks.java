@@ -58,7 +58,7 @@ public class RBioBricks extends RGeneral {
         //If the stageVector hash is empty, make a new default vector
         if (stageRVectors.size() == 1) {
             if (stageRVectors.get(1) == null) {
-                stageRVectors.put(1, new RVector("EX", "SP", -1, "pSK1A2", null));
+                stageRVectors.put(0, new RVector("EX", "SP", -1, "pSK1A2", null));
             }
         }
         
@@ -66,8 +66,8 @@ public class RBioBricks extends RGeneral {
         for (RGraph graph : optimalGraphs) {
 
             RNode root = graph.getRootNode();
-            RVector rootVector = stageRVectors.get(root.getStage() % stageRVectors.size());
-            
+            RVector vector = stageRVectors.get(root.getStage() % stageRVectors.size());
+            RVector rootVector = new RVector("EX", "SP", -1, vector.getName(), null);           
             root.setVector(rootVector);
             root.setLOverhang("EX");
             root.setROverhang("SP");
@@ -115,7 +115,8 @@ public class RBioBricks extends RGeneral {
 
             //Give biobricks overhangs
             RVector vector = stageRVectors.get(child.getStage() % stageRVectors.size());
-            child.setVector(vector);
+            RVector newVector = new RVector("EX", "SP", -1, vector.getName(), null);
+            child.setVector(newVector);
             child.setLOverhang("EX");
             child.setROverhang("SP");
 

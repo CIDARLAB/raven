@@ -39,7 +39,6 @@ public class RSLIC extends RGeneral {
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps, true);
-        HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
         
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
@@ -65,15 +64,15 @@ public class RSLIC extends RGeneral {
             RGraph graph = asmGraphs.get(i);
             RNode root = graph.getRootNode();
             RVector vector = stageRVectors.get(root.getStage() % stageRVectors.size());
-            root.setVector(vector);
+            
             ArrayList<String> composition = root.getComposition();
             
             //Assign overhangs of vector and goal part if a vector exists
-            if (vector != null) {
+            if (vector != null) {                
+                RVector newVector = new RVector(composition.get(0), composition.get(composition.size()-1), root.getStage(), vector.getName(), null);
+                root.setVector(newVector);              
                 root.setLOverhang(vector.getName() + "_L");
                 root.setROverhang(vector.getName() + "_R");
-                vector.setLOverhang(composition.get(0));
-                vector.setROverhang(composition.get(composition.size()-1));
             } else {
                 root.setLOverhang(composition.get(composition.size() - 1));
                 root.setROverhang(composition.get(0));
@@ -113,7 +112,7 @@ public class RSLIC extends RGeneral {
     
     /** Overhang assignment helper **/
     private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors, RNode root, HashMap<Integer, RVector> stageRVectors) {
-
+        
         ArrayList<RNode> children = new ArrayList<RNode>();
         
         //Get children
@@ -127,24 +126,42 @@ public class RSLIC extends RGeneral {
         //For each of the children, assign overhangs based on neighbors
         for (int j = 0; j < children.size(); j++) {
             RNode child = children.get(j);
+            
+            //Assign overhangs of vector and goal part if a vector exists
             RVector vector = stageRVectors.get(child.getStage() % stageRVectors.size());
-            child.setVector(vector);
             
             if (j == 0) {
-                ArrayList<String> nextComp = children.get(j+1).getComposition();
+                ArrayList<String> nextComp = children.get(j + 1).getComposition();
+
+                if (vector != null) {
+                    RVector newVector = new RVector(parent.getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    child.setVector(newVector);
+                }
                 child.setROverhang(nextComp.get(0));
                 child.setLOverhang(parent.getLOverhang());
+
             } else if (j == children.size() - 1) {
-                ArrayList<String> prevComp = children.get(j-1).getComposition();
-                child.setLOverhang(prevComp.get(prevComp.size()-1));
+                ArrayList<String> prevComp = children.get(j - 1).getComposition();
+
+                if (vector != null) {
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), parent.getROverhang(), child.getStage(), vector.getName(), null);
+                    child.setVector(newVector);
+                }
+                child.setLOverhang(prevComp.get(prevComp.size() - 1));
                 child.setROverhang(parent.getROverhang());
+
             } else {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
+
+                if (vector != null) {
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    child.setVector(newVector);
+                }
                 child.setLOverhang(prevComp.get(prevComp.size() - 1));
                 child.setROverhang(nextComp.get(0));
             }
-            
+
             if (child.getStage() == 0) {
                 ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
                 l0nodes.add(child);

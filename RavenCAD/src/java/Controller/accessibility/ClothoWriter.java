@@ -337,7 +337,7 @@ public class ClothoWriter {
         for (int i = 0; i < composition.size(); i++) {
             ArrayList<String> cSearchTags = new ArrayList<String>();
             String cName = composition.get(i);
-            ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, true);
+            ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, false);
             String cSeq = allPartsWithName.get(0).getSeq();
             String cDir = direction.get(i);
             String cType = allPartsWithName.get(0).getType();
@@ -412,17 +412,17 @@ public class ClothoWriter {
                 cSearchTags.add("Scars: []");
                 exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
             }    
-//            
-//            //In the edge case where the overhangs of a re-used composite part is changed
-//            if (exactPart == null) {
-//                cSearchTags.clear();
-//                cSearchTags.add("Type: " + cType);
-//                cSearchTags.add("RO: ");
-//                cSearchTags.add("LO: ");
-//                cSearchTags.add("Direction: [+]");
-//                cSearchTags.add("Scars: []");
-//                exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
-//            }
+            
+            //In homologous rcombinations, the overhangs are the neighbor, select the blank part
+            if (exactPart == null) {
+                cSearchTags.clear();
+                cSearchTags.add("Type: " + cType);
+                cSearchTags.add("RO: ");
+                cSearchTags.add("LO: ");
+                cSearchTags.add("Direction: [+]");
+                cSearchTags.add("Scars: []");
+                exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+            }
             
             newComposition.add(exactPart);
         }

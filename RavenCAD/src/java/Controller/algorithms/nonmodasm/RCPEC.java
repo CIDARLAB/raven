@@ -136,24 +136,20 @@ public class RCPEC extends RGeneral {
                 if (vector != null) {
                     RVector newVector = new RVector(parent.getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
-                    child.setLOverhang(vector.getName() + "_L");
-                    child.setROverhang(vector.getName() + "_R");
-                } else {
-                    child.setROverhang(nextComp.get(0));
-                    child.setLOverhang(parent.getLOverhang());
                 }
+                child.setROverhang(nextComp.get(0));
+                child.setLOverhang(parent.getLOverhang());
+
             } else if (j == children.size() - 1) {
-                ArrayList<String> prevComp = children.get(j-1).getComposition();
-                
+                ArrayList<String> prevComp = children.get(j - 1).getComposition();
+
                 if (vector != null) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), parent.getROverhang(), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
-                    child.setLOverhang(vector.getName() + "_L");
-                    child.setROverhang(vector.getName() + "_R");
-                } else {
-                    child.setLOverhang(prevComp.get(prevComp.size() - 1));
-                    child.setROverhang(parent.getROverhang());
                 }
+                child.setLOverhang(prevComp.get(prevComp.size() - 1));
+                child.setROverhang(parent.getROverhang());
+
             } else {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
@@ -161,14 +157,11 @@ public class RCPEC extends RGeneral {
                 if (vector != null) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), nextComp.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
-                    child.setLOverhang(vector.getName() + "_L");
-                    child.setROverhang(vector.getName() + "_R");
-                } else {
-                    child.setLOverhang(prevComp.get(prevComp.size() - 1));
-                    child.setROverhang(nextComp.get(0));
                 }
+                child.setLOverhang(prevComp.get(prevComp.size() - 1));
+                child.setROverhang(nextComp.get(0));
             }
-            
+
             if (child.getStage() == 0) {
                 ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
                 l0nodes.add(child);

@@ -742,7 +742,7 @@ public class RavenController {
                     //Basic part plasmids - add as new basic parts with overhang for re-use
                     if (tokens.length == 10) {
                         if (i == 9) {
-                            Part basic = _collector.getAllPartsWithName(basicPartName, true).get(0);
+                            Part basic = _collector.getAllPartsWithName(basicPartName, false).get(0);
                             String sequence = basic.getSeq();
                             String type = basic.getType();
                             Part newBasicPart = Part.generateBasic(basicPartName, sequence);
@@ -773,7 +773,7 @@ public class RavenController {
                     directions.add(bpDirection);
                     
                     //Forming the composite part composition
-                    ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, true);
+                    ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
                     Part bp = null;
                     
                     //First pick the part with no overhangs, i.e. basic part
@@ -799,7 +799,7 @@ public class RavenController {
 
                 //Add vector pair if it is in the library
                 Vector vector = null;
-                ArrayList<Vector> vectors = _collector.getAllVectorsWithName(vectorName, true);
+                ArrayList<Vector> vectors = _collector.getAllVectorsWithName(vectorName, false);
                 if (vectors.size() > 0) {
                     for (Vector vec : vectors) {
                         if (vec.getLeftOverhang().equals(leftOverhang) && vec.getRightOverhang().equals(rightOverhang)) {
