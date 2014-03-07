@@ -263,6 +263,7 @@ public class RavenController {
                 String RO = "";
                 String LO = "";
                 String level = "";
+                String type = "";
                 String resistance = "";
                 for (int k = 0; k < tags.size(); k++) {
                     if (tags.get(k).startsWith("LO:")) {
@@ -273,16 +274,19 @@ public class RavenController {
                         level = tags.get(k).substring(7);
                     } else if (tags.get(k).startsWith("Resistance:")) {
                         resistance = tags.get(k).substring(12);
+                    } else if (tags.get(k).startsWith("Type:")) {
+                        level = tags.get(k).substring(6);
                     }
                 }
-                partsListBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
-                configBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + ",vector," + resistance + "," + level);
+                partsListBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + "," + type + "," + resistance + "," + level);
+                configBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + "," + type + "," + resistance + "," + level);
                 partList = partList + "{\"uuid\":\"" + v.getUUID()
                         + "\",\"Name\":\"" + v.getName()
                         + "\",\"Sequence\":\"" + v.getSeq()
                         + "\",\"LO\":\"" + v.getLeftOverhang()
                         + "\",\"RO\":\"" + v.getRightOverhang()
-                        + "\",\"Type\":\"vector\",\"Composition\":\"\""
+                        + "\",\"Type\":\"" + v.getType()
+                        + "\"Composition\":\"\""
                         + ",\"Vector\":\"\""
                         + ",\"Resistance\":\"" + v.getResistance()
                         + "\",\"Level\":\"" + v.getLevel() + "\"},";
