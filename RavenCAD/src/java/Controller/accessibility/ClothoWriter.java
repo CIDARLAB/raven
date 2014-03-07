@@ -164,6 +164,7 @@ public class ClothoWriter {
                                 cSearchTags.add("LO: " + cLO);
                                 cSearchTags.add("Type: " + cType);
                                 cSearchTags.add("Direction: [" + cDir + "]");
+                                cSearchTags.add("Scars: []");
                                 Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 
                                 //Try to find the inverted version if this part does not exist
@@ -192,6 +193,7 @@ public class ClothoWriter {
                                     cSearchTags.add("RO: " + invertedcLO);
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("Direction: [" + invertedcDir + "]");
+                                    cSearchTags.add("Scars: []");
                                     exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 }
 
@@ -202,6 +204,7 @@ public class ClothoWriter {
                                     cSearchTags.add("RO: ");
                                     cSearchTags.add("LO: ");
                                     cSearchTags.add("Direction: [+]" );
+                                    cSearchTags.add("Scars: []");
                                     exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 }
                                 
@@ -376,6 +379,7 @@ public class ClothoWriter {
             cSearchTags.add("LO: " + cLO);
             cSearchTags.add("Type: " + cType);
             cSearchTags.add("Direction: [" + cDir + "]");
+            cSearchTags.add("Scars: []");
 
             Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
             
@@ -405,8 +409,21 @@ public class ClothoWriter {
                 cSearchTags.add("RO: " + invertedcLO);
                 cSearchTags.add("Type: " + cType);
                 cSearchTags.add("Direction: [" + invertedcDir + "]");
+                cSearchTags.add("Scars: []");
                 exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
             }    
+//            
+//            //In the edge case where the overhangs of a re-used composite part is changed
+//            if (exactPart == null) {
+//                cSearchTags.clear();
+//                cSearchTags.add("Type: " + cType);
+//                cSearchTags.add("RO: ");
+//                cSearchTags.add("LO: ");
+//                cSearchTags.add("Direction: [+]");
+//                cSearchTags.add("Scars: []");
+//                exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+//            }
+            
             newComposition.add(exactPart);
         }
 

@@ -68,7 +68,7 @@ public class RMoClo extends RGeneral {
         propagatePrimaryOverhangs(optimalGraphs);
         maximizeOverhangSharing(optimalGraphs);
         HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
-        cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash);
+        cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors);
         assignScars(optimalGraphs);
 
         return optimalGraphs;

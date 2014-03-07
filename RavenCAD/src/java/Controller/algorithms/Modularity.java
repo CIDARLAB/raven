@@ -4,6 +4,7 @@
  */
 package Controller.algorithms;
 
+import Controller.accessibility.ClothoReader;
 import Controller.datastructures.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -326,15 +327,11 @@ public class Modularity extends Partitioning {
     /* 
      * Third step of overhang assignment - A partial cartesian product given a library of parts
      */   
-    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash) {
+    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors) {
+        
         //Initialize node and library overhang hashes
         HashMap<String, HashSet<String>> nodePartOHHashes = initializPartOHHashes(graphs);
         HashMap<String, HashSet<String>> nodeVectorOHHash = initializeVectorOHHashes(graphs);
-        
-//        System.out.println("nodePartOHHashes keys: " + nodePartOHHashes.keySet());
-//        System.out.println("nodePartOHHashes values: " + nodePartOHHashes.values());
-//        System.out.println("nodeVectorOHHash keys: " + nodeVectorOHHash.keySet());
-//        System.out.println("nodeVectorOHHash values: " + nodeVectorOHHash.values());
     
         //Sort list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
         ArrayList<String> sortedNodeOverhangs = new ArrayList(nodePartOHHashes.keySet());
@@ -342,24 +339,13 @@ public class Modularity extends Partitioning {
         
         //Perform a partial cartesian product on library re-use
         ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs, nodePartOHHashes, nodeVectorOHHash);
-        
-//        System.out.println("MADE CARTESIAN GRAPH!");
-        
         ArrayList<ArrayList<String>> completeAssignments = traverseCertesianGraph (cartestianRootNodes, sortedNodeOverhangs.size());
-        
-//        System.out.println("FOUND COMPLETE ASSIGNMENTS!");
-        
         HashMap<String, String> bestAssignment = scoreAssignments(completeAssignments, sortedNodeOverhangs, forcedOverhangHash);
-        
-//        System.out.println("SCORED ASSIGNMENTS!");
-//        
-//        System.out.println("BEST ASSIGNMENT KEYS: " + bestAssignment.keySet());
-//        System.out.println("BEST ASSIGNMENT VALUES: " + bestAssignment.values());
         
         //Assign overhang to nodes and vectors
         assignNewOverhangs(bestAssignment, sortedNodeOverhangs);
-        HashMap<Integer, String> levelResistanceHash = getLevelResistance(graphs, bestAssignment);
-        mapFinalOverhangs (graphs, bestAssignment, levelResistanceHash);
+//        HashMap<Integer, String> levelResistanceHash = getLevelResistance(graphs, bestAssignment);
+        mapFinalOverhangs (graphs, bestAssignment, stageVectors);
     }
     
     /**
@@ -1438,7 +1424,14 @@ public class Modularity extends Partitioning {
     /*
      * Traverse the graphs and assign all final overhangs from map of second to third pass overhangs
      */
-    private void mapFinalOverhangs (ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment, HashMap<Integer, String> levelResistanceHash) {
+    private void mapFinalOverhangs (ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment, HashMap<Integer, Vector> stageVectors) {
+        
+        //Convert vectors to RVectors
+        HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
+        for (Integer stage : stageVectors.keySet()) {
+            RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
+            stageRVectors.put(stage, vec);
+        }
         
         //Assign final overhangs for all graphs
         for (RGraph graph : graphs) {
@@ -1463,8 +1456,8 @@ public class Modularity extends Partitioning {
                 currentLeftOverhang = current.getLOverhang();
                 currentRightOverhang = current.getROverhang();
 
-                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), "DVL" + current.getStage(), null);
-                newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
+                RVector levelVector = stageRVectors.get(current.getStage() % stageRVectors.size());
+                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), levelVector.getName(), null);
                 current.setVector(newVector);
             }
         }

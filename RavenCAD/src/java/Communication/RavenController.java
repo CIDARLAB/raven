@@ -623,12 +623,12 @@ public class RavenController {
             } else if (type.equalsIgnoreCase("destination vector")) {    
                 
                 try {
-                    String name = tokens[1].trim();
+//                    String name = tokens[1].trim();
                     String sequence = tokens[2].trim();
                     String leftOverhang = tokens[3].trim();
                     String rightOverhang = tokens[4].trim();
                     String resistance = tokens[6].toLowerCase().trim();
-//                    String name = tokens[8].trim();
+                    String name = tokens[8].trim();
                 
                     int level;
                     try {
@@ -675,13 +675,12 @@ public class RavenController {
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
                     newBasicPart.addSearchTag("Direction: [+]");
+                    newBasicPart.addSearchTag("Scars: []");
 
                     //Library logic
-//                    if (!tokens[0].trim().isEmpty()) {
-                        _partLibrary.add(newBasicPart);
-                        newBasicPart.saveDefault(_collector);
-                        newBasicPart.setTransientStatus(false);
-//                    }
+                    _partLibrary.add(newBasicPart);
+                    newBasicPart.saveDefault(_collector);
+                    newBasicPart.setTransientStatus(false);
                     
                 } catch (Exception e) {
                     badLines.add(line);
@@ -704,6 +703,7 @@ public class RavenController {
                 String rightOverhang = tokens[4].trim();
                 String vectorName = tokens[8].trim();
                 ArrayList<String> directions = new ArrayList<String>();
+                ArrayList<String> scars = new ArrayList<String>();
 
                 //Parse composition tokens
                 for (int i = 9; i < tokens.length; i++) {
@@ -712,6 +712,7 @@ public class RavenController {
                     String bpForcedLeft = " ";
                     String bpForcedRight = " ";
                     String bpDirection = "+";
+                    String scar = "_";
                     String compositePartName = tokens[1];
                     String basicPartName = partNameTokens[0];
 
@@ -724,11 +725,18 @@ public class RavenController {
                         } else if (partNameTokens.length == 3) {
                             bpForcedLeft = partNameTokens[1];
                             bpForcedRight = partNameTokens[2];
+                            scar = bpForcedRight;
                         } else if (partNameTokens.length == 4) {
                             bpForcedLeft = partNameTokens[1];
                             bpForcedRight = partNameTokens[2];
                             bpDirection = partNameTokens[3];
+                            scar = bpForcedRight;
                         }
+                    }
+                    
+                    //Add scars from the right side... maybe not perfect, but ok
+                    if (i != (tokens.length-1)) {
+                        scars.add(scar);
                     }
                     
                     //Basic part plasmids - add as new basic parts with overhang for re-use
@@ -742,6 +750,7 @@ public class RavenController {
                             newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
                             newBasicPart.addSearchTag("LO: " + leftOverhang);
                             newBasicPart.addSearchTag("RO: " + rightOverhang);
+                            newBasicPart.addSearchTag("Scars: []");
                             
                             //Library logic
                             if (!tokens[0].trim().isEmpty()) {
@@ -806,17 +815,19 @@ public class RavenController {
                 newPlasmid.addSearchTag("LO: " + leftOverhang);
                 newPlasmid.addSearchTag("RO: " + rightOverhang);
                 newPlasmid.addSearchTag("Type: plasmid");
+                newPlasmid.addSearchTag("Scars: " + scars);
                 newPlasmid = newPlasmid.saveDefault(_collector);
                 newPlasmid.setTransientStatus(false);
 
                 //Library logic - if the pasmid is in the library, add a composite part, which is different from a plasmid
                 if (!tokens[0].trim().isEmpty()) {
-                    Part newComposite = Part.generateComposite(composition, name);
-                    _compPartsVectors.put(newComposite, vector);
+                    Part newComposite = Part.generateComposite(composition, name);                   
                     newComposite.addSearchTag("Direction: " + directions);
                     newComposite.addSearchTag("LO: " + leftOverhang);
                     newComposite.addSearchTag("RO: " + rightOverhang);
                     newComposite.addSearchTag("Type: composite");
+                    newPlasmid.addSearchTag("Scars: " + scars);
+                    _compPartsVectors.put(newComposite, vector);
                     newComposite = newComposite.saveDefault(_collector);
                     newComposite.setTransientStatus(false);
                     _partLibrary.add(newComposite);

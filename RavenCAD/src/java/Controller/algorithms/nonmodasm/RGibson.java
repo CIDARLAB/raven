@@ -40,29 +40,31 @@ public class RGibson extends RGeneral {
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps, true);
         HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
-//        for (RNode root : gpsNodes) {
-//            String nodeKey = root.getNodeKey("+");
-//            keyVectors.put(nodeKey, root.getVector());
-//        }
-
+        
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);
-        assignOverhangs(optimalGraphs, keyVectors);
+        assignOverhangs(optimalGraphs, stageVectors);
 
         return optimalGraphs;
     }
     
     /** Assign overhangs for scarless assembly **/
-    private void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<String, RVector> keyVectors) {
+    private void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<Integer, Vector> stageVectors) {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
+        
+        HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
+        for (Integer stage : stageVectors.keySet()) {
+            RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
+            stageRVectors.put(stage, vec);
+        }
         
         for (int i = 0; i < asmGraphs.size(); i++) {
             
             RGraph graph = asmGraphs.get(i);
             RNode root = graph.getRootNode();
-            RVector vector = keyVectors.get(root.getNodeKey("+"));
+            RVector vector = stageRVectors.get(root.getStage() % stageRVectors.size());
             root.setVector(vector);
             ArrayList<String> composition = root.getComposition();
             
@@ -80,7 +82,7 @@ public class RGibson extends RGeneral {
             ArrayList<RNode> neighbors = root.getNeighbors();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
-            assignOverhangsHelper(root, neighbors, root);
+            assignOverhangsHelper(root, neighbors, root, stageRVectors);
         }
         
         //
@@ -110,7 +112,7 @@ public class RGibson extends RGeneral {
     }
     
     /** Overhang assignment helper **/
-    private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors, RNode root) {
+    private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors, RNode root, HashMap<Integer, RVector> stageRVectors) {
 
         ArrayList<RNode> children = new ArrayList<RNode>();
         
@@ -125,6 +127,8 @@ public class RGibson extends RGeneral {
         //For each of the children, assign overhangs based on neighbors
         for (int j = 0; j < children.size(); j++) {
             RNode child = children.get(j);
+            RVector vector = stageRVectors.get(child.getStage() % stageRVectors.size());
+            child.setVector(vector);
             
             if (j == 0) {
                 ArrayList<String> nextComp = children.get(j+1).getComposition();
@@ -148,7 +152,7 @@ public class RGibson extends RGeneral {
             }
             
             ArrayList<RNode> grandChildren = child.getNeighbors();           
-            assignOverhangsHelper(child, grandChildren, root);
+            assignOverhangsHelper(child, grandChildren, root, stageRVectors);
         }
     }
     
