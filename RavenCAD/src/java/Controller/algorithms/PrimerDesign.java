@@ -179,6 +179,15 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("9", "cgac");
         overhangVariableSequenceHash.put("10", "cgtt");
         overhangVariableSequenceHash.put("11", "tgtg");
+        overhangVariableSequenceHash.put("12", "atgc");
+        overhangVariableSequenceHash.put("13", "gtca");
+        overhangVariableSequenceHash.put("14", "gaac");
+        overhangVariableSequenceHash.put("15", "ctga");
+        overhangVariableSequenceHash.put("16", "acag");
+        overhangVariableSequenceHash.put("17", "tagc");
+        overhangVariableSequenceHash.put("18", "atcg");
+        overhangVariableSequenceHash.put("19", "cagt");
+        overhangVariableSequenceHash.put("20", "gcaa");
         overhangVariableSequenceHash.put("0*", "ctcc");
         overhangVariableSequenceHash.put("1*", "agta");
         overhangVariableSequenceHash.put("2*", "catt");
@@ -191,6 +200,15 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("9*", "gtcg");
         overhangVariableSequenceHash.put("10*", "aacg");
         overhangVariableSequenceHash.put("11*", "caca");
+        overhangVariableSequenceHash.put("12*", "gcat");
+        overhangVariableSequenceHash.put("13*", "tgac");
+        overhangVariableSequenceHash.put("14*", "gtcc");
+        overhangVariableSequenceHash.put("15*", "tcag");
+        overhangVariableSequenceHash.put("16*", "ctgt");
+        overhangVariableSequenceHash.put("17*", "gcta");
+        overhangVariableSequenceHash.put("18*", "cgat");
+        overhangVariableSequenceHash.put("19*", "actg");
+        overhangVariableSequenceHash.put("20*", "ttgc");
         return overhangVariableSequenceHash;
     }
 

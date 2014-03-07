@@ -551,7 +551,6 @@ public class RavenController {
         if (_forcedOverhangHash == null) {
             _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         }
-        HashSet<String> seenPartNames = new HashSet();
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
         String line = reader.readLine();
         line = reader.readLine(); //skip first line
@@ -1050,7 +1049,7 @@ public class RavenController {
         getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors);
+                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors, _stageVectors, method);
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
@@ -1209,7 +1208,7 @@ public class RavenController {
     }
     //FIELDS
     private HashSet<Part> _goalParts = new HashSet<Part>();//key: target part, value: composition
-    private HashMap<Part, Vector> _compPartsVectors = new HashMap<Part, Vector>();
+    public static HashMap<Part, Vector> _compPartsVectors = new HashMap<Part, Vector>();
     private HashMap<Integer, Double> _efficiency = new HashMap<Integer, Double>();
     private HashSet<String> _required = new HashSet<String>();
     private HashSet<String> _recommended = new HashSet<String>();
