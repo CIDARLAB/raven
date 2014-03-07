@@ -275,7 +275,7 @@ public class RavenController {
                     } else if (tags.get(k).startsWith("Resistance:")) {
                         resistance = tags.get(k).substring(12);
                     } else if (tags.get(k).startsWith("Type:")) {
-                        level = tags.get(k).substring(6);
+                        type = tags.get(k).substring(6);
                     }
                 }
                 partsListBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + "," + type + "," + resistance + "," + level);
@@ -286,7 +286,7 @@ public class RavenController {
                         + "\",\"LO\":\"" + v.getLeftOverhang()
                         + "\",\"RO\":\"" + v.getRightOverhang()
                         + "\",\"Type\":\"" + v.getType()
-                        + "\"Composition\":\"\""
+                        + "\",\"Composition\":\"\""
                         + ",\"Vector\":\"\""
                         + ",\"Resistance\":\"" + v.getResistance()
                         + "\",\"Level\":\"" + v.getLevel() + "\"},";
