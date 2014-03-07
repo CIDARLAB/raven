@@ -146,7 +146,7 @@ public class RavenServlet extends HttpServlet {
                 String[] stageVectorArray = request.getParameter("stageVectors").split(","); 
                 HashMap<String,String> stageVectorHash = new HashMap<String, String>(); //key - stage as string, value - vector uuid
                 for(int i=0 ;i<stageVectorArray.length;i++) {
-                    stageVectorHash.put(String.valueOf(i+1), stageVectorArray[i]);
+                    stageVectorHash.put(String.valueOf(i), stageVectorArray[i]);
                 }
                 
                 if (recArray.length > 0) {

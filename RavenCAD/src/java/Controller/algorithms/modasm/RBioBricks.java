@@ -32,15 +32,10 @@ public class RBioBricks extends RGeneral {
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
-        HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
-//        for (RNode root : gpsNodes) {
-//            String nodeKey = root.getNodeKey("+");
-//            keyVectors.put(nodeKey, root.getVector());
-//        }
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);
-        assignBioBricksOverhangs(optimalGraphs, keyVectors);
+        assignBioBricksOverhangs(optimalGraphs, stageVectors);
         assignScars(optimalGraphs);
 
         return optimalGraphs;
@@ -50,28 +45,36 @@ public class RBioBricks extends RGeneral {
      * First step of overhang assignment - enforce numeric place holders for
      * overhangs, ie no overhang redundancy in any step *
      */
-    private void assignBioBricksOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<String, RVector> keyVectors) {
+    private void assignBioBricksOverhangs(ArrayList<RGraph> optimalGraphs, HashMap<Integer, Vector> stageVectors) {
 
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
-        RVector vector = new RVector("EX", "SP", -1, "pSK1A2", null);
-
+        HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
+        for (Integer stage : stageVectors.keySet()) {
+            RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
+            stageRVectors.put(stage, vec);
+        }
+        
+        //If the stageVector hash is empty, make a new default vector
+        if (stageRVectors.size() == 1) {
+            if (stageRVectors.get(1) == null) {
+                stageRVectors.put(1, new RVector("EX", "SP", -1, "pSK1A2", null));
+            }
+        }
+        
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
 
             RNode root = graph.getRootNode();
-            RVector rootVector = keyVectors.get(root.getNodeKey("+"));
-            if (rootVector == null) {
-                rootVector = vector;
-            }
-
+            RVector rootVector = stageRVectors.get(root.getStage() % stageRVectors.size());
+            
             root.setVector(rootVector);
             root.setLOverhang("EX");
             root.setROverhang("SP");
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
             ArrayList<RNode> neighbors = root.getNeighbors();
-            assignBioBricksOverhangsHelper(root, neighbors, root, rootVector);
+            assignBioBricksOverhangsHelper(root, neighbors, root, stageRVectors);
         }
 
         //Determine which nodes impact which level to form the stageDirectionAssignHash
@@ -103,7 +106,7 @@ public class RBioBricks extends RGeneral {
      * This helper method executes the loops necessary to enforce overhangs for
      * each graph in enforceOverhangRules *
      */
-    private void assignBioBricksOverhangsHelper(RNode parent, ArrayList<RNode> children, RNode root, RVector vector) {
+    private void assignBioBricksOverhangsHelper(RNode parent, ArrayList<RNode> children, RNode root, HashMap<Integer, RVector> stageRVectors) {
 
         //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
         for (int i = 0; i < children.size(); i++) {
@@ -111,6 +114,7 @@ public class RBioBricks extends RGeneral {
             RNode child = children.get(i);
 
             //Give biobricks overhangs
+            RVector vector = stageRVectors.get(child.getStage() % stageRVectors.size());
             child.setVector(vector);
             child.setLOverhang("EX");
             child.setROverhang("SP");
@@ -124,7 +128,7 @@ public class RBioBricks extends RGeneral {
                 if (grandChildren.contains(parent)) {
                     grandChildren.remove(parent);
                 }
-                assignBioBricksOverhangsHelper(child, grandChildren, root, vector);
+                assignBioBricksOverhangsHelper(child, grandChildren, root, stageRVectors);
 
                 //Or record the level zero parts
             } else {
