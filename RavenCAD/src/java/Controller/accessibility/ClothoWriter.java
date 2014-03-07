@@ -200,10 +200,16 @@ public class ClothoWriter {
                                     cSearchTags.clear();
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("RO: ");
-                                    cSearchTags.add("LO: ");                                    
+                                    cSearchTags.add("LO: ");
+                                    cSearchTags.add("Direction: [+]" );
                                     exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 }
-
+                                
+                                //In the edge case where a composite part is being re-used but the basic part doesn't exist... This case only happens because the way we deal with scars is not well defined. This should be fixed
+//                                if (exactPart == null) {
+//                                    
+//                                }
+                                
                                 newComposition.add(exactPart);
                             }
 

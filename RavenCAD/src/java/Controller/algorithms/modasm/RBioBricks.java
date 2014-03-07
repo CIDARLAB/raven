@@ -21,11 +21,11 @@ public class RBioBricks extends RGeneral {
     /**
      * Clotho part wrapper for BioBricks 3A
      */
-    public ArrayList<RGraph> bioBricksClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> bioBricksClothoWrapper(HashSet<Part> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs) throws Exception {
 
         //Try-Catch block around wrapper method
         _maxNeighbors = 2;
-        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
+        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors);
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
@@ -33,10 +33,10 @@ public class RBioBricks extends RGeneral {
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
         HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
-        for (RNode root : gpsNodes) {
-            String nodeKey = root.getNodeKey("+");
-            keyVectors.put(nodeKey, root.getVector());
-        }
+//        for (RNode root : gpsNodes) {
+//            String nodeKey = root.getNodeKey("+");
+//            keyVectors.put(nodeKey, root.getVector());
+//        }
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, null, true);

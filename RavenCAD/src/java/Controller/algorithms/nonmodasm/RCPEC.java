@@ -21,7 +21,7 @@ public class RCPEC extends RGeneral {
     /**
      * Clotho part wrapper for CPEC *
      */
-    public ArrayList<RGraph> cpecClothoWrapper(HashMap<Part, Vector> goalPartsVectors, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> cpecClothoWrapper(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -32,18 +32,18 @@ public class RCPEC extends RGeneral {
             }
         }
         _maxNeighbors = max;
-        ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors.keySet());
+        ArrayList<Part> goalParts = new ArrayList<Part>(gps);
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
 
         //Put all parts into hash for mgp algorithm            
-        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors, true);
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps, true);
         HashMap<String, RVector> keyVectors = new HashMap<String, RVector>();
-        for (RNode root : gpsNodes) {
-            String nodeKey = root.getNodeKey("+");
-            keyVectors.put(nodeKey, root.getVector());
-        }
+//        for (RNode root : gpsNodes) {
+//            String nodeKey = root.getNodeKey("+");
+//            keyVectors.put(nodeKey, root.getVector());
+//        }
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, false);

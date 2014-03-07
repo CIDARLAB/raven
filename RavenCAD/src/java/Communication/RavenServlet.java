@@ -144,10 +144,11 @@ public class RavenServlet extends HttpServlet {
                 primerParameters.add(primerParam.getString("targetLength"));
 
                 String[] stageVectorArray = request.getParameter("stageVectors").split(","); 
-                HashMap<String,String> stageVectorHash = new HashMap(); //key - stage as string, value - vector uuid
+                HashMap<String,String> stageVectorHash = new HashMap<String, String>(); //key - stage as string, value - vector uuid
                 for(int i=0 ;i<stageVectorArray.length;i++) {
                     stageVectorHash.put(String.valueOf(i+1), stageVectorArray[i]);
                 }
+                
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {
@@ -196,7 +197,7 @@ public class RavenServlet extends HttpServlet {
                 }
 
                 String designCount = request.getParameter("designCount");
-                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
+                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters, stageVectorHash);
                 JSONArray partsList = controller.generatePartsList(designCount, params.toString());
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();

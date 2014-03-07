@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -54,7 +55,7 @@ public class RavenController {
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
         RBioBricks biobricks = new RBioBricks();
-        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, null);
+        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _stageVectors, null);
         return optimalGraphs;
     }
 
@@ -69,7 +70,7 @@ public class RavenController {
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         RGibson gibson = new RGibson();
-        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
         return optimalGraphs;
     }
 
@@ -84,7 +85,7 @@ public class RavenController {
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
-        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
         return optimalGraphs;
     }
 
@@ -99,7 +100,7 @@ public class RavenController {
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
-        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
         return optimalGraphs;
     }
 
@@ -115,7 +116,7 @@ public class RavenController {
         _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
         moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null);
         return optimalGraphs;
     }
 
@@ -130,7 +131,7 @@ public class RavenController {
         //Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
         RGoldenGate gg = new RGoldenGate();
-        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, null);
+        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
         return optimalGraphs;
     }
 
@@ -301,7 +302,7 @@ public class RavenController {
     //reset collector, all field variales, deletes all files in user's directory
     public void clearData() throws Exception {
         _collector.purge();
-        _goalParts = new HashMap<Part, Vector>();//key: target part, value: vector
+        _goalParts = new HashSet<Part>();//key: target part, value: vector
         _efficiency = new HashMap<Integer, Double>();
         _required = new HashSet<String>();
         _recommended = new HashSet<String>();
@@ -380,7 +381,6 @@ public class RavenController {
                 } else {
                     
                     Part part = composition.get(0);
-//                    type = part.getType();
                     
                     if (!direction.isEmpty()) {
                         bpDir = direction.get(0);
@@ -419,13 +419,6 @@ public class RavenController {
                 Vector v = _compPartsVectors.get(p);
                 if (v != null) {
                     vectorName = v.getName();
-                }
-                
-                //Do not show basic parts with overhangs - temporary fix, not sure if permanent... up for discussion
-                if (!"plasmid".equals(type)) {
-                    if (!p.getLeftOverhang().isEmpty() || !p.getRightOverhang().isEmpty()) {
-                        continue;
-                    }
                 }
                 
                 toReturn = toReturn
@@ -618,12 +611,9 @@ public class RavenController {
                     newVector.addSearchTag("Type: " + type);
                     newVector.addSearchTag("Resistance: " + resistance);
                     
-                    //Library logic
-//                    if (!tokens[0].trim().isEmpty()) {
-                        _vectorLibrary.add(newVector);
-                        newVector.saveDefault(_collector);
-                        newVector.setTransientStatus(false);
-//                    }
+                    _vectorLibrary.add(newVector);
+                    newVector.saveDefault(_collector);
+                    newVector.setTransientStatus(false);
 
                 } catch (Exception e) {
                     badLines.add(line);
@@ -638,6 +628,7 @@ public class RavenController {
                     String leftOverhang = tokens[3].trim();
                     String rightOverhang = tokens[4].trim();
                     String resistance = tokens[6].toLowerCase().trim();
+//                    String name = tokens[8].trim();
                 
                     int level;
                     try {
@@ -748,7 +739,7 @@ public class RavenController {
                             String type = basic.getType();
                             Part newBasicPart = Part.generateBasic(basicPartName, sequence);
                             newBasicPart.addSearchTag("Type: " + type);
-                            newBasicPart.addSearchTag("Direction: " + bpDirection);
+                            newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
                             newBasicPart.addSearchTag("LO: " + leftOverhang);
                             newBasicPart.addSearchTag("RO: " + rightOverhang);
                             
@@ -808,17 +799,26 @@ public class RavenController {
                     }
                 }
                 
-                Part newComposite = Part.generateComposite(composition, name);
-                _compPartsVectors.put(newComposite, vector);
-                newComposite.addSearchTag("Direction: " + directions);
-                newComposite.addSearchTag("LO: " + leftOverhang);
-                newComposite.addSearchTag("RO: " + rightOverhang);
-                newComposite.addSearchTag("Type: plasmid");
-                newComposite = newComposite.saveDefault(_collector);
-                newComposite.setTransientStatus(false);
+                //Library logic - make new plasmids whether or not they are in the library
+                Part newPlasmid = Part.generateComposite(composition, name);
+//                _compPartsVectors.put(newPlasmid, vector);
+                newPlasmid.addSearchTag("Direction: " + directions);
+                newPlasmid.addSearchTag("LO: " + leftOverhang);
+                newPlasmid.addSearchTag("RO: " + rightOverhang);
+                newPlasmid.addSearchTag("Type: plasmid");
+                newPlasmid = newPlasmid.saveDefault(_collector);
+                newPlasmid.setTransientStatus(false);
 
-                //Library logic
+                //Library logic - if the pasmid is in the library, add a composite part, which is different from a plasmid
                 if (!tokens[0].trim().isEmpty()) {
+                    Part newComposite = Part.generateComposite(composition, name);
+                    _compPartsVectors.put(newComposite, vector);
+                    newComposite.addSearchTag("Direction: " + directions);
+                    newComposite.addSearchTag("LO: " + leftOverhang);
+                    newComposite.addSearchTag("RO: " + rightOverhang);
+                    newComposite.addSearchTag("Type: composite");
+                    newComposite = newComposite.saveDefault(_collector);
+                    newComposite.setTransientStatus(false);
                     _partLibrary.add(newComposite);
                 }
 
@@ -926,7 +926,7 @@ public class RavenController {
         _statistics.setStages(stages);
         _statistics.setSteps(steps);
         _statistics.setSharing(shr);
-        _statistics.setGoalParts(_goalParts.keySet().size());
+        _statistics.setGoalParts(_goalParts.size());
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(rxn);
         _statistics.setValid(_valid);
@@ -938,12 +938,13 @@ public class RavenController {
 
     //using parameters from the client, run the algorithm
     //using parameters from the client, run the algorithm
-    public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters) throws Exception {
-        _goalParts = new HashMap<Part, Vector>();
+    public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters, HashMap<String,String> stageVectors) throws Exception {
+        _goalParts = new HashSet<Part>();
         _required = required;
         _recommended = recommended;
         _forbidden = forbidden;
         _discouraged = discouraged;
+        _stageVectors = new HashMap<Integer, Vector>();
         _statistics = new Statistics();
         _vectorLibrary = new ArrayList<Vector>();
         _partLibrary = new ArrayList<Part>();
@@ -972,9 +973,18 @@ public class RavenController {
 
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
-            Vector vector = _compPartsVectors.get(current);
-            _goalParts.put(current, vector);
+//            Vector vector = _compPartsVectors.get(current);
+            _goalParts.add(current);
         }
+        
+        //Set up stage vector hash
+        Set<String> keySet = stageVectors.keySet();
+        for (String strStage : keySet) {
+            
+            Integer stage = Integer.parseInt(strStage);     
+            Vector vector = _collector.getVector(stageVectors.get(strStage), false);          
+            _stageVectors.put(stage, vector);
+        } 
 
         Statistics.start();
         boolean scarless = false;
@@ -1025,7 +1035,7 @@ public class RavenController {
         boolean valid = validateGraphComposition();
         _valid = valid && overhangValid;
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
-        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _goalParts, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
+        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
@@ -1034,7 +1044,7 @@ public class RavenController {
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
                 //method call for deprecated weyekin image
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, targetRootNodes, scarless));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _compPartsVectors, targetRootNodes, scarless));
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
@@ -1187,7 +1197,7 @@ public class RavenController {
         return new JSONObject(statString);
     }
     //FIELDS
-    private HashMap<Part, Vector> _goalParts = new HashMap<Part, Vector>();//key: target part, value: composition
+    private HashSet<Part> _goalParts = new HashSet<Part>();//key: target part, value: composition
     private HashMap<Part, Vector> _compPartsVectors = new HashMap<Part, Vector>();
     private HashMap<Integer, Double> _efficiency = new HashMap<Integer, Double>();
     private HashSet<String> _required = new HashSet<String>();
@@ -1199,6 +1209,7 @@ public class RavenController {
     private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
+    private HashMap<Integer, Vector> _stageVectors = new HashMap<Integer, Vector>();
     private String _instructions = "";
     protected Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
     private String _path;

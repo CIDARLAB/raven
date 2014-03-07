@@ -13,6 +13,7 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Stack;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -268,7 +269,7 @@ public class RGraph {
     /**
      * Get graph statistics *
      */
-    public static void getGraphStats(ArrayList<RGraph> allGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, Vector> goalParts, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+    public static void getGraphStats(ArrayList<RGraph> allGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashSet<String> recommended, HashSet<String> discouraged, boolean scarless, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
         //don't count library parts and vectors 
         HashSet<String> seenPartKeys = getExistingPartKeys(partLib);
         HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
@@ -412,7 +413,7 @@ public class RGraph {
     }
 
     /**
-     * Returns a part library and finds all forward and reverse characteristics
+     * Returns a vector library and finds all forward and reverse characteristics
      * of each part *
      */
     public static HashSet<String> getExistingVectorKeys(ArrayList<Vector> vectorLib) {
@@ -429,10 +430,49 @@ public class RGraph {
             RVector vector = new RVector(lOverhang, rOverhang, stage, name, null);
             startVectorsLOlevelRO.add(vector.getVectorKey("+"));
             startVectorsLOlevelRO.add(vector.getVectorKey("-"));
-        }
+        }  
 
         return startVectorsLOlevelRO;
     }
+    
+    /**
+     * Make keys for part, vector pair that are both in the library
+     */
+    public static HashSet<String> getExistingPairs (HashMap<Part, Vector> compPartsVectors) {
+        
+        //Loop though all part keys and build map for parts and vectors
+        Set<Part> parts = compPartsVectors.keySet();
+        HashSet<String> keys = new HashSet<String>();
+
+        for (Part part : parts) {
+
+            Vector aVec = compPartsVectors.get(part);
+            String vName = null;
+            if (aVec != null) {
+                vName = aVec.getName();
+            }
+
+            //Get forward and reverse part key string
+            ArrayList<Part> partComp = part.getComposition();
+            ArrayList<String> comp = new ArrayList();
+            for (int j = 0; j < partComp.size(); j++) {
+                String name = partComp.get(j).getName();
+                comp.add(name);
+            }
+
+            ArrayList<String> searchTags = part.getSearchTags();
+            RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), part.getLeftOverhang(), part.getRightOverhang(), 0, 0, null);
+            String nodeKey = node.getNodeKey("+");
+            String revNodeKey = node.getNodeKey("-");
+
+            keys.add(nodeKey + "|" + vName);
+            keys.add(revNodeKey + "|" + vName);
+
+        }
+        return keys;
+    }
+
+
 
     /**
      * ************************************************************************
@@ -586,7 +626,7 @@ public class RGraph {
     /**
      * Generate a Weyekin image file for a this graph *
      */
-    public String generateWeyekinFile(ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<RNode> goalPartNodes, boolean scarless) {
+    public String generateWeyekinFile(ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashMap<Part, Vector> compPartsVectors, ArrayList<RNode> goalPartNodes, boolean scarless) {
 
         //Initiate weyekin file
         StringBuilder weyekinText = new StringBuilder();
@@ -604,6 +644,7 @@ public class RGraph {
 
         HashSet<String> startPartsLOcompRO = getExistingPartKeys(partLib);
         HashSet<String> startVectorsLOlevelRO = getExistingVectorKeys(vectorLib);
+        HashSet<String> startPartVectorPairs = getExistingPairs(compPartsVectors);
 
         //Traverse the graph
         while (!queue.isEmpty()) {
@@ -643,53 +684,58 @@ public class RGraph {
                 weyekinText.append(pigeonLine);
             }
 
-            //Add PCR edges for level 0 nodes
-            if (current.getStage() == 0) {
+            //If there needs to be new level-0 reactions and or vectors
+            if (!startPartVectorPairs.contains(nodeID)) {
 
-                boolean basicNode = false;
-                String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+                //Add PCR edges for level 0 nodes
+                if (current.getStage() == 0) {
 
-                //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
-                if (nodeID.endsWith("null")) {
-                    if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
+                    boolean basicNode = false;
+                    String nodeIDB = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang;
+
+                    //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added                                
+                    if (nodeID.endsWith("null")) {
+                        if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
+                            edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                            pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                            weyekinText.append(pigeonLine.toString());
+                        } else {
+                            basicNode = true;
+                        }
+                    } else {
                         edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
                         pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
                         weyekinText.append(pigeonLine.toString());
-                    } else {
-                        basicNode = true;
                     }
-                } else {
-                    edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
-                    weyekinText.append(pigeonLine.toString());
+
+                    if (!startPartsLOcompRO.contains(nodeIDB)) {
+                        if (basicNode == true) {
+                            nodeIDB = nodeID;
+                        }
+                        String NnodeID = composition + "|" + direction + "|" + scars;
+                        edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
+                        pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, NnodeID, null, null, null);
+                        weyekinText.append(pigeonLine.toString());
+                    }
                 }
 
-                if (!startPartsLOcompRO.contains(nodeIDB)) {
-                    if (basicNode == true) {
-                        nodeIDB = nodeID;
+                //Get vector, make an extra edge if a PCR is required
+                if (vector != null) {
+
+                    String vecLO = vector.getLOverhang();
+                    String vecRO = vector.getROverhang();
+                    int vecL = vector.getLevel();
+                    String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
+                    edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
+                    pigeonLine = generatePigeonCodeOld(null, null, null, null, vecID, vecLO, vecRO, vecName);
+                    weyekinText.append(pigeonLine.toString());
+
+                    if (!startVectorsLOlevelRO.contains(vecID)) {
+                        String NvecID = vecName + "|" + vecL;
+                        edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
+                        pigeonLine = generatePigeonCodeOld(null, null, null, null, NvecID, null, null, vecName);
+                        weyekinText.append(pigeonLine.toString());
                     }
-                    String NnodeID = composition + "|" + direction + "|" + scars;
-                    edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, NnodeID, null, null, null);
-                    weyekinText.append(pigeonLine.toString());
-                }
-            }
-
-            //Get vector, make an extra edge if a PCR is required
-            if (vector != null) {
-                String vecLO = vector.getLOverhang();
-                String vecRO = vector.getROverhang();
-                int vecL = vector.getLevel();
-                String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
-                edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                pigeonLine = generatePigeonCodeOld(null, null, null, null, vecID, vecLO, vecRO, vecName);
-                weyekinText.append(pigeonLine.toString());
-
-                if (!startVectorsLOlevelRO.contains(vecID)) {
-                    String NvecID = vecName + "|" + vecL;
-                    edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
-                    pigeonLine = generatePigeonCodeOld(null, null, null, null, NvecID, null, null, vecName);
-                    weyekinText.append(pigeonLine.toString());
                 }
             }
 
@@ -720,7 +766,7 @@ public class RGraph {
                 }
             }
         }
-
+            
         //Write edge lines
         weyekinText.append(edgeLines);
         weyekinText.append("}");
