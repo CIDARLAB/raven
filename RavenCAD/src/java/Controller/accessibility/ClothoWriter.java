@@ -132,11 +132,12 @@ public class ClothoWriter {
                     if (currentPart == null) {
 
                         currentPart = coll.getPart(currentNode.getUUID(), true);
+                        currentNode.setDirection(currentPart.getDirections());
                         
                         //If a new part must be created
                         Part newPart;
                         if (currentPart.isBasic()) {
-                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
+                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), null);
                         } else {
 
                             //If a new composite part needs to be made
@@ -249,7 +250,7 @@ public class ClothoWriter {
                         type = type.substring(1, type.length() - 1);
 
                         if (currentNode.getComposition().size() > 1) {
-                            type = "composite";
+                            type = "plasmid";
                         }
 
                         if (!currentNode.getScars().isEmpty()) {
@@ -567,7 +568,7 @@ public class ClothoWriter {
     public static ArrayList<Part> getComposition(Part part) throws Exception {
         ArrayList<Part> toReturn = new ArrayList<Part>();
         if (part.isBasic()) {
-            toReturn.add(part);
+            toReturn.add(part.getComposition().get(0));
         } else {
             ArrayList<Part> composition = part.getComposition();
             for (int i = 0; i < composition.size(); i++) {
@@ -594,7 +595,7 @@ public class ClothoWriter {
         for (int i = 0; i < composition.size(); i++) {
             Part currentPart = composition.get(i);
             if (currentPart.isBasic()) {
-                toReturn.add(currentPart);
+                toReturn.add(currentPart.getComposition().get(0));
             } else {
                 toReturn = getCompositionHelper(currentPart, toReturn);
             }

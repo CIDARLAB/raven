@@ -673,7 +673,7 @@ public class RavenController {
                     String leftOverhang = tokens[3].trim();
                     String rightOverhang = tokens[4].trim();
                     
-                    Part newBasicPart = Part.generateBasic(name, sequence);
+                    Part newBasicPart = Part.generateBasic(name, sequence, null);
                     newBasicPart.addSearchTag("LO: " + leftOverhang);
                     newBasicPart.addSearchTag("RO: " + rightOverhang);
                     newBasicPart.addSearchTag("Type: " + type);
@@ -748,7 +748,7 @@ public class RavenController {
                             Part basic = _collector.getAllPartsWithName(basicPartName, false).get(0);
                             String sequence = basic.getSeq();
                             String type = basic.getType();
-                            Part newBasicPart = Part.generateBasic(basicPartName, sequence);
+                            Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
                             newBasicPart.addSearchTag("Type: " + type);
                             newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
                             newBasicPart.addSearchTag("LO: " + leftOverhang);
@@ -812,8 +812,12 @@ public class RavenController {
                 }
                 
                 //Library logic - make new plasmids whether or not they are in the library
-                Part newPlasmid = Part.generateComposite(composition, name);
-//                _compPartsVectors.put(newPlasmid, vector);
+                Part newPlasmid;
+                if (composition.size() > 1) {
+                    newPlasmid = Part.generateComposite(composition, name);
+                } else {
+                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition.get(0));
+                }
                 newPlasmid.addSearchTag("Direction: " + directions);
                 newPlasmid.addSearchTag("LO: " + leftOverhang);
                 newPlasmid.addSearchTag("RO: " + rightOverhang);
@@ -1163,7 +1167,7 @@ public class RavenController {
             for (int i = 0; i < toImport.length(); i++) {
                 JSONObject currentPart = toImport.getJSONObject(i);
                 if (currentPart.getString("schema").equals("BasicPart")) {
-                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"));
+                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"), null);
                     String type = "gene";
                     if (currentPart.has("type")) {
                         type = currentPart.getString("type");

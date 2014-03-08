@@ -223,9 +223,13 @@ public class RGraph {
 
                     //Edge case where multiple goal parts have the same composition
                     if (hasParent == false) {
-                        String name = finalNode.getName();
-                        name = name + " | " + current.getName();
-                        finalNode.setName(name);
+                        
+                        ArrayList<RNode> fNeighbors = finalNode.getNeighbors();
+                        for (int k = 0; k < neighbors.size(); k++) {
+                            current.replaceNeighbor(neighbors.get(k), fNeighbors.get(k));
+                            neighbors.get(k).removeNeighbor(current);
+                            fNeighbors.get(k).addNeighbor(current);
+                        }
                     }
                 }
             }
