@@ -10,7 +10,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
     var _destination = ""; //stores the url a user was navigating towards
     var currentActiveTab = 0;
-    var _vectorStage =0;
+    var _vectorStage = 0;
     /********************EVENT HANDLERS********************/
     //prompt dialog when navigating away from design page with unsaved parts
     $('a.losePartLink').click(function(event) {
@@ -140,12 +140,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
         _vectorStage = _vectorStage + 1;
         var vectorOptions = '<select>';
         $.each(_data["result"], function() {
-           if (this["Type"] === "vector") {
-               vectorOptions = vectorOptions +'<option id="'+this["uuid"]+'">'+this["Name"]+' - '+this["Resistance"]+'</option>';
+            if (this["Type"] === "vector") {
+                vectorOptions = vectorOptions + '<option id="' + this["uuid"] + '">' + this["Name"] + ' - ' + this["Resistance"] + '</option>';
             }
         });
-        vectorOptions = vectorOptions+'</select>';
-        table.append('<tr><td>' + 'Every (x)n + ' + _vectorStage + '</td><td>'+vectorOptions+'</td></tr>');
+        vectorOptions = vectorOptions + '</select>';
+        table.append('<tr><td>' + 'Every (x)n + ' + _vectorStage + '</td><td>' + vectorOptions + '</td></tr>');
     });
     $('.removeVectorStageButton').click(function() {
         if ($('#vectorTable tbody tr').length > 1) {
@@ -153,7 +153,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             _vectorStage = _vectorStage - 1;
         }
     });
-    
+
     //target part button event handlers
     $('#targetSelectAllButton').click(function() {
         $("#availableTargetPartList option").each(function() {
@@ -317,10 +317,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 if (targetLength === "") {
                     targetLength = $('input#targetLength').attr("placeholder");
                 }
-                
+
                 //vector_uuid - stage pairs
                 var stageVectorArray = []
-                $('table#vectorTable tbody tr').each(function(){
+                $('table#vectorTable tbody tr').each(function() {
                     var stage = $(this).children('td:first').text();
                     var vectoruuid = $(this).find('select option:selected').attr("id");
                     stageVectorArray.push(vectoruuid);
@@ -328,7 +328,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 var requestInput = {command: "run", designCount: "" + currentDesignCount, targets: "" + targets, method: ""
                             + _method, partLibrary: "" + partLibrary, vectorLibrary: "" + vectorLibrary, recommended: ""
                             + rec, required: "" + req, forbidden: "" + forbid, discouraged: "" + discourage,
-                    "stageVectors":""+stageVectorArray,
+                    "stageVectors": "" + stageVectorArray,
                     efficiency: "" + efficiencyArray,
                     "primer": JSON.stringify({oligoNameRoot: oligoNameRoot,
                         meltingTemperature: meltingTemperature,
@@ -732,10 +732,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '"><h4>Assembly Statistics</h4></div></div><div class="span4"><div class="well" id="download' + _designCount + '"></div></div></div>');
         //add menu
         $('#resultTabs' + _designCount).append('<ul id="resultTabsHeader' + _designCount + '" class="nav nav-tabs">' +
-                '<li class="active"><a href="#imageTab' + _designCount + '" data-toggle="tab" >Image</a></li>' +
-                '<li><a href="#instructionTab' + _designCount + '" data-toggle="tab">Instructions</a></li>' +
-                '<li><a href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
-                '<li><a href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
+                '<li class="active"><a href="#imageTab_' + _designCount + '" data-toggle="tab" id="imageTabHeader_' + _designCount + '">Image</a></li>' +
+                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="'+_designCount+'" href="#instructionTab' + _designCount + '" data-toggle="tab">Instructions</a></li>' +
+                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="'+_designCount+'" href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
+                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="'+_designCount+'" href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
                 '<li><a href="#discardDialog' + _designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + _designCount + '" name="' + _designCount + '">Discard Design</a></li>' +
                 '<li><a class="btn" id="redesignButton' + _designCount + '" name="' + _designCount + '">Redesign</a></li>' +
                 '</ul>');
@@ -767,10 +767,23 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<p><a target="_blank" id="downloadConfig' + _designCount + '">Download Configuration File</a></p>'
 
                 );
+        //deal with image container
         $('#designTabHeader li a#designTabHeader_' + _designCount).click(function() {
             var id = $(this).attr("id").toString();
             var tabNumber = id.substring(id.indexOf("_") + 1);
             changeImage(tabNumber);
+        });
+        $('.nonImageDesignTabHeader_' + _designCount).click(function() {
+            var tabNumber = $(this).attr("name").toString();
+            hideImage(tabNumber);
+        });
+        $('#imageTabHeader_' + _designCount).click(function(){
+            var id = $(this).attr("id").toString();
+            var tabNumber = id.substring(id.indexOf("_") + 1);
+            showImage(tabNumber);
+            //manually switch tabs
+            $('#resultsTabContent'+tabNumber+' div.active').removeClass('active');
+            $('#imageTab'+tabNumber).addClass('active');
         });
         //event handler for discard modal dialog
         $('#discardButton' + _designCount).click(function() {
@@ -1005,25 +1018,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
     };
     var redesign = function(originalDesignNumber) {
         if (canRun) {
-            var currentDesignCount = addDesignTab();
-            currentActiveTab = currentDesignCount;
-            _redesignDesignHash[currentDesignCount] = originalDesignNumber;
-            $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
-            $('#resultsTabCountent' + currentDesignCount + ' li:nth-child(2)').addClass("hidden");
-            $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
-            $('#resultTabsHeader' + currentDesignCount + ' li:last').addClass("hidden");
-            $('div#download' + currentDesignCount).addClass("hidden");
-            $('#resultTabsHeader' + currentDesignCount).append('<li><a id="redesignRun' + currentDesignCount + '" class="btn" val="' + currentDesignCount + '">Run</a>');
-            $('div#summaryTab' + currentDesignCount).html($('div#summaryTab' + originalDesignNumber).html());
-            $('div#resultImage' + currentDesignCount).html($('div#resultImage' + originalDesignNumber).html());
-            $('div#stat' + currentDesignCount).html($('div#stat' + originalDesignNumber).html());
-            $('div#partsListTab' + currentDesignCount).html();
-//            $('#resultImage' + currentDesignCount + ' img').wrap('<span style="width:640;height:360px;display:inline-block"></span>').css('display', 'block').parent().zoom();
+            var currentDesignCount = originalDesignNumber;
+
             $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom: true, zoomWindowWidth: 640, zoomWindowHeight: 360});
             var targets = [];
             $('div#summaryTab' + originalDesignNumber + ' ul#targets li').each(function() {
                 targets.push($(this).text());
             });
+            //create new html for parts list
             var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Failure/Success</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
             $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
 //            var type = $(this).find('td:nth-child(6)').text().toLowerCase();
@@ -1043,7 +1045,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 }
             });
             redesignPartsList = redesignPartsList + '</tbody></table>';
-
+            //replace current parts list
             $('#partsListTab' + currentDesignCount).html('<div id="partsListArea' + currentDesignCount + '">' + redesignPartsList + '</div>');
             $("#partsListTable" + currentDesignCount).dataTable({
                 "sScrollY": "300px",
@@ -1132,7 +1134,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
             $('.reqForbidButton').click(function() {
                 var designNumber = $(this).attr("val");
-                var originalDesignNumber = _redesignDesignHash[designNumber];
                 if ($(this).attr("name") === "neither") {
 
                     //add to library
@@ -1154,8 +1155,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $(this).text("Unattempted");
                     $(this).removeClass("btn-success");
                 }
-                $('#summaryTab' + designNumber + ' div ul.requiredList').html($('#summaryTab' + originalDesignNumber + ' div ul.requiredList').html());
-                $('#summaryTab' + designNumber + ' div ul.forbiddenList').html($('#summaryTab' + originalDesignNumber + ' div ul.forbiddenList').html());
+
                 $('#partsListTable' + designNumber + ' tbody tr').each(function() {
                     var forbidRequire = $(this).find('td').first().find("button").attr("name");
                     var type = $(this).find('td:nth-child(6)').text().toLowerCase();
@@ -1247,6 +1247,21 @@ $(document).ready(function() { //don't run javascript until page is loaded
         }
         currentActiveTab = tabNumber;
 
+    }
+    function hideImage(tabNumber) {
+        if (tabNumber > 0) {
+            var image = $('div#resultImage' + tabNumber + ' img');
+            $.removeData(image, 'elevateZoom');//remove zoom instance from image
+            $('.zoomContainer').remove();// remove zoom container from DOM
+        }
+
+    }
+    function showImage(tabNumber) {
+        if (tabNumber > 0) {
+            var zoomImage = $('div#resultImage' + tabNumber + ' img');
+            zoomImage.elevateZoom({zoomWindowPosition: 6, scrollZoom: true, zoomWindowWidth: 640, zoomWindowHeight: 360});
+        }
+        currentActiveTab = tabNumber;
     }
 });
 
