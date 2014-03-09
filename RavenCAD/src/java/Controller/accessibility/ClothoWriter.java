@@ -4,6 +4,7 @@
  */
 package Controller.accessibility;
 
+import Communication.RavenController;
 import static Controller.accessibility.ClothoReader.parseTags;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,7 +29,7 @@ public class ClothoWriter {
     /**
      * Generate Clotho parts with uuids from intermediates without uuids *
      */
-    public void nodesToClothoPartsVectors(Collector coll, RGraph graph, HashMap<Part, Vector> partVectorHash) throws Exception {
+    public void nodesToClothoPartsVectors(Collector coll, RGraph graph, HashMap<Part, Vector> partVectorHash, HashMap<Integer, Vector> stageVectors, String method) throws Exception {
         String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
 
         ArrayList<RNode> basicNodes = new ArrayList<RNode>();
@@ -70,6 +71,7 @@ public class ClothoWriter {
                 ArrayList<String> nodeType = currentNode.getType();
                 String LO = currentNode.getLOverhang();
                 String RO = currentNode.getROverhang();
+                Part currentPart = null;
 
                 //If the node has no uuid, make a new part
                 //This is pretty much only the case for composite parts
@@ -92,29 +94,50 @@ public class ClothoWriter {
                 } else {
 
                     //If a part with this composition and overhangs does not exist, a new part is needed
-                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
-                    ArrayList<String> sTags = currentPart.getSearchTags();
-                    ArrayList<String> stringComposition = currentPart.getStringComposition();
-                    ArrayList<String> currentPartDir = parseTags(sTags, "Direction:");
-                    ArrayList<String> currentPartScars = parseTags(sTags, "Scars:");
-                    String currentPartLO = "";
-                    String currentPartRO = "";
-                    for (int k = 0; k < sTags.size(); k++) {
-                        if (sTags.get(k).startsWith("LO:")) {
-                            currentPartLO = sTags.get(k).substring(4);
-                        } else if (sTags.get(k).startsWith("RO:")) {
-                            currentPartRO = sTags.get(k).substring(4);
-                        }
+                    String seq = "";
+                    String currentType = currentNode.getType().toString();
+                    if (currentNode.getComposition().size() == 1) {
+                        currentType = currentType.substring(1, currentType.length()-1);
                     }
-                    String currentPartKey = stringComposition + "|" + currentPartDir + "|" + currentPartScars + "|" + currentPartLO + "|" + currentPartRO;
-                    String nodeKey = currentNode.getNodeKey("+");
+                    ArrayList<String> tags = new ArrayList<String>();
+                    tags.add("LO: " + currentNode.getLOverhang());
+                    tags.add("RO: " + currentNode.getROverhang());
+                    tags.add("Type: " + currentType);
+                    tags.add("Direction: " + currentNode.getDirection());
+                    tags.add("Scars: " + currentNode.getScars());
+                    ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(currentNode.getName(), false);
+                    if (!allPartsWithName.isEmpty()) {
+                        seq = allPartsWithName.get(0).getSeq();
+                    }
+                    currentPart = coll.getExactPart(currentNode.getName(), seq, tags, true);
                     
-                    if (!currentPartKey.equals(nodeKey)) {
+//                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
+//                    ArrayList<String> sTags = currentPart.getSearchTags();
+//                    ArrayList<String> stringComposition = currentPart.getStringComposition();
+//                    ArrayList<String> currentPartDir = parseTags(sTags, "Direction:");
+//                    ArrayList<String> currentPartScars = parseTags(sTags, "Scars:");
+//                    String currentPartLO = "";
+//                    String currentPartRO = "";
+//                    for (int k = 0; k < sTags.size(); k++) {
+//                        if (sTags.get(k).startsWith("LO:")) {
+//                            currentPartLO = sTags.get(k).substring(4);
+//                        } else if (sTags.get(k).startsWith("RO:")) {
+//                            currentPartRO = sTags.get(k).substring(4);
+//                        }
+//                    }
+//                    String currentPartKey = stringComposition + "|" + currentPartDir + "|" + currentPartScars + "|" + currentPartLO + "|" + currentPartRO;
+//                    String nodeKey = currentNode.getNodeKey("+");
+                
+//                      if (!currentPartKey.equals(nodeKey)) {
+                    if (currentPart == null) {
 
+                        currentPart = coll.getPart(currentNode.getUUID(), true);
+                        currentNode.setDirection(currentPart.getDirections());
+                        
                         //If a new part must be created
                         Part newPart;
                         if (currentPart.isBasic()) {
-                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq());
+                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), null);
                         } else {
 
                             //If a new composite part needs to be made
@@ -164,6 +187,7 @@ public class ClothoWriter {
                                 cSearchTags.add("LO: " + cLO);
                                 cSearchTags.add("Type: " + cType);
                                 cSearchTags.add("Direction: [" + cDir + "]");
+                                cSearchTags.add("Scars: []");
                                 Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 
                                 //Try to find the inverted version if this part does not exist
@@ -192,6 +216,7 @@ public class ClothoWriter {
                                     cSearchTags.add("RO: " + invertedcLO);
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("Direction: [" + invertedcDir + "]");
+                                    cSearchTags.add("Scars: []");
                                     exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 }
 
@@ -200,10 +225,17 @@ public class ClothoWriter {
                                     cSearchTags.clear();
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("RO: ");
-                                    cSearchTags.add("LO: ");                                    
+                                    cSearchTags.add("LO: ");
+                                    cSearchTags.add("Direction: [+]" );
+                                    cSearchTags.add("Scars: []");
                                     exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
                                 }
-
+                                
+                                //In the edge case where a composite part is being re-used but the basic part doesn't exist... This case only happens because the way we deal with scars is not well defined. This should be fixed
+//                                if (exactPart == null) {
+//                                    
+//                                }
+                                
                                 newComposition.add(exactPart);
                             }
 
@@ -218,7 +250,7 @@ public class ClothoWriter {
                         type = type.substring(1, type.length() - 1);
 
                         if (currentNode.getComposition().size() > 1) {
-                            type = "composite";
+                            type = "plasmid";
                         }
 
                         if (!currentNode.getScars().isEmpty()) {
@@ -234,42 +266,81 @@ public class ClothoWriter {
                 //Get the vector and save a new vector if it does not have a uuid
                 RVector vector = currentNode.getVector();
                 if (vector != null) {
-
+                    
                     //Get vector parameters
+                    String seq = "";
+                    ArrayList<Vector> allVectorsWithName = coll.getAllVectorsWithName(vector.getName(), false);
+                    if (!allVectorsWithName.isEmpty()) {
+                        seq = allVectorsWithName.get(0).getSequence();
+                    }
+                    if (vector.getName().equals("pSK1A2")) {
+                        seq = _pSK1A2;
+                    } else if (vector.getName().equals("pSB1A2")) {
+                        seq = _pSB1A2;
+                    } else if (vector.getName().equals("pSB1K3")) {
+                        seq = _pSB1K3;
+                    }
+                    
                     String resistance = vector.getResistance();
                     int level = vector.getLevel();
-                    String seq = "";
-                    if (vector.getName().startsWith("DVL")) {
-                        if (level % 3 == 0) {
-                            seq = _DVL0Seq;
-                        } else if (level % 3 == 1) {
-                            seq = _DVL1Seq;
-                        } else {
-                            seq = _DVL2Seq;
-                        }
-                    } else if (vector.getName().equals("pSK1A2")) {
-                        seq = _pSK1A2;
-                    }
-
-                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
-                    Vector assignedVec = partVectorHash.get(currentPart);
+//                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
+                    Vector existingVec = RavenController._compPartsVectors.get(currentPart);
+                    Vector nextLevelVec = stageVectors.get((level % stageVectors.size())+1);
 
                     //If there is an assigned vector in the library with the appropriate resistance, do not bother making a new vector
-                    if (assignedVec != null) {
-                        if (assignedVec.getResistance().equals(resistance) && assignedVec.getLevel() == level) {
-                            vector.setName(assignedVec.getName());
-                            vector.setUUID(assignedVec.getUUID());
-                            vector.setLevel(assignedVec.getLevel());
-
+                    if (existingVec != null) {
+                        
+                        //If levels are a consideration, you may reuse vectors of the same level as long as the resistance does not match the next level
+                        if (method.equals("moclo") || method.equals("goldengate")) {
+                            
+                            if ((existingVec.getLevel() % 2) == (level % 2)) {
+                                
+                                //As long as the resistance does not match the next level
+                                if (!(existingVec.getResistance().equalsIgnoreCase(nextLevelVec.getResistance()))) {
+                                    vector.setName(existingVec.getName());
+                                    vector.setUUID(existingVec.getUUID());
+                                    vector.setLevel(existingVec.getLevel());
+                                
+                                //Or if there is only one vector used
+                                } else if (stageVectors.size() == 1) {
+                                    vector.setName(existingVec.getName());
+                                    vector.setUUID(existingVec.getUUID());
+                                    vector.setLevel(existingVec.getLevel());
+                                
+                                //Otherwise make a new vector
+                                } else {
+                                    Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
+                                    newVector = newVector.saveDefault(coll);
+                                    vector.setName(newVector.getName());
+                                    vector.setUUID(newVector.getUUID());
+                                }
+                            
                             //Otherwise make a new vector
+                            } else {
+                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
+                                newVector = newVector.saveDefault(coll);
+                                vector.setName(newVector.getName());
+                                vector.setUUID(newVector.getUUID());
+                            }
+                        
+                        //For all other assembly methods, as long as the found vector is not the same resistance of the next level, it can be re-used
                         } else {
-                            Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
-                            newVector = newVector.saveDefault(coll);
-                            vector.setName(newVector.getName());
-                            vector.setUUID(newVector.getUUID());
+                            
+                            if (!(existingVec.getResistance().equalsIgnoreCase(nextLevelVec.getResistance()))) {
+                                vector.setName(existingVec.getName());
+                                vector.setUUID(existingVec.getUUID());
+                            } else if (stageVectors.size() == 1) {
+                                vector.setName(existingVec.getName());
+                                vector.setUUID(existingVec.getUUID());
+                            } else {
+                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
+                                newVector = newVector.saveDefault(coll);
+                                vector.setName(newVector.getName());
+                                vector.setUUID(newVector.getUUID());
+                            }
                         }
 
-                        //Otherwise make a new vector
+                    //Otherwise make a new vector if non exists
                     } else {
                         Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
                         newVector = newVector.saveDefault(coll);
@@ -328,7 +399,7 @@ public class ClothoWriter {
         for (int i = 0; i < composition.size(); i++) {
             ArrayList<String> cSearchTags = new ArrayList<String>();
             String cName = composition.get(i);
-            ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, true);
+            ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, false);
             String cSeq = allPartsWithName.get(0).getSeq();
             String cDir = direction.get(i);
             String cType = allPartsWithName.get(0).getType();
@@ -370,6 +441,7 @@ public class ClothoWriter {
             cSearchTags.add("LO: " + cLO);
             cSearchTags.add("Type: " + cType);
             cSearchTags.add("Direction: [" + cDir + "]");
+            cSearchTags.add("Scars: []");
 
             Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
             
@@ -399,8 +471,21 @@ public class ClothoWriter {
                 cSearchTags.add("RO: " + invertedcLO);
                 cSearchTags.add("Type: " + cType);
                 cSearchTags.add("Direction: [" + invertedcDir + "]");
+                cSearchTags.add("Scars: []");
                 exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
             }    
+            
+            //In homologous rcombinations, the overhangs are the neighbor, select the blank part
+            if (exactPart == null) {
+                cSearchTags.clear();
+                cSearchTags.add("Type: " + cType);
+                cSearchTags.add("RO: ");
+                cSearchTags.add("LO: ");
+                cSearchTags.add("Direction: [+]");
+                cSearchTags.add("Scars: []");
+                exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+            }
+            
             newComposition.add(exactPart);
         }
 
@@ -483,7 +568,7 @@ public class ClothoWriter {
     public static ArrayList<Part> getComposition(Part part) throws Exception {
         ArrayList<Part> toReturn = new ArrayList<Part>();
         if (part.isBasic()) {
-            toReturn.add(part);
+            toReturn.add(part.getComposition().get(0));
         } else {
             ArrayList<Part> composition = part.getComposition();
             for (int i = 0; i < composition.size(); i++) {
@@ -510,7 +595,7 @@ public class ClothoWriter {
         for (int i = 0; i < composition.size(); i++) {
             Part currentPart = composition.get(i);
             if (currentPart.isBasic()) {
-                toReturn.add(currentPart);
+                toReturn.add(currentPart.getComposition().get(0));
             } else {
                 toReturn = getCompositionHelper(currentPart, toReturn);
             }
@@ -569,8 +654,7 @@ public class ClothoWriter {
     ArrayList<Part> _allCompositeParts;
     ArrayList<Part> _allBasicParts;
     ArrayList<Vector> _allVectors;
-    String _DVL0Seq = "tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgaggcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagcgagctcgatatcaaattacgccccgccctgccactcatcgcagtactgttgtaattcattaagcattctgccgacatggaagccatcacaaacggcatgatgaacctgaatcgccagcggcatcagcaccttgtcgccttgcgtataatatttgcccatggtgaaaacgggggcgaagaagttgtccatattggccacgtttaaatcaaaactggtgaaactcacccagggattggctgagacgaaaaacatattctcaataaaccctttagggaaataggccaggttttcaccgtaacacgccacatcttgcgaatatatgtgtagaaactgccggaaatcgtcgtggtattcactccagagcgatgaaaacgtttcagtttgctcatggaaaacggtgtaacaagggtgaacactatcccatatcaccagctcaccgtctttcattgccatacgaaattccggatgagcattcatcaggcgggcaagaatgtgaataaaggccggataaaacttgtgcttatttttctttacggtctttaaaaaggccgtaatatccagctgaacggtctggttataggtacattgagcaactgactgaaatgcctcaaaatgttctttacgatgccattgggatatatcaacggtggtatatccagtgatttttttctccattttagcttccttagctcctgaaaatctcgataactcaaaaaatacgcccggtagtgatcttatttcattatggtgaaagttggaacctcttacgtgcccgatcaactcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
-    String _DVL1Seq = "tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgagtcccgtcaagtcagcgtaatgctctgccagtgttacaaccaattaaccaattctgattagaaaaactcatcgagcatcaaatgaaactgcaatttattcatatcaggattatcaataccatatttttgaaaaagccgtttctgtaatgaaggagaaaactcaccgaggcagttccataggatggcaagatcctggtatcggtctgcgattccgactcgtccaacatcaatacaacctattaatttcccctcgtcaaaaataaggttatcaagtgagaaatcaccatgagtgacgactgaatccggtgagaatggcaaaagcttatgcatttctttccagacttgttcaacaggccagccattacgctcgtcatcaaaatcactcgcatcaaccaaaccgttattcattcgtgattgcgcctgagcgagacgaaatacgcgatcgctgttaaaaggacaattacaaacaggaatcgaatgcaaccggcgcaggaacactgccagcgcatcaacaatattttcacctgaatcaggatattcttctaatacctggaatgctgttttcccggggatcgcagtggtgagtaaccatgcatcatcaggagtacggataaaatgcttgatggtcggaagaggcataaattccgtcagccagtttagtctgaccatctcatctgtaacatcattggcaacgctacctttgccatgtttcagaaacaactctggcgcatcgggcttcccatacaatcgatagattgtcgcacctgattgcccgacattatcgcgagcccatttatacccatataaatcagcatccatgttggaatttaatcgcggcctggagcaagacgtttcccgttgaatatggctcataacaccccttgtattactgtttatgtaagcagacagttttattgttcatgatgatatatttttatcttgtgcaatgtaacatcagagattttgagacacaacgtggctttgttgaataaatcgaacttttgctgagttgaaggatcagctcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
-    String _DVL2Seq = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
+    String _pSB1K3 = "tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgagtcccgtcaagtcagcgtaatgctctgccagtgttacaaccaattaaccaattctgattagaaaaactcatcgagcatcaaatgaaactgcaatttattcatatcaggattatcaataccatatttttgaaaaagccgtttctgtaatgaaggagaaaactcaccgaggcagttccataggatggcaagatcctggtatcggtctgcgattccgactcgtccaacatcaatacaacctattaatttcccctcgtcaaaaataaggttatcaagtgagaaatcaccatgagtgacgactgaatccggtgagaatggcaaaagcttatgcatttctttccagacttgttcaacaggccagccattacgctcgtcatcaaaatcactcgcatcaaccaaaccgttattcattcgtgattgcgcctgagcgagacgaaatacgcgatcgctgttaaaaggacaattacaaacaggaatcgaatgcaaccggcgcaggaacactgccagcgcatcaacaatattttcacctgaatcaggatattcttctaatacctggaatgctgttttcccggggatcgcagtggtgagtaaccatgcatcatcaggagtacggataaaatgcttgatggtcggaagaggcataaattccgtcagccagtttagtctgaccatctcatctgtaacatcattggcaacgctacctttgccatgtttcagaaacaactctggcgcatcgggcttcccatacaatcgatagattgtcgcacctgattgcccgacattatcgcgagcccatttatacccatataaatcagcatccatgttggaatttaatcgcggcctggagcaagacgtttcccgttgaatatggctcataacaccccttgtattactgtttatgtaagcagacagttttattgttcatgatgatatatttttatcttgtgcaatgtaacatcagagattttgagacacaacgtggctttgttgaataaatcgaacttttgctgagttgaaggatcagctcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
+    String _pSB1A2 = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
     String _pSK1A2 = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
 }

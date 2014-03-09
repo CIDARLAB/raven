@@ -4,6 +4,7 @@
  */
 package Controller.algorithms;
 
+import Controller.accessibility.ClothoReader;
 import Controller.datastructures.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -268,6 +269,9 @@ public class Modularity extends Partitioning {
             root.setROverhang(Integer.toString(count));
             count++;
             ArrayList<RNode> neighbors = root.getNeighbors();
+            if (neighbors.isEmpty()) {
+                l0nodes.add(root);
+            }
             count = assignPrimaryOverhangs(root, neighbors, root, count);
         }
         
@@ -326,15 +330,11 @@ public class Modularity extends Partitioning {
     /* 
      * Third step of overhang assignment - A partial cartesian product given a library of parts
      */   
-    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash) {
+    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors) {
+        
         //Initialize node and library overhang hashes
         HashMap<String, HashSet<String>> nodePartOHHashes = initializPartOHHashes(graphs);
         HashMap<String, HashSet<String>> nodeVectorOHHash = initializeVectorOHHashes(graphs);
-        
-//        System.out.println("nodePartOHHashes keys: " + nodePartOHHashes.keySet());
-//        System.out.println("nodePartOHHashes values: " + nodePartOHHashes.values());
-//        System.out.println("nodeVectorOHHash keys: " + nodeVectorOHHash.keySet());
-//        System.out.println("nodeVectorOHHash values: " + nodeVectorOHHash.values());
     
         //Sort list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
         ArrayList<String> sortedNodeOverhangs = new ArrayList(nodePartOHHashes.keySet());
@@ -342,24 +342,13 @@ public class Modularity extends Partitioning {
         
         //Perform a partial cartesian product on library re-use
         ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs, nodePartOHHashes, nodeVectorOHHash);
-        
-//        System.out.println("MADE CARTESIAN GRAPH!");
-        
         ArrayList<ArrayList<String>> completeAssignments = traverseCertesianGraph (cartestianRootNodes, sortedNodeOverhangs.size());
-        
-//        System.out.println("FOUND COMPLETE ASSIGNMENTS!");
-        
         HashMap<String, String> bestAssignment = scoreAssignments(completeAssignments, sortedNodeOverhangs, forcedOverhangHash);
-        
-//        System.out.println("SCORED ASSIGNMENTS!");
-//        
-//        System.out.println("BEST ASSIGNMENT KEYS: " + bestAssignment.keySet());
-//        System.out.println("BEST ASSIGNMENT VALUES: " + bestAssignment.values());
         
         //Assign overhang to nodes and vectors
         assignNewOverhangs(bestAssignment, sortedNodeOverhangs);
-        HashMap<Integer, String> levelResistanceHash = getLevelResistance(graphs, bestAssignment);
-        mapFinalOverhangs (graphs, bestAssignment, levelResistanceHash);
+//        HashMap<Integer, String> levelResistanceHash = getLevelResistance(graphs, bestAssignment);
+        mapFinalOverhangs (graphs, bestAssignment, stageVectors);
     }
     
     /**
@@ -450,98 +439,107 @@ public class Modularity extends Partitioning {
             rootDir.addAll(direction);
             ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
 
-            //Determine which levels each basic node impacts            
-            for (int i = 0; i < l0Nodes.size(); i++) {
-                int level = 0;
-                RNode l0Node = l0Nodes.get(i);
-                RNode parent = _parentHash.get(l0Node);
+            //Edge case of making an existing part
+            if (l0Nodes.size() == 1) {
+                HashMap<String, ArrayList<RNode>> directionHash = new HashMap<String, ArrayList<RNode>>();
+                directionHash.put("+", l0Nodes);
+                _stageDirectionAssignHash.put(1, directionHash);
                 
-                //Start OH exclusivity set... start with all of parent's children
-                HashSet<String> exclusiveL = new HashSet<String>();
-                HashSet<String> exclusiveR = new HashSet<String>();
-                for (RNode neighbor: parent.getNeighbors()) {
-                    if (neighbor.getStage() < parent.getStage()) {
-                        exclusiveL.add(neighbor.getLOverhang());
-                        exclusiveL.add(neighbor.getROverhang());
-                        exclusiveR.add(neighbor.getLOverhang());
-                        exclusiveR.add(neighbor.getROverhang());
-                    }
-                }
+            } else {
 
-                //Tabulate all stages of impact for part 3 of overhang assignment
-                ArrayList<Integer> stagesOfImpact = new ArrayList<Integer>();
-                _nodeStagesHash.put(l0Node, stagesOfImpact);
-                stagesOfImpact.add(level);
-                
-                //Go up the parent hash until the parent doesn't have an overhang impacted by the child
-                RNode ancestor = parent;
-                while (l0Node.getLOverhang().equals(ancestor.getLOverhang()) || l0Node.getROverhang().equals(ancestor.getROverhang())) {                    
-                    level = ancestor.getStage();
+                //Determine which levels each basic node impacts            
+                for (int i = 0; i < l0Nodes.size(); i++) {
+                    int level = 0;
+                    RNode l0Node = l0Nodes.get(i);
+                    RNode parent = _parentHash.get(l0Node);
+
+                    //Start OH exclusivity set... start with all of parent's children
+                    HashSet<String> exclusiveL = new HashSet<String>();
+                    HashSet<String> exclusiveR = new HashSet<String>();
+                    for (RNode neighbor : parent.getNeighbors()) {
+                        if (neighbor.getStage() < parent.getStage()) {
+                            exclusiveL.add(neighbor.getLOverhang());
+                            exclusiveL.add(neighbor.getROverhang());
+                            exclusiveR.add(neighbor.getLOverhang());
+                            exclusiveR.add(neighbor.getROverhang());
+                        }
+                    }
+
+                    //Tabulate all stages of impact for part 3 of overhang assignment
+                    ArrayList<Integer> stagesOfImpact = new ArrayList<Integer>();
+                    _nodeStagesHash.put(l0Node, stagesOfImpact);
                     stagesOfImpact.add(level);
-                    
-                    if (_parentHash.containsKey(ancestor)) {
-                        ancestor = _parentHash.get(ancestor);
-                        
-                        //Add exclusive OHs for each relevant ancestor
-                        for (RNode neighbor : ancestor.getNeighbors()) {
-                            if (neighbor.getStage() < ancestor.getStage()) {
-                                exclusiveL.add(neighbor.getLOverhang());
-                                exclusiveL.add(neighbor.getROverhang());
-                                exclusiveR.add(neighbor.getLOverhang());
-                                exclusiveR.add(neighbor.getROverhang());
+
+                    //Go up the parent hash until the parent doesn't have an overhang impacted by the child
+                    RNode ancestor = parent;
+                    while (l0Node.getLOverhang().equals(ancestor.getLOverhang()) || l0Node.getROverhang().equals(ancestor.getROverhang())) {
+                        level = ancestor.getStage();
+                        stagesOfImpact.add(level);
+
+                        if (_parentHash.containsKey(ancestor)) {
+                            ancestor = _parentHash.get(ancestor);
+
+                            //Add exclusive OHs for each relevant ancestor
+                            for (RNode neighbor : ancestor.getNeighbors()) {
+                                if (neighbor.getStage() < ancestor.getStage()) {
+                                    exclusiveL.add(neighbor.getLOverhang());
+                                    exclusiveL.add(neighbor.getROverhang());
+                                    exclusiveR.add(neighbor.getLOverhang());
+                                    exclusiveR.add(neighbor.getROverhang());
+                                }
                             }
-                        }     
-                        
-                    } else {
-                        break;
+
+                        } else {
+                            break;
+                        }
                     }
-                }
-                
-                //Add to exclusion hash for the left OH
-                if (_OHexclusionHash.containsKey(l0Node.getLOverhang())) {
-                    HashSet<String> exL = _OHexclusionHash.get(l0Node.getLOverhang());
-                    exL.addAll(exclusiveL);
-                } else {
-                    _OHexclusionHash.put(l0Node.getLOverhang(), exclusiveL);
-                }
-                
-                //Add to exclusion hash for the right OH
-                if (_OHexclusionHash.containsKey(l0Node.getROverhang())) {
-                    HashSet<String> exR = _OHexclusionHash.get(l0Node.getROverhang());
-                    exR.addAll(exclusiveR);
-                } else {
-                    _OHexclusionHash.put(l0Node.getROverhang(), exclusiveR);
-                }
-                
-                //Determine direction                
-                String l0Direction = rootDir.get(0);
-                if (l0Node.getComposition().size() == 1) {
-                    ArrayList<String> l0Dir = new ArrayList<String>();
-                    l0Dir.add(l0Direction);
-                    l0Node.setDirection(l0Dir);
-                }
-                int size = l0Node.getDirection().size();
-                rootDir.subList(0, size).clear();
 
-                //Enter node into stage direction hash
-                HashMap<String, ArrayList<RNode>> directionHash;
-                ArrayList<RNode> nodeList;
+                    //Add to exclusion hash for the left OH
+                    if (_OHexclusionHash.containsKey(l0Node.getLOverhang())) {
+                        HashSet<String> exL = _OHexclusionHash.get(l0Node.getLOverhang());
+                        exL.addAll(exclusiveL);
+                    } else {
+                        _OHexclusionHash.put(l0Node.getLOverhang(), exclusiveL);
+                    }
 
-                if (_stageDirectionAssignHash.containsKey(level)) {
-                    directionHash = _stageDirectionAssignHash.get(level);
-                } else {
-                    directionHash = new HashMap<String, ArrayList<RNode>>();
+                    //Add to exclusion hash for the right OH
+                    if (_OHexclusionHash.containsKey(l0Node.getROverhang())) {
+                        HashSet<String> exR = _OHexclusionHash.get(l0Node.getROverhang());
+                        exR.addAll(exclusiveR);
+                    } else {
+                        _OHexclusionHash.put(l0Node.getROverhang(), exclusiveR);
+                    }
+
+                    //Determine direction                
+                    String l0Direction = rootDir.get(0);
+                    if (l0Node.getComposition().size() == 1) {
+                        ArrayList<String> l0Dir = new ArrayList<String>();
+                        l0Dir.add(l0Direction);
+                        l0Node.setDirection(l0Dir);
+                    }
+                    int size = l0Node.getDirection().size();
+                    rootDir.subList(0, size).clear();
+
+                    //Enter node into stage direction hash
+                    HashMap<String, ArrayList<RNode>> directionHash;
+                    ArrayList<RNode> nodeList;
+
+                    if (_stageDirectionAssignHash.containsKey(level)) {
+                        directionHash = _stageDirectionAssignHash.get(level);
+                    } else {
+                        directionHash = new HashMap<String, ArrayList<RNode>>();
+                    }
+
+                    if (directionHash.containsKey(l0Direction)) {
+                        nodeList = directionHash.get(l0Direction);
+                    } else {
+                        nodeList = new ArrayList<RNode>();
+                    }
+
+                    nodeList.add(l0Node);
+                    directionHash.put(l0Direction, nodeList);
+                    _stageDirectionAssignHash.put(level, directionHash);
                 }
-
-                if (directionHash.containsKey(l0Direction)) {
-                    nodeList = directionHash.get(l0Direction);
-                } else {
-                    nodeList = new ArrayList<RNode>();
-                }
-
-                nodeList.add(l0Node);
-                directionHash.put(l0Direction, nodeList);
-                _stageDirectionAssignHash.put(level, directionHash);
             }
         }
         
@@ -1438,7 +1436,22 @@ public class Modularity extends Partitioning {
     /*
      * Traverse the graphs and assign all final overhangs from map of second to third pass overhangs
      */
-    private void mapFinalOverhangs (ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment, HashMap<Integer, String> levelResistanceHash) {
+    private void mapFinalOverhangs (ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment, HashMap<Integer, Vector> stageVectors) {
+        
+        //Convert vectors to RVectors
+        HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
+        for (Integer stage : stageVectors.keySet()) {
+            RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
+            stageRVectors.put(stage, vec);
+        }
+        
+        //If the stageVector hash is empty, make a new default vector
+        if (stageRVectors.size() == 1) {
+            if (stageRVectors.get(1) == null) {
+                stageRVectors.put(0, new RVector("", "", 0, "pSB1A2", null));
+                stageRVectors.put(1, new RVector("", "", 0, "pSB1K3", null));
+            }
+        }
         
         //Assign final overhangs for all graphs
         for (RGraph graph : graphs) {
@@ -1463,8 +1476,8 @@ public class Modularity extends Partitioning {
                 currentLeftOverhang = current.getLOverhang();
                 currentRightOverhang = current.getROverhang();
 
-                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), "DVL" + current.getStage(), null);
-                newVector.setStringResistance(levelResistanceHash.get(current.getStage()));
+                RVector levelVector = stageRVectors.get(current.getStage() % stageRVectors.size());
+                RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), levelVector.getName(), null);
                 current.setVector(newVector);
             }
         }

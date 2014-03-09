@@ -36,11 +36,8 @@ pwestfall,raven12345
 rblue,raven12345
 vschuetz,raven12345
 dmaier,raven12345
-reviewer1,happyholidays
-reviewer2,happyholidays
-reviewer3,happyholidays
-reviewer4,happyholidays
-reviewer5,happyholidays
+Reviewer1,Reviewer1
+Reviewer2,Reviewer2
 priyadarshan,raven12345
 linh,raven12345
 carter,wheatley

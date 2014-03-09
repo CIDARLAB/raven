@@ -145,11 +145,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
             }
         });
         vectorOptions = vectorOptions+'</select>';
-        table.append('<tr><td>' + _vectorStage + '</td><td>'+vectorOptions+'</td></tr>');
+        table.append('<tr><td>' + 'Every (x)n + ' + _vectorStage + '</td><td>'+vectorOptions+'</td></tr>');
     });
     $('.removeVectorStageButton').click(function() {
         if ($('#vectorTable tbody tr').length > 1) {
             $('#vectorTable tbody tr').last().remove();
+            _vectorStage = _vectorStage - 1;
         }
     });
     
@@ -363,10 +364,15 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var libraryPartListBody = '<select id="libraryPartList" multiple="multiple" class="fixedHeight">';
         var libraryVectorListBody = '<select id="libraryVectorList" multiple="multiple" class="fixedHeight">';
         $.each(_data["result"], function() {
-            if (this["Type"] === "composite") {
+//            var comp = this["Composition"];
+            if (this["Type"] === "plasmid") {
                 targetListBody = targetListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else if (this["Type"] === "vector") {
                 libraryVectorListBody = libraryVectorListBody + '<option title="' + this["Name"] + '|' + this["LO"] + '|' + this["RO"] + '" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
+            } else if (this["Type"] === "destination vector") {
+                libraryVectorListBody = libraryVectorListBody + '<option title="' + this["Name"] + '|' + this["LO"] + '|' + this["RO"] + '" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
+            } else if (this["Type" === "composite"]) {
+                libraryPartListBody = libraryPartListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else {
                 libraryPartListBody = libraryPartListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="basic ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             }
@@ -380,7 +386,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#libraryVectorListArea").html(libraryVectorListBody);
         //clear lists
         $('#targetPartList').html("");
-        $('#availableLibraryPartList').html(targetListBody);
+//        $('#availableLibraryPartList').html(targetListBody);
+        $('#availableLibraryPartList').html("");
         $('#availableLibraryVectorList').html("");
         sortPartLists();
         sortVectorLists();
@@ -817,7 +824,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
         });
         $('#modalDiscardButton' + _designCount).click(function() {
-            var designNumber = $(this).attr("name");
+            var designNumber = $(this).attr("val");
             if ($('#discardButton' + designNumber).attr("val") === "notSaved") {
                 var toDeleteVectors = [];
                 var toDeleteParts = [];

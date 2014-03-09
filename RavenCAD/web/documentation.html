@@ -120,10 +120,10 @@
                         </p>    
                         <p>    
                             One such specification tool in the Clotho design flow is Eugene [8]. 
-                            Eugene can generate a set of target devices based on libraries of parts and device design rule sets. 
-                            Once all target devices are determined, Raven determines the best way to build all target parts. 
-                            These output instructions can be given to a liquid handling robot to automatically assemble these devices from its resources. 
-                            This flow allows a user to merely specify the behavior of a set of devices they would like to build and what resources they have to have the devices automatically constructed with liquid handling robots.
+                            Eugene can generate a set of target constructs based on libraries of parts and device design rule sets. 
+                            Once all target constructs are determined, Raven determines the best way to build all target parts. 
+                            These output instructions can be given to a liquid handling robot to automatically assemble these constructs from its resources. 
+                            This flow allows a user to merely specify the behavior of a set of constructs they would like to build and what resources they have to have the constructs automatically constructed with liquid handling robots.
                         </p>
                     </div>
                     <div class="well" id="help">
@@ -141,7 +141,7 @@
                             What do I input into Raven?
                             </dt>
                             <dd>
-                                Raven accepts a single .csv file that allows users to specify their basic parts, devices, and vectors. Details about this file can be found <a href="#detailedInput">here</a>.
+                                Raven accepts a single .csv file that allows users to specify their basic parts, constructs, and vectors. Details about this file can be found <a href="#detailedInput">here</a>.
                                 Example input files can be found <a href="#exampleFiles">here</a>
                             </dd>
                             <dt>
@@ -252,7 +252,7 @@
                                                 </strong>
                                                 <p>
                                                     This field is used to create assembly plan pictures using PigeonCAD auto-generated SBOLv-compliant device glyphs. 
-                                                    All composite parts must have the key string 'composite' in this field and all vectors need the key string 'vector'. 
+                                                    All plasmids must have the key string 'plasmid' in this field. Vectors need the key string 'vector' and destination vectors must be marked 'destination vector'. 
                                                     All other entries are valid, and assumed to be basic part types.
                                                 </p>
                                                 <p>The following key strings are recognized for pigeon images for basic parts:</p>
@@ -284,7 +284,7 @@
                                                     Resistance
                                                 </strong>
                                                 <p>
-                                                    This field is used to denote the antibiotic resistance of a vector part.
+                                                    This field is used to denote the antibiotic resistance of a vector or destination vector part.
                                                 </p>
                                             </li>
                                             <li>
@@ -292,7 +292,7 @@
                                                     Level
                                                 </strong>
                                                 <p>
-                                                    This field is used only for vectors. MoClo vectors with level and overhangs are re-used in a MoClo assembly plan if it saves time and cost. Levels start at '0' for MoClo and all vector names are formatted 'DVLx', where 'x' equals its level.
+                                                    This field is used only for vectors and destination vectors. Destination vectors with level and overhangs are re-used in an assembly plan if it saves time and cost. Levels start at '0'.
                                                 </p>
                                             </li>
                                             <li>
@@ -300,11 +300,10 @@
                                                     Vector
                                                 </strong>
                                                 <p>
-                                                    Vector field is used to specify which vector a composite part or basic part with overhangs resides in, if applicable. 
-                                                    This field is always optional. In homologous recombination-based assemblies, this field is used to denote which vector will be assembled to the construct in the final step. 
-                                                    If this field is empty for homologous recombination-based assemblies, no vector is assigned and it is assumed that all parts are to be assembled into a circular product. 
-                                                    In BioBricks and Golden Gate assembly if a vector is assigned, it is assigned to all steps and if no vector is assigned, vector pSK1A2 is assigned to all steps. 
-                                                    In MoClo assembly, the vector is ignored for a target part, but when re-using parts from the library, it checks this field to determine which vector a library part currently resides in to determine if a new vector must be created.
+                                                    The vector field is used to indicate the vector backbones in which a construct lies. Complete plasmids will be re-used in assembly plans if it reduces cost.
+                                                    This field is also used to denote the vector backbone used by destination vectors. Destination vectors are always made of a vector backbone and the lacZ fragment as insert.
+                                                    For MoClo and Golden Gate assembly, which use destination vectors, the construction of destination vectors is not explicitly described in the assembly instructions, 
+                                                    but for new destination vectors, primers are designed to amplify the lacZ fragment for insertion into the vector backbone after a SpeI digestion and ligation.
                                                 </p>
                                             </li>
                                             <li>
@@ -312,8 +311,8 @@
                                                     Composition 
                                                 </strong>
                                                 <p>
-                                                    This field starts in column 9 and extends infinitely based on the size of the composition of the target device. 
-                                                    All target devices must have a composition size of two or greater and only these devices will be recognized as targets
+                                                    This field starts in column 9 and extends infinitely based on the size of the composition of the target construct. 
+                                                    All target constructs must have a composition size of two or greater and only these constructs will be recognized as targets
                                                 </p>
                                                 <p>
                                                     This field must be formatted in one of the following conventions:
@@ -348,10 +347,9 @@
                                             </thead>
                                             <tbody>
                                                 <tr><td>Basic Part</td><td>Name, Type</td><td>Sequence</td><td>Resistance, Level, Left Overhang, Right Overhang, Composition, Vector</td></tr>
-                                                <tr><td>Basic Part (Overhangs)</td><td>Name, Type, Left Overhang, Right Overhang, Composition</td><td>Sequence, Vector</td><td>Resistance, Level</td></tr>
-                                                <tr><td>Composite Part</td><td>Name, Type (="composite"), Composition</td><td>Sequence, Left Overhang, Right Overhang, Vector</td><td>Resistance, Level</td></tr>
-                                                <tr><td>Vector</td><td>Name, Type (="vector"), Resistance</td><td>Sequence, Level, Left Overhang, Right Overhang</td><td>Composition</td></tr>
-                                                <tr><td>Vector (Overhangs)</td><td>Name, Type (="vector"), Left Overhang, Right Overhang, Resistance</td><td>Sequence, Level</td><td>Composition</td></tr>
+                                                <tr><td>Plasmid</td><td>Name, Type (="plasmid"), Composition</td><td>Sequence, Left Overhang, Right Overhang, Vector</td><td>Resistance, Level</td></tr>
+                                                <tr><td>Vector</td><td>Name, Type (="vector"), Resistance</td><td>Sequence, Level</td><td>Left Overhang, Right Overhang, Composition, Vector</td></tr>
+                                                <tr><td>Destination Vector</td><td>Name, Type (="destination vector"), Left Overhang, Right Overhang, Resistance, Vector, Composition (="lacZ")</td><td>Sequence, Level</td><td></td></tr>
                                             </tbody>
                                         </table>
                                    
@@ -374,7 +372,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="accordion-group">
+                            <div class="accordion-group hidden">
                                 <div class="accordion-heading">
                                     <h5>
                                         <a class="accordion-toggle" data-toggle="collapse" data-parent="#guideAccordion" href="#reuse">
@@ -453,7 +451,7 @@
                             <li> Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251– 256 (2007).</li>
                             <li> Quan, J. & Tian, J. Circular Polymerase Extension Cloning of Complex Gene Libraries and Pathways. PLoS ONE 4, e6441 (2009).</li>
                             <li> Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3, e3647 (2008).</li>
-                            <li> Bilitchenko, L. et al. Eugene: A Domain Specific Language for Specify- ing and Constraining Synthetic Biological Parts, Devices, and Systems. PLoS ONE 6, e18882 (2011).</li>
+                            <li> Bilitchenko, L. et al. Eugene: A Domain Specific Language for Specifying and Constraining Synthetic Biological Parts, Devices, and Systems. PLoS ONE 6, e18882 (2011).</li>
                         </ol>
 
                     </div>

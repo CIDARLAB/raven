@@ -173,10 +173,10 @@ public class ClothoReader {
     }
 
     /** Convert goal parts into SRS nodes for the algorithm **/
-    public static ArrayList<RNode> gpsToNodesClotho(HashMap<Part, Vector> goalPartsVectors, boolean useVectors) throws Exception {
+    public static ArrayList<RNode> gpsToNodesClotho(HashSet<Part> goalPartsVectors, boolean useVectors) throws Exception {
         
         ArrayList<RNode> gpsNodes = new ArrayList<RNode>();
-        Set<Part> goalParts = goalPartsVectors.keySet();
+        Set<Part> goalParts = goalPartsVectors;
         for (Part goalPart : goalParts) {
             
             //Get goal part's composition and type (part description type)
@@ -200,16 +200,16 @@ public class ClothoReader {
             }
 
             //Assign vector to the root node if it exists in the hash and the method uses the assigned vector
-            RVector vector = null;
-            if (useVectors) {
-                if (goalPartsVectors.get(goalPart) != null) {
-                    Vector clothoVector = goalPartsVectors.get(goalPart);
-                    vector = vectorImportClotho(clothoVector);
-                }
-            }
+//            RVector vector = null;
+//            if (useVectors) {
+//                if (goalPartsVectors.get(goalPart) != null) {
+//                    Vector clothoVector = goalPartsVectors.get(goalPart);
+//                    vector = vectorImportClotho(clothoVector);
+//                }
+//            }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            RNode gp = new RNode(false, false, composition, direction, type, scars, "", "", 0, 0, vector);
+            RNode gp = new RNode(false, false, composition, direction, type, scars, "", "", 0, 0, null);
             gp.setUUID(goalPart.getUUID());
             gpsNodes.add(gp);
         }

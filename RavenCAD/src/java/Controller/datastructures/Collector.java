@@ -112,7 +112,7 @@ public class Collector {
 
     //returns the part you added or an existing part that matches exactly
     public Part addPart(Part aPart) {
-        Part existingPart = this.getExactPart(aPart.getName(), aPart.getSeq(), aPart.getSearchTags(), true);
+        Part existingPart = this.getExactPart(aPart.getName(), aPart.getSeq(), aPart.getSearchTags(), false);
         if (existingPart != null) {
             return existingPart;
         }
@@ -146,7 +146,7 @@ public class Collector {
 
     //returns the vector you added or an existing vector that matches exactly
     public Vector addVector(Vector aVector) {
-        Vector existingVector = this.getExactVector(aVector.getName(), aVector.getSeq(), aVector.getSearchTags(), true);
+        Vector existingVector = this.getExactVector(aVector.getName(), aVector.getSeq(), aVector.getSearchTags(), false);
         if (existingVector != null) {
             return existingVector;
         }

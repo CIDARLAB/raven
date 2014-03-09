@@ -163,7 +163,8 @@ public class RInstructions {
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
-                                oligos = RGoldenGate.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
+                                String [] fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll);
+                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites, coll, meltingTemp, primerLength);
                             } else {
                                 oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength);
                             }
@@ -230,6 +231,8 @@ public class RInstructions {
                                 oligos = RMoClo.generateVectorPrimers(vector, coll);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, primerLength);
+                            } else if (method.equalsIgnoreCase("GoldenGate")) {
+                                oligos = RGoldenGate.generateVectorPrimers(vector, coll);
                             }
 
                             String fwdOligo = oligos[0];

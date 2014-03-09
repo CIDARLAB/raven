@@ -5,11 +5,8 @@
 package Communication;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,7 +15,6 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +48,8 @@ public class RavenServlet extends HttpServlet {
             RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
             out = response.getWriter();
             String command = request.getParameter("command");
-            user = getUser(request).toLowerCase();
+//            user = getUser(request).toLowerCase();
+            user = getUser(request);
             RavenController controller = _controllerHash.get(user);
             if (controller == null) {
                 String path = this.getServletContext().getRealPath("/") + "/data/";
@@ -147,10 +144,11 @@ public class RavenServlet extends HttpServlet {
                 primerParameters.add(primerParam.getString("targetLength"));
 
                 String[] stageVectorArray = request.getParameter("stageVectors").split(","); 
-                HashMap<String,String> stageVectorHash = new HashMap(); //key - stage as string, value - vector uuid
+                HashMap<String,String> stageVectorHash = new HashMap<String, String>(); //key - stage as string, value - vector uuid
                 for(int i=0 ;i<stageVectorArray.length;i++) {
-                    stageVectorHash.put(String.valueOf(i+1), stageVectorArray[i]);
+                    stageVectorHash.put(String.valueOf(i), stageVectorArray[i]);
                 }
+                
                 if (recArray.length > 0) {
                     for (int i = 0; i < recArray.length; i++) {
                         if (recArray[i].length() > 0) {
@@ -199,7 +197,7 @@ public class RavenServlet extends HttpServlet {
                 }
 
                 String designCount = request.getParameter("designCount");
-                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters);
+                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters, stageVectorHash);
                 JSONArray partsList = controller.generatePartsList(designCount, params.toString());
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();
@@ -280,7 +278,8 @@ public class RavenServlet extends HttpServlet {
             writer = response.getWriter();
             if (!ServletFileUpload.isMultipartContent(request)) {
                 String command = request.getParameter("command");
-                String user = getUser(request).toLowerCase();
+//                String user = getUser(request).toLowerCase();
+                String user = getUser(request);
                 RavenController controller = _controllerHash.get(user);
                 if (command.equals("importClotho")) {
                     response.setContentType("application/json");
