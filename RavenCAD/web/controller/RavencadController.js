@@ -7,7 +7,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var canRun = true;
     var efficiencyArray = [];
     var _runParameters = {};
-    var _redesignDesignHash = {}; //key design number of redesign tab, value- design number of original tab
     var _destination = ""; //stores the url a user was navigating towards
     var currentActiveTab = 0;
     var _vectorStage = 0;
@@ -159,6 +158,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#availableTargetPartList option").each(function() {
             $("#availableLibraryPartList #" + $(this).attr("id")).remove();
             $("#libraryPartList #" + $(this).attr("id")).remove();
+            //temporary
+            $('#availableLibraryPartList option[title="' + $(this).attr("title")+'"').remove();
+            $('#libraryPartList option[title="' + $(this).attr("title")+'"').remove();
         });
         $('#targetPartList').append($('#availableTargetPartList option'));
         sortPartLists();
@@ -167,8 +169,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
     });
     $('#targetDeselectAllButton').click(function() {
         $("#targetPartList option").each(function() {
-            $("#availableLibraryPartList").append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
-            $("#availableLibraryPartList #" + $(this).attr("id")).addClass("composite");
+//            $("#availableLibraryPartList").append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
+//            $("#availableLibraryPartList #" + $(this).attr("id")).addClass("composite");
+            $("#libraryPartList").append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
+            $("#libraryPartList #" + $(this).attr("id")).addClass("composite");
         });
         $('#availableTargetPartList').append($('#targetPartList option'));
         sortPartLists();
@@ -179,6 +183,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#availableTargetPartList :selected').each(function() {
             $('#availableLibraryPartList #' + $(this).attr("id")).remove();
             $('#libraryPartList #' + $(this).attr("id")).remove();
+            //temporary solution
+            $('#availableLibraryPartList option[title="' + $(this).attr("title")+'"').remove();
+            $('#libraryPartList option[title="' + $(this).attr("title")+'"').remove();
         });
         $('#targetPartList').append($('#availableTargetPartList :selected'));
         sortPartLists();
@@ -187,8 +194,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
     });
     $('#targetDeselectButton').click(function() {
         $('#targetPartList :selected').each(function() {
-            $('#availableLibraryPartList').append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
-            $("#availableLibraryPartList #" + $(this).attr("id")).addClass("composite");
+//            $('#availableLibraryPartList').append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
+//            $("#availableLibraryPartList #" + $(this).attr("id")).addClass("composite");
+            $('#libraryPartList').append('<option id="' + $(this).attr("id") + '">' + $(this).text() + '</option>');
+            $("#libraryPartList #" + $(this).attr("id")).addClass("composite");
         });
         $('#availableTargetPartList').append($('#targetPartList :selected'));
         sortPartLists();
@@ -386,7 +395,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $("#libraryVectorListArea").html(libraryVectorListBody);
         //clear lists
         $('#targetPartList').html("");
-//        $('#availableLibraryPartList').html(targetListBody);
         $('#availableLibraryPartList').html("");
         $('#availableLibraryVectorList').html("");
         sortPartLists();
@@ -733,11 +741,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
         //add menu
         $('#resultTabs' + _designCount).append('<ul id="resultTabsHeader' + _designCount + '" class="nav nav-tabs">' +
                 '<li class="active"><a href="#imageTab_' + _designCount + '" data-toggle="tab" id="imageTabHeader_' + _designCount + '">Image</a></li>' +
-                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="'+_designCount+'" href="#instructionTab' + _designCount + '" data-toggle="tab">Instructions</a></li>' +
-                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="'+_designCount+'" href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
-                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="'+_designCount+'" href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
+                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="' + _designCount + '" href="#instructionTab' + _designCount + '" data-toggle="tab">Instructions</a></li>' +
+                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="' + _designCount + '" href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
+                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="' + _designCount + '" href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
                 '<li><a href="#discardDialog' + _designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + _designCount + '" name="' + _designCount + '">Discard Design</a></li>' +
-                '<li><a class="btn" id="redesignButton' + _designCount + '" name="' + _designCount + '">Redesign</a></li>' +
+                '<li><a class="btn" id="redesignButton' + _designCount + '" name="' + _designCount + '">Mark Failures/Successes</a></li>' +
                 '</ul>');
         //append modal dialog
         $('#resultTabs' + _designCount).append('<div id="discardDialog' + _designCount + '" class="modal hide fade" tab-index="-1" role="dialog" aria-labelledby="discardDialogLabel' + _designCount + '" aria-hidden="true">'
@@ -777,13 +785,13 @@ $(document).ready(function() { //don't run javascript until page is loaded
             var tabNumber = $(this).attr("name").toString();
             hideImage(tabNumber);
         });
-        $('#imageTabHeader_' + _designCount).click(function(){
+        $('#imageTabHeader_' + _designCount).click(function() {
             var id = $(this).attr("id").toString();
             var tabNumber = id.substring(id.indexOf("_") + 1);
             showImage(tabNumber);
             //manually switch tabs
-            $('#resultsTabContent'+tabNumber+' div.active').removeClass('active');
-            $('#imageTab'+tabNumber).addClass('active');
+            $('#resultsTabContent' + tabNumber + ' div.active').removeClass('active');
+            $('#imageTab' + tabNumber).addClass('active');
         });
         //event handler for discard modal dialog
         $('#discardButton' + _designCount).click(function() {
@@ -1019,12 +1027,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var redesign = function(originalDesignNumber) {
         if (canRun) {
             var currentDesignCount = originalDesignNumber;
-
-            $('#resultImage' + currentDesignCount + ' img').elevateZoom({zoomWindowPosition: 6, scrollZoom: true, zoomWindowWidth: 640, zoomWindowHeight: 360});
-            var targets = [];
-            $('div#summaryTab' + originalDesignNumber + ' ul#targets li').each(function() {
-                targets.push($(this).text());
-            });
+            //change button text
+            $('#redesignButton'+currentDesignCount).text("Redesign")
+            var targets = _runParameters[originalDesignNumber]["targets"]
+            alert("targets "+targets)
             //create new html for parts list
             var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Failure/Success</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
             $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
@@ -1047,11 +1053,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
             redesignPartsList = redesignPartsList + '</tbody></table>';
             //replace current parts list
             $('#partsListTab' + currentDesignCount).html('<div id="partsListArea' + currentDesignCount + '">' + redesignPartsList + '</div>');
-            $("#partsListTable" + currentDesignCount).dataTable({
-                "sScrollY": "300px",
-                "bPaginate": false,
-                "bScrollCollapse": true
-            });
+//            $("#partsListTable" + currentDesignCount).dataTable({
+//                "sScrollY": "300px",
+//                "bPaginate": false,
+//                "bScrollCollapse": true
+//            });
 
             $('#redesignRun' + currentDesignCount).click(function() {
 
@@ -1156,17 +1162,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $(this).removeClass("btn-success");
                 }
 
-                $('#partsListTable' + designNumber + ' tbody tr').each(function() {
-                    var forbidRequire = $(this).find('td').first().find("button").attr("name");
-                    var type = $(this).find('td:nth-child(6)').text().toLowerCase();
-                    if (forbidRequire === "failed" && type === "composite") {
-                        $('#summaryTab' + designNumber + ' div ul.forbiddenList').append('<li>' + $(this).find('td:last').text() + '</li>');
-                    } else if (forbidRequire === "succeeded" && type === "composite") {
-                        $('#summaryTab' + designNumber + ' div ul.requiredList').append('<li>' + $(this).find('td:last').text() + '</li>');
-                    } else if (forbidRequire === "succeeded") {
-                        $('#summaryTab' + designNumber + ' div ul.libraryList').append('<li>' + $(this).find('td:nth-child(3)').text() + '</li>');
-                    }
-                });
 
             });
         } else {
