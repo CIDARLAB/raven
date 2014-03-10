@@ -66,7 +66,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         //TODO draw parts and vectors into separate tabs
         var allTableBody = "<table id='allTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
         var partTableBody = "<table id='partTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr></thead><tbody>";
-        var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
+        var vectorTableBody = "<table id='vectorTable' class='table table-bordered table-hover'><thead><tr><th>uuid</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th><th>Resistance</th><th>Level</th></tr></thead><tbody>";
         $.each(ravenPart, function() {
             allTableBody = allTableBody + "<tr><td>"
                     + this["uuid"] + "</td><td>"
@@ -81,13 +81,15 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (this["Type"] === "vector" | this["Type"] === "destination vector") {
                 sequenceHash["vector_" + this["uuid"]] = this["sequence"];
                 vectorTableBody = vectorTableBody + "<tr><td>"
-                        + this["uuid"] + "</td><td>"
-                        + this["Name"] + "</td><td>"
-                        + this["LO"] + "</td><td>"
-                        + this["RO"] + "</td><td>"
-                        + this["Type"] + "</td><td>"
-                        + this["Resistance"] + "</td><td>"
-                        + this["Level"] + "</td></tr>";
+                    + this["uuid"] + "</td><td>"
+                    + this["Name"] + "</td><td>"
+                    + this["LO"] + "</td><td>"
+                    + this["RO"] + "</td><td>"
+                    + this["Type"] + "</td><td>"
+                    + this["Vector"] + "</td><td>"
+                    + this["Composition"] + "</td><td>"
+                    + this["Resistance"] + "</td><td>"
+                    + this["Level"] + "</td></tr>";
             } else {
                 sequenceHash["part_" + this["uuid"]] = this["sequence"];
                 partTableBody = partTableBody + "<tr><td>"
@@ -122,6 +124,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             "bPaginate": false,
             "bScrollCollapse": true
         });
+        
         $("tr").on("click", function() {
 //        //TODO finish form generation
             var type = "Part";
@@ -150,10 +153,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     $('#errorArea').removeClass("hidden");
                 }
             }
-            drawTable();            
+            drawTable();
         });
 //        vectorTable.fnAdjustColumnSizing();
-        
     };
     //EVENT HANDLERS
     $('#clotho3Import').click(function() {
@@ -207,7 +209,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#uploadModal').modal();
         }
     });
-    
+
 //    allTable.fnAdjustColumnSizing();
     $('#allTableArea').mouseenter(function() {
         if (!tabResized) {
@@ -215,7 +217,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             tabResized = true;
         }
     });
-    
+
 //    partTable.fnAdjustColumnSizing();
     $('#partTableArea').mouseenter(function() {
         if (!tabResized) {
@@ -223,7 +225,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             tabResized = true;
         }
     });
-    
+
 //    vectorTable.fnAdjustColumnSizing();
     $('#vectorTableArea').mouseenter(function() {
         if (!tabResized) {

@@ -80,7 +80,7 @@ public class ClothoWriter {
 
                     //Get new intermediate name
                     Date date = new Date();
-                    String partName = nameRoot + "_intermediate_" + user + "_" +  date.toString();
+                    String partName = nameRoot + "_intermediate_" + user + "_" +  date.toString().replaceAll(" ", "");
                     partName = partName.replaceAll("\\.", "");
                     if (partName.length() > 255) {
                         partName = partName.substring(0, 255);
@@ -274,9 +274,11 @@ public class ClothoWriter {
                     
                     //Get vector parameters
                     String seq = "";
+                    String resistance = "";
                     ArrayList<Vector> allVectorsWithName = coll.getAllVectorsWithName(vector.getName(), false);
                     if (!allVectorsWithName.isEmpty()) {
                         seq = allVectorsWithName.get(0).getSequence();
+                        resistance = allVectorsWithName.get(0).getResistance();
                     }
                     if (vector.getName().equals("pSK1A2")) {
                         seq = _pSK1A2;
@@ -286,7 +288,7 @@ public class ClothoWriter {
                         seq = _pSB1K3;
                     }
                     
-                    String resistance = vector.getResistance();
+                    
                     int level = vector.getLevel();
 //                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
                     Vector existingVec = RavenController._compPartsVectors.get(currentPart);
@@ -314,7 +316,7 @@ public class ClothoWriter {
                                 
                                 //Otherwise make a new vector
                                 } else {
-                                    Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
+                                    Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level, method);
                                     newVector = newVector.saveDefault(coll);
                                     vector.setName(newVector.getName());
                                     vector.setUUID(newVector.getUUID());
@@ -322,7 +324,7 @@ public class ClothoWriter {
                             
                             //Otherwise make a new vector
                             } else {
-                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
+                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level, method);
                                 newVector = newVector.saveDefault(coll);
                                 vector.setName(newVector.getName());
                                 vector.setUUID(newVector.getUUID());
@@ -338,7 +340,7 @@ public class ClothoWriter {
                                 vector.setName(existingVec.getName());
                                 vector.setUUID(existingVec.getUUID());
                             } else {
-                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
+                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level, method);
                                 newVector = newVector.saveDefault(coll);
                                 vector.setName(newVector.getName());
                                 vector.setUUID(newVector.getUUID());
@@ -347,7 +349,7 @@ public class ClothoWriter {
 
                     //Otherwise make a new vector if non exists
                     } else {
-                        Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level);
+                        Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level, method);
                         newVector = newVector.saveDefault(coll);
                         vector.setName(newVector.getName());
                         vector.setUUID(newVector.getUUID());
@@ -515,7 +517,7 @@ public class ClothoWriter {
      * Make intermediate parts of a graph into Clotho parts (typically only done
      * for solution graphs) *
      */
-    private Vector generateNewClothoVector(Collector coll, String name, String sequence, String LO, String RO, String resistance, int level) {
+    private Vector generateNewClothoVector(Collector coll, String name, String sequence, String LO, String RO, String resistance, int level, String method) {
 
         _allVectors = coll.getAllVectors(true);
         String thisVecKey = name + "|" + LO + "|" + level + "|" + RO;
@@ -543,6 +545,15 @@ public class ClothoWriter {
         }
         if (level > -1) {
             newVector.addSearchTag("Level: " + level);
+        }
+        
+        //If making a destination vector
+        if (method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("moclo")) {
+            newVector.addSearchTag("Composition: lacZ|" + LO + "|" + RO + "|+");
+            newVector.addSearchTag("Type: destination vector");
+            newVector.addSearchTag("Vector: " + name);
+        } else {
+            newVector.addSearchTag("Type: vector");
         }
 
         return newVector;

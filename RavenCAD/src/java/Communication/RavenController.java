@@ -285,9 +285,9 @@ public class RavenController {
                         + "\",\"LO\":\"" + v.getLeftOverhang()
                         + "\",\"RO\":\"" + v.getRightOverhang()
                         + "\",\"Type\":\"" + v.getType()
-                        + "\",\"Composition\":\"\""
-                        + ",\"Vector\":\"\""
-                        + ",\"Resistance\":\"" + v.getResistance()
+                        + "\",\"Composition\":\"" + v.getComposition()
+                        + "\",\"Vector\":\"" + v.getVector()
+                        + "\",\"Resistance\":\"" + v.getResistance()
                         + "\",\"Level\":\"" + v.getLevel() + "\"},";
             }
         }
@@ -453,8 +453,8 @@ public class RavenController {
                     + "\",\"LO\":\"" + v.getLeftOverhang()
                     + "\",\"RO\":\"" + v.getRightOverhang()
                     + "\",\"Type\":\"" + v.getType()
-                    + "\",\"Vector\":\"" + ""
-                    + "\",\"Composition\":\"" + ""
+                    + "\",\"Vector\":\"" + v.getVector()
+                    + "\",\"Composition\":\"" + v.getComposition()
                     + "\",\"Resistance\":\"" + v.getResistance()
                     + "\",\"Level\":\"" + strLevel + "\"},";
         }
@@ -631,6 +631,7 @@ public class RavenController {
                     String rightOverhang = tokens[4].trim();
                     String resistance = tokens[6].toLowerCase().trim();
                     String name = tokens[8].trim();
+                    String composition = tokens[9];
                 
                     int level;
                     try {
@@ -645,6 +646,8 @@ public class RavenController {
                     newVector.addSearchTag("Level: " + level);
                     newVector.addSearchTag("Type: " + type);
                     newVector.addSearchTag("Resistance: " + resistance);
+                    newVector.addSearchTag("Vector: " + name);
+                    newVector.addSearchTag("Composition: " + composition);
                     
                     //Library logic
                     if (!tokens[0].trim().isEmpty()) {
