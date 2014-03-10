@@ -88,7 +88,12 @@ public class ClothoWriter {
 
                     //If there's overhangs, add search tags
                     Part newPart = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
-                    newPart.addSearchTag("Type: plasmid");
+                    String type = "plasmid";
+//                    if (stageVectors.get(0) == null) {
+//                        type = "composite";
+//                    }
+                    newPart.addSearchTag("Type: " + type);
+                    
                     currentNode.setName(partName);
                     newPart = newPart.saveDefault(coll);
                     currentNode.setUUID(newPart.getUUID());
@@ -98,9 +103,9 @@ public class ClothoWriter {
                     //If a part with this composition and overhangs does not exist, a new part is needed
                     String seq = "";
                     String currentType = currentNode.getType().toString();
-                    if (currentNode.getComposition().size() == 1) {
-                        currentType = currentType.substring(1, currentType.length()-1);
-                    }
+//                    if (currentNode.getComposition().size() == 1) {
+//                        currentType = currentType.substring(1, currentType.length()-1);
+//                    }
                     ArrayList<String> tags = new ArrayList<String>();
                     tags.add("LO: " + currentNode.getLOverhang());
                     tags.add("RO: " + currentNode.getROverhang());
@@ -114,24 +119,6 @@ public class ClothoWriter {
                     }
                     currentPart = coll.getExactPart(null, seq, tags, true);
                     
-//                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
-//                    ArrayList<String> sTags = currentPart.getSearchTags();
-//                    ArrayList<String> stringComposition = currentPart.getStringComposition();
-//                    ArrayList<String> currentPartDir = parseTags(sTags, "Direction:");
-//                    ArrayList<String> currentPartScars = parseTags(sTags, "Scars:");
-//                    String currentPartLO = "";
-//                    String currentPartRO = "";
-//                    for (int k = 0; k < sTags.size(); k++) {
-//                        if (sTags.get(k).startsWith("LO:")) {
-//                            currentPartLO = sTags.get(k).substring(4);
-//                        } else if (sTags.get(k).startsWith("RO:")) {
-//                            currentPartRO = sTags.get(k).substring(4);
-//                        }
-//                    }
-//                    String currentPartKey = stringComposition + "|" + currentPartDir + "|" + currentPartScars + "|" + currentPartLO + "|" + currentPartRO;
-//                    String nodeKey = currentNode.getNodeKey("+");
-                
-//                      if (!currentPartKey.equals(nodeKey)) {
                     if (currentPart == null) {
 
                         currentPart = coll.getPart(currentNode.getUUID(), true);
@@ -249,18 +236,19 @@ public class ClothoWriter {
                         newPart.addSearchTag("RO: " + RO);
                         newPart.addSearchTag("Direction: " + currentNode.getDirection().toString());
 
-                        String type = currentNode.getType().toString();
-                        type = type.substring(1, type.length() - 1);
-
-                        if (currentNode.getComposition().size() > 1) {
-                            type = "plasmid";
+                        String type2 = "plasmid";
+                        if (stageVectors.get(0) == null) {
+                            if (currentNode.getComposition().size() == 1) {
+                                type2 = currentNode.getType().toString();
+                                type2 = type2.substring(1, type2.length() - 1);
+                            }
                         }
 
                         if (!currentNode.getScars().isEmpty()) {
                             newPart.addSearchTag("Scars: " + currentNode.getScars().toString());
                         }
 
-                        newPart.addSearchTag("Type: " + type);
+                        newPart.addSearchTag("Type: " + type2);
                         newPart = newPart.saveDefault(coll);
                         currentNode.setUUID(newPart.getUUID());
                     } else {
@@ -292,7 +280,12 @@ public class ClothoWriter {
                     int level = vector.getLevel();
 //                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
                     Vector existingVec = RavenController._compPartsVectors.get(currentPart);
-                    Vector nextLevelVec = stageVectors.get((level % stageVectors.size())+1);
+                    Integer nextLevel = 0;
+                    if (stageVectors.size() > 1) {
+                        nextLevel = (level % stageVectors.size())+1;
+                    }
+                    
+                    Vector nextLevelVec = stageVectors.get(nextLevel);
 
                     //If there is an assigned vector in the library with the appropriate resistance, do not bother making a new vector
                     if (existingVec != null) {
@@ -333,10 +326,10 @@ public class ClothoWriter {
                         //For all other assembly methods, as long as the found vector is not the same resistance of the next level, it can be re-used
                         } else {
                             
-                            if (!(existingVec.getResistance().equalsIgnoreCase(nextLevelVec.getResistance()))) {
+                            if (!(existingVec.getResistance().equalsIgnoreCase(nextLevelVec.getResistance())) && existingVec.getLeftOverhang().equalsIgnoreCase(nextLevelVec.getLeftOverhang()) && existingVec.getRightOverhang().equalsIgnoreCase(nextLevelVec.getRightOverhang())) {
                                 vector.setName(existingVec.getName());
                                 vector.setUUID(existingVec.getUUID());
-                            } else if (stageVectors.size() == 1) {
+                            } else if (stageVectors.size() == 1 && existingVec.getLeftOverhang().equalsIgnoreCase(nextLevelVec.getLeftOverhang()) && existingVec.getRightOverhang().equalsIgnoreCase(nextLevelVec.getRightOverhang())) {
                                 vector.setName(existingVec.getName());
                                 vector.setUUID(existingVec.getUUID());
                             } else {
