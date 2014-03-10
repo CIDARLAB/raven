@@ -102,14 +102,9 @@ public class ClothoWriter {
 
                     //If a part with this composition and overhangs does not exist, a new part is needed
                     String seq = "";
-                    String currentType = currentNode.getType().toString();
-//                    if (currentNode.getComposition().size() == 1) {
-//                        currentType = currentType.substring(1, currentType.length()-1);
-//                    }
                     ArrayList<String> tags = new ArrayList<String>();
                     tags.add("LO: " + currentNode.getLOverhang());
                     tags.add("RO: " + currentNode.getROverhang());
-//                    tags.add("Type: " + currentType);
                     tags.add("Type: plasmid");
                     tags.add("Direction: " + currentNode.getDirection());
                     tags.add("Scars: " + currentNode.getScars());
@@ -117,12 +112,13 @@ public class ClothoWriter {
                     if (!allPartsWithName.isEmpty()) {
                         seq = allPartsWithName.get(0).getSeq();
                     }
+                    
                     currentPart = coll.getExactPart(null, seq, tags, true);
                     
                     if (currentPart == null) {
 
                         currentPart = coll.getPart(currentNode.getUUID(), true);
-                        currentNode.setDirection(currentPart.getDirections());
+//                        currentNode.setDirection(currentPart.getDirections());
                         
                         //If a new part must be created
                         Part newPart;
