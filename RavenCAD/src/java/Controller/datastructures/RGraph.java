@@ -322,6 +322,7 @@ public class RGraph {
                 }
 
                 if (!currentVectorKey.equals("")) {
+                    
                     //If there is a vector present on a stage zero node, and both part and vector do not yet exist ,it is considered a step 
                     if (current.getStage() == 0) {
                         if (!seenVectorKeys.contains(currentVectorKey) || !seenPartKeys.contains(currentPartKey)) {

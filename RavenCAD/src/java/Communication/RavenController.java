@@ -51,6 +51,25 @@ public class RavenController {
         if (_goalParts == null) {
             return null;
         }
+        
+        //If stageVectors are empty, fill with defaults
+        if (_stageVectors.get(0) == null) {
+            
+            ArrayList<String> defaultTags0 = new ArrayList<String>();
+            defaultTags0.add("LO: ");
+            defaultTags0.add("RO: ");
+            defaultTags0.add("Type: vector");
+            defaultTags0.add("Resistance: ampicilin");          
+            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
+            if (st0Vec == null) {
+                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
+                for (String tag : defaultTags0) {
+                    st0Vec.addSearchTag(tag);
+                }
+            }
+            
+            _stageVectors.put(0, st0Vec);
+        }
 
         //Run algorithm for BioBricks assembly
         _assemblyGraphs.clear();
@@ -111,6 +130,39 @@ public class RavenController {
         if (_goalParts == null) {
             return null;
         }
+        
+        //If stageVectors are empty, fill with defaults
+        if (_stageVectors.get(0) == null) {
+            
+            ArrayList<String> defaultTags0 = new ArrayList<String>();
+            defaultTags0.add("LO: ");
+            defaultTags0.add("RO: ");
+            defaultTags0.add("Type: vector");
+            defaultTags0.add("Resistance: kanamycin");          
+            Vector st0Vec = _collector.getExactVector("pSB1K3", _pSB1K3, defaultTags0, false);
+            if (st0Vec == null) {
+                st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
+                for (String tag : defaultTags0) {
+                    st0Vec.addSearchTag(tag);
+                }
+            }
+            
+            ArrayList<String> defaultTags1 = new ArrayList<String>();
+            defaultTags1.add("LO: ");
+            defaultTags1.add("RO: ");
+            defaultTags1.add("Type: vector");
+            defaultTags1.add("Resistance: ampicilin");  
+            Vector st1Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags1, false);
+            if (st1Vec == null) {
+                st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
+                for (String tag : defaultTags1) {
+                    st1Vec.addSearchTag(tag);
+                }
+            }
+            
+            _stageVectors.put(0, st1Vec);
+            _stageVectors.put(1, st0Vec);
+        }
 
         //Run algorithm for MoClo assembly
         _assemblyGraphs.clear();
@@ -128,6 +180,39 @@ public class RavenController {
             return null;
         }
 
+        //If stageVectors are empty, fill with defaults
+        if (_stageVectors.get(0) == null) {
+            
+            ArrayList<String> defaultTags0 = new ArrayList<String>();
+            defaultTags0.add("LO: ");
+            defaultTags0.add("RO: ");
+            defaultTags0.add("Type: vector");
+            defaultTags0.add("Resistance: kanamycin");          
+            Vector st0Vec = _collector.getExactVector("pSB1K3", _pSB1K3, defaultTags0, false);
+            if (st0Vec == null) {
+                st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
+                for (String tag : defaultTags0) {
+                    st0Vec.addSearchTag(tag);
+                }
+            }
+            
+            ArrayList<String> defaultTags1 = new ArrayList<String>();
+            defaultTags1.add("LO: ");
+            defaultTags1.add("RO: ");
+            defaultTags1.add("Type: vector");
+            defaultTags1.add("Resistance: ampicilin");  
+            Vector st1Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags1, false);
+            if (st1Vec == null) {
+                st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
+                for (String tag : defaultTags1) {
+                    st1Vec.addSearchTag(tag);
+                }
+            }
+            
+            _stageVectors.put(0, st1Vec);
+            _stageVectors.put(1, st0Vec);
+        }
+        
         //Run algorithm for Golden Gate assembly
         _assemblyGraphs.clear();
         RGoldenGate gg = new RGoldenGate();
@@ -1055,11 +1140,15 @@ public class RavenController {
         boolean valid = validateGraphComposition();
         _valid = valid && overhangValid;
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
+        if (!_assemblyGraphs.isEmpty()) {
+            for (RGraph result : _assemblyGraphs) {
+                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors, _stageVectors, method, _user);
+            }
+        }        
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors, _stageVectors, method, _user);
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
@@ -1239,4 +1328,7 @@ public class RavenController {
     private String _preloadedParams = null;
     private ArrayList<String> _databaseConfig = new ArrayList(); //0:database url, 1:database schema, 2:user, 3:password
     private ArrayList<RestrictionEnzyme> _restrictionEnzymes = RestrictionEnzyme.getBBGGMoCloEnzymes();
+    private String _pSB1K3 = "tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgagtcccgtcaagtcagcgtaatgctctgccagtgttacaaccaattaaccaattctgattagaaaaactcatcgagcatcaaatgaaactgcaatttattcatatcaggattatcaataccatatttttgaaaaagccgtttctgtaatgaaggagaaaactcaccgaggcagttccataggatggcaagatcctggtatcggtctgcgattccgactcgtccaacatcaatacaacctattaatttcccctcgtcaaaaataaggttatcaagtgagaaatcaccatgagtgacgactgaatccggtgagaatggcaaaagcttatgcatttctttccagacttgttcaacaggccagccattacgctcgtcatcaaaatcactcgcatcaaccaaaccgttattcattcgtgattgcgcctgagcgagacgaaatacgcgatcgctgttaaaaggacaattacaaacaggaatcgaatgcaaccggcgcaggaacactgccagcgcatcaacaatattttcacctgaatcaggatattcttctaatacctggaatgctgttttcccggggatcgcagtggtgagtaaccatgcatcatcaggagtacggataaaatgcttgatggtcggaagaggcataaattccgtcagccagtttagtctgaccatctcatctgtaacatcattggcaacgctacctttgccatgtttcagaaacaactctggcgcatcgggcttcccatacaatcgatagattgtcgcacctgattgcccgacattatcgcgagcccatttatacccatataaatcagcatccatgttggaatttaatcgcggcctggagcaagacgtttcccgttgaatatggctcataacaccccttgtattactgtttatgtaagcagacagttttattgttcatgatgatatatttttatcttgtgcaatgtaacatcagagattttgagacacaacgtggctttgttgaataaatcgaacttttgctgagttgaaggatcagctcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
+    private String _pSB1A2 = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
+    private String _pSK1A2 = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
 }
