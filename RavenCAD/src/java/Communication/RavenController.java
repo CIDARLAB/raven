@@ -1064,7 +1064,7 @@ public class RavenController {
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
                 //method call for deprecated weyekin image
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _compPartsVectors, targetRootNodes, scarless));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _compPartsVectors, targetRootNodes, scarless, method));
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
