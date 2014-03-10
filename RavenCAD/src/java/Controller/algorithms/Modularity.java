@@ -271,8 +271,9 @@ public class Modularity extends Partitioning {
             ArrayList<RNode> neighbors = root.getNeighbors();
             if (neighbors.isEmpty()) {
                 l0nodes.add(root);
+            } else {
+                count = assignPrimaryOverhangs(root, neighbors, root, count);
             }
-            count = assignPrimaryOverhangs(root, neighbors, root, count);
         }
         
         getStageDirectionAssignHash(optimalGraphs);
@@ -333,7 +334,7 @@ public class Modularity extends Partitioning {
     protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors) {
         
         //Initialize node and library overhang hashes
-        HashMap<String, HashSet<String>> nodePartOHHashes = initializPartOHHashes(graphs);
+        HashMap<String, HashSet<String>> nodePartOHHashes = initializePartOHHashes(graphs);
         HashMap<String, HashSet<String>> nodeVectorOHHash = initializeVectorOHHashes(graphs);
     
         //Sort list of the key values of the nodeOH to library OH map, from 0 to highest seen node OH
@@ -418,6 +419,8 @@ public class Modularity extends Partitioning {
                 _rootBasicNodeHash.put(root, l0nodes);
             }
         }
+        
+        
 
         return count;
     }
@@ -443,7 +446,21 @@ public class Modularity extends Partitioning {
             if (l0Nodes.size() == 1) {
                 HashMap<String, ArrayList<RNode>> directionHash = new HashMap<String, ArrayList<RNode>>();
                 directionHash.put("+", l0Nodes);
-                _stageDirectionAssignHash.put(1, directionHash);
+                
+                if (_stageDirectionAssignHash.isEmpty()) {
+                    _stageDirectionAssignHash.put(1, directionHash);
+                } else {
+                    _stageDirectionAssignHash.get(1).get("+").addAll(l0Nodes);
+                }
+//                _stageDirectionAssignHash.put(1, directionHash);
+                RNode node = l0Nodes.get(0);
+                HashSet<String> exclusiveL = new HashSet<String>();
+                exclusiveL.add(node.getROverhang());
+                HashSet<String> exclusiveR = new HashSet<String>();
+                exclusiveR.add(node.getLOverhang());
+                _OHexclusionHash.put(node.getLOverhang(), exclusiveL);
+                _OHexclusionHash.put(node.getROverhang(), exclusiveR);
+                _nodeStagesHash.put(node, new ArrayList<Integer>(1));
                 
             } else {
 
@@ -847,7 +864,7 @@ public class Modularity extends Partitioning {
     /*
      * For each of the graphs in the solution set, create a hash of mapping all overhang positions to possible overhang matches in the partLibrary based on composition
      */    
-    private HashMap<String, HashSet<String>> initializPartOHHashes (ArrayList<RGraph> graphs) {
+    private HashMap<String, HashSet<String>> initializePartOHHashes (ArrayList<RGraph> graphs) {
         
         _partKeys = new HashSet<String>(); //concatentation of composition Overhang and direction seen in the partLibrary
         HashMap<String, HashSet<String>> nodeOHpartOHHash = new HashMap<String, HashSet<String>>(); //key: node overhang, value: set of all library part overhangs that match composition

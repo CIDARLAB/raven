@@ -160,7 +160,6 @@ public class RavenController {
                 }
             }
         }
-        _compPartsVectors.putAll(partVectorHash);
 
         //extract information from parts and write file
         String partList = "[";
@@ -833,7 +832,7 @@ public class RavenController {
                     newComposite.addSearchTag("LO: " + leftOverhang);
                     newComposite.addSearchTag("RO: " + rightOverhang);
                     newComposite.addSearchTag("Type: composite");
-                    newPlasmid.addSearchTag("Scars: " + scars);
+                    newComposite.addSearchTag("Scars: " + scars);
                     _compPartsVectors.put(newComposite, vector);
                     newComposite = newComposite.saveDefault(_collector);
                     newComposite.setTransientStatus(false);
@@ -1057,7 +1056,7 @@ public class RavenController {
         getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors, _stageVectors, method);
+                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors, _stageVectors, method, _user);
                 writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));

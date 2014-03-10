@@ -159,8 +159,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $("#availableLibraryPartList #" + $(this).attr("id")).remove();
             $("#libraryPartList #" + $(this).attr("id")).remove();
             //temporary
-            $('#availableLibraryPartList option[title="' + $(this).attr("title")+'"').remove();
-            $('#libraryPartList option[title="' + $(this).attr("title")+'"').remove();
+//            $('#availableLibraryPartList option[title="' + $(this).attr("title")+'"').remove();
+//            $('#libraryPartList option[title="' + $(this).attr("title")+'"').remove();
         });
         $('#targetPartList').append($('#availableTargetPartList option'));
         sortPartLists();
@@ -184,8 +184,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#availableLibraryPartList #' + $(this).attr("id")).remove();
             $('#libraryPartList #' + $(this).attr("id")).remove();
             //temporary solution
-            $('#availableLibraryPartList option[title="' + $(this).attr("title")+'"').remove();
-            $('#libraryPartList option[title="' + $(this).attr("title")+'"').remove();
+//            $('#availableLibraryPartList option[title="' + $(this).attr("title")+'"').remove();
+//            $('#libraryPartList option[title="' + $(this).attr("title")+'"').remove();
         });
         $('#targetPartList').append($('#availableTargetPartList :selected'));
         sortPartLists();

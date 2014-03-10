@@ -112,10 +112,12 @@ public class RGraph {
         HashSet<RNode> seenNodes = new HashSet();
         ArrayList<RNode> queue = new ArrayList<RNode>();
         queue.add(this.getRootNode());
+        
         while (!queue.isEmpty()) {
             RNode current = queue.get(0);
             seenNodes.add(current);
             queue.remove(0);
+            
             Part toAdd = coll.getPart(current.getUUID(), true);
             if (toAdd != null) {
                 if (current.getVector() != null) {
@@ -125,6 +127,7 @@ public class RGraph {
                     toReturn.put(toAdd, null);
                 }
             }
+            
             for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
                     queue.add(neighbor);
@@ -999,7 +1002,7 @@ public class RGraph {
 
                 //Turn direction of glyph in reverse if reverse direction
                 if (!direction.isEmpty()) {
-                    dir = direction.get(i);
+                    dir = direction.get(i).trim();
                     if ("-".equals(dir)) {
                         pigeonLine.append("<");
                     }

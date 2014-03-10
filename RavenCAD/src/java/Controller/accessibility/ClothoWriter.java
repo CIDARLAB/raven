@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import Controller.datastructures.*;
 import java.util.HashMap;
+import java.util.Date;
 
 /**
  * Provides utility methods for exporting Clotho composite parts
@@ -29,7 +30,7 @@ public class ClothoWriter {
     /**
      * Generate Clotho parts with uuids from intermediates without uuids *
      */
-    public void nodesToClothoPartsVectors(Collector coll, RGraph graph, HashMap<Part, Vector> partVectorHash, HashMap<Integer, Vector> stageVectors, String method) throws Exception {
+    public void nodesToClothoPartsVectors(Collector coll, RGraph graph, HashMap<Part, Vector> partVectorHash, HashMap<Integer, Vector> stageVectors, String method, String user) throws Exception {
         String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
 
         ArrayList<RNode> basicNodes = new ArrayList<RNode>();
@@ -78,7 +79,8 @@ public class ClothoWriter {
                 if (currentNode.getUUID() == null) {
 
                     //Get new intermediate name
-                    String partName = nameRoot + "_intermediate" + Math.random() * 999999999;
+                    Date date = new Date();
+                    String partName = nameRoot + "_intermediate_" + user + "_" +  date.toString();
                     partName = partName.replaceAll("\\.", "");
                     if (partName.length() > 255) {
                         partName = partName.substring(0, 255);
@@ -86,7 +88,7 @@ public class ClothoWriter {
 
                     //If there's overhangs, add search tags
                     Part newPart = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
-                    newPart.addSearchTag("Type: composite");
+                    newPart.addSearchTag("Type: plasmid");
                     currentNode.setName(partName);
                     newPart = newPart.saveDefault(coll);
                     currentNode.setUUID(newPart.getUUID());
@@ -102,14 +104,15 @@ public class ClothoWriter {
                     ArrayList<String> tags = new ArrayList<String>();
                     tags.add("LO: " + currentNode.getLOverhang());
                     tags.add("RO: " + currentNode.getROverhang());
-                    tags.add("Type: " + currentType);
+//                    tags.add("Type: " + currentType);
+                    tags.add("Type: plasmid");
                     tags.add("Direction: " + currentNode.getDirection());
                     tags.add("Scars: " + currentNode.getScars());
-                    ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(currentNode.getName(), false);
+                    ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(currentNode.getName(), true);
                     if (!allPartsWithName.isEmpty()) {
                         seq = allPartsWithName.get(0).getSeq();
                     }
-                    currentPart = coll.getExactPart(currentNode.getName(), seq, tags, true);
+                    currentPart = coll.getExactPart(null, seq, tags, true);
                     
 //                    Part currentPart = coll.getPart(currentNode.getUUID(), true);
 //                    ArrayList<String> sTags = currentPart.getSearchTags();
@@ -260,6 +263,8 @@ public class ClothoWriter {
                         newPart.addSearchTag("Type: " + type);
                         newPart = newPart.saveDefault(coll);
                         currentNode.setUUID(newPart.getUUID());
+                    } else {
+                        currentNode.setUUID(currentPart.getUUID());
                     }
                 }
 
