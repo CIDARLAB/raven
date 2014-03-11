@@ -118,7 +118,6 @@ public class ClothoWriter {
                     if (currentPart == null) {
 
                         currentPart = coll.getPart(currentNode.getUUID(), true);
-//                        currentNode.setDirection(currentPart.getDirections());
                         
                         //If a new part must be created
                         Part newPart;
@@ -235,6 +234,7 @@ public class ClothoWriter {
                             }
                         }
 
+                        //Add scars tag
                         if (!currentNode.getScars().isEmpty()) {
                             newPart.addSearchTag("Scars: " + currentNode.getScars().toString());
                         }
@@ -242,13 +242,9 @@ public class ClothoWriter {
                         newPart.addSearchTag("Type: " + type2);
                         newPart = newPart.saveDefault(coll);
                         currentNode.setUUID(newPart.getUUID());
+                        currentPart = newPart;
                     } else {
                         currentNode.setUUID(currentPart.getUUID());
-                        
-                        //Search for existing part pairing with a vector - get same part, composite version to get the right match
-                        tags.remove("Type: plasmid");
-                        tags.add("Type: composite");
-                        currentPart = coll.getExactPart(null, seq, tags, true);
                     }
                 }
 
@@ -266,7 +262,7 @@ public class ClothoWriter {
                     }
                                         
                     int level = vector.getLevel();
-                    Vector existingVec = RavenController._compPartsVectors.get(currentPart);
+                    Vector existingVec = RavenController._partsVectors.get(currentPart);
                     Integer nextLevel = 0;
                     if (stageVectors.size() > 1) {
                         nextLevel = (level % stageVectors.size())+1;

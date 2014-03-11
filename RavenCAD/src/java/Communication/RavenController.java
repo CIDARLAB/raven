@@ -505,7 +505,7 @@ public class RavenController {
 
                 }
                 String vectorName = "";
-                Vector v = _compPartsVectors.get(p);
+                Vector v = _partsVectors.get(p);
                 if (v != null) {
                     vectorName = v.getName();
                 }
@@ -916,16 +916,19 @@ public class RavenController {
 
                 //Library logic - if the pasmid is in the library, add a composite part, which is different from a plasmid
                 if (!tokens[0].trim().isEmpty()) {
-                    Part newComposite = Part.generateComposite(composition, name);                   
-                    newComposite.addSearchTag("Direction: " + directions);
-                    newComposite.addSearchTag("LO: " + leftOverhang);
-                    newComposite.addSearchTag("RO: " + rightOverhang);
-                    newComposite.addSearchTag("Type: composite");
-                    newComposite.addSearchTag("Scars: " + scars);
-                    _compPartsVectors.put(newComposite, vector);
-                    newComposite = newComposite.saveDefault(_collector);
-                    newComposite.setTransientStatus(false);
-                    _partLibrary.add(newComposite);
+                    _partsVectors.put(newPlasmid, vector);
+                    
+                    if (composition.size() > 1) {
+                        Part newComposite = Part.generateComposite(composition, name);
+                        newComposite.addSearchTag("Direction: " + directions);
+                        newComposite.addSearchTag("LO: " + leftOverhang);
+                        newComposite.addSearchTag("RO: " + rightOverhang);
+                        newComposite.addSearchTag("Type: composite");
+                        newComposite.addSearchTag("Scars: " + scars);                    
+                        newComposite = newComposite.saveDefault(_collector);
+                        newComposite.setTransientStatus(false);
+                        _partLibrary.add(newComposite);
+                    }                   
                 }
 
             } catch (NullPointerException e) {
@@ -1143,7 +1146,7 @@ public class RavenController {
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result, _compPartsVectors, _stageVectors, method, _user);
+                writer.nodesToClothoPartsVectors(_collector, result, _partsVectors, _stageVectors, method, _user);
             }
         }        
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
@@ -1154,7 +1157,7 @@ public class RavenController {
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
                 //method call for deprecated weyekin image
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _compPartsVectors, targetRootNodes, scarless, method));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _partsVectors, targetRootNodes, scarless, method));
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
@@ -1309,7 +1312,7 @@ public class RavenController {
     }
     //FIELDS
     private HashSet<Part> _goalParts = new HashSet<Part>();//key: target part, value: composition
-    public static HashMap<Part, Vector> _compPartsVectors = new HashMap<Part, Vector>();
+    public static HashMap<Part, Vector> _partsVectors = new HashMap<Part, Vector>();
     private HashMap<Integer, Double> _efficiency = new HashMap<Integer, Double>();
     private HashSet<String> _required = new HashSet<String>();
     private HashSet<String> _recommended = new HashSet<String>();
