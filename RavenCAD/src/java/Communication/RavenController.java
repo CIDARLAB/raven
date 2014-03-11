@@ -327,6 +327,7 @@ public class RavenController {
                 }
 
                 composition = composition.substring(2);
+                partsListBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
                 configBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             }
             partList = partList
@@ -1192,6 +1193,7 @@ public class RavenController {
         WeyekinPoster.postMyVision();
         String imageURL = "";
         imageURL = WeyekinPoster.getmGraphVizURI().toString();
+//        String imageURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2Du60RHLtNV9OG-ww7HG3srhWq3VDa3RXmA4pB0SyorO8dTrBUg";
         JSONObject toReturn = new JSONObject();
         toReturn.put("images", imageURL);
         return toReturn;
