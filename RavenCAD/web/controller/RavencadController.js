@@ -374,7 +374,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var libraryVectorListBody = '<select id="libraryVectorList" multiple="multiple" class="fixedHeight">';
         $.each(_data["result"], function() {
 //            var comp = this["Composition"];
-            if (this["Type"] === "plasmid") {
+            if (this["Type"] === "plasmid" && this["Composition"].split(",").length>2) {
                 targetListBody = targetListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else if (this["Type"] === "vector") {
                 libraryVectorListBody = libraryVectorListBody + '<option title="' + this["Name"] + '|' + this["LO"] + '|' + this["RO"] + '" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
@@ -1027,19 +1027,28 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var redesign = function(originalDesignNumber) {
         if (canRun) {
             var currentDesignCount = originalDesignNumber;
+            //switch tab to parts list
+            $('#resultTabsHeader' + currentDesignCount + ' li.active').removeClass("active");
+            $('#resultTabsHeader' + currentDesignCount + ' li:nth-child(3)').addClass('active');
+            $('#partsListTab' + currentDesignCount).addClass('active');
             //change button text
-            $('#redesignButton'+currentDesignCount).text("Redesign")
-            var targets = _runParameters[originalDesignNumber]["targets"]
-            alert("targets "+targets)
+            $('#redesignButton' + currentDesignCount).text("Redesign");
+            //bind new function
+            $('#redesignButton' + currentDesignCount).unbind();
+            $('#redesignButton' + currentDesignCount).click(function() {
+                alert('switching back')
+                var targets = _runParameters[originalDesignNumber]["targets"]
+
+            });
+
             //create new html for parts list
             var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Failure/Success</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
             $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
 //            var type = $(this).find('td:nth-child(6)').text().toLowerCase();
                 var uuid = $(this).find('td:nth-child(2)').text();
-
                 var isGoalPart = $.inArray(uuid, targets);
                 if (isGoalPart === -1) {
-                    redesignPartsList = redesignPartsList + '<tr><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Unattempted</button></td>';
+                    redesignPartsList = redesignPartsList + '<tr val="'+$(this).attr("val")+'"><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Unattempted</button></td>';
                     $(this).find('td').each(function(key, value) {
                         if (key < 7) {
                             var cellData = $(this).text();
