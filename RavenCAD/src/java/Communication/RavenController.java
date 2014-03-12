@@ -363,8 +363,8 @@ public class RavenController {
                         type = tags.get(k).substring(6);
                     }
                 }
-                partsListBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + "," + type + "," + resistance + "," + level);
-                configBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + "," + type + "," + resistance + "," + level);
+                partsListBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + "," + type + "," + resistance + "," + level + "," + v.getVector() + "," + v.getComposition());
+                configBufferedWriter.write("\nx," + v.getName() + "," + v.getSeq() + "," + LO + "," + RO + "," + type + "," + resistance + "," + level + "," + v.getVector() + "," + v.getComposition());
                 partList = partList + "{\"uuid\":\"" + v.getUUID()
                         + "\",\"Name\":\"" + v.getName()
                         + "\",\"Sequence\":\"" + v.getSeq()

@@ -1089,17 +1089,11 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 "bScrollCollapse": true
             });
 
-            $('#redesignButton' + currentDesignCount).click(function() {
+            $('#redesignButton' + currentDesignCount).click(function(event) {
 
-//                event.preventDefault();
-////                _destination = $(this).attr("href");
-//                $('#redesignModal').modal(); 
-//                
-//                
-//                $('button#redesignModalButton').click(function() {
-//                    window.location.replace(_destination);
-//                });
-                
+                event.preventDefault();
+                $('#redesignModal').modal(); 
+
                 hideImage(currentDesignCount)
                 $('#designTabHeader a:first').tab('show');
                 var designNumber = $(this).attr("name");
@@ -1131,7 +1125,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                         var toForbidF = "";
                         for (var toForb in toForbidS) {
                             var forb = toForbidS[toForb];
-                            var tokens = req.split("|");
+                            var tokens = forb.split("|");
                             toForbidF = toForbidF + tokens[0];
                             toForbidF = toForbidF + "|" + tokens[tokens.length-1] + ",";
                         }
