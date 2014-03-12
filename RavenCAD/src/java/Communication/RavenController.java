@@ -963,8 +963,37 @@ public class RavenController {
             for (int i = 0; i < partIDs.length; i++) {
                 Part p = _collector.getPart(partIDs[i], true);
                 if (p != null) {
+                    
+                    if (p.isTransient()) {
+                        
+                        //Make a new basic part for single-part composition plasmids, new composite part if for multi-composition plasmids
+                    if (p.getComposition().size() == 1) {
+                        Part newBasicPart = Part.generateBasic(p.getName(), p.getSeq(), p.getComposition().get(0));
+                        newBasicPart.addSearchTag("Type: " + p.getComposition().get(0).getType());
+                        newBasicPart.addSearchTag("Direction: " + p.getDirections());
+                        newBasicPart.addSearchTag("LO: " + p.getLeftOverhang());
+                        newBasicPart.addSearchTag("RO: " + p.getRightOverhang());
+                        newBasicPart.addSearchTag("Scars: []");
+                        _partLibrary.add(newBasicPart);
+                        newBasicPart.saveDefault(_collector);
+                        newBasicPart.setTransientStatus(false);
+                        
+                    } else {                       
+                        
+                        Part newComposite = Part.generateComposite(p.getComposition(), p.getName());
+                        newComposite.addSearchTag("Direction: " + p.getDirections());
+                        newComposite.addSearchTag("LO: " + p.getLeftOverhang());
+                        newComposite.addSearchTag("RO: " + p.getRightOverhang());
+                        newComposite.addSearchTag("Type: composite");
+                        newComposite.addSearchTag("Scars: " + p.getScars());                    
+                        newComposite = newComposite.saveDefault(_collector);
+                        newComposite.setTransientStatus(false);
+                        _partLibrary.add(newComposite);
+                    }
+                    
                     p.setTransientStatus(false);
                     toSaveParts.add(p);
+                    }
                 }
             }
         }
@@ -1153,10 +1182,9 @@ public class RavenController {
         getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-                writer.fixCompositeUUIDs(_collector, result);
+//                writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                //method call for deprecated weyekin image
                 graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _partsVectors, targetRootNodes, scarless, method));
             }
         }

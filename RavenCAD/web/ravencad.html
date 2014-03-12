@@ -93,7 +93,7 @@
                                                                 <h5>Assembly Efficiency</h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
-                                                                        <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
                                                                         <tbody>
                                                                             <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         </tbody>
@@ -119,7 +119,7 @@
                                                                 <h5>Assembly Efficiency</h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
-                                                                        <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
                                                                         <tbody>
                                                                             <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                             <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
@@ -152,7 +152,7 @@
                                                                 <h5>Assembly Efficiency</h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
-                                                                        <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
                                                                         <tbody>
                                                                             <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                             <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
@@ -185,7 +185,7 @@
                                                                 <h5>Assembly Efficiency</h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
-                                                                        <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
                                                                         <tbody>
                                                                             <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                             <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
@@ -219,7 +219,7 @@
                                                                 <h5>Assembly Efficiency</h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
-                                                                        <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
                                                                         <tbody>
                                                                             <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                             <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
@@ -249,7 +249,7 @@
                                                             <h5>Assembly Efficiency</h5>
                                                             <div>
                                                                 <table class="table table-bordered table-condensed">
-                                                                    <thead><tr><th># of Parts</th><th>Efficiency</th></tr></thead>
+                                                                    <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
                                                                     <tbody>
                                                                         <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
@@ -492,6 +492,18 @@
             <div class="modal-footer">
                 <button id="saveAllModalButton" class="btn btn-success" aria-hidden="true">Save all parts</button>
                 <button id="discardModalButton" class="btn btn-danger" aria-hidden="true">Discard parts</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            </div>
+        </div>
+        <div id="redesignModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="navigateLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="redesignLabel">Saving Parts to Library for Re-Design</h4>
+            </div>
+            <div class="modal-body">
+                <p>Successful parts from this assembly will be save to the working library. Do you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="redesignModalButton" class="btn btn-success" aria-hidden="true">OK</button>
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
             </div>
         </div>

@@ -45,7 +45,7 @@ public class RMoClo extends RGeneral {
         ArrayList<Part> goalParts = new ArrayList<Part>(gps);
 
         //Create hashMem parameter for createAsmGraph_sgp() call
-        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, required, recommended); //key: composiion, direction || value: library graph
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended); //key: composiion, direction || value: library graph
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps, false);

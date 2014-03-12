@@ -373,15 +373,15 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var libraryPartListBody = '<select id="libraryPartList" multiple="multiple" class="fixedHeight">';
         var libraryVectorListBody = '<select id="libraryVectorList" multiple="multiple" class="fixedHeight">';
         $.each(_data["result"], function() {
-//            var comp = this["Composition"];
             //second part guarantees that only composite parts are shown
-            if (this["Type"] === "plasmid" && this["Composition"].split(",").length > 1) {
+//            if (this["Type"] === "plasmid" && this["Composition"].split(",").length > 1) {
+            if (this["Type"] === "plasmid") {
                 targetListBody = targetListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else if (this["Type"] === "vector") {
                 libraryVectorListBody = libraryVectorListBody + '<option title="' + this["Name"] + '|' + this["LO"] + '|' + this["RO"] + '" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else if (this["Type"] === "destination vector") {
                 libraryVectorListBody = libraryVectorListBody + '<option title="' + this["Name"] + '|' + this["LO"] + '|' + this["RO"] + '" class="vector ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
-            } else if (this["Type" === "composite"]) {
+            } else if (this["Type"] === "composite") {
                 libraryPartListBody = libraryPartListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="composite ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
             } else {
                 libraryPartListBody = libraryPartListBody + '<option title="' + this["Composition"] + '|' + this["LO"] + '|' + this["RO"] + '" class="basic ui-state-default" id="' + this["uuid"] + '">' + this["Name"] + '</option>';
@@ -827,7 +827,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             }
             $('#partsListTable' + designNumber + ' tbody tr').each(function() {
                 var tokens = $(this).attr("val").split("|");
-                if (tokens[0].toLowerCase() === "vector") {
+                if (tokens[0].toLowerCase() === "vector" || tokens[0].toLowerCase() === "destination vector") {
                     vectorIDs.push(tokens[1]);
                 } else {
                     partIDs.push(tokens[1]);
@@ -944,7 +944,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 }
                 $('#partsListTable' + designNumber + ' tbody tr').each(function() {
                     var tokens = $(this).attr("val").split("|");
-                    if (tokens[0].toLowerCase() === "vector") {
+                    if (tokens[0].toLowerCase() === "vector" || tokens[0].toLowerCase() === "destination vector") {
                         vectorIDs.push(tokens[1]);
                     } else {
                         partIDs.push(tokens[1]);
@@ -1046,13 +1046,29 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
             //create new html for parts list
             var redesignPartsList = '<table id="partsListTable' + currentDesignCount + '" class="table"><thead><tr><th>Failure/Success</th><th>UUID</th><th>Name</th><th>LO</th><th>RO</th><th>Type</th><th>Vector</th><th>Composition</th></tr><thead><tbody>';
+            var targets = ""; //goal parts
+            $('#targetPartList option').each(function() {
+                targets = targets + $(this).attr("id") + ",";
+            });
             $('#partsListTable' + originalDesignNumber + ' tbody tr').each(function() {
-                var composition = $(this).find('td:nth-child(7)').text().toLowerCase();
-                var uuid = $(this).find('td:nth-child(2)').text();
+//                var composition = $(this).find('td:nth-child(7)').text().toLowerCase();
+                var type = $(this).find('td:nth-child(5)').text().toLowerCase();
+                var uuid = $(this).find('td:nth-child(1)').text();
                 var isGoalPart = $.inArray(uuid, targets);
                 //render only composite parts
-                if (isGoalPart === -1 && composition.split(",").length > 1) {
+//                if (isGoalPart === -1 && composition.split(",").length > 1) {
+                if (isGoalPart === -1 && type !== "vector" && type !== "destination vector") {    
                     redesignPartsList = redesignPartsList + '<tr val="' + $(this).attr("val") + '"><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Unattempted</button></td>';
+                    $(this).find('td').each(function(key, value) {
+                        if (key < 7) {
+                            var cellData = $(this).text();
+                            cellData = cellData.replace(/\|[^,\|]+\|[^\|,]+\|/g, "|");
+                            redesignPartsList = redesignPartsList + '<td>' + cellData + '</td>';
+                        }
+                    });
+                    redesignPartsList = redesignPartsList + '</tr>';
+                } else if (type === "destination vector") {
+                    redesignPartsList = redesignPartsList + '<tr val="' + $(this).attr("val") + '"><td><button val="' + currentDesignCount + '" class="btn-success reqForbidButton" name="succeeded">Succeeded</button></td>';
                     $(this).find('td').each(function(key, value) {
                         if (key < 7) {
                             var cellData = $(this).text();
@@ -1074,6 +1090,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
 
             $('#redesignButton' + currentDesignCount).click(function() {
+
+//                event.preventDefault();
+////                _destination = $(this).attr("href");
+//                $('#redesignModal').modal(); 
+//                
+//                
+//                $('button#redesignModalButton').click(function() {
+//                    window.location.replace(_destination);
+//                });
+                
                 hideImage(currentDesignCount)
                 $('#designTabHeader a:first').tab('show');
                 var designNumber = $(this).attr("name");
@@ -1090,23 +1116,45 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $('#partsListTable' + designNumber + ' tbody tr').each(function() {
                     var failSucceed = $(this).find('td').first().find("button").attr("name");
                     var type = $(this).find('td:nth-child(6)').text().toLowerCase();
-                    if (type === "plasmid" && failSucceed === "failed") {
-                        var toForbid = '[' + $(this).find('td:last').text() + ']';
+                    var composition = $(this).find('td:nth-child(8)').text().toLowerCase();
+                    
+                    var uuid = $(this).find('td:nth-child(2)').text();
+                    
+                    if (type === "vector" || type === "destination vector") {
+                        toSaveVectors.push(uuid);
+                        toAddToVectorLibrary = toAddToVectorLibrary + uuid + ',';
+                    }
+                    
+                    if (type === "plasmid" && failSucceed === "failed" && composition.split(",").length > 1) {
+                        var toForbid = $(this).find('td:last').text();
+                        var toForbidS = toForbid.split(",");
+                        var toForbidF = "";
+                        for (var toForb in toForbidS) {
+                            var forb = toForbidS[toForb];
+                            var tokens = req.split("|");
+                            toForbidF = toForbidF + tokens[0];
+                            toForbidF = toForbidF + "|" + tokens[tokens.length-1] + ",";
+                        }
+                        toForbid = "[" + toForbidF.substring(0, toForbidF.length-1) + "]";
                         forbid = forbid + toForbid + ";";
-                    } else if (type === "plasmid" && failSucceed === "succeeded") {
-                        var toRequire = '[' + $(this).find('td:last').text() + ']';
+                    } else if (type === "plasmid" && failSucceed === "succeeded" && composition.split(",").length > 1) {
+                        var toRequire = $(this).find('td:last').text();
+                        var toRequireS = toRequire.split(",");
+                        var toRequireF = "";
+                        for (var toReq in toRequireS) {
+                            var req = toRequireS[toReq];
+                            var tokens = req.split("|");
+                            toRequireF = toRequireF + tokens[0];
+                            toRequireF = toRequireF + "|" + tokens[tokens.length-1] + ",";
+                        }
+                        toRequire = "[" + toRequireF.substring(0, toRequireF.length-1) + "]";
                         require = require + toRequire + ";";
                     }
 
-                    if (failSucceed === "succeeded") {
+                    if (failSucceed === "succeeded" && type !== "vector" && type !== "destination vector") {
                         var uuid = $(this).find('td:nth-child(2)').text();
-                        if (type === "vector") {
-                            toSaveVectors.push(uuid);
-                            toAddToVectorLibrary = toAddToVectorLibrary + uuid + ',';
-                        } else {
-                            toAddToPartLibrary = toAddToPartLibrary + uuid + ',';
-                            toSaveParts.push(uuid);
-                        }
+                        toAddToPartLibrary = toAddToPartLibrary + uuid + ',';
+                        toSaveParts.push(uuid);                        
                     }
                 });
                 toAddToPartLibrary = toAddToPartLibrary.substring(0, toAddToPartLibrary.length - 1);
@@ -1117,13 +1165,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 redesignInput["designCount"] = (parseInt(redesignInput["designCount"]) + 1) + "";
                 redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
                 redesignInput["required"] = redesignInput["required"] + require;
-                redesignInput["partLibrary"] = redesignInput["partLibrary"] + toAddToPartLibrary;
-                redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + toAddToVectorLibrary;
+                redesignInput["partLibrary"] = redesignInput["partLibrary"] + "," + toAddToPartLibrary;
+                redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + "," + toAddToVectorLibrary;                
                 _runParameters[designNumber] = redesignInput;
-                interpretParams(redesignInput)
-                updateSummary()
-
-            });
+                interpretParams(redesignInput);                
+                refreshData();
+                updateSummary();
+                   });
+//            });
 
             $('.reqForbidButton').click(function() {
                 if ($(this).attr("name") === "neither") {
@@ -1173,23 +1222,27 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $("button#forbidButton").click();
         });
         //populate recommended
-        var forbidden = params["forbidden"].split(";");
-        $.each(forbidden, function(index, value) {
+        var recommended = params["recommended"].split(";");
+        $.each(recommended, function(index, value) {
             $("#intermediatesTypeAhead").val(value);
-            $("button#forbidButton").click();
+            $("button#recommendButton").click();
         });
         //populate discouraged
-        var forbidden = params["forbidden"].split(";");
-        $.each(forbidden, function(index, value) {
+        var discouraged = params["discouraged"].split(";");
+        $.each(discouraged, function(index, value) {
             $("#intermediatesTypeAhead").val(value);
-            $("button#forbidButton").click();
+            $("button#discourageButton").click();
         });
         //populate target parts
         //could be annoying for users - don't do for now
 
         //populate library parts
-        //not exposed to user anymore - will have to be done in file
-        //this should be done already
+        var partIDs = params["partLibrary"].split(",");
+        var vectorIDs = params["vectorLibrary"].split(",");
+        var writeSQL = false;
+        $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
+            
+        });
 
         //switch to correct method
         $.each($('#methodTabHeader li'), function() {

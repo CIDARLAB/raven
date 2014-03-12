@@ -122,7 +122,7 @@ public class ClothoWriter {
                         //If a new part must be created
                         Part newPart;
                         if (currentPart.isBasic()) {
-                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), null);
+                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
                         } else {
 
                             //If a new composite part needs to be made

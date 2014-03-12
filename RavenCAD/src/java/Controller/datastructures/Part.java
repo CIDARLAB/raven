@@ -157,6 +157,17 @@ public class Part {
         }
         return toReturn;
     }
+    
+    public ArrayList<String> getScars() {
+        ArrayList<String> toReturn = new ArrayList();
+        for (String tag : this.searchTags) {
+            if (tag.startsWith("Scars:")) {
+                toReturn = new ArrayList(Arrays.asList(tag.substring(8, tag.length() - 1).split(",")));
+            }
+        }
+        return toReturn;
+    }
+    
     //Fields
     private ArrayList<Part> composition;
     private String name;
