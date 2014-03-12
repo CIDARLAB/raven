@@ -116,13 +116,16 @@ public class RavenServlet extends HttpServlet {
                 params.put("efficiency", request.getParameter("efficiency"));
                 params.put("primer", request.getParameter("primer"));
                 params.put("method", request.getParameter("method"));
+                
+                JSONObject paramsConfig = new JSONObject();
+                paramsConfig.put("recommended", request.getParameter("recommended"));
+                paramsConfig.put("required", request.getParameter("required"));
+                paramsConfig.put("forbidden", request.getParameter("forbidden"));
+                paramsConfig.put("discouraged", request.getParameter("discouraged"));
 
                 String[] targetIDs = request.getParameter("targets").split(",");
                 String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
                 String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
-
-//                String[] partLibraryIDs = new String[0];
-//                String[] vectorLibraryIDs = new String[0];
                 String[] recArray = request.getParameter("recommended").split(";");
                 String[] reqArray = request.getParameter("required").split(";");
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
@@ -198,7 +201,7 @@ public class RavenServlet extends HttpServlet {
 
                 String designCount = request.getParameter("designCount");
                 JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters, stageVectorHash);
-                JSONArray partsList = controller.generatePartsList(designCount, params.toString());
+                JSONArray partsList = controller.generatePartsList(designCount, paramsConfig.toString());
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();
                 System.out.println("Stats: " + statString);

@@ -743,7 +743,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         $('#resultTabs' + _designCount).append('<ul id="resultTabsHeader' + _designCount + '" class="nav nav-tabs">' +
                 '<li class="active"><a href="#imageTab_' + _designCount + '" data-toggle="tab" id="imageTabHeader_' + _designCount + '">Image</a></li>' +
                 '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="' + _designCount + '" href="#instructionTab' + _designCount + '" data-toggle="tab">Instructions</a></li>' +
-                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="' + _designCount + '" href="#partsListTab' + _designCount + '" data-toggle="tab">Parts List</a></li>' +
+                '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="' + _designCount + '" href="#partsListTab' + _designCount + '" data-toggle="tab">New Parts/Vectors</a></li>' +
                 '<li><a class="nonImageDesignTabHeader_' + _designCount + '" name="' + _designCount + '" href="#summaryTab' + _designCount + '" data-toggle="tab">Summary</a></li>' +
                 '<li><a href="#discardDialog' + _designCount + '" class="btn" role="button" val="notSaved" id="discardButton' + _designCount + '" name="' + _designCount + '">Discard Design</a></li>' +
                 '<li><a class="btn" id="redesignButton' + _designCount + '" name="' + _designCount + '">Mark Failures/Successes</a></li>' +
