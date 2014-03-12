@@ -986,7 +986,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#downloadParts' + currentDesignCount).attr("href", "data/" + user + "/partsList" + currentDesignCount + ".csv");
             $('#downloadPigeon' + currentDesignCount).attr("href", "data/" + user + "/pigeon" + currentDesignCount + ".txt");
             $('#downloadArcs' + currentDesignCount).attr("href", "data/" + user + "/arcs" + currentDesignCount + ".txt");
-            $('#downloadConfig' + currentDesignCount).attr("href", "data/" + user + "/config" + currentDesignCount + ".txt");
+            $('#downloadConfig' + currentDesignCount).attr("href", "data/" + user + "/config" + currentDesignCount + ".csv");
 
             $('#designSummaryArea').html("<p>A summary of your assembly plan will appear here</p>");
             //render parts list
