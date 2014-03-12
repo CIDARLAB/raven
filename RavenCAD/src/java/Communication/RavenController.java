@@ -1161,20 +1161,20 @@ public class RavenController {
 
         Statistics.start();
         boolean scarless = false;
-        if (method.equals("biobricks")) {
+        if (method.equalsIgnoreCase("biobricks")) {
             _assemblyGraphs = runBioBricks();
-        } else if (method.equals("cpec")) {
+        } else if (method.equalsIgnoreCase("cpec")) {
             _assemblyGraphs = runCPEC();
             scarless = true;
-        } else if (method.equals("gibson")) {
+        } else if (method.equalsIgnoreCase("gibson")) {
             _assemblyGraphs = runGibson();
             scarless = true;
-        } else if (method.equals("goldengate")) {
+        } else if (method.equalsIgnoreCase("goldengate")) {
             _assemblyGraphs = runGoldenGate();
             scarless = true;
-        } else if (method.equals("moclo")) {
+        } else if (method.equalsIgnoreCase("moclo")) {
             _assemblyGraphs = runMoClo();
-        } else if (method.equals("slic")) {
+        } else if (method.equalsIgnoreCase("slic")) {
             _assemblyGraphs = runSLIC();
             scarless = true;
         }
@@ -1192,17 +1192,17 @@ public class RavenController {
 
         //Initialize statistics
         boolean overhangValid = false;
-        if (method.equals("biobricks")) {
+        if (method.equalsIgnoreCase("biobricks")) {
             overhangValid = RBioBricks.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("cpec")) {
+        } else if (method.equalsIgnoreCase("cpec")) {
             overhangValid = RCPEC.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("gibson")) {
+        } else if (method.equalsIgnoreCase("gibson")) {
             overhangValid = RGibson.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("goldengate")) {
+        } else if (method.equalsIgnoreCase("goldengate")) {
             overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("moclo")) {
+        } else if (method.equalsIgnoreCase("moclo")) {
             overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
-        } else if (method.equals("slic")) {
+        } else if (method.equalsIgnoreCase("slic")) {
             overhangValid = RSLIC.validateOverhangs(_assemblyGraphs);
         }
         boolean valid = validateGraphComposition();

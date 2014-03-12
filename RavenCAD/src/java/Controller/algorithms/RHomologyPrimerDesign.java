@@ -28,7 +28,22 @@ public class RHomologyPrimerDesign {
         boolean missingSequence = false;
         boolean missingRightSequence = false;
         
-        Part currentPart = coll.getPart(node.getUUID(), true);
+//        Part currentPart = coll.getPart(node.getUUID(), true);
+        String seq = "";
+        ArrayList<String> tags = new ArrayList<String>();
+        String type = "";
+        tags.add("LO: " + node.getLOverhang());
+        tags.add("RO: " + node.getROverhang());
+        tags.add("Direction: " + node.getDirection());
+        tags.add("Scars: " + node.getScars());
+        ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
+        if (!allPartsWithName.isEmpty()) {
+            seq = allPartsWithName.get(0).getSeq();
+            type = allPartsWithName.get(0).getType();
+        }
+        tags.add("Type: " + type);
+        Part currentPart = coll.getExactPart(null, seq, tags, true);
+        
         Part leftNeighbor;
         Part rightNeighbor;
         Part rootPart = coll.getPart(root.getUUID(), true);

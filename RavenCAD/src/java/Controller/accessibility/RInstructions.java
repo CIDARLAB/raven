@@ -216,6 +216,7 @@ public class RInstructions {
             for (RVector vector : vectorsThisRoot) {
 
                 Vector currentVector = coll.getVector(vector.getUUID(), true);
+                String vecName = currentVector.getName();
 
                 //Design primers for new vectors
                 if (newVectors.contains(vector)) {
@@ -253,18 +254,35 @@ public class RInstructions {
                             //pair of oligos used for a part
                             vectorOligoNamesForNode.add(forwardOligoName);
                             vectorOligoNamesForNode.add(reverseOligoName);
-
                             vectorOligoHash.put(vector.getVectorKey("+"), vectorOligoNamesForNode);
-                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+
+                            //Correct for desination vectors with MoClo and GoldenGate
+                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                                instructions = instructions + "\nPCR lacZ with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            } else {
+                                instructions = instructions + "\nPCR " + vecName + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            }
 
                         } else {
                             ArrayList<String> oligoHash = vectorOligoHash.get(vector.getVectorKey("+"));
-                            instructions = instructions + "\nPCR " + currentVector.getName() + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            
+                            //Correct for desination vectors with MoClo and GoldenGate
+                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                                instructions = instructions + "\nPCR lacZ with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            } else {
+                                instructions = instructions + "\nPCR " + vecName + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            }
                         }
                     } else {
-                        instructions = instructions + "\nPCR " + currentVector.getName() + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                        
+                        //Correct for desination vectors with MoClo and GoldenGate
+                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                            instructions = instructions + "\nPCR lacZ to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                        } else {
+                            instructions = instructions + "\nPCR " + vecName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                        }
                     }
-                }
+                }          
             }
 
             instructions = instructions + "\n\n";

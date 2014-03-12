@@ -309,7 +309,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 rec = rec.substring(0, rec.length - 1);
                 targets = targets.substring(0, targets.length - 1);
                 partLibrary = partLibrary.substring(0, partLibrary.length - 1);
-                _method = _method.toLowerCase().replace(/\s+/g, '');
+                _method = _method.replace(/\s+/g, '');
 
                 //primer parameters
                 var oligoNameRoot = $('input#oligoNameRoot').val();

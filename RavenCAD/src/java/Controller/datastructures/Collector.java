@@ -102,16 +102,13 @@ public class Collector {
                 if (allowTransient || !p.isTransient()) {
                     queryTags = new HashSet(tags);
                     currentTags = new HashSet(p.getSearchTags());
-//                    System.out.println("exist: " + currentTags);
                     if (currentTags.equals(queryTags) && p.getSeq().equals(seq)) {
                         toReturn = p;
-//                        System.out.println("returning: " + toReturn);
                         return toReturn;
                     }
                 }
             }
         }
-//        System.out.println("returning: " + toReturn);
         return toReturn;
     }
 

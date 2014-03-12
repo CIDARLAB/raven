@@ -234,11 +234,7 @@ public class ClothoWriter {
                             }
                         }
 
-                        //Add scars tag
-                        if (!currentNode.getScars().isEmpty()) {
-                            newPart.addSearchTag("Scars: " + currentNode.getScars().toString());
-                        }
-
+                        newPart.addSearchTag("Scars: " + currentNode.getScars().toString());
                         newPart.addSearchTag("Type: " + type2);
                         newPart = newPart.saveDefault(coll);
                         currentNode.setUUID(newPart.getUUID());
