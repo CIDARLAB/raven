@@ -230,18 +230,24 @@ public class RavenController {
         ArrayList<Part> usedParts = new ArrayList<Part>();
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
         HashMap<Part, Vector> partVectorHash = new HashMap();
+        ArrayList<Part> existingLibraryParts = _collector.getAllParts(false);
+        ArrayList<Vector> existingLibraryVectors = _collector.getAllVectors(false);
+        
         for (RGraph result : _assemblyGraphs) {
             HashMap<Part, Vector> partVectorsInGraph = result.getPartVectorsInGraph(_collector);
             partVectorHash.putAll(partVectorsInGraph);
             for (Part p : partVectorsInGraph.keySet()) {
-
                 if (!usedParts.contains(p)) {
-                    usedParts.add(p);
+                    if (!existingLibraryParts.contains(p)) {
+                        usedParts.add(p);
+                    }
                 }
             }
             for (Vector v : partVectorsInGraph.values()) {
                 if (!usedVectors.contains(v)) {
-                    usedVectors.add(v);
+                    if (!existingLibraryVectors.contains(v)) {
+                        usedVectors.add(v);
+                    }
                 }
             }
         }
@@ -256,8 +262,7 @@ public class RavenController {
         BufferedWriter configBufferedWriter = new BufferedWriter(configFileWriter);
         configBufferedWriter.write("Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition");
         
-        //Add existing parts to output files
-        ArrayList<Part> existingLibraryParts = _collector.getAllParts(false);
+        //Add existing parts to output files        
         for (Part libPart : existingLibraryParts) {
             String composition = "";
             String vectorName = "";
@@ -300,7 +305,6 @@ public class RavenController {
         }
         
         //Add exiting vectors to output also
-        ArrayList<Vector> existingLibraryVectors = _collector.getAllVectors(false);
         for (Vector libVec : existingLibraryVectors) {
            
             String RO = libVec.getRightOverhang();
