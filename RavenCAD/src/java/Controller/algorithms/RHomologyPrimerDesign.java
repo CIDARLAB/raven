@@ -28,7 +28,6 @@ public class RHomologyPrimerDesign {
         boolean missingSequence = false;
         boolean missingRightSequence = false;
         
-//        Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = "";
         ArrayList<String> tags = new ArrayList<String>();
         String type = "";

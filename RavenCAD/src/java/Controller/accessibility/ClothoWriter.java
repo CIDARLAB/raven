@@ -33,6 +33,7 @@ public class ClothoWriter {
     public void nodesToClothoPartsVectors(Collector coll, RGraph graph, HashMap<Part, Vector> partVectorHash, HashMap<Integer, Vector> stageVectors, String method, String user) throws Exception {
         String nameRoot = coll.getPart(graph.getRootNode().getUUID(), true).getName();
 
+        Integer count = 1;
         ArrayList<RNode> basicNodes = new ArrayList<RNode>();
         ArrayList<RNode> stepNodes = new ArrayList<RNode>();
         ArrayList<ArrayList<RNode>> nodeOrder = new ArrayList<ArrayList<RNode>>();
@@ -80,23 +81,19 @@ public class ClothoWriter {
 
                     //Get new intermediate name
                     Date date = new Date();
-                    String partName = nameRoot + "_intermediate_" + user + "_" +  date.toString().replaceAll(" ", "");
+                    String partName = nameRoot + "_intermediate_" + count + "_" + user + "_" +  date.toString().replaceAll(" ", "");
+                    count++;
                     partName = partName.replaceAll("\\.", "");
                     if (partName.length() > 255) {
                         partName = partName.substring(0, 255);
                     }
 
                     //If there's overhangs, add search tags
-                    Part newPart = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
-                    String type = "plasmid";
-//                    if (stageVectors.get(0) == null) {
-//                        type = "composite";
-//                    }
-                    newPart.addSearchTag("Type: " + type);
-                    
+                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
+                    newPlasmid.addSearchTag("Type: plasmid");                    
                     currentNode.setName(partName);
-                    newPart = newPart.saveDefault(coll);
-                    currentNode.setUUID(newPart.getUUID());
+                    newPlasmid = newPlasmid.saveDefault(coll);
+                    currentNode.setUUID(newPlasmid.getUUID());
 
                 } else {
 
@@ -125,7 +122,7 @@ public class ClothoWriter {
                             newPlasmid = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
                             
                             //Make a new part for scarless assembly
-                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson")) {
+                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("goldengate")) {
                                 Part newBasic = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
                                 newBasic.addSearchTag("LO: " + LO);
                                 newBasic.addSearchTag("RO: " + RO);
@@ -473,18 +470,10 @@ public class ClothoWriter {
         }
 
         Part newPart = Part.generateComposite(newComposition, name);
-        if (!LO.isEmpty()) {
-            newPart.addSearchTag("LO: " + LO);
-        }
-        if (!RO.isEmpty()) {
-            newPart.addSearchTag("RO: " + RO);
-        }
-        if (!direction.isEmpty()) {
-            newPart.addSearchTag("Direction: " + direction);
-        }
-        if (!scars.isEmpty()) {
-            newPart.addSearchTag("Scars: " + scars);
-        }
+        newPart.addSearchTag("LO: " + LO);
+        newPart.addSearchTag("RO: " + RO);
+        newPart.addSearchTag("Direction: " + direction);
+        newPart.addSearchTag("Scars: " + scars);
         newPart = newPart.saveDefault(coll);
         return newPart;
     }

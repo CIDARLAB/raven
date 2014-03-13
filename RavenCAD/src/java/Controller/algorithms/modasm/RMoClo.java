@@ -266,7 +266,7 @@ public class RMoClo extends RGeneral {
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static String[] generateVectorPrimers(RVector vector, Collector coll) {
+    public static String[] generateVectorPrimers(RVector vector) {
 
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
         String vectorPrimerPrefix = "actagtg";

@@ -55,6 +55,8 @@ public class RInstructions {
 
             HashSet<RNode> l0NodesThisRoot = new HashSet<RNode>();
             HashSet<RVector> vectorsThisRoot = new HashSet<RVector>();
+            HashMap<RNode, String[]> fusionSites = new HashMap<RNode, String[]>();
+            HashMap<RVector, RNode> vecNodeMap = new HashMap<RVector, RNode>();
 
             //append header for each goal part
             instructions = instructions + "**********************************************"
@@ -65,6 +67,10 @@ public class RInstructions {
 
             while (!queue.isEmpty()) {
                 RNode currentNode = queue.get(0);
+                if (method.equalsIgnoreCase("GoldenGate")) {
+                    fusionSites = RGoldenGate.getFusionSites(currentNode, root, coll, fusionSites);
+                }
+                
                 queue.remove(0);
 
                 Part currentPart = coll.getPart(currentNode.getUUID(), true);
@@ -76,6 +82,7 @@ public class RInstructions {
                     RVector vector = currentNode.getVector();
                     if (vector != null) {
                         vectorsThisRoot.add(vector);
+                        vecNodeMap.put(vector, currentNode);
                         String vectorKey = vector.getVectorKey("+");
                         if (!libraryVectorKeys.contains(vectorKey)) {
                             newVectors.add(vector);
@@ -108,6 +115,7 @@ public class RInstructions {
                     String vectorKey = new String();
                     if (vector != null) {
                         vectorsThisRoot.add(vector);
+                        vecNodeMap.put(vector, currentNode);
                         vectorKey = vector.getVectorKey("+");
                         if (!libraryVectorKeys.contains(vectorKey)) {
                             newVectors.add(vector);
@@ -155,7 +163,6 @@ public class RInstructions {
 
                             String[] oligoNamesForNode = new String[2];
 
-
                             //Determine which kind of primers to generate
                             String[] oligos;
                             if (method.equalsIgnoreCase("MoClo")) {
@@ -163,8 +170,8 @@ public class RInstructions {
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
-                                String [] fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll);
-                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites, coll, meltingTemp, primerLength);
+                                fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll, fusionSites);
+                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, primerLength);
                             } else {
                                 oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength);
                             }
@@ -229,11 +236,12 @@ public class RInstructions {
                             //Determine which kind of primers to generate
                             String[] oligos = new String[2];
                             if (method.equalsIgnoreCase("MoClo")) {
-                                oligos = RMoClo.generateVectorPrimers(vector, coll);
+                                oligos = RMoClo.generateVectorPrimers(vector);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, primerLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
-                                oligos = RGoldenGate.generateVectorPrimers(vector, coll);
+                                RNode node = vecNodeMap.get(vector);
+                                oligos = RGoldenGate.generateVectorPrimers(vector, fusionSites.get(node));
                             }
 
                             String fwdOligo = oligos[0];
