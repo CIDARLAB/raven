@@ -120,9 +120,22 @@ public class ClothoWriter {
                         currentPart = coll.getPart(currentNode.getUUID(), true);
                         
                         //If a new part must be created
-                        Part newPart;
+                        Part newPlasmid;
                         if (currentPart.isBasic()) {
-                            newPart = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
+                            newPlasmid = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
+                            
+                            //Make a new part for scarless assembly
+                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson")) {
+                                Part newBasic = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
+                                newBasic.addSearchTag("LO: " + LO);
+                                newBasic.addSearchTag("RO: " + RO);
+                                newBasic.addSearchTag("Direction: " + currentNode.getDirection().toString());
+                                newBasic.addSearchTag("Scars: []");
+                                String type = currentNode.getType().toString();
+                                type = type.substring(1, type.length() - 1);
+                                newBasic.addSearchTag("Type: " + type);
+                                newBasic = newBasic.saveDefault(coll);
+                            }
                         } else {
 
                             //If a new composite part needs to be made
@@ -219,26 +232,17 @@ public class ClothoWriter {
                                 newComposition.add(exactPart);
                             }
 
-                            newPart = Part.generateComposite(newComposition, currentPart.getName());
+                            newPlasmid = Part.generateComposite(newComposition, currentPart.getName());
                         }
 
-                        newPart.addSearchTag("LO: " + LO);
-                        newPart.addSearchTag("RO: " + RO);
-                        newPart.addSearchTag("Direction: " + currentNode.getDirection().toString());
-
-                        String type2 = "plasmid";
-                        if (stageVectors.get(0) == null) {
-                            if (currentNode.getComposition().size() == 1) {
-                                type2 = currentNode.getType().toString();
-                                type2 = type2.substring(1, type2.length() - 1);
-                            }
-                        }
-
-                        newPart.addSearchTag("Scars: " + currentNode.getScars().toString());
-                        newPart.addSearchTag("Type: " + type2);
-                        newPart = newPart.saveDefault(coll);
-                        currentNode.setUUID(newPart.getUUID());
-                        currentPart = newPart;
+                        newPlasmid.addSearchTag("LO: " + LO);
+                        newPlasmid.addSearchTag("RO: " + RO);
+                        newPlasmid.addSearchTag("Direction: " + currentNode.getDirection().toString());
+                        newPlasmid.addSearchTag("Scars: " + currentNode.getScars().toString());
+                        newPlasmid.addSearchTag("Type: plasmid");
+                        newPlasmid = newPlasmid.saveDefault(coll);
+                        currentNode.setUUID(newPlasmid.getUUID());
+                        currentPart = newPlasmid;
                     } else {
                         currentNode.setUUID(currentPart.getUUID());
                     }

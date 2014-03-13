@@ -39,7 +39,13 @@ public class RHomologyPrimerDesign {
         ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
         if (!allPartsWithName.isEmpty()) {
             seq = allPartsWithName.get(0).getSeq();
-            type = allPartsWithName.get(0).getType();
+            for (int i = 0; i < allPartsWithName.size(); i++) {
+                type = allPartsWithName.get(i).getType();
+                if (!type.equalsIgnoreCase("plasmid")){
+                    break;
+                }
+            }
+            
         }
         tags.add("Type: " + type);
         Part currentPart = coll.getExactPart(null, seq, tags, true);
