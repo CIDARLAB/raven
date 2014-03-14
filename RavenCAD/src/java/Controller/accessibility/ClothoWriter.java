@@ -259,7 +259,7 @@ public class ClothoWriter {
                     }
                                         
                     int level = vector.getLevel();
-                    Vector existingVec = RavenController._partsVectors.get(currentPart);
+                    Vector existingVec = partVectorHash.get(currentPart);
                     Integer nextLevel = 0;
                     if (stageVectors.size() > 1) {
                         nextLevel = (level % stageVectors.size())+1;

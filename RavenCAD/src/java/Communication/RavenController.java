@@ -231,6 +231,24 @@ public class RavenController {
         ArrayList<Vector> usedVectors = new ArrayList<Vector>();
         HashMap<Part, Vector> partVectorHash = new HashMap();
         ArrayList<Part> existingLibraryParts = _collector.getAllParts(false);
+        
+        //Remove anything that is not a basic part without overhangs or a plasmid in the library
+        ArrayList<Part> toRemove = new ArrayList<Part>();
+        for (Part libPart : existingLibraryParts) {
+            if (!"plasmid".equals(libPart.getType())) {
+                if (!libPart.getLeftOverhang().isEmpty() || !libPart.getRightOverhang().isEmpty()) {
+                    toRemove.add(libPart);
+                } else if ("composite".equals(libPart.getType())) {
+                    toRemove.add(libPart);
+                }
+            } else {
+                if (!_libraryPartsVectors.containsKey(libPart)) {
+                    toRemove.add(libPart);
+                }
+            }
+        }
+        existingLibraryParts.removeAll(toRemove);
+        
         ArrayList<Vector> existingLibraryVectors = _collector.getAllVectors(false);
         
         for (RGraph result : _assemblyGraphs) {
@@ -239,6 +257,8 @@ public class RavenController {
             for (Part p : partVectorsInGraph.keySet()) {
                 if (!usedParts.contains(p)) {
                     if (!existingLibraryParts.contains(p)) {
+                        usedParts.add(p);
+                    } else if (existingLibraryParts.contains(p) && !_libraryPartsVectors.containsKey(p) && p.getType().equals("plasmid")) {
                         usedParts.add(p);
                     }
                 }
@@ -271,11 +291,11 @@ public class RavenController {
             //For basic parts
             if (libPart.isBasic()) {         
                 if (!libPart.getLeftOverhang().isEmpty() && !libPart.getRightOverhang().isEmpty()) {
-                    composition = libPart.getName() + "|" + libPart.getLeftOverhang() + "|" + libPart.getRightOverhang() + "|" + direction.get(0);
+                    composition = libPart.getComposition().get(0).getName() + "|" + libPart.getLeftOverhang() + "|" + libPart.getRightOverhang() + "|" + direction.get(0);
                 } else {
-                    composition = libPart.getName() + "|" + direction.get(0);
+                    composition = libPart.getComposition().get(0).getName() + "|" + direction.get(0);
                 }
-                Vector v = partVectorHash.get(libPart);
+                Vector v = _libraryPartsVectors.get(libPart);
                 if (v != null) {
                     vectorName = v.getName();
                 }
@@ -284,7 +304,7 @@ public class RavenController {
             } else {
             
                 //For composite parts
-                Vector v = partVectorHash.get(libPart);
+                Vector v = _libraryPartsVectors.get(libPart);
                 if (v != null) {
                     vectorName = v.getName();
                 }
@@ -544,7 +564,7 @@ public class RavenController {
 
                 }
                 String vectorName = "";
-                Vector v = _partsVectors.get(p);
+                Vector v = _libraryPartsVectors.get(p);
                 if (v != null) {
                     vectorName = v.getName();
                 }
@@ -955,7 +975,7 @@ public class RavenController {
 
                 //Library logic - if the pasmid is in the library, add a composite part, which is different from a plasmid
                 if (!tokens[0].trim().isEmpty()) {
-                    _partsVectors.put(newPlasmid, vector);
+                    _libraryPartsVectors.put(newPlasmid, vector);
                     
                     if (composition.size() > 1) {
                         Part newComposite = Part.generateComposite(composition, name);
@@ -1214,17 +1234,16 @@ public class RavenController {
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result, _partsVectors, _stageVectors, method, _user);
+                writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, _stageVectors, method, _user);
             }
         }        
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method);
         if (!_assemblyGraphs.isEmpty()) {
             for (RGraph result : _assemblyGraphs) {
-//                writer.fixCompositeUUIDs(_collector, result);
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _partsVectors, targetRootNodes, scarless, method));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, scarless, method));
             }
         }
         System.out.println("GRAPH AND ARCS FILES CREATED");
@@ -1379,7 +1398,7 @@ public class RavenController {
     }
     //FIELDS
     private HashSet<Part> _goalParts = new HashSet<Part>();//key: target part, value: composition
-    public static HashMap<Part, Vector> _partsVectors = new HashMap<Part, Vector>();
+    private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
     private HashMap<Integer, Double> _efficiency = new HashMap<Integer, Double>();
     private HashSet<String> _required = new HashSet<String>();
     private HashSet<String> _recommended = new HashSet<String>();
