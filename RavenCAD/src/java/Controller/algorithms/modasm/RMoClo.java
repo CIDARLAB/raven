@@ -22,7 +22,7 @@ public class RMoClo extends RGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> mocloClothoWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> mocloClothoWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs) throws Exception {
 
         _partLibrary = partLibrary;
         _vectorLibrary = vectorLibrary;
@@ -48,7 +48,7 @@ public class RMoClo extends RGeneral {
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended); //key: composiion, direction || value: library graph
 
         //Put all parts into hash for mgp algorithm            
-        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps, false);
+        ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps);
 
         //Positional scoring of transcriptional units
 //        HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
@@ -65,12 +65,39 @@ public class RMoClo extends RGeneral {
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
-        propagatePrimaryOverhangs(optimalGraphs);
-        maximizeOverhangSharing(optimalGraphs);
-        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
-        cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors);
-        assignScars(optimalGraphs);
+        
+        //Pull out graphs with one node i.e. either in the library already or require only a PCR
+        ArrayList<RGraph> singlePartGraphs = new ArrayList<RGraph>();
+        for (RGraph optimalGraph : optimalGraphs) {
+            if (optimalGraph.getSteps() == 0) {
+                singlePartGraphs.add(optimalGraph);
+            }
+        }
+        optimalGraphs.removeAll(singlePartGraphs);
+        
+        //Assign overhangs based upon input
+        for (RGraph spGraph : singlePartGraphs) {
+            RNode root = spGraph.getRootNode();
+            String OHs = libraryOHs.get(root.getUUID());
+            String[] tokens = OHs.split("|");
+            root.setLOverhang(tokens[1]);
+            root.setROverhang(tokens[3]);
+//            root.setScars(new ArrayList<String>());
+            RVector newVector = new RVector(tokens[1], tokens[3], 0, stageVectors.get(0).getName(), null);
+            root.setVector(newVector);
+        }
+        
+        //Overhang assignment
+        if (!optimalGraphs.isEmpty()) {
+            propagatePrimaryOverhangs(optimalGraphs);
+            maximizeOverhangSharing(optimalGraphs);
+//        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
+            HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
+            cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors);
+            assignScars(optimalGraphs);            
+        }
 
+        optimalGraphs.addAll(singlePartGraphs);
         return optimalGraphs;
     }
 

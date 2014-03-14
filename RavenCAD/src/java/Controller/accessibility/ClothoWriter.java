@@ -4,7 +4,6 @@
  */
 package Controller.accessibility;
 
-import Communication.RavenController;
 import static Controller.accessibility.ClothoReader.parseTags;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -295,6 +294,12 @@ public class ClothoWriter {
                                     vector.setUUID(newVector.getUUID());
                                 }
                             
+                            //If there is only one node, i.e. no assembly
+                            } else if (currentNode.getNeighbors().isEmpty()) {
+                                vector.setName(existingVec.getName());
+                                vector.setUUID(existingVec.getUUID());
+                                vector.setLevel(existingVec.getLevel());
+                                
                             //Otherwise make a new vector
                             } else {
                                 Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level, method);

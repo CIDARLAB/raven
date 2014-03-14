@@ -168,7 +168,7 @@ public class RavenController {
         _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
         moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null);
+        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null, _libraryOHHash);
         return optimalGraphs;
     }
 
@@ -442,7 +442,9 @@ public class RavenController {
 
         configBufferedWriter.close();
         partsListBufferedWriter.close();
-        partList = partList.substring(0, partList.length() - 1);
+        if (partList.length() > 1) {
+            partList = partList.substring(0, partList.length() - 1);
+        }
         partList = partList + "]";
         return new JSONArray(partList);
     }
@@ -459,6 +461,7 @@ public class RavenController {
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
         _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+        _libraryOHHash = new HashMap<String, String>();
         _partLibrary = new ArrayList<Part>();
         _vectorLibrary = new ArrayList<Vector>();
         _instructions = "";
@@ -700,6 +703,9 @@ public class RavenController {
         if (_forcedOverhangHash == null) {
             _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         }
+        if (_libraryOHHash == null) {
+            _libraryOHHash = new HashMap<String, String>();
+        }
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
         String line = reader.readLine();
         line = reader.readLine(); //skip first line
@@ -863,7 +869,7 @@ public class RavenController {
                     String bpForcedRight = " ";
                     String bpDirection = "+";
                     String scar = "_";
-                    String compositePartName = tokens[1];
+//                    String compositePartName = tokens[1];
                     String basicPartName = partNameTokens[0];
 
                     //Check for forced overhangs and direction
@@ -912,13 +918,13 @@ public class RavenController {
                     }
                     
                     //Forced overhangs
-                    if (_forcedOverhangHash.get(compositePartName) != null) {
-                        _forcedOverhangHash.get(compositePartName).add(bpForcedLeft + "|" + bpForcedRight);
-                    } else {
-                        ArrayList<String> toAdd = new ArrayList();
-                        toAdd.add(bpForcedLeft + "|" + bpForcedRight);
-                        _forcedOverhangHash.put(compositePartName, toAdd);
-                    }
+//                    if (_forcedOverhangHash.get(compositePartName) != null) {
+//                        _forcedOverhangHash.get(compositePartName).add(bpForcedLeft + "|" + bpForcedRight);
+//                    } else {
+//                        ArrayList<String> toAdd = new ArrayList();
+//                        toAdd.add(bpForcedLeft + "|" + bpForcedRight);
+//                        _forcedOverhangHash.put(compositePartName, toAdd);
+//                    }
 
                     directions.add(bpDirection);
                     
@@ -946,6 +952,8 @@ public class RavenController {
                     
                     composition.add(bp);
                 }
+                
+                
 
                 //Add vector pair if it is in the library
                 Vector vector = null;
@@ -972,6 +980,7 @@ public class RavenController {
                 newPlasmid.addSearchTag("Scars: " + scars);
                 newPlasmid = newPlasmid.saveDefault(_collector);
                 newPlasmid.setTransientStatus(false);
+                _libraryOHHash.put(newPlasmid.getUUID(), leftOverhang + "|" + rightOverhang);
 
                 //Library logic - if the pasmid is in the library, add a composite part, which is different from a plasmid
                 if (!tokens[0].trim().isEmpty()) {
@@ -1407,6 +1416,7 @@ public class RavenController {
     private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();
     private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+    private HashMap<String, String> _libraryOHHash = new HashMap<String, String>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
     private HashMap<Integer, Vector> _stageVectors = new HashMap<Integer, Vector>();

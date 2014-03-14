@@ -418,6 +418,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             });
         });
     };
+    refreshData();
 
     //generates all intermediates for input composition
     var generateIntermediates = function(composition) {

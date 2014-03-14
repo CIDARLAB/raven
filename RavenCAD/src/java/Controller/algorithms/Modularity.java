@@ -1463,12 +1463,12 @@ public class Modularity extends Partitioning {
         }
         
         //If the stageVector hash is empty, make a new default vector
-        if (stageRVectors.size() == 1) {
-            if (stageRVectors.get(1) == null) {
-                stageRVectors.put(0, new RVector("", "", 0, "pSB1A2", null));
-                stageRVectors.put(1, new RVector("", "", 0, "pSB1K3", null));
-            }
-        }
+//        if (stageRVectors.size() == 1) {
+//            if (stageRVectors.get(1) == null) {
+//                stageRVectors.put(0, new RVector("", "", 0, "pSB1A2", null));
+//                stageRVectors.put(1, new RVector("", "", 0, "pSB1K3", null));
+//            }
+//        }
         
         //Assign final overhangs for all graphs
         for (RGraph graph : graphs) {
