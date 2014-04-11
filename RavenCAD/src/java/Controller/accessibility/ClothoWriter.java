@@ -89,7 +89,7 @@ public class ClothoWriter {
 
                     //If there's overhangs, add search tags
                     Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
-                    newPlasmid.addSearchTag("Type: plasmid");                    
+                    newPlasmid.addSearchTag("Type: plasmid");                                     
                     currentNode.setName(partName);
                     newPlasmid = newPlasmid.saveDefault(coll);
                     currentNode.setUUID(newPlasmid.getUUID());
@@ -109,7 +109,8 @@ public class ClothoWriter {
                         seq = allPartsWithName.get(0).getSeq();
                     }
                     
-                    currentPart = coll.getExactPart(null, seq, tags, true);
+                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), tags, false);
+//                    currentPart = coll.getExactPart(null, seq, tags, true);
                     
                     if (currentPart == null) {
 
@@ -139,6 +140,8 @@ public class ClothoWriter {
 
                             for (int i = 0; i < composition.size(); i++) {
                                 ArrayList<String> cSearchTags = new ArrayList<String>();
+                                ArrayList<String> bpComp = new ArrayList<String>();
+                                bpComp.add(composition.get(i));
                                 String cSeq = currentPart.getComposition().get(i).getSeq();
                                 String cName = composition.get(i);
                                 String cDir = direction.get(i);
@@ -182,7 +185,7 @@ public class ClothoWriter {
                                 cSearchTags.add("Type: " + cType);
                                 cSearchTags.add("Direction: [" + cDir + "]");
                                 cSearchTags.add("Scars: []");
-                                Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                Part exactPart = coll.getExactPart(cName, cSeq, bpComp, cSearchTags, true);
                                 
                                 //Try to find the inverted version if this part does not exist
                                 if (exactPart == null) {
@@ -211,7 +214,7 @@ public class ClothoWriter {
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("Direction: [" + invertedcDir + "]");
                                     cSearchTags.add("Scars: []");
-                                    exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, cSearchTags, true);
                                 }
 
                                 //In the edge case where the overhangs of a re-used composite part is changed
@@ -222,7 +225,7 @@ public class ClothoWriter {
                                     cSearchTags.add("LO: ");
                                     cSearchTags.add("Direction: [+]" );
                                     cSearchTags.add("Scars: []");
-                                    exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, cSearchTags, true);
                                 }
                                 
                                 newComposition.add(exactPart);
@@ -347,38 +350,6 @@ public class ClothoWriter {
             refreshPartVectorList(coll);
         }
 
-        //Search to see there's nothing made from the same components before saving
-        for (Part existingPart : _allCompositeParts) {
-            ArrayList<String> existingPartComp = new ArrayList<String>();
-
-            //Get an existing part's overhangs and direction
-            ArrayList<String> sTags = existingPart.getSearchTags();
-            String existingPartLO = "";
-            String existingPartRO = "";
-            ArrayList<String> existingPartDir = parseTags(sTags, "Direction:");
-
-            for (int k = 0; k < sTags.size(); k++) {
-                if (sTags.get(k).startsWith("LO:")) {
-                    existingPartLO = sTags.get(k).substring(4);
-                } else if (sTags.get(k).startsWith("RO:")) {
-                    existingPartRO = sTags.get(k).substring(4);
-                }
-            }
-
-            //Obtain the basic part names
-            ArrayList<Part> existingPartComposition = getComposition(existingPart);
-            for (Part basicPart : existingPartComposition) {
-                existingPartComp.add(basicPart.getName());
-            }
-
-            //If the composition and overhangs of the new part is the same as an existing composite part, return that part
-            if (composition.equals(existingPartComp) && direction.equals(existingPartDir)) {
-                if (existingPartLO.equals(LO) && existingPartRO.equals(RO)) {
-                    return existingPart;
-                }
-            }
-        }
-
         //If a new composite part needs to be made
         ArrayList<Part> newComposition = new ArrayList<Part>();
         for (int i = 0; i < composition.size(); i++) {
@@ -388,6 +359,8 @@ public class ClothoWriter {
             String cSeq = allPartsWithName.get(0).getSeq();
             String cDir = direction.get(i);
             String cType = allPartsWithName.get(0).getType();
+            ArrayList<String> thisComp = new ArrayList<String>();
+            thisComp.add(cName);
             String cLO;
             String cRO;
 
@@ -428,7 +401,7 @@ public class ClothoWriter {
             cSearchTags.add("Direction: [" + cDir + "]");
             cSearchTags.add("Scars: []");
 
-            Part exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+            Part exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
             
             //Try to find the inverted version if this part does not exist
             if (exactPart == null) {
@@ -457,7 +430,7 @@ public class ClothoWriter {
                 cSearchTags.add("Type: " + cType);
                 cSearchTags.add("Direction: [" + invertedcDir + "]");
                 cSearchTags.add("Scars: []");
-                exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
             }    
             
             //In homologous rcombinations, the overhangs are the neighbor, select the blank part
@@ -468,7 +441,7 @@ public class ClothoWriter {
                 cSearchTags.add("LO: ");
                 cSearchTags.add("Direction: [+]");
                 cSearchTags.add("Scars: []");
-                exactPart = coll.getExactPart(cName, cSeq, cSearchTags, true);
+                exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
             }
             
             newComposition.add(exactPart);
@@ -479,7 +452,7 @@ public class ClothoWriter {
         newPart.addSearchTag("RO: " + RO);
         newPart.addSearchTag("Direction: " + direction);
         newPart.addSearchTag("Scars: " + scars);
-        newPart = newPart.saveDefault(coll);
+//        newPart = newPart.saveDefault(coll);
         return newPart;
     }
 

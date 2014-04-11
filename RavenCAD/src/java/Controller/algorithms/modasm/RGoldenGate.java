@@ -232,7 +232,7 @@ public class RGoldenGate extends RGeneral {
                 }
             }
             tags.add("Type: " + type);
-            Part currentPart = coll.getExactPart(null, seq, tags, true);
+            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
             currentSeq = currentPart.getSeq();
             ArrayList<String> direction = node.getDirection();
 

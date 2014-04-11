@@ -85,24 +85,19 @@ public class Collector {
         return toReturn;
     }
 
-    public Part getExactPart(String name, String seq, ArrayList<String> tags, boolean allowTransient) {
-//        System.out.println("looking for: " + name);
-//        System.out.println("query: " + new HashSet(tags));
+    public Part getExactPart(String name, String seq, ArrayList<String> composition, ArrayList<String> tags, boolean allowTransient) {
+
         Part toReturn = null;
         HashSet<String> queryTags;
         HashSet<String> currentTags;
         ArrayList<Part> allPartsWithName = this.getAllPartsWithName(name, allowTransient);
-        
-        if (name == null) {
-            allPartsWithName = this.getAllParts(true);
-        }
-        
+
         if (allPartsWithName != null) {
             for (Part p : allPartsWithName) {
                 if (allowTransient || !p.isTransient()) {
                     queryTags = new HashSet(tags);
                     currentTags = new HashSet(p.getSearchTags());
-                    if (currentTags.equals(queryTags) && p.getSeq().equals(seq)) {
+                    if (currentTags.equals(queryTags) && p.getSeq().equals(seq) && composition.equals(p.getStringComposition())) {
                         toReturn = p;
                         return toReturn;
                     }
@@ -114,7 +109,7 @@ public class Collector {
 
     //returns the part you added or an existing part that matches exactly
     public Part addPart(Part aPart) {
-        Part existingPart = this.getExactPart(aPart.getName(), aPart.getSeq(), aPart.getSearchTags(), false);
+        Part existingPart = this.getExactPart(aPart.getName(), aPart.getSeq(), aPart.getStringComposition(), aPart.getSearchTags(), false);
         if (existingPart != null) {
             return existingPart;
         }

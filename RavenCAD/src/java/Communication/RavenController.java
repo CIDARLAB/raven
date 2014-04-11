@@ -1265,7 +1265,7 @@ public class RavenController {
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
         }
-
+        
         String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
         File file = new File(_path + _user + "/instructions" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);
@@ -1404,7 +1404,7 @@ public class RavenController {
                 + "\",\"time\":\"" + _statistics.getExecutionTime()
                 + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
         return new JSONObject(statString);
-    }
+    }    
     //FIELDS
     private HashSet<Part> _goalParts = new HashSet<Part>();//key: target part, value: composition
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
