@@ -203,8 +203,13 @@ public class RBioBricks extends RGeneral {
             }
         }
 
-        parent.setScars(scars);
-        return scars;
+        //Keep scars for re-used parts with scars
+        if (!scars.isEmpty()) {
+            parent.setScars(scars);
+            return scars;
+        } else {
+            return parent.getScars();
+        } 
     }
 
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {

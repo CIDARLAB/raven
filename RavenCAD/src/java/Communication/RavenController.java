@@ -1207,11 +1207,6 @@ public class RavenController {
         ArrayList<String> graphTextFiles = new ArrayList();
         ArrayList<String> arcTextFiles = new ArrayList<String>();
         ArrayList<RNode> targetRootNodes = new ArrayList();
-        if (!_assemblyGraphs.isEmpty()) {
-            for (RGraph result : _assemblyGraphs) {
-                targetRootNodes.add(result.getRootNode());
-            }
-        }
 
         //Initialize statistics
         boolean overhangValid = false;
@@ -1238,7 +1233,11 @@ public class RavenController {
         }        
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method);
+
         if (!_assemblyGraphs.isEmpty()) {
+            for (RGraph result : _assemblyGraphs) {
+                targetRootNodes.add(result.getRootNode());
+            }
             for (RGraph result : _assemblyGraphs) {
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
