@@ -898,7 +898,14 @@ public class RavenController {
                     //Basic part plasmids - add as new basic parts with overhang for re-use
                     if (tokens.length == 10) {
                         if (i == 9) {
-                            Part basic = _collector.getAllPartsWithName(basicPartName, false).get(0);
+                            
+                            Part basic = null;
+                            ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
+                            for (Part aPart : allPartsWithName) {
+                                if (!aPart.getType().equals("plasmid")) {
+                                    basic = aPart;
+                                }
+                            }
                             String sequence = basic.getSeq();
                             String type = basic.getType();
                             Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
@@ -937,7 +944,9 @@ public class RavenController {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
                         if (LO.isEmpty() && RO.isEmpty()) {
-                            bp = partWithName;
+                            if (!partWithName.getType().equals("plasmid")) {
+                                bp = partWithName;
+                            }
                         }
                     }
                     
@@ -946,7 +955,9 @@ public class RavenController {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
                         if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight)) {
-                            bp = partWithName;
+                            if (!partWithName.getType().equals("plasmid")) {
+                                bp = partWithName;
+                            }
                         }
                     }
                     
@@ -1152,34 +1163,13 @@ public class RavenController {
         _discouraged = discouraged;
         _stageVectors = new HashMap<Integer, Vector>();
         _statistics = new Statistics();
-        _vectorLibrary = new ArrayList<Vector>();
-        _partLibrary = new ArrayList<Part>();
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
         method = method.toLowerCase().trim();
 
-        if (partLibraryIDs.length > 0) {
-            for (int i = 0; i < partLibraryIDs.length; i++) {
-                Part current = _collector.getPart(partLibraryIDs[i], false);
-                if (current != null) {
-                    _partLibrary.add(current);
-                }
-            }
-        }
-
-        if (vectorLibraryIDs.length > 0) {
-            for (int i = 0; i < vectorLibraryIDs.length; i++) {
-                Vector current = _collector.getVector(vectorLibraryIDs[i], false);
-                if (current != null) {
-                    _vectorLibrary.add(current);
-                }
-            }
-        }
-
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
-//            Vector vector = _compPartsVectors.get(current);
             _goalParts.add(current);
         }
         
@@ -1279,6 +1269,7 @@ public class RavenController {
         out = new BufferedWriter(fw);
         out.write(mergedGraphText);
         out.close();
+        
         //write arcs text file
         file = new File(_path + _user + "/arcs" + designCount + ".txt");
         fw = new FileWriter(file);

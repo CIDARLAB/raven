@@ -5,7 +5,6 @@
 package Controller.accessibility;
 
 import static Controller.accessibility.ClothoReader.parseTags;
-import static Controller.accessibility.ClothoReader.vectorImportClotho;
 import Controller.datastructures.Part;
 import Controller.datastructures.RGraph;
 import Controller.datastructures.RNode;
@@ -71,59 +70,54 @@ public class ClothoReader {
         if (partLibrary != null) {
             if (partLibrary.size() > 0) {
                 for (Part libraryPart : partLibrary) {
+                    if (!libraryPart.getType().equalsIgnoreCase("plasmid")) {
 
-                    //Check if basic part or not and assign composition 
-                    ArrayList<Part> libPartComposition = new ArrayList<Part>();
-                    if (!libraryPart.isBasic()) {
-                        libPartComposition = ClothoWriter.getComposition(libraryPart);
-                    } else {
-                        libPartComposition.add(libraryPart);
+                        //Check if basic part or not and assign composition 
+                        ArrayList<Part> libPartComposition = new ArrayList<Part>();
+                        if (!libraryPart.isBasic()) {
+                            libPartComposition = ClothoWriter.getComposition(libraryPart);
+                        } else {
+                            libPartComposition.add(libraryPart);
+                        }
+
+                        //For all of this library part's components make new basic graph
+                        ArrayList<String> type = new ArrayList<String>();
+                        ArrayList<String> composition = new ArrayList<String>();
+                        ArrayList<String> tags = libraryPart.getSearchTags();
+                        ArrayList<String> direction = parseTags(tags, "Direction:");
+                        ArrayList<String> scars = parseTags(tags, "Scars:");
+
+                        //Get basic part types
+                        for (Part libPartComponent : libPartComposition) {
+                            ArrayList<String> sTags = libPartComponent.getSearchTags();
+                            composition.add(libPartComponent.getName());
+                            type.addAll(parseTags(sTags, "Type: "));
+                        }
+
+                        //Initialize new graph for library part
+                        RGraph libraryPartGraph = new RGraph();
+                        libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
+                        libraryPartGraph.getRootNode().setComposition(composition);
+                        libraryPartGraph.getRootNode().setType(type);
+                        libraryPartGraph.getRootNode().setDirection(direction);
+                        libraryPartGraph.getRootNode().setScars(scars);
+                        libraryPartGraph.getRootNode().setName(libraryPart.getName());
+
+                        //If recommended, give graph a recommended score of 1, make root node recommended
+                        if (recommended.contains(composition.toString())) {
+                            libraryPartGraph.setReccomendedCount(libraryPartGraph.getReccomendedCount() + 1);
+                            libraryPartGraph.getRootNode().setRecommended(true);
+                        }
+
+                        //If discouraged, give graph a recommended score of 1, make root node recommended
+                        if (discouraged.contains(composition.toString())) {
+                            libraryPartGraph.setDiscouragedCount(libraryPartGraph.getDiscouragedCount() + 1);
+                            libraryPartGraph.getRootNode().setDiscouraged(true);
+                        }
+
+                        //Put library part into library for assembly
+                        library.put(composition.toString() + direction.toString(), libraryPartGraph);
                     }
-
-                    //For all of this library part's components make new basic graph
-                    ArrayList<String> type = new ArrayList<String>();
-                    ArrayList<String> composition = new ArrayList<String>();
-                    ArrayList<String> tags = libraryPart.getSearchTags();
-                    ArrayList<String> direction = parseTags(tags, "Direction:");
-                    ArrayList<String> scars = parseTags(tags, "Scars:");
-
-                    //Get basic part types
-                    for (Part libPartComponent : libPartComposition) {
-                        ArrayList<String> sTags = libPartComponent.getSearchTags();
-                        composition.add(libPartComponent.getName());
-                        
-                        //If there was no direction found, all basic parts assumed to be forward
-                        if (libraryPart.isComposite()) {
-                            if (direction.isEmpty()) {
-                                direction.add("+");
-                            }
-                        }             
-                        type.addAll(parseTags(sTags, "Type: "));
-                    }
-                    
-                    //Initialize new graph for library part
-                    RGraph libraryPartGraph = new RGraph();
-                    libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
-                    libraryPartGraph.getRootNode().setComposition(composition);
-                    libraryPartGraph.getRootNode().setType(type);
-                    libraryPartGraph.getRootNode().setDirection(direction);
-                    libraryPartGraph.getRootNode().setScars(scars);
-                    libraryPartGraph.getRootNode().setName(libraryPart.getName());
-
-                    //If recommended, give graph a recommended score of 1, make root node recommended
-                    if (recommended.contains(composition.toString())) {
-                        libraryPartGraph.setReccomendedCount(libraryPartGraph.getReccomendedCount() + 1);
-                        libraryPartGraph.getRootNode().setRecommended(true);
-                    }
-                    
-                    //If discouraged, give graph a recommended score of 1, make root node recommended
-                    if (discouraged.contains(composition.toString())) {
-                        libraryPartGraph.setDiscouragedCount(libraryPartGraph.getDiscouragedCount() + 1);
-                        libraryPartGraph.getRootNode().setDiscouraged(true);
-                    }
-
-                    //Put library part into library for assembly
-                    library.put(composition.toString() + direction.toString(), libraryPartGraph);
                 }
             }
         }

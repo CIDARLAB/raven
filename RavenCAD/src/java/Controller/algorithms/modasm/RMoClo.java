@@ -23,15 +23,6 @@ public class RMoClo extends RGeneral {
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
     public ArrayList<RGraph> mocloClothoWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs) throws Exception {
-
-        _partLibrary = partLibrary;
-        _vectorLibrary = vectorLibrary;
-        if (_partLibrary == null) {
-            _partLibrary = new ArrayList();
-        }
-        if (_vectorLibrary == null) {
-            _vectorLibrary = new ArrayList();
-        }
         
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
@@ -70,9 +61,15 @@ public class RMoClo extends RGeneral {
         ArrayList<RGraph> singlePartGraphs = new ArrayList<RGraph>();
         for (RGraph optimalGraph : optimalGraphs) {
             if (optimalGraph.getSteps() == 0) {
-                singlePartGraphs.add(optimalGraph);
+                RNode root = optimalGraph.getRootNode();
+                String OHs = libraryOHs.get(root.getUUID());
+                String[] tokens = OHs.split("|");
+                if (tokens.length == 4) {
+                    singlePartGraphs.add(optimalGraph);
+                }
             }
         }
+        
         optimalGraphs.removeAll(singlePartGraphs);
         
         //Assign overhangs based upon input
@@ -82,7 +79,6 @@ public class RMoClo extends RGeneral {
             String[] tokens = OHs.split("|");
             root.setLOverhang(tokens[1]);
             root.setROverhang(tokens[3]);
-//            root.setScars(new ArrayList<String>());
             RVector newVector = new RVector(tokens[1], tokens[3], 0, stageVectors.get(0).getName(), null);
             root.setVector(newVector);
         }
@@ -108,7 +104,6 @@ public class RMoClo extends RGeneral {
 
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
-
             RNode root = graph.getRootNode();
             ArrayList<RNode> children = root.getNeighbors();
             root.setScars(assignScarsHelper(root, children));
@@ -164,8 +159,13 @@ public class RMoClo extends RGeneral {
             }
         }
 
-        parent.setScars(scars);
-        return scars;
+        //Keep scars for re-used parts with scars
+        if (!scars.isEmpty()) {
+            parent.setScars(scars);
+            return scars;
+        } else {
+            return parent.getScars();
+        }        
     }
     
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {

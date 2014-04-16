@@ -3,8 +3,6 @@
  * and open the template in the editor.
  */
 package Controller.accessibility;
-
-import static Controller.accessibility.ClothoReader.parseTags;
 import java.util.ArrayList;
 import java.util.HashSet;
 import Controller.datastructures.*;
@@ -75,7 +73,6 @@ public class ClothoWriter {
                 Part currentPart = null;
 
                 //If the node has no uuid, make a new part
-                //This is pretty much only the case for composite parts
                 if (currentNode.getUUID() == null) {
 
                     //Get new intermediate name
@@ -525,21 +522,21 @@ public class ClothoWriter {
      * Return the composition of a Clotho part *
      */
     public static ArrayList<Part> getComposition(Part part) throws Exception {
-        ArrayList<Part> toReturn = new ArrayList<Part>();
+        ArrayList<Part> partComposition = new ArrayList<Part>();
         if (part.isBasic()) {
-            toReturn.add(part.getComposition().get(0));
+            partComposition.add(part.getComposition().get(0));
         } else {
             ArrayList<Part> composition = part.getComposition();
             for (int i = 0; i < composition.size(); i++) {
                 Part currentPart = composition.get(i);
                 if (currentPart.isBasic()) {
-                    toReturn.add(currentPart);
+                    partComposition.add(currentPart);
                 } else {
-                    toReturn = getCompositionHelper(currentPart, toReturn);
+                    partComposition = getCompositionHelper(currentPart, partComposition);
                 }
             }
         }
-        return toReturn;
+        return partComposition;
     }
 
     /**

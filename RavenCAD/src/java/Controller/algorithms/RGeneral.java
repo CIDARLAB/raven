@@ -34,7 +34,6 @@ public class RGeneral extends Modularity {
         HashMap<String, RGraph> slackLibrary = new HashMap<String, RGraph>();
         slackLibrary.putAll(partHash);
         int slack = determineSlack(gps, slackLibrary, libCompDir, required, recommended, forbidden);
-        System.gc();
 
         //Compute sharing scores for all goal parts
         HashMap<String, Integer> sharingHash = new HashMap<String, Integer>();
@@ -70,14 +69,14 @@ public class RGeneral extends Modularity {
                 } else {
                     //Pin graph if no existing pinned graph
                     if (pinnedGraph == null) {
-                        pinnedGraph = newGraph;
+                        pinnedGraph = newGraph.clone();
                         index = j;
                     }
 
                     //If there are any discouraged parts, pin the graph with the fewest discouraged parts
                     if (!discouraged.isEmpty()) {
                         if (newGraph.getDiscouragedCount() < pinnedGraph.getDiscouragedCount()) {
-                            pinnedGraph = newGraph;
+                            pinnedGraph = newGraph.clone();
                             index = j;
                         }
                     }
@@ -85,17 +84,17 @@ public class RGeneral extends Modularity {
                     //If there are any recommended parts, pin the graph with greatest recommended parts
                     if (!recommended.isEmpty()) {
                         if (newGraph.getReccomendedCount() > pinnedGraph.getReccomendedCount()) {
-                            pinnedGraph = newGraph;
+                            pinnedGraph = newGraph.clone();
                             index = j;
                         }
 
                     //If no recommended parts, pin the graph with the most sharing
                     } else {
                         if (newGraph.getSharing() > pinnedGraph.getSharing()) {
-                            pinnedGraph = newGraph;
+                            pinnedGraph = newGraph.clone();
                             index = j;
                         } else if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
-                            pinnedGraph = newGraph;
+                            pinnedGraph = newGraph.clone();
                             index = j;
                         }
                     }
