@@ -1227,17 +1227,15 @@ public class RavenController {
         _valid = valid && overhangValid;
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
         if (!_assemblyGraphs.isEmpty()) {
+            
             for (RGraph result : _assemblyGraphs) {
                 writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, _stageVectors, method, _user);
-            }
-        }        
-        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
-        getSolutionStats(method);
-
-        if (!_assemblyGraphs.isEmpty()) {
-            for (RGraph result : _assemblyGraphs) {
                 targetRootNodes.add(result.getRootNode());
             }
+
+            RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
+            getSolutionStats(method);
+
             for (RGraph result : _assemblyGraphs) {
                 ArrayList<String> postOrderEdges = result.getPostOrderEdges();
                 arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
