@@ -30,7 +30,7 @@
 
         <div class="container">
             <div class="page-header" style="margin-top:60px">
-                <h1><img style="width: 135px; height: 40px; margin-bottom:5px" src="images/raven.png"> <small>Learn about our algorithms and see examples</small></h1>
+                <h1><img style="width: 135px; height: 40px; margin-bottom:5px" src="images/raven.png"> <small>Learn about our algorithms and watch demonstration videos</small></h1>
             </div>
             <div class="row-fluid">
                 <div class="span2">
@@ -54,15 +54,13 @@
                         <h3>Raven Overview</h3>
                         <!--<hr/>-->
                         <p>
-                            Raven is a DNA assembly design and planning tool. 
-                            The tool accepts as its inputs a list of target parts and a parts library. 
-                            For any set of target parts, Raven determines an optimized plan for assembling all selected target parts with a particular DNA assembly method while optimizing for time, efficiency and cost. 
+                            Raven an algorithm-driven molecular cloning tool [1]. 
+                            It accepts a list of target plasmids and a parts library as its input and returns a DNA assembly plan (see <a href="#guide">Guides</a> for example Raven files). 
+                            For any set of target parts, Raven determines an optimized plan for assembling the selected target plasmids with a supported DNA assembly method. 
                         </p>
                         <p>
-                            A unique feature of Raven is its ability to incorporate experimental data to drive the assembly solution. 
-                            Raven allows the user to input efficiency information for a variety of parameters and bias or force certain assembly intermediates or overhangs from appearing in the assembly solution. 
-                            The tool comes with a set of default parameters that have been experimentally verified, but these values can be modified to the user's specifications. 
-                            This user-interactivity based on experimental data allows users to tailor the assembly solutions to lab- and experiment-specific conditions and recalculate increasingly effective solutions.
+                            This version of Raven is open-source and the source code for the assembly algorithms is available on <a href="http://www.github.com/CIDARLAB/raven-public">github</a>.
+                            If you are interested in having Raven tailored for your company or have interest in other design-automation software, please contact <a href="http://latticeautomation.com">Lattice Automation</a>.
                         </p>
                     </div>
                     <div id="video" class="well">
@@ -76,54 +74,52 @@
                         <h3>Assembly Methods</h3>
                         <!--<hr/>-->
                         <p>
-                            Raven currently supports six cloning-based assembly methods: Gibson [2], MoClo [3], BioBricks(TM) [4], SLIC [5], CPEC [6], and GoldenGate [7].
-                            Each of these supported assembly methods has technology-specific constraints.
+                            Raven currently supports six cloning-based assembly methods: Gibson [2], MoClo (BBF RFC 94) [3], BioBricks (BBF RFC 10) [4], SLIC [5], CPEC [6], and GoldenGate [7].
+                            Each of these supported cloning methods has technology-specific constraints and these are automatically applied in the assembly solutions.
                         </p>
                         <p>
-                            Additional cloning-based assembly method and chemical synthesis assembly are not currently supported. 
-                            However, Raven's core algorithm is highly generalizable and new methods can be added with relative ease. 
-                            Please contact the developers if you are interested in an assembly method that is not currently supported.
+                            Additional cloning methods are not currently supported, however, Raven's core algorithm is highly generalizable and new methods can be added with relative ease. 
+                            Please contact the <a href="contact.html">developers</a> if you are interested in Raven support for an assembly method that is not currently supported.
                         </p>
                     </div>
                     <div class="well" id="algorithm">
                         <h3>Algorithms</h3>
                         <!--<hr/>-->
                         <p>
-                            Raven breaks the DNA assembly problem into two major parts: determining all cloning reactions necessary to achieve the final construct and selecting optimized part junctions based on method-specific constraints. 
-                            For a given set of target constructs, the tool first determines an optimized set of assembly steps, then it selects part junctions (overhangs). 
-                            Calculations are made in this order because it is assumed that performing a successful assembly step is more costly and time consuming than performing a PCR reaction to get the required overhangs. 
-                            This strategy is applied to all supported assembly methods to produce fast, modular and efficient assembly plans.
+                            Raven calculates an assembly plan in two major parts: first, Raven determines all intermediate cloning reactions necessary to achieve the final constructs, then it selects optimized part junctions based on method-specific constraints. 
+                            Calculations are made in this order because it is assumed that performing a successful cloning step is more costly and time consuming than performing a PCR reaction.                           
                         </p>
                         <p>
-                            Sometimes an experimentalist observes higher or lower assembly efficiencies than realized in the literature due to a number of experimental conditions such as cell competency, specific reaction conditions and other factors. 
-                            With Raven, a user is able to adjust the default efficiency numbers guiding the efficiency optimizations. 
+                            A unique feature of Raven is its ability to incorporate experimental data to modify the assembly solutions. 
+                            Raven allows the user to input efficiency information for a variety of parameters and bias or force certain assembly intermediates from appearing in the assembly solution. 
+                        </p>
+                        <p>
+                            For example, a user might observe higher or lower assembly efficiencies than expected due to various experimental conditions such as cell competency, specific reaction conditions and other factors. 
+                            To adjust for these considerations, a user may adjust the default efficiency values guiding the efficiency optimizations. 
                         </p>    
                         <p>    
-                            A user may also wish to bias certain intermediates from appearing or not appearing, with or without mandatory inclusion or exclusion. 
-                            For example, a user might wish to bias an assembly towards intermediates that fit a certain substructure such as a transcriptional unit. 
-                            Another user might also encounter unsuccessful cloning steps or PCRs or wish to test specific intermediate parts or part junctions. 
-                            In such cases, it is imperative that these intermediates and/or part junctions are either biased or forced to appear or not appear. 
-                        </p>   
-                        <p>
+                            A user may also wish to bias or force certain intermediates from appearing or not appearing. 
                             Raven optimizes around these additional constraints unless they are so restrictive that no valid solution can be found. 
                             Intermediate parts and overhangs can be biased for (recommended), biased against (discouraged), forced or forbidden. 
-                            These parts and overhangs can be specified either manually in the GUI or automatically via Eugene [8] scripts.
+                            These intermediates can be specified either manually in the design tab or automatically via Eugene [8] scripts and listed in Raven files.
+                        </p>
+                        <p>
+                            These strategies are applied to all supported assembly methods to produce fast, modular and efficient assembly plans. Additional details can be found in the <a href="#references">Raven publication</a>.
                         </p>
                     </div>
                     <div class="well" id="toolChain">
                         <h3>Integrated Tool Chain</h3>
-                        <!--<hr/>-->
+                        
                         <p>
-                            Raven is implemented as a 'stand-alone' tool, meaning it does not depend on any other tools or databases to provide optimized assembly plans. 
-                            However, this tool is designed to connect to a larger tool-chain in the Clotho design automation platform. 
+                            This version of Raven 'stand-alone'. It does not consider genetic construct function or depend on any other tools or databases to provide optimized assembly plans.
+                            However, this tool is designed to be connected to a larger tool-chain such as the <a href="http://clothocad.org">Clotho</a> design automation platform. 
                             This tool chain uses a 'top-down' design flow and begins with the specification of device behavior and ends in physically implemented assembly. 
                         </p>    
                         <p>    
-                            One such specification tool in the Clotho design flow is Eugene [8]. 
-                            Eugene can generate a set of target constructs based on libraries of parts and device design rule sets. 
-                            Once all target constructs are determined, Raven determines the best way to build all target parts. 
-                            These output instructions can be given to a liquid handling robot to automatically assemble these constructs from its resources. 
-                            This flow allows a user to merely specify the behavior of a set of constructs they would like to build and what resources they have to have the constructs automatically constructed with liquid handling robots.
+                            One such specification tool in the Clotho design flow is Eugene [8], which generates a set of target constructs based on libraries of parts and genetic design rule sets. 
+                            Raven can take this list of target constructs, determine the best way to build all target plasmids, and return a set of instructions for the assembly. 
+                            These output instructions can be interpreted by liquid handling robots or microfluidics platforms to automatically assemble these plasmids from available resources. 
+                            This flow allows a user to merely specify the behavior of a set of constructs and what resources they have and be returned a set of biological samples.
                         </p>
                     </div>
                     <div class="well" id="help">
@@ -134,14 +130,14 @@
                             What do I need to use Raven?
                             </dt>
                             <dd>
-                                A user must minimally provide a list of target parts and all DNA parts that are needed to build the target parts. 
-                                Part sequences are not mandatory, but primers will be incomplete for parts without sequence.
+                                A user must minimally provide a list of target plasmids and all DNA parts that are needed to build the target plasmids. 
+                                Part sequences are not mandatory, but primers will be incomplete in plans for plasmids containing parts with missing sequences.
                             </dd>
                             <dt>
                             What do I input into Raven?
                             </dt>
                             <dd>
-                                Raven accepts a single .csv file that allows users to specify their basic parts, constructs, and vectors. Details about this file can be found <a href="#detailedInput">here</a>.
+                                Raven accepts a single .csv file that allows users to specify their basic parts, plasmids, vectors and failure tracking history. Details about this file can be found <a href="#detailedInput">here</a>.
                                 Example input files can be found <a href="#exampleFiles">here</a>
                             </dd>
                             <dt>
@@ -177,8 +173,8 @@
                             </dt>
                             <dd>
                                 <ul>
-                                    <li>Mandatory: Target parts, parts composing all target parts</li>
-                                    <li>Optional: Existing overhangs for each input part; existing assembly vectors; complete parts library assembly efficiency information for a specific cloning method; recommended, discouraged, required, forbidden intermediate parts and/or overhangs</li>
+                                    <li>Mandatory: Target plasmids, parts composing all target parts</li>
+                                    <li>Optional: Existing overhangs for each input part; existing assembly vectors; complete parts library assembly efficiency information for a specific cloning method; recommended, discouraged, required, and forbidden intermediates</li>
                                     <li>More information about acceptable part types and fields can be found <a href="#exampleFiles">here</a></li>
                                 </ul>
                             </dd>
@@ -218,9 +214,15 @@
                                     <div class="accordion-inner">
                                         <p>This is the full specification for the Raven input file. <strong>Files that do not conform to this standard will result in upload errors</strong></p>
                                         <p>
-                                            Each row represents a part or vector none of the columns need to be unique, but the collection of all columns in one row must be unique and if all columns are blank, the row is ignored.
+                                            Each row represents a part, vector, destination vector, or plasmid. None of the columns need to be unique, but the collection of all columns in one row must be unique and if all columns are blank, the row is ignored.
                                         </p>
                                         <ol>
+                                            <li><strong>Library</strong>
+                                                <p>
+                                                    This field is used upon input to indicate if a part in the file is in the library and can be considered for re-use. If any character is in this column for a given row, it will be considered in the library for reuse.
+                                                    It is important that only parts that can be reused are marked in this section or else the outputs will be incorrect.
+                                                </p>
+                                            </li>
                                             <li><strong>Name</strong>
                                                 <p>
                                                     This is the field used to name the part.
@@ -237,13 +239,19 @@
                                                 </strong>
                                                 <p>
                                                     These fields mark the overhangs of the parts generated. 
-                                                    These overhangs are variables and not sequences and re-use of parts based on their overhangs is used in the calculation of an optimized assembly plan. 
-                                                    Composite parts, basic parts and vectors are all allowed to have overhangs. MoClo assembly plans only recognize overhangs with the numbers 1 -> 256 for re-use. 
-                                                    MoClo assembly plans also recognize overhangs with the '*' character as reverse compliments of the standard 256 possible MoClo overhangs (i.e. '1*' is the reverse overhang of overhang '1').
+                                                    These overhangs are variables and not sequences. Library part reuse of is based on overhang when calculating the assembly plan. 
+                                                    Plasmids, and destination vectors are all allowed to have overhangs. 
                                                 </p>
                                                 <p>
-                                                    BioBricks assembly plans only recognize 'EX' for the left overhang and 'SP' for the right overhang. 
-                                                    Upon input this field is completely optional, but most outputs contain parts and vectors with overhangs, as this is necessary for assembly.
+                                                    The MoClo assembly algorithms only recognize overhangs with the numbers 1 -> 128 for reuse. 
+                                                    They also recognize overhangs with the '*' character as reverse compliments of the standard 128 possible MoClo overhangs (i.e. '1*' is the reverse overhang of overhang '1').
+                                                </p>
+                                                <p>
+                                                    The BioBricks assembly algorithms only recognize 'EX' for the left overhang and 'SP' for the right overhang. 
+                                                    Upon input, this field is completely optional, but most outputs contain parts and vectors with overhangs, as this is necessary for assembly.
+                                                </p>
+                                                <p>
+                                                    CPEC, SLIC, Gibson and GoldenGate algorithms do not use the overhang fields as the constructs are designed to be scarless.  
                                                 </p>
                                             </li>
                                             <li>
@@ -251,12 +259,12 @@
                                                     Type 
                                                 </strong>
                                                 <p>
-                                                    This field is used to create assembly plan pictures using PigeonCAD auto-generated SBOLv-compliant device glyphs. 
+                                                    This field is used to create assembly plan pictures using Pigeon-generated SBOLv-compliant glyphs. 
                                                     All plasmids must have the key string 'plasmid' in this field. Vectors need the key string 'vector' and destination vectors must be marked 'destination vector'. 
-                                                    All other entries are valid, and assumed to be basic part types.
+                                                    All other entries are valid, and assumed to be basic part types. Part types not recognized by pigeon are assigned the wild-card glyph in Pigeon images.
                                                 </p>
                                                 <p>The following key strings are recognized for pigeon images for basic parts:</p>
-                                                <table class="table-condensed table-bordered">
+                                                <table class="table-condensed table-bordered"><col width="200"><col width="200">
                                                     <thead>
                                                         <tr><th>Type</th><th>Shorthand</th></tr>
                                                     </thead>
@@ -274,9 +282,9 @@
                                                     </tbody>
                                                 </table>
                                                 <p>
+                                                    
                                                     Parts with type 'fusion' denote fusion proteins and the Name column is split with the '-' character to get all the fusion names. 
-                                                    Parts with type 'resistance' denote a resistance cassette. 
-                                                    This type is a legal basic part type but may cause invalid answers with restriction-based assembly cloning method that relies on cloning with destination vectors that also have anti-biotic resistance within them.
+                                                    Parts with type 'resistance' denote a resistance cassette. Take note that restriction-based assembly cloning methods rely on cloning vectors that also have anti-biotic resistance within them.
                                                 </p>
                                             </li>
                                             <li>
@@ -284,7 +292,7 @@
                                                     Resistance
                                                 </strong>
                                                 <p>
-                                                    This field is used to denote the antibiotic resistance of a vector or destination vector part.
+                                                    This field is used to denote the antibiotic resistance of a vector or destination vector.
                                                 </p>
                                             </li>
                                             <li>
@@ -292,7 +300,7 @@
                                                     Level
                                                 </strong>
                                                 <p>
-                                                    This field is used only for vectors and destination vectors. Destination vectors with level and overhangs are re-used in an assembly plan if it saves time and cost. Levels start at '0'.
+                                                    This field is used only for vectors and destination vectors. Destination vectors with level and overhangs are re-used in an assembly plan if possible. Levels start at '0'.
                                                 </p>
                                             </li>
                                             <li>
@@ -304,6 +312,7 @@
                                                     This field is also used to denote the vector backbone used by destination vectors. Destination vectors are always made of a vector backbone and the lacZ fragment as insert.
                                                     For MoClo and Golden Gate assembly, which use destination vectors, the construction of destination vectors is not explicitly described in the assembly instructions, 
                                                     but for new destination vectors, primers are designed to amplify the lacZ fragment for insertion into the vector backbone after a SpeI digestion and ligation.
+                                                    To PCR this fragment with different flanking recognition sites, primers will need to be re-designed.
                                                 </p>
                                             </li>
                                             <li>
@@ -311,8 +320,8 @@
                                                     Composition 
                                                 </strong>
                                                 <p>
-                                                    This field starts in column 9 and extends infinitely based on the size of the composition of the target construct. 
-                                                    All target constructs must have a composition size of two or greater and only these constructs will be recognized as targets
+                                                    This field starts in the column below the headers and extends infinitely based on the size of the composition of the target construct. 
+                                                    All target constructs must have a composition size of two or greater and only these constructs will be recognized as targets.
                                                 </p>
                                                 <p>
                                                     This field must be formatted in one of the following conventions:
@@ -323,16 +332,15 @@
                                                     <li>'partName'</li>
                                                 </ul>
                                                 <p>
-                                                    The part name is mandatory. LeftOverhang and RightOverhang are optional and must agree with the Left Overhang and Right overhang specified in the other columns (see above). 
-                                                    Direction is how a user can specify the strand or 'direction' of a part within a device. All parts are assumed to be forward or on the leading strand. 
-                                                    The two acceptable directions are '+' and '-'. 
-                                                    If a part in a device has Direction equal to '-' it is on the lagging or backward strand, all other entries mean the part will be forward. 
+                                                    The part name is mandatory. LeftOverhang and RightOverhang are optional. 
+                                                    Direction is how a user can specify the strand or 'direction' of a part within a device. All parts are assumed to be forward (on the leading strand) in the absence of specification. 
+                                                    The two acceptable directions are '+' and '-'. If a part in a device has Direction equal to '-' it is on the lagging strand. 
                                                 </p>
-                                                <p>
+<!--                                                <p>
                                                     This is also where overhang assignments may be forced in the calculation. 
                                                     For example a device with part 'partA|1|2|+' in the composition forces overhang '1' to be assigned to the Left Overhang of partA and overhang '2' to be assigned to the Right Overhang of partA.
                                                     In the former, direction is assumed forward and any overhang from the calculation may be assigned. In the latter, direction is assigned, but overhangs are also unassigned.
-                                                </p>
+                                                </p>-->
                                             </li>
                                         </ol>
                                         <p>
@@ -459,14 +467,15 @@
                         <h3>References</h3>
                         <!--<hr/>-->
                         <ol>
-                            <li> Densmore, D. et al. Algorithms for automated DNA assembly. Nucleic Acids Research 38, 2607-2616 (2010).</li>
+                            <li> Appleton, E., Tao, J., Haddock, T. & Densmore, D. Interactive assembly algorithms for molecular cloning. Nature Methods (2014). </li>
                             <li> Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</li>
-                            <li> Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A Modular Cloning System for Standardized Assembly of Multigene Constructs. PloS ONE 6 (2010).</li>
+                            <li> Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A modular cloning system for standardized assembly of multigene constructs. PloS ONE 6 (2010).</li>
                             <li> Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).</li>
                             <li> Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251-256 (2007).</li>
-                            <li> Quan, J. & Tian, J. Circular Polymerase Extension Cloning of Complex Gene Libraries and Pathways. PLoS ONE 4, e6441 (2009).</li>
-                            <li> Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3, e3647 (2008).</li>
-                            <li> Bilitchenko, L. et al. Eugene: A Domain Specific Language for Specifying and Constraining Synthetic Biological Parts, Devices, and Systems. PLoS ONE 6, e18882 (2011).</li>
+                            <li> Quan, J. & Tian, J. Circular polymerase extension cloning of complex gene libraries and pathways. PLoS ONE 4, e6441 (2009).</li>
+                            <li> Engler, C., Kandzia, R. & Marillonnet, S. A one pot, one step, precision cloning method with high throughput capability. PLoS ONE 3, e3647 (2008).</li>
+                            <li> Bilitchenko, L. et al. Eugene: a domain specific language for specifying and constraining synthetic biological parts, devices, and systems. PLoS ONE 6, e18882 (2011).</li>
+                            <!--<li> Densmore, D. et al. Algorithms for automated DNA assembly. Nucleic Acids Research 38, 2607-2616 (2010).</li>-->
                         </ol>
 
                     </div>

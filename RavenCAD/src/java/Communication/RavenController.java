@@ -1147,7 +1147,7 @@ public class RavenController {
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(rxn);
         _statistics.setValid(_valid);
-        if (method.equals("biobricks")) {
+        if (method.equalsIgnoreCase("biobricks")) {
             rxn = rxn + 2; //correction for additional biobrick vectors
         }
         System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + _valid);
@@ -1166,7 +1166,7 @@ public class RavenController {
         _assemblyGraphs = new ArrayList<RGraph>();
         _efficiency = efficiencyHash;
         _valid = false;
-        method = method.toLowerCase().trim();
+        method = method.trim();
 
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
@@ -1232,7 +1232,7 @@ public class RavenController {
                 writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, _stageVectors, method, _user);
                 targetRootNodes.add(result.getRootNode());
             }
-
+   
             RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
             getSolutionStats(method);
 

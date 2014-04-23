@@ -34,7 +34,8 @@ public class RGeneral extends Modularity {
         HashMap<String, RGraph> slackLibrary = new HashMap<String, RGraph>();
         slackLibrary.putAll(partHash);
         int slack = determineSlack(gps, slackLibrary, libCompDir, required, recommended, forbidden);
-
+        System.gc();
+        
         //Compute sharing scores for all goal parts
         HashMap<String, Integer> sharingHash = new HashMap<String, Integer>();
         if (sharing == true) {
@@ -59,6 +60,7 @@ public class RGeneral extends Modularity {
             RGraph pinnedGraph = null;
             for (int j = 0; j < gps.size(); j++) {
                 RNode gp = gps.get(j);
+//                RGraph newGraph = new RGraph();
                 RGraph newGraph = createAsmGraph_sgp(gp, hashMem, libCompDir, required, recommended, forbidden, discouraged, slack, sharingHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
 
@@ -67,16 +69,18 @@ public class RGeneral extends Modularity {
                     return null;
                     
                 } else {
+                    
                     //Pin graph if no existing pinned graph
                     if (pinnedGraph == null) {
                         pinnedGraph = newGraph.clone();
+//                        pinnedGraph = newGraph;
                         index = j;
                     }
 
                     //If there are any discouraged parts, pin the graph with the fewest discouraged parts
                     if (!discouraged.isEmpty()) {
                         if (newGraph.getDiscouragedCount() < pinnedGraph.getDiscouragedCount()) {
-                            pinnedGraph = newGraph.clone();
+                            pinnedGraph = newGraph;
                             index = j;
                         }
                     }
@@ -84,17 +88,17 @@ public class RGeneral extends Modularity {
                     //If there are any recommended parts, pin the graph with greatest recommended parts
                     if (!recommended.isEmpty()) {
                         if (newGraph.getReccomendedCount() > pinnedGraph.getReccomendedCount()) {
-                            pinnedGraph = newGraph.clone();
+                            pinnedGraph = newGraph;
                             index = j;
                         }
 
                     //If no recommended parts, pin the graph with the most sharing
                     } else {
                         if (newGraph.getSharing() > pinnedGraph.getSharing()) {
-                            pinnedGraph = newGraph.clone();
+                            pinnedGraph = newGraph;
                             index = j;
                         } else if (newGraph.getModularityFactor() > pinnedGraph.getModularityFactor()) {
-                            pinnedGraph = newGraph.clone();
+                            pinnedGraph = newGraph;
                             index = j;
                         }
                     }

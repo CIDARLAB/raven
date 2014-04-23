@@ -68,6 +68,9 @@ public class RGraph {
         clone._modularityFactor = this._modularityFactor;
         clone._efficiencyArray = this._efficiencyArray;
         clone._reactions = this._reactions;
+        for (RGraph subGraph : this._subGraphs) {
+            clone.addSubgraph(subGraph.clone());
+        }
         return clone;
     }
 
