@@ -84,8 +84,12 @@
                                                                 <h5>Description of Assembly Method</h5>
                                                                 <!--Description of BioBrick-->
                                                                 <p>
-                                                                    In BioBricks, all parts are preceded by EcoRI and XbaI restriction sites, and followed by SpeI and PstI.
-                                                                    Digesting these restriction sites produces common sticky ends, which allow 2 different BioBrick parts and their desitination vector to be assembled.                                                                    
+                                                                    BioBricks is a digestion-ligation based binary assembly method.
+                                                                    The version of the method applied here <a href="http://openwetware.org/wiki/The_BioBricks_Foundation:RFC#BBF_RFC_10:_Draft_standard_for_BioBrick.E2.84.A2_biological_parts">(BBF RFC 10)</a> requires that all parts and vectors are preceded by EcoRI and XbaI (EX) sites, and followed by SpeI and PstI (SP) sites.
+                                                                    Digesting these restriction sites produces common sticky ends, which allow 2 BioBricks parts and their cloning vector to be assembled.                                                                    
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts are digested and gel extracted for each cloning step.
                                                                 </p>
                                                                 <small>Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).</small>
                                                             </div>
@@ -109,9 +113,12 @@
                                                                 <h5>Description of Assembly Method</h5>
                                                                 <!--Description of CPEC-->
                                                                 <p>
-                                                                    CPEC (Circular Polymerase Extension Cloning) is a one step multiway assembly method.
-                                                                    Multiple double stranded DNA parts with overlapping sequences can be denatured and amplified using DNA polymermase.
-                                                                    The final concatenated part must have homology on both ends with the assembly vector for a plasmid to form properly.
+                                                                    CPEC (Circular Polymerase Extension Cloning) is a scarless multi-way assembly method that does not require digestion, ligation or homologous recombination.
+                                                                    Multiple double stranded DNA fragments with overlapping flanking regions are denatured and amplified using DNA polymerase.
+                                                                    The version of the method applied here adds NotI sites at the end of PCR fragments if intermediate clones are required. These fragments can then be extracted and used in the next cloning stage.
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested and gel extracted for the subsequent cloning stage.
                                                                 </p>
                                                                 <small>Quan, J. & Tian, J. Circular Polymerase Extension Cloning of Complex Gene Libraries and Pathways. PLoS ONE 4, e6441 (2009).</small>
                                                             </div>
@@ -140,11 +147,14 @@
                                                                 <h5>Description of Assembly Method</h5>
                                                                 <!--Description of Gibson-->
                                                                 <p>
-                                                                    Gibson is a one-pot, isothermal, multi-way assembly method. 
-                                                                    Gibson assembly relies on the combined effects of a 5' exonuclease, DNA polymerase, and a DNA ligase to assemble overlapping DNA molecules.
-                                                                    In the first part of the reaction, overhangs between two overlapping parts are created by the exonuclease, 
-                                                                    which allows the two parts to anneal.
-                                                                    The gaps on each strand of the annealed parts is then repaired with DNA polymerase and DNA ligase.
+                                                                    Gibson is an isothermal, scarless multi-way assembly method that leverages homologous recombination. 
+                                                                    Gibson assembly relies on the combined activities of a T5 exonuclease, DNA polymerase, and a DNA ligase to assemble DNA molecules with overlapping flanking regions.
+                                                                    In the first part of the reaction, the 5' ends of each DNA fragment is chewed-back by the exonuclease, allowing homologous single-stranded regions to anneal.
+                                                                    The gaps on each DNA strand is then repaired with DNA polymerase and DNA ligase to leave a final clone.
+                                                                    The version of the method applied here adds NotI sites at the end of PCR fragments if intermediate clones are required. These fragments can then be extracted and used in the next cloning stage.                
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested and gel extracted for the subsequent cloning stage.
                                                                 </p>
                                                                 <small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>
                                                             </div>
@@ -173,11 +183,14 @@
                                                                 <h5>Description of Assembly Method</h5>
                                                                 <!--Description of Golden Gate-->
                                                                 <p>
-                                                                    Golden Gate is a one step multi-way assembly method that relies on Type IIs restriction enzymes.
-                                                                    The derivative method applied here uses a tiered destination vector system, using restriction enzymes BbsI and BsaI.
-                                                                    Fusions sites are selected between two adjacent parts to produce a scarless assembly.
-                                                                    Parts are digested with Type IIs restriction enzymes and ligated in a one-pot reaction.
+                                                                    Golden Gate is a scarless multi-way assembly method that relies on Type IIs restriction enzymes.
+                                                                    The version of the method applied here uses a tiered cloning system, which alternates the use of restriction enzymes BbsI and BsaI in every other stage to cleave inserts from donor plasmids.
+                                                                    This version also adds SpeI sites at the end of LacZ PCR fragments used to make destination vectors.
+                                                                    Fusions sites are selected as a 4-bp combination of adjacent parts in a cloning reaction.
                                                                     This method assumes the acquisition of the LacZ fragment necessary for blue-white screening and the vector pSK1A2.
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vectors pSB1A2 and pSB1K3 are used for alternating cloning stages and that the LacZ fragment necessary for blue-white screening is acquired and used to make destination vectors.
                                                                 </p>
                                                                 <small>Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3 (2008).</small>
                                                             </div>
@@ -207,11 +220,14 @@
                                                                 <h5>Description of Assembly Method</h5>
                                                                 <!--Description of MoClo-->
                                                                 <p>
-                                                                    MoClo is a one step multi-way assembly method that uses common overhang junctions generated by type IIs restriction enzymes.
-                                                                    Parts are digested with Type IIs restriction enzymes and ligated in a one-pot reaction.
-                                                                    Although the common overhang junctions are effectively assembly scars, the use of common junctions allows the reuse of parts, which reduces the cost.
-                                                                    Parts are digested with Type IIs restriction enzymes and ligated in a one-pot reaction.
-                                                                    This method assumes the acquisition of the LacZ fragment necessary for blue-white screening and the vector pSB1A2 and pSB1K3.
+                                                                    MoClo is a multi-way assembly method that uses common overhang junctions generated by type IIs restriction enzymes.
+                                                                    The version of the method applied here <a href="http://openwetware.org/wiki/The_BioBricks_Foundation:RFC#BBF_RFC_94:_The_Modular_Cloning_Assembly:_Standardized_Assembly_of_Bacterial_Transcriptional_Units_Using_Type_IIS_Restriction_Enzymes_BsaI_and_BpiI">(BBF RFC 94)</a> uses a tiered cloning system, which alternates the use of restriction enzymes BbsI and BsaI in every other stage to cleave inserts from donor plasmids.
+                                                                    This version also adds SpeI sites at the end of LacZ PCR fragments used to make destination vectors.
+                                                                    Although overhang junctions add a 4-bp assembly scar between parts, the use of common junctions can be used to maximize part reuse.
+                                                                    This method assumes the acquisition of the LacZ fragment necessary for blue-white screening and the vector  and pSB1K3.
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vectors pSB1A2 and pSB1K3 are used for alternating cloning stages and that the LacZ fragment necessary for blue-white screening is acquired and used to make destination vectors.
                                                                 </p>
                                                                 <small> Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A Modular Cloning System for Standardized Assembly of Multigene Constructs. PloS ONE 6 (2010).</small>
                                                             </div>
@@ -239,11 +255,15 @@
                                                             <h5>Description of Assembly Method</h5>
                                                             <!--Description of SLIC-->
                                                             <p>
-                                                                SLIC (Sequence and Ligation Independent Cloning) is a one-pot multi-way assembly methods taht uses in vitro homologous recombination and single-strand annealing.
-                                                                SLIC uses exonuclease to generate single stranded DNA overhangs in inserts as well as vectors.
+                                                                SLIC (Sequence and Ligation Independent Cloning) is a scarless multi-way assembly methods that leverages in vitro homologous recombination and single-strand annealing.
+                                                                SLIC uses exonuclease to generate single stranded DNA overhangs in inserts and cloning vectors.
                                                                 SLIC effectively mimics in vivo homologous recombination.
+                                                                The version of the method applied here adds NotI sites at the end of PCR fragments if intermediate clones are required. These fragments can then be extracted and used in the next cloning stage.
                                                             </p>
-                                                            <small>Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recom- binant DNA via SLIC. Nature Methods 4, 251– 256 (2007).</small>
+                                                            <p>
+                                                                ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested and gel extracted for the subsequent cloning stage.
+                                                            </p>
+                                                            <small>Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251 - 256 (2007).</small>
                                                         </div>
                                                         <div class="offset1 span5">
                                                             <h5>Assembly Efficiency</h5>
