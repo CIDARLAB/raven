@@ -7,6 +7,7 @@ package Controller.algorithms;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
 import Controller.datastructures.RNode;
+import Controller.datastructures.Vector;
 import java.util.ArrayList;
 
 /**
@@ -48,6 +49,13 @@ public class RHomologyPrimerDesign {
         }
         tags.add("Type: " + type);
         Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
+        
+        //If the nodes have vectors, the flanking vector sequences must be assigned
+        if (node.getVector() != null) {
+            Vector vector = coll.getVector(node.getVector().getUUID(), true);
+            String vSeq = vector.getSeq();
+        }
+        
         Part leftNeighbor;
         Part rightNeighbor;
         Part rootPart = coll.getPart(root.getUUID(), true);
@@ -73,6 +81,8 @@ public class RHomologyPrimerDesign {
             rSeq = rightNeighbor.getSeq();
             
         } else {
+            
+            //If the current part is a basic part, as opposed to composite
             if (currentPart.isBasic()) {
 
                 //Get neighbor sequences
@@ -93,6 +103,8 @@ public class RHomologyPrimerDesign {
                     rSeq = rightNeighbor.getSeq();
                     lSeq = leftNeighbor.getSeq();
                 }
+                
+            //If the level 0 node is a re-used composite part
             } else {
 
                 Part first = currentPart.getComposition().get(0);

@@ -147,10 +147,10 @@ $(document).ready(function() { //don't run javascript until page is loaded
         table.append('<tr><td>' + 'Every (x)n + ' + _vectorStage + '</td><td>' + vectorOptions + '</td></tr>');
     });
     $('.removeVectorStageButton').click(function() {
-        if ($('#vectorTable tbody tr').length > 1) {
+//        if ($('#vectorTable tbody tr').length > 1) {
             $('#vectorTable tbody tr').last().remove();
             _vectorStage = _vectorStage - 1;
-        }
+//        }
     });
 
     //target part button event handlers

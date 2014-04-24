@@ -265,7 +265,7 @@ public class ClothoWriter {
                     String resistance = "";
                     ArrayList<Vector> allVectorsWithName = coll.getAllVectorsWithName(vector.getName(), false);
                     if (!allVectorsWithName.isEmpty()) {
-                        seq = allVectorsWithName.get(0).getSequence();
+                        seq = allVectorsWithName.get(0).getSeq();
                         resistance = allVectorsWithName.get(0).getResistance();
                     }
                                         

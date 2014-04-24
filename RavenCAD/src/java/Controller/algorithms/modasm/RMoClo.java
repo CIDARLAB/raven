@@ -24,6 +24,9 @@ public class RMoClo extends RGeneral {
      */
     public ArrayList<RGraph> mocloClothoWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs) throws Exception {
         
+        _partLibrary = partLibrary;
+        _vectorLibrary = vectorLibrary;
+        
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
         Set<Integer> keySet = efficiencies.keySet();

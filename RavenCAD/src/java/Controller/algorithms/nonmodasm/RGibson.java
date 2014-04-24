@@ -71,8 +71,8 @@ public class RGibson extends RGeneral {
             if (vector != null) {                
                 RVector newVector = new RVector(composition.get(0), composition.get(composition.size()-1), root.getStage(), vector.getName(), null);
                 root.setVector(newVector);              
-                root.setLOverhang(vector.getName() + "_L");
-                root.setROverhang(vector.getName() + "_R");
+                root.setLOverhang(vector.getName() + "_R");
+                root.setROverhang(vector.getName() + "_L");
             } else {
                 root.setLOverhang(composition.get(composition.size() - 1));
                 root.setROverhang(composition.get(0));

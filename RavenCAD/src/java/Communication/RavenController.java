@@ -1153,8 +1153,7 @@ public class RavenController {
         System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + _valid);
     }
 
-    //using parameters from the client, run the algorithm
-    //using parameters from the client, run the algorithm
+    //Using parameters from the client, run the algorithm
     public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters, HashMap<String,String> stageVectors) throws Exception {
         _goalParts = new HashSet<Part>();
         _required = required;
