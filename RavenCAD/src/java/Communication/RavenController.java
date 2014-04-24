@@ -281,7 +281,7 @@ public class RavenController {
     //input: design number refers to the design number on the client
     public JSONArray generatePartsList(String designNumber, String params) throws Exception {
         File partsListFile = new File(_path + _user + "/partsList" + designNumber + ".csv");
-        File configFile = new File(_path + _user + "/config" + designNumber + ".txt");
+        File configFile = new File(_path + _user + "/config" + designNumber + ".csv");
 
         //traverse graphs to get uuids
         ArrayList<Part> usedParts = new ArrayList<Part>();
@@ -1263,9 +1263,16 @@ public class RavenController {
         ArrayList<String> graphTextFiles = new ArrayList();
         ArrayList<String> arcTextFiles = new ArrayList<String>();
         ArrayList<RNode> targetRootNodes = new ArrayList();
+        HashSet<String> targetRootNodeKeys = new HashSet();
+        
+        //Get target root node list for instructions and picture generation
         if (!_assemblyGraphs.isEmpty()) {            
             for (RGraph result : _assemblyGraphs) {
-                targetRootNodes.add(result.getRootNode());
+                if (!targetRootNodeKeys.contains(result.getRootNode().getNodeKey("+")) || !targetRootNodeKeys.contains(result.getRootNode().getNodeKey("-"))) {
+                    targetRootNodes.add(result.getRootNode());
+                    targetRootNodeKeys.add(result.getRootNode().getNodeKey("+"));
+                    targetRootNodeKeys.add(result.getRootNode().getNodeKey("-"));
+                }             
             }
         }
 
@@ -1287,6 +1294,7 @@ public class RavenController {
         boolean valid = validateGraphComposition();
         _valid = valid && overhangValid;
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
+
         if (!_assemblyGraphs.isEmpty()) {
             
             for (RGraph result : _assemblyGraphs) {
