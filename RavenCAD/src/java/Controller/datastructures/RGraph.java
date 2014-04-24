@@ -1083,7 +1083,7 @@ public class RGraph {
         //Assign right overhang                
         if (RO != null) {
             if (!RO.isEmpty()) {
-                pigeonLine.append("3 ").append(RO).append("\n");
+                pigeonLine.append("<5 ").append(RO).append("\n");
             }
         }
 //        pigeonLine.append("5 ").append(RO).append("\n");
