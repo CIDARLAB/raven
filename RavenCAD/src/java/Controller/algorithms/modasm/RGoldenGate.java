@@ -79,8 +79,8 @@ public class RGoldenGate extends RGeneral {
             if (vector != null) {                
                 RVector newVector = new RVector(composition.get(0), composition.get(composition.size()-1), root.getStage(), vector.getName(), null);
                 root.setVector(newVector);              
-                root.setLOverhang(vector.getName() + "_L");
-                root.setROverhang(vector.getName() + "_R");
+                root.setLOverhang(vector.getName() + "_R");
+                root.setROverhang(vector.getName() + "_L");
             } else {
                 root.setLOverhang(composition.get(composition.size() - 1));
                 root.setROverhang(composition.get(0));
@@ -207,10 +207,10 @@ public class RGoldenGate extends RGeneral {
         
         //Edge case where the node in question is the root node
         if (node == root) {
-            leftNeighbor = composition.get(composition.size() - 1);
-            rightNeighbor = composition.get(0);
-            rSeq = rightNeighbor.getSeq();
-            lSeq = leftNeighbor.getSeq();
+            
+            Vector vector = coll.getVector(node.getVector().getUUID(), true);
+            rSeq = vector.getSeq();
+            lSeq = vector.getSeq();
         
         } else {
 
@@ -245,16 +245,22 @@ public class RGoldenGate extends RGeneral {
 
                 //Get neighbor sequences
                 int indexOf = composition.indexOf(currentPart);
+                
+                //If this part is the left-most library part, the vector is the left neighbor 
                 if (indexOf == 0) {
-                    leftNeighbor = composition.get(composition.size() - 1);
+                    Vector vector = coll.getVector(node.getVector().getUUID(), true);
                     rightNeighbor = composition.get(indexOf + 1);
                     rSeq = rightNeighbor.getSeq();
-                    lSeq = leftNeighbor.getSeq();
+                    lSeq = vector.getSeq();
+                    
+                //If this part is the right-most library part, the vector is the right neighbor    
                 } else if (indexOf == composition.size() - 1) {
-                    rightNeighbor = composition.get(0);
+                    Vector vector = coll.getVector(node.getVector().getUUID(), true);
                     leftNeighbor = composition.get(indexOf - 1);
-                    rSeq = rightNeighbor.getSeq();
+                    rSeq = vector.getSeq();
                     lSeq = leftNeighbor.getSeq();
+                
+                //Otherwise neighbors are adjacent parts
                 } else {
                     rightNeighbor = composition.get(indexOf + 1);
                     leftNeighbor = composition.get(indexOf - 1);

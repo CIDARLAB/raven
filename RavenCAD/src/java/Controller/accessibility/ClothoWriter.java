@@ -282,7 +282,7 @@ public class ClothoWriter {
                     if (existingVec != null) {
                         
                         //If levels are a consideration, you may reuse vectors of the same level as long as the resistance does not match the next level
-                        if (method.equals("moclo") || method.equals("goldengate")) {
+                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
                             
                             if ((existingVec.getLevel() % 2) == (level % 2)) {
                                 
