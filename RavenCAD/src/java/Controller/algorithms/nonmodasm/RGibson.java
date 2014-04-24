@@ -132,34 +132,34 @@ public class RGibson extends RGeneral {
             
             if (j == 0) {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
-
-                if (vector != null) {
-                    RVector newVector = new RVector(parent.getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
-                    child.setVector(newVector);
-                }
                 child.setROverhang(nextComp.get(0));
                 child.setLOverhang(parent.getLOverhang());
+                
+                if (vector != null && child.getStage() != 0) {
+                    RVector newVector = new RVector(parent.getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    child.setVector(newVector);
+                }          
 
             } else if (j == children.size() - 1) {
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
-
-                if (vector != null) {
+                child.setLOverhang(prevComp.get(prevComp.size() - 1));
+                child.setROverhang(parent.getROverhang());
+                
+                if (vector != null && child.getStage() != 0) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), parent.getROverhang(), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }
-                child.setLOverhang(prevComp.get(prevComp.size() - 1));
-                child.setROverhang(parent.getROverhang());
-
+                
             } else {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
-
-                if (vector != null) {
-                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), nextComp.get(0), child.getStage(), vector.getName(), null);
-                    child.setVector(newVector);
-                }
                 child.setLOverhang(prevComp.get(prevComp.size() - 1));
                 child.setROverhang(nextComp.get(0));
+                
+                if (vector != null && child.getStage() != 0) {
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    child.setVector(newVector);
+                }               
             }
 
             if (child.getStage() == 0) {

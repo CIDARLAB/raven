@@ -199,7 +199,7 @@ public class ClothoWriter {
                                     } else {
                                         invertedcLO = invertedcLO + "*";
                                     }
-                                    String invertedcDir = cDir;
+                                    String invertedcDir;
                                     if (cDir.equals("+")) {
                                         invertedcDir = "-";
                                     } else {
@@ -461,7 +461,6 @@ public class ClothoWriter {
         newPart.addSearchTag("RO: " + RO);
         newPart.addSearchTag("Direction: " + direction);
         newPart.addSearchTag("Scars: " + scars);
-//        newPart = newPart.saveDefault(coll);
         return newPart;
     }
 

@@ -86,6 +86,25 @@ public class RavenController {
             return null;
         }
 
+        //If stageVectors are empty, fill with defaults
+        if (_stageVectors.get(0) == null) {
+            
+            ArrayList<String> defaultTags0 = new ArrayList<String>();
+            defaultTags0.add("LO: ");
+            defaultTags0.add("RO: ");
+            defaultTags0.add("Type: vector");
+            defaultTags0.add("Resistance: ampicilin");          
+            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
+            if (st0Vec == null) {
+                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
+                for (String tag : defaultTags0) {
+                    st0Vec.addSearchTag(tag);
+                }
+            }
+            
+            _stageVectors.put(0, st0Vec);
+        }
+        
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         RGibson gibson = new RGibson();
@@ -101,6 +120,25 @@ public class RavenController {
             return null;
         }
 
+        //If stageVectors are empty, fill with defaults
+        if (_stageVectors.get(0) == null) {
+            
+            ArrayList<String> defaultTags0 = new ArrayList<String>();
+            defaultTags0.add("LO: ");
+            defaultTags0.add("RO: ");
+            defaultTags0.add("Type: vector");
+            defaultTags0.add("Resistance: ampicilin");          
+            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
+            if (st0Vec == null) {
+                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
+                for (String tag : defaultTags0) {
+                    st0Vec.addSearchTag(tag);
+                }
+            }
+            
+            _stageVectors.put(0, st0Vec);
+        }
+        
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
@@ -116,6 +154,25 @@ public class RavenController {
             return null;
         }
 
+        //If stageVectors are empty, fill with defaults
+        if (_stageVectors.get(0) == null) {
+            
+            ArrayList<String> defaultTags0 = new ArrayList<String>();
+            defaultTags0.add("LO: ");
+            defaultTags0.add("RO: ");
+            defaultTags0.add("Type: vector");
+            defaultTags0.add("Resistance: ampicilin");          
+            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
+            if (st0Vec == null) {
+                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
+                for (String tag : defaultTags0) {
+                    st0Vec.addSearchTag(tag);
+                }
+            }
+            
+            _stageVectors.put(0, st0Vec);
+        }
+        
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
