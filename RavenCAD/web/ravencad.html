@@ -7,6 +7,10 @@
         <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
         <link href="css/override.css" rel="stylesheet" media="screen">
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
+        <script src="jsLibraries/jquery-ui.min.js"></script>
+        <script src="jsLibraries/bootstrap.min.js"></script>
+
         <style>
             select.fixedHeight {list-style-type: none;
                                 width: 20em;
@@ -70,7 +74,7 @@
                                         <div class="span12">
                                             <div class="tabbable tabs-left">
                                                 <ul id="methodTabHeader" class="nav nav-tabs nav-pills">
-                                                     <li class="active"><a href="#biobricksTab" data-toggle="tab"  id="biobricksTabHeader">BioBricks</a></li>
+                                                    <li class="active"><a href="#biobricksTab" data-toggle="tab"  id="biobricksTabHeader">BioBricks</a></li>
                                                     <li><a href="#cpecTab" data-toggle="tab" id="cpecTabHeader">CPEC</a></li>
                                                     <li><a href="#gibsonTab" data-toggle="tab" id="gibsonTabHeader">Gibson</a></li>
                                                     <li class ><a href="#goldengateTab" data-toggle="tab" id="goldengateTabHeader">Golden Gate</a></li>
@@ -389,6 +393,7 @@
                                     <h3>Vectors</h3>
                                     <!--<hr/>-->
                                     <h4>Specify vectors to be used for each cloning stage</h4>
+                                    <a class="tip" data-toggle="tooltip" title="" data-original-title="Raven requires a vector to be specified in each assembly method. If you don't specify one, we'll provide one for you.">About Default Vectors</a>
                                     <table id ="vectorTable" class="table table-bordered table-condensed">
                                         <thead><tr><th>Stage</th><th>Vector - Resistance</th></tr></thead>
                                         <tbody>
@@ -527,12 +532,10 @@
                 <button class="btn-success" data-dismiss="modal" aria-hidden="true">OK</button>
             </div>
         </div>
-        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
-        <script src="jsLibraries/bootstrap.min.js"></script>
         <script type="text/javascript" src ="controller/RavencadController.js"></script> 
 
         <script src="jsLibraries/jquery.dataTables.min.js"></script>
-        <script src="jsLibraries/jquery-ui.min.js"></script>
+
         <script src="jsLibraries/jquery.elevatezoom.js"></script>
         <footer>
             <div class="container" align="center">

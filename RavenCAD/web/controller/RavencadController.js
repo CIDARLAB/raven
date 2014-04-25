@@ -11,6 +11,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
     var currentActiveTab = 0;
     var _vectorStage = 0;
     /********************EVENT HANDLERS********************/
+
+    //initialize tooltips
+    $("[data-toggle=tooltip]").tooltip();
     //prompt dialog when navigating away from design page with unsaved parts
     $('a.losePartLink').click(function(event) {
         var notSaved = $('a[val="notSaved"]');
@@ -143,6 +146,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 vectorOptions = vectorOptions + '<option id="' + this["uuid"] + '">' + this["Name"] + ' - ' + this["Resistance"] + '</option>';
             }
         });
+
         vectorOptions = vectorOptions + '</select>';
         table.append('<tr><td>' + 'Every (x)n + ' + _vectorStage + '</td><td>' + vectorOptions + '</td></tr>');
     });
@@ -777,9 +781,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
                 );
         $('#imageTabHeader_' + _designCount).click(function() {
-              $('#resultTabsContent'+_designCount).children('.active').removeClass('active');
-              $('#resultTabsContent'+_designCount).children('.active').removeClass('active');
-              $('#imageTab'+_designCount).addClass('active');
+            $('#resultTabsContent' + _designCount).children('.active').removeClass('active');
+            $('#resultTabsContent' + _designCount).children('.active').removeClass('active');
+            $('#imageTab' + _designCount).addClass('active');
         })
         //deal with image container
         $('#designTabHeader li a#designTabHeader_' + _designCount).click(function() {
@@ -1057,7 +1061,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 var isGoalPart = $.inArray(uuid, targets);
                 //render only composite parts
 //                if (isGoalPart === -1 && composition.split(",").length > 1) {
-                if (isGoalPart === -1 && type !== "vector" && type !== "destination vector") {    
+                if (isGoalPart === -1 && type !== "vector" && type !== "destination vector") {
                     redesignPartsList = redesignPartsList + '<tr val="' + $(this).attr("val") + '"><td><button val="' + currentDesignCount + '" class="btn reqForbidButton" name="neither">Unattempted</button></td>';
                     $(this).find('td').each(function(key, value) {
                         if (key < 7) {
@@ -1092,7 +1096,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('#redesignButton' + currentDesignCount).click(function(event) {
 
                 event.preventDefault();
-                $('#redesignModal').modal(); 
+                $('#redesignModal').modal();
 
                 hideImage(currentDesignCount)
                 $('#designTabHeader a:first').tab('show');
@@ -1111,14 +1115,14 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     var failSucceed = $(this).find('td').first().find("button").attr("name");
                     var type = $(this).find('td:nth-child(6)').text().toLowerCase();
                     var composition = $(this).find('td:nth-child(8)').text().toLowerCase();
-                    
+
                     var uuid = $(this).find('td:nth-child(2)').text();
-                    
+
                     if (type === "vector" || type === "destination vector") {
                         toSaveVectors.push(uuid);
                         toAddToVectorLibrary = toAddToVectorLibrary + uuid + ',';
                     }
-                    
+
                     if (type === "plasmid" && failSucceed === "failed" && composition.split(",").length > 1) {
                         var toForbid = $(this).find('td:last').text();
                         var toForbidS = toForbid.split(",");
@@ -1127,9 +1131,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             var forb = toForbidS[toForb];
                             var tokens = forb.split("|");
                             toForbidF = toForbidF + tokens[0];
-                            toForbidF = toForbidF + "|" + tokens[tokens.length-1] + ",";
+                            toForbidF = toForbidF + "|" + tokens[tokens.length - 1] + ",";
                         }
-                        toForbid = "[" + toForbidF.substring(0, toForbidF.length-1) + "]";
+                        toForbid = "[" + toForbidF.substring(0, toForbidF.length - 1) + "]";
                         forbid = forbid + toForbid + ";";
                     } else if (type === "plasmid" && failSucceed === "succeeded" && composition.split(",").length > 1) {
                         var toRequire = $(this).find('td:last').text();
@@ -1139,16 +1143,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
                             var req = toRequireS[toReq];
                             var tokens = req.split("|");
                             toRequireF = toRequireF + tokens[0];
-                            toRequireF = toRequireF + "|" + tokens[tokens.length-1] + ",";
+                            toRequireF = toRequireF + "|" + tokens[tokens.length - 1] + ",";
                         }
-                        toRequire = "[" + toRequireF.substring(0, toRequireF.length-1) + "]";
+                        toRequire = "[" + toRequireF.substring(0, toRequireF.length - 1) + "]";
                         require = require + toRequire + ";";
                     }
 
                     if (failSucceed === "succeeded" && type !== "vector" && type !== "destination vector") {
                         var uuid = $(this).find('td:nth-child(2)').text();
                         toAddToPartLibrary = toAddToPartLibrary + uuid + ',';
-                        toSaveParts.push(uuid);                        
+                        toSaveParts.push(uuid);
                     }
                 });
                 toAddToPartLibrary = toAddToPartLibrary.substring(0, toAddToPartLibrary.length - 1);
@@ -1160,12 +1164,12 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
                 redesignInput["required"] = redesignInput["required"] + require;
                 redesignInput["partLibrary"] = redesignInput["partLibrary"] + "," + toAddToPartLibrary;
-                redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + "," + toAddToVectorLibrary;                
+                redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + "," + toAddToVectorLibrary;
                 _runParameters[designNumber] = redesignInput;
-                interpretParams(redesignInput);                
+                interpretParams(redesignInput);
                 refreshData();
                 updateSummary();
-                   });
+            });
 //            });
 
             $('.reqForbidButton').click(function() {
@@ -1235,7 +1239,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
         var vectorIDs = params["vectorLibrary"].split(",");
         var writeSQL = false;
         $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
-            
+
         });
 
         //switch to correct method
