@@ -365,17 +365,17 @@ public class RGoldenGate extends RGeneral {
                 revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, true)));
             }
 
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0] + fwdHomology;
-            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + fusionSites[1] + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0].toUpperCase() + fwdHomology;
+            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + fusionSites[1].toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
         } else {
             if (seq.equals("")) {
                 fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
                 revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
-                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0] + fwdHomology;
-                reverseOligoSequence = PrimerDesign.reverseComplement(fusionSites[1] + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0].toUpperCase() + fwdHomology;
+                reverseOligoSequence = PrimerDesign.reverseComplement(fusionSites[1].toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
             } else {
                 fwdHomology = seq;
-                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0] + fwdHomology + fusionSites[1] + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0].toUpperCase() + fwdHomology + fusionSites[1].toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
                 reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
             }
         }
@@ -399,13 +399,13 @@ public class RGoldenGate extends RGeneral {
         String forwardOligoSequence;
         String reverseOligoSequence;
         if (vector.getLevel() % 2 == 0) {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + fusionSites[0] + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + fusionSites[1] + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + fusionSites[0].toUpperCase() + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + fusionSites[1].toUpperCase() + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
 
             //Level 1, 3, 5, 7, etc. vectors
         } else {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + fusionSites[0] + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + fusionSites[1] + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + fusionSites[0].toUpperCase() + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + fusionSites[1].toUpperCase() + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
         }
 
         oligos[0]=forwardOligoSequence;
