@@ -55,6 +55,8 @@ public class RInstructions {
 
             HashSet<RNode> l0NodesThisRoot = new HashSet<RNode>();
             HashSet<RVector> vectorsThisRoot = new HashSet<RVector>();
+            HashSet<String> seenNodeKeys = new HashSet<String>();
+            HashSet<String> seenVecKeys = new HashSet<String>();
             HashMap<RNode, String[]> fusionSites = new HashMap<RNode, String[]>();
             HashMap<RVector, RNode> vecNodeMap = new HashMap<RVector, RNode>();
 
@@ -80,13 +82,15 @@ public class RInstructions {
 
                     //If this node has a new vector, there will need to be a PCR added, but this is done at the end of the file
                     RVector vector = currentNode.getVector();
-                    if (vector != null) {
+                    if (!seenVecKeys.contains(vector.getVectorKey("+")) || !seenVecKeys.contains(vector.getVectorKey("-"))) {
                         vectorsThisRoot.add(vector);
-                        vecNodeMap.put(vector, currentNode);
-                        String vectorKey = vector.getVectorKey("+");
-                        if (!libraryVectorKeys.contains(vectorKey)) {
-                            newVectors.add(vector);
-                        }
+                        seenVecKeys.add(vector.getVectorKey("+"));
+                        seenVecKeys.add(vector.getVectorKey("-"));
+                    }
+
+                    vecNodeMap.put(vector, currentNode);
+                    if (!libraryVectorKeys.contains(vector.getVectorKey("+")) || !libraryVectorKeys.contains(vector.getVectorKey("-"))) {
+                        newVectors.add(vector);
                     }
 
                     //append which parts to use for a moclo reaction
@@ -110,19 +114,31 @@ public class RInstructions {
                     //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
                 } else {
 
+                    //Determine if a new vectors needs to be made
                     String nodeKey = currentNode.getNodeKey("+");
                     RVector vector = currentNode.getVector();
-                    String vectorKey = new String();
                     if (vector != null) {
-                        vectorsThisRoot.add(vector);
+                        
+                        //Determine if a new vector is needed, i.e. a new PCR step
+                        if (!seenVecKeys.contains(vector.getVectorKey("+")) || !seenVecKeys.contains(vector.getVectorKey("-"))) {
+                            vectorsThisRoot.add(vector);
+                            seenVecKeys.add(vector.getVectorKey("+"));
+                            seenVecKeys.add(vector.getVectorKey("-"));
+                        }
+                        
                         vecNodeMap.put(vector, currentNode);
-                        vectorKey = vector.getVectorKey("+");
-                        if (!libraryVectorKeys.contains(vectorKey)) {
+                        if (!libraryVectorKeys.contains(vector.getVectorKey("+")) || !libraryVectorKeys.contains(vector.getVectorKey("-"))) {
                             newVectors.add(vector);
                         }
                     }
-                    l0NodesThisRoot.add(currentNode);
-
+                    
+                    //Determine if a new level 0 node is needed, i.e. a new PCR step
+                    if (!seenNodeKeys.contains(currentNode.getNodeKey("+")) || !seenNodeKeys.contains(currentNode.getNodeKey("-"))) {
+                        l0NodesThisRoot.add(currentNode);
+                        seenNodeKeys.add(currentNode.getNodeKey("+"));
+                        seenNodeKeys.add(currentNode.getNodeKey("-"));
+                    }
+                    
                     //Design part primers if this part key is not in the key list, perform asssembly step if the vector or part is not yet PCRed
                     if (!libraryPartKeys.contains(nodeKey)) {
                         newNodes.add(currentNode);
@@ -136,7 +152,7 @@ public class RInstructions {
 
                         //If the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
                     } else {
-                        if (!libraryVectorKeys.contains(vectorKey)) {
+                        if (!libraryVectorKeys.contains(vector.getVectorKey("+")) || !libraryVectorKeys.contains(vector.getVectorKey("-"))) {
                             instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
                         }
                     }
@@ -154,7 +170,7 @@ public class RInstructions {
 
                         //For small part, just order annealing primers
                         boolean anneal = false;
-                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= 24) {
+                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= 24 && !coll.getPart(l0Node.getUUID(), true).getSeq().isEmpty()) {
                             anneal = true;
                         }
 

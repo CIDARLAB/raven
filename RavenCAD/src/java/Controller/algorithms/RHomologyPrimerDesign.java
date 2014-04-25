@@ -51,13 +51,15 @@ public class RHomologyPrimerDesign {
         Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
         
         //If the nodes have vectors, the flanking vector sequences must be assigned
+        Vector vector = null;
+        String vSeq = "";
         if (node.getVector() != null) {
-            Vector vector = coll.getVector(node.getVector().getUUID(), true);
-            String vSeq = vector.getSeq();
+            vector = coll.getVector(node.getVector().getUUID(), true);
+            vSeq = vector.getSeq();
         }
-        
-        Part leftNeighbor;
-        Part rightNeighbor;
+
+        Part leftNeighbor = null;
+        Part rightNeighbor = null;
         Part rootPart = coll.getPart(root.getUUID(), true);
         ArrayList<Part> composition = rootPart.getComposition();
 
@@ -92,11 +94,21 @@ public class RHomologyPrimerDesign {
                     rightNeighbor = composition.get(indexOf + 1);
                     rSeq = rightNeighbor.getSeq();
                     lSeq = leftNeighbor.getSeq();
+                    if (vector != null) {
+                        lSeq = vSeq;
+                        leftNeighbor = null;
+                    }
+                    
                 } else if (indexOf == composition.size() - 1) {
                     rightNeighbor = composition.get(0);
                     leftNeighbor = composition.get(indexOf - 1);
                     rSeq = rightNeighbor.getSeq();
                     lSeq = leftNeighbor.getSeq();
+                    if (vector != null) {
+                        rSeq = vSeq;
+                        rightNeighbor = null;
+                    }
+                    
                 } else {
                     rightNeighbor = composition.get(indexOf + 1);
                     leftNeighbor = composition.get(indexOf - 1);
@@ -116,6 +128,10 @@ public class RHomologyPrimerDesign {
                 if (indexOfFirst == 0) {
                     leftNeighbor = composition.get(composition.size() - 1);
                     lSeq = leftNeighbor.getSeq();
+                    if (vector != null) {
+                        lSeq = vSeq;
+                        leftNeighbor = null;
+                    }
                 } else {
                     leftNeighbor = composition.get(indexOfFirst - 1);
                     lSeq = leftNeighbor.getSeq();
@@ -125,6 +141,10 @@ public class RHomologyPrimerDesign {
                 if (indexOfLast == composition.size() - 1) {
                     rightNeighbor = composition.get(0);
                     rSeq = rightNeighbor.getSeq();
+                    if (vector != null) {
+                        rSeq = vSeq;
+                        rightNeighbor = null;
+                    }
                 } else {
                     rightNeighbor = composition.get(indexOfFirst + 1);
                     rSeq = rightNeighbor.getSeq();
@@ -139,16 +159,21 @@ public class RHomologyPrimerDesign {
             missingRightSequence = true;
         }
 
-        //Reverse sequence direction for parts on the reverse strand            
-        ArrayList<String> rightNeighborDirection = rightNeighbor.getDirections();
-        ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
-        if ("-".equals(leftNeighborDirection.get(0))) {
-            lSeq = PrimerDesign.reverseComplement(lSeq);
+        //Reverse sequence direction for parts on the reverse strand
+        if (rightNeighbor != null) {
+            ArrayList<String> rightNeighborDirection = rightNeighbor.getDirections();
+            if ("-".equals(rightNeighborDirection.get(0))) {
+                rSeq = PrimerDesign.reverseComplement(rSeq);
+            }
         }
-        if ("-".equals(rightNeighborDirection.get(0))) {
-            rSeq = PrimerDesign.reverseComplement(rSeq);
+        
+        if (leftNeighbor != null) {
+            ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
+            if ("-".equals(leftNeighborDirection.get(0))) {
+                lSeq = PrimerDesign.reverseComplement(lSeq);
+            }
         }
-
+        
         int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, lSeq, false, true);
         int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rSeq), false, true);
         int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentSeq, true, true);
@@ -156,14 +181,23 @@ public class RHomologyPrimerDesign {
         
         //If there are any missing sequences, return default homology indications
         if (missingSequence || missingLeftSequence || missingRightSequence) {
-            forwardOligoSequence = "["+leftNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-            reverseOligoSequence = "["+rightNeighbor.getName()+" HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            if (leftNeighbor != null) {
+                forwardOligoSequence = "[" + leftNeighbor.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            } else {
+                forwardOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            }
+
+            if (rightNeighbor != null) {
+                reverseOligoSequence = "[" + rightNeighbor.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            } else {
+                reverseOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            }
+
         } else {
             forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
             reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
         }
-
-
+        
         oligos[0]=forwardOligoSequence;
         oligos[1]=reverseOligoSequence;
 
