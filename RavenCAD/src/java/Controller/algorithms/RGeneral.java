@@ -63,6 +63,7 @@ public class RGeneral extends Modularity {
 //                RGraph newGraph = new RGraph();
                 RGraph newGraph = createAsmGraph_sgp(gp, hashMem, libCompDir, required, recommended, forbidden, discouraged, slack, sharingHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
+                newGraph.getRootNode().setName(gp.getName());
 
                 if (newGraph.getRootNode().getComposition().isEmpty()) {
                     System.out.println("WARNING, GOAL PART " + gp.getComposition() + " CANNOT BE BUILT WITH THIS FORBIDDEN SET!");
