@@ -208,6 +208,33 @@ public class RGoldenGate extends RGeneral {
         //Edge case where the node in question is the root node
         if (node == root) {
             
+            String seq = "";
+            ArrayList<String> tags = new ArrayList<String>();
+            String type = "";
+            tags.add("LO: " + node.getLOverhang());
+            tags.add("RO: " + node.getROverhang());
+            tags.add("Direction: " + node.getDirection());
+            tags.add("Scars: " + node.getScars());
+            ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
+            if (!allPartsWithName.isEmpty()) {
+                seq = allPartsWithName.get(0).getSeq();
+                for (int i = 0; i < allPartsWithName.size(); i++) {
+                    type = allPartsWithName.get(i).getType();
+                    if (!type.equalsIgnoreCase("plasmid")) {
+                        break;
+                    }
+                }
+            }
+            tags.add("Type: " + type);
+            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
+            currentSeq = currentPart.getSeq();
+            ArrayList<String> direction = node.getDirection();
+
+            //Reverse complement sequences that are on the reverse strand
+            if ("-".equals(direction.get(0))) {
+                currentSeq = PrimerDesign.reverseComplement(currentSeq);
+            }
+            
             Vector vector = coll.getVector(node.getVector().getUUID(), true);
             rSeq = vector.getSeq();
             lSeq = vector.getSeq();
