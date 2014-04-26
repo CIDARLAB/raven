@@ -86,9 +86,12 @@ public class ClothoWriter {
 
                     //If there's overhangs, add search tags
                     Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
-                    newPlasmid.addSearchTag("Type: plasmid");                                     
+                    Part newComposite = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
+                    newPlasmid.addSearchTag("Type: plasmid");
+                    newComposite.addSearchTag("Type: composite");
                     currentNode.setName(partName);
                     newPlasmid = newPlasmid.saveDefault(coll);
+                    newComposite.saveDefault(coll);
                     currentNode.setUUID(newPlasmid.getUUID());
 
                 } else {
@@ -119,7 +122,7 @@ public class ClothoWriter {
                             newPlasmid = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
                             
                             //Make a new part for scarless assembly
-                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("goldengate")) {
+//                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("goldengate")) {
                                 Part newBasic = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
                                 newBasic.addSearchTag("LO: " + LO);
                                 newBasic.addSearchTag("RO: " + RO);
@@ -129,7 +132,7 @@ public class ClothoWriter {
                                 type = type.substring(1, type.length() - 1);
                                 newBasic.addSearchTag("Type: " + type);
                                 newBasic.saveDefault(coll);
-                            }
+//                            }
                         } else {
 
                             //If a new composite part needs to be made

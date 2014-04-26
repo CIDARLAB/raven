@@ -1161,33 +1161,17 @@ public class RavenController {
                 if (p != null) {
 
                     if (p.isTransient()) {
-
-                        //Make a new basic part for single-part composition plasmids, new composite part if for multi-composition plasmids
-                        if (p.getComposition().size() == 1) {
-                            Part newBasicPart = Part.generateBasic(p.getName(), p.getSeq(), p.getComposition().get(0));
-                            newBasicPart.addSearchTag("Type: " + p.getComposition().get(0).getType());
-                            newBasicPart.addSearchTag("Direction: " + p.getDirections());
-                            newBasicPart.addSearchTag("LO: " + p.getLeftOverhang());
-                            newBasicPart.addSearchTag("RO: " + p.getRightOverhang());
-                            newBasicPart.addSearchTag("Scars: []");
-                            _partLibrary.add(newBasicPart);
-                            newBasicPart.saveDefault(_collector);
-                            newBasicPart.setTransientStatus(false);
-
-                        } else {
-
-                            Part newComposite = Part.generateComposite(p.getComposition(), p.getName());
-                            newComposite.addSearchTag("Direction: " + p.getDirections());
-                            newComposite.addSearchTag("LO: " + p.getLeftOverhang());
-                            newComposite.addSearchTag("RO: " + p.getRightOverhang());
-                            newComposite.addSearchTag("Type: composite");
-                            newComposite.addSearchTag("Scars: " + p.getScars());
-                            newComposite = newComposite.saveDefault(_collector);
-                            newComposite.setTransientStatus(false);
-                            _partLibrary.add(newComposite);
+                        
+                        ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(p.getName(), true);
+                        for (Part partWithName : allPartsWithName) {
+                            if (p.getLeftOverhang().equalsIgnoreCase(partWithName.getLeftOverhang()) && p.getRightOverhang().equalsIgnoreCase(partWithName.getRightOverhang()) && p.getStringComposition().equals(partWithName.getStringComposition()) && p.getScars().equals(partWithName.getScars()) && p.getDirections().equals(partWithName.getDirections()) && !partWithName.getType().equalsIgnoreCase("plasmid")) {
+                                partWithName.setTransientStatus(false);
+                                _partLibrary.add(partWithName);
+                            }
                         }
 
                         p.setTransientStatus(false);
+                        _partLibrary.add(p);
                         toSaveParts.add(p);
                     }
                 }
@@ -1198,6 +1182,7 @@ public class RavenController {
                 Vector v = _collector.getVector(vectorIDs[i], true);
                 if (v != null) {
                     v.setTransientStatus(false);
+                    _vectorLibrary.add(v);
                     toSaveVectors.add(v);
                 }
             }
