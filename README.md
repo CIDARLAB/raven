@@ -2,15 +2,16 @@ Raven
 ===============
 Version History
 ---------------
-* 0.1 - initial SDSViewer implementation.
+* 0.1 - Initial SDSViewer implementation.
 * 0.2 - ClothoSDSViewer implementation
-* 0.3 - multi-goal part implementation
+* 0.3 - Multi-goal part implementation
 * 0.4 - Raven Swing/Awt standalone implementation
-* 0.5 - Initial webapp implementation
-* 0.6 - first live deployment onto server
-* 0.7 - rehauled communication framework for session handling
-* 0.8 - iwbda demo version. significant bug fixes and interface enhancements
-* 0.9 - overhang assignment reimplemented, instructions now generated. major bug fixes.
+* 0.5 - Initial online implementation
+* 0.6 - First live deployment onto server
+* 0.7 - IWBDA demo version. significant bug fixes and interface enhancements
+* 0.8 - Overhang assignment reimplemented, instructions now generated. major bug fixes.
+* 0.9 - Golden Gate finished, upload format re-formatted and mre-design feature implemented.
+* 1.0 - Raven release on publishing date 4/28/14. All known bugs resolved and documentation updated.
 
 License and Disclaimer
 ======================
