@@ -894,8 +894,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
             if (data["statistics"]["valid"] === "true") {
                 status = '<span class="label label-success">Graph structure verified!</span>';
                 saveButtons = '<p><button id="reportButton' + currentDesignCount +
-                        '" class ="btn btn-primary" style="width:100%" val="' + currentDesignCount + '">Submit as Example</button></p>';
-//                        '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
+                         '" class ="btn btn-primary" style="width:100%" val="' + currentDesignCount + '">Submit as Example</button></p>' +
+                         '<p><button class="btn btn-success" style="width:100%" id="saveButton' + currentDesignCount + '" val="' + currentDesignCount + '">Save to working library</button></p>';
                 if (user === "admin") {
                     saveButtons = saveButtons + '<p><label><input id="sqlCheckbox' + currentDesignCount + '" type="checkbox" checked=true/>Write SQL</label></p>';
                 } else {

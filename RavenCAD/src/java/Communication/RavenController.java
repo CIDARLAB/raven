@@ -1147,7 +1147,21 @@ public class RavenController {
                         }
 
                         p.setTransientStatus(false);
+                        _libraryOHHash.put(p.getUUID(), p.getLeftOverhang() + "|" + p.getRightOverhang());
                         _partLibrary.add(p);
+                        
+                        //Extra logic to determine part-vector pairs... probably not perfect logic here, but works some times... hack
+                        if (vectorIDs.length > 0) {
+                            for (int k = 0; k < vectorIDs.length; k++) {
+                                Vector v = _collector.getVector(vectorIDs[k], true);
+                                if (v != null) {
+                                   if (p.getLeftOverhang().equals(v.getLeftOverhang()) && p.getRightOverhang().equals(v.getRightOverhang())) {
+                                       _libraryPartsVectors.put(p, v);
+                                   } 
+                                }
+                            }
+                        }
+                        
                         toSaveParts.add(p);
                     }
                 }

@@ -234,7 +234,7 @@ public class ClothoWriter {
                             newPlasmid = Part.generateComposite(newComposition, currentPart.getName());
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
-                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("goldengate")) {
+//                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("goldengate")) {
                                 Part newComposite = Part.generateComposite(newComposition, currentPart.getName());
                                 newComposite.addSearchTag("LO: " + LO);
                                 newComposite.addSearchTag("RO: " + RO);
@@ -242,7 +242,7 @@ public class ClothoWriter {
                                 newComposite.addSearchTag("Scars: " + currentNode.getScars().toString());
                                 newComposite.addSearchTag("Type: composite");
                                 newComposite.saveDefault(coll);
-                            }                            
+//                            }                            
                             
                         }
 
