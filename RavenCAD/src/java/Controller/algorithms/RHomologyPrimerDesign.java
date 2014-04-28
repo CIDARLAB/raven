@@ -256,8 +256,8 @@ public class RHomologyPrimerDesign {
             
             //If there are any missing sequences, return default homology indications
             if (missingSequence || missingLeftSequence || missingRightSequence) {
-                forwardOligoSequence = "[" + vector.getLOverhang() + " HOMOLOGY]gcggccgc[" + vector.getName() + " HOMOLOGY]";
-                reverseOligoSequence = "[" + vector.getROverhang() + " HOMOLOGY]gcggccgc[" + vector.getName() + " HOMOLOGY]";
+                forwardOligoSequence = "[" + vector.getLOverhang() + " HOMOLOGY][NotI Site][" + vector.getName() + " HOMOLOGY]";
+                reverseOligoSequence = "[" + vector.getROverhang() + " HOMOLOGY][NotI Site][" + vector.getName() + " HOMOLOGY]";
 
             } else {
                 forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + NotIsite + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));

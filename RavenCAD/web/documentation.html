@@ -106,6 +106,10 @@
                         <p>
                             These strategies are applied to all supported assembly methods to produce fast, modular and efficient assembly plans. Additional details can be found in the <a href="#references">Raven publication</a>.
                         </p>
+                        <p>
+                            NOTE: In scarless assembly methods (CPEC, Gibson, Golden Gate, SLIC), it cannot be guaranteed that all part junctions are unique in each cloning reaction.                         
+                            Please check assembly plan and primers carefully before implementing. If Raven selects an incompatible part junction for a specific cloning reaction, try changing the plan by forcing or biasing the intermediate steps.
+                        </p>
                     </div>
                     <div class="well" id="toolChain">
                         <h3>Integrated Tool Chain</h3>
