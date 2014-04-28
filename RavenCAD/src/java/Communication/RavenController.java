@@ -45,69 +45,6 @@ public class RavenController {
         _databaseConfig.add("Puppeteerv0 ");
         _databaseConfig.add("cidar.rwdu");
         _databaseConfig.add("cidar");
-
-        // generate default vectors
-        //default for biobricks, CPEC, Gibson, SLIC
-        ArrayList<String> defaultTags0 = new ArrayList<String>();
-        defaultTags0.add("LO: ");
-        defaultTags0.add("RO: ");
-        defaultTags0.add("Type: vector");
-        defaultTags0.add("Resistance: ampicilin");
-        Vector st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
-        for (String tag : defaultTags0) {
-            st0Vec.addSearchTag(tag);
-        }
-        st0Vec.saveDefault(_collector);
-        st0Vec.setTransientStatus(false);
-
-        //default for Golden Gate
-        defaultTags0 = new ArrayList<String>();
-        defaultTags0.add("LO: ");
-        defaultTags0.add("RO: ");
-        defaultTags0.add("Type: vector");
-        defaultTags0.add("Resistance: kanamycin");
-        st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
-        for (String tag : defaultTags0) {
-            st0Vec.addSearchTag(tag);
-        }
-        st0Vec.saveDefault(_collector);
-        st0Vec.setTransientStatus(false);
-
-        ArrayList<String> defaultTags1 = new ArrayList<String>();
-        defaultTags1.add("LO: ");
-        defaultTags1.add("RO: ");
-        defaultTags1.add("Type: vector");
-        defaultTags1.add("Resistance: ampicilin");
-        Vector st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
-        for (String tag : defaultTags1) {
-            st1Vec.addSearchTag(tag);
-        }
-        st1Vec.saveDefault(_collector);
-        st1Vec.setTransientStatus(false);
-        //defaults for MoClo
-//        defaultTags0 = new ArrayList<String>();
-//        defaultTags0.add("LO: ");
-//        defaultTags0.add("RO: ");
-//        defaultTags0.add("Type: vector");
-//        defaultTags0.add("Resistance: kanamycin");
-//        st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
-//        for (String tag : defaultTags0) {
-//            st0Vec.addSearchTag(tag);
-//        }
-//        st0Vec.saveDefault(_collector);
-//        st0Vec.setTransientStatus(false);
-//
-//        defaultTags1 = new ArrayList<String>();
-//        defaultTags1.add("LO: ");
-//        defaultTags1.add("RO: ");
-//        defaultTags1.add("Type: vector");
-//        defaultTags1.add("Resistance: ampicilin");
-//        st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
-//        for (String tag : defaultTags1) {
-//            st1Vec.addSearchTag(tag);
-//        }
-//        st1Vec.saveDefault(_collector);
-//        st1Vec.setTransientStatus(false);
     }
 
     public ArrayList<RGraph> runBioBricks() throws Exception {
@@ -816,6 +753,45 @@ public class RavenController {
      */
     private void parseRavenFile(File input) throws Exception {
 
+        // generate default vectors
+        //default for biobricks, CPEC, Gibson, SLIC
+        ArrayList<String> defaultTags0 = new ArrayList<String>();
+        defaultTags0.add("LO: ");
+        defaultTags0.add("RO: ");
+        defaultTags0.add("Type: vector");
+        defaultTags0.add("Resistance: ampicilin");
+        Vector st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
+        for (String tag : defaultTags0) {
+            st0Vec.addSearchTag(tag);
+        }
+        st0Vec.saveDefault(_collector);
+        st0Vec.setTransientStatus(false);
+
+        //default for Golden Gate
+        defaultTags0 = new ArrayList<String>();
+        defaultTags0.add("LO: ");
+        defaultTags0.add("RO: ");
+        defaultTags0.add("Type: vector");
+        defaultTags0.add("Resistance: kanamycin");
+        st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
+        for (String tag : defaultTags0) {
+            st0Vec.addSearchTag(tag);
+        }
+        st0Vec.saveDefault(_collector);
+        st0Vec.setTransientStatus(false);
+
+        ArrayList<String> defaultTags1 = new ArrayList<String>();
+        defaultTags1.add("LO: ");
+        defaultTags1.add("RO: ");
+        defaultTags1.add("Type: vector");
+        defaultTags1.add("Resistance: ampicilin");
+        Vector st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
+        for (String tag : defaultTags1) {
+            st1Vec.addSearchTag(tag);
+        }
+        st1Vec.saveDefault(_collector);
+        st1Vec.setTransientStatus(false);
+        
         _vectorLibrary = new ArrayList<Vector>();
         _partLibrary = new ArrayList<Part>();
         ArrayList<String> badLines = new ArrayList();

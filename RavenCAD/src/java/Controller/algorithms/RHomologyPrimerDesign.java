@@ -7,6 +7,7 @@ package Controller.algorithms;
 import Controller.datastructures.Collector;
 import Controller.datastructures.Part;
 import Controller.datastructures.RNode;
+import Controller.datastructures.RVector;
 import Controller.datastructures.Vector;
 import java.util.ArrayList;
 
@@ -49,14 +50,6 @@ public class RHomologyPrimerDesign {
         }
         tags.add("Type: " + type);
         Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
-        
-        //If the nodes have vectors, the flanking vector sequences must be assigned
-        Vector vector = null;
-        String vSeq = "";
-        if (node.getVector() != null) {
-            vector = coll.getVector(node.getVector().getUUID(), true);
-            vSeq = vector.getSeq();
-        }
 
         Part leftNeighbor = null;
         Part rightNeighbor = null;
@@ -75,12 +68,12 @@ public class RHomologyPrimerDesign {
             missingSequence = true;
         }      
         
+        Vector vector = coll.getVector(root.getVector().getUUID(), true);
+        
         //Edge case where a plasmid only has one part or a part is re-used from the library
-        if (root.getNeighbors().isEmpty()) {
-            leftNeighbor = currentPart;
-            rightNeighbor = currentPart;
-            lSeq = leftNeighbor.getSeq();
-            rSeq = rightNeighbor.getSeq();
+        if (root.getNeighbors().isEmpty()) {                                  
+            lSeq = vector.getSeq();
+            rSeq = vector.getSeq();
             
         } else {
             
@@ -90,24 +83,16 @@ public class RHomologyPrimerDesign {
                 //Get neighbor sequences
                 int indexOf = composition.indexOf(currentPart);
                 if (indexOf == 0) {
-                    leftNeighbor = composition.get(composition.size() - 1);
+//                    leftNeighbor = composition.get(composition.size() - 1);
                     rightNeighbor = composition.get(indexOf + 1);
                     rSeq = rightNeighbor.getSeq();
-                    lSeq = leftNeighbor.getSeq();
-                    if (vector != null) {
-                        lSeq = vSeq;
-                        leftNeighbor = null;
-                    }
+                    lSeq = vector.getSeq();
                     
                 } else if (indexOf == composition.size() - 1) {
-                    rightNeighbor = composition.get(0);
+//                    rightNeighbor = composition.get(0);
                     leftNeighbor = composition.get(indexOf - 1);
-                    rSeq = rightNeighbor.getSeq();
+                    rSeq = vector.getSeq();
                     lSeq = leftNeighbor.getSeq();
-                    if (vector != null) {
-                        rSeq = vSeq;
-                        rightNeighbor = null;
-                    }
                     
                 } else {
                     rightNeighbor = composition.get(indexOf + 1);
@@ -126,12 +111,8 @@ public class RHomologyPrimerDesign {
 
                 //Get neighbor sequences of beginning of part
                 if (indexOfFirst == 0) {
-                    leftNeighbor = composition.get(composition.size() - 1);
-                    lSeq = leftNeighbor.getSeq();
-                    if (vector != null) {
-                        lSeq = vSeq;
-                        leftNeighbor = null;
-                    }
+//                    leftNeighbor = composition.get(composition.size() - 1);
+                    lSeq = vector.getSeq();
                 } else {
                     leftNeighbor = composition.get(indexOfFirst - 1);
                     lSeq = leftNeighbor.getSeq();
@@ -139,12 +120,8 @@ public class RHomologyPrimerDesign {
 
                 //Get neighbor sequences of beginning of part
                 if (indexOfLast == composition.size() - 1) {
-                    rightNeighbor = composition.get(0);
-                    rSeq = rightNeighbor.getSeq();
-                    if (vector != null) {
-                        rSeq = vSeq;
-                        rightNeighbor = null;
-                    }
+//                    rightNeighbor = composition.get(0);
+                    rSeq = vector.getSeq();
                 } else {
                     rightNeighbor = composition.get(indexOfFirst + 1);
                     rSeq = rightNeighbor.getSeq();
@@ -181,17 +158,17 @@ public class RHomologyPrimerDesign {
         
         //If there are any missing sequences, return default homology indications
         if (missingSequence || missingLeftSequence || missingRightSequence) {
-            if (leftNeighbor != null) {
-                forwardOligoSequence = "[" + leftNeighbor.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-            } else {
-                forwardOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-            }
+//            if (leftNeighbor != null) {
+                forwardOligoSequence = "[" + currentPart.getLeftOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+//            } else {
+//                forwardOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+//            }
 
-            if (rightNeighbor != null) {
-                reverseOligoSequence = "[" + rightNeighbor.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-            } else {
-                reverseOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-            }
+//            if (rightNeighbor != null) {
+                reverseOligoSequence = "[" + currentPart.getRightOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+//            } else {
+//                reverseOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+//            }
 
         } else {
             forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));

@@ -136,7 +136,7 @@ public class RGibson extends RGeneral {
                 child.setLOverhang(parent.getLOverhang());
                 
                 if (vector != null && child.getStage() != 0) {
-                    RVector newVector = new RVector(parent.getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(parent.getVector().getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }          
 
@@ -146,7 +146,7 @@ public class RGibson extends RGeneral {
                 child.setROverhang(parent.getROverhang());
                 
                 if (vector != null && child.getStage() != 0) {
-                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), parent.getROverhang(), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), parent.getVector().getROverhang(), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }
                 

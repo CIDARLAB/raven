@@ -266,7 +266,7 @@ public class ClothoWriter {
                     //Get vector parameters
                     String seq = "";
                     String resistance = "";
-                    ArrayList<Vector> allVectorsWithName = coll.getAllVectorsWithName(vector.getName(), false);
+                    ArrayList<Vector> allVectorsWithName = coll.getAllVectorsWithName(vector.getName(), true);
                     if (!allVectorsWithName.isEmpty()) {
                         seq = allVectorsWithName.get(0).getSeq();
                         resistance = allVectorsWithName.get(0).getResistance();
@@ -333,7 +333,7 @@ public class ClothoWriter {
                                 vector.setName(existingVec.getName());
                                 vector.setUUID(existingVec.getUUID());
                             } else {
-                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level, method);
+                                Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, vector.getLOverhang(), vector.getROverhang(), resistance, level, method);
                                 newVector = newVector.saveDefault(coll);
                                 vector.setName(newVector.getName());
                                 vector.setUUID(newVector.getUUID());
@@ -342,7 +342,7 @@ public class ClothoWriter {
 
                     //Otherwise make a new vector if non exists
                     } else {
-                        Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, LO, RO, resistance, level, method);
+                        Vector newVector = generateNewClothoVector(coll, vector.getName(), seq, vector.getLOverhang(), vector.getROverhang(), resistance, level, method);
                         newVector = newVector.saveDefault(coll);
                         vector.setName(newVector.getName());
                         vector.setUUID(newVector.getUUID());
