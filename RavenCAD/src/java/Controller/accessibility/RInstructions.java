@@ -259,7 +259,7 @@ public class RInstructions {
                                 RNode node = vecNodeMap.get(vector);
                                 oligos = RGoldenGate.generateVectorPrimers(vector, fusionSites.get(node));
                             } else {
-                                oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, coll, meltingTemp, primerLength);
+                                oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, root, coll, meltingTemp, primerLength);
                             }
 
                             String fwdOligo = oligos[0];

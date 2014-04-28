@@ -67,22 +67,22 @@ public class RGibson extends RGeneral {
             
             ArrayList<String> composition = root.getComposition();
             ArrayList<String> direction = root.getDirection();
-            
-            //Assign overhangs of vector and goal part if a vector exists
-            if (vector != null) {                
-                RVector newVector = new RVector(composition.get(0) + direction.get(0), composition.get(composition.size()-1) + direction.get(composition.size()-1), root.getStage(), vector.getName(), null);
-                root.setVector(newVector);              
-                root.setLOverhang(vector.getName() + "_R");
-                root.setROverhang(vector.getName() + "_L");
-            } else {
-                root.setLOverhang(composition.get(composition.size() - 1));
-                root.setROverhang(composition.get(0));
-            }
-                        
+
+            //Assign overhangs of vector and goal part if a vector exists              
+            RVector newVector = new RVector(composition.get(0) + direction.get(0), composition.get(composition.size() - 1) + direction.get(composition.size() - 1), root.getStage(), vector.getName(), null);
+            root.setVector(newVector);
+            root.setLOverhang(vector.getName() + "_R");
+            root.setROverhang(vector.getName() + "_L");
+
             ArrayList<RNode> neighbors = root.getNeighbors();
             ArrayList<RNode> l0nodes = new ArrayList<RNode>();
             _rootBasicNodeHash.put(root, l0nodes);
-            assignOverhangsHelper(root, neighbors, root, stageRVectors);
+
+            //Make a new dummy root node to accomodate overhang assignment
+            RNode fakeRootClone = root.clone();
+            RVector fakeRootVec = new RVector(vector.getName() + "_R", vector.getName() + "_L", root.getStage(), "dummyVec", null);
+            fakeRootClone.setVector(fakeRootVec);
+            assignOverhangsHelper(fakeRootClone, neighbors, root, stageRVectors);
         }
         
         //
