@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class RHomologyPrimerDesign {
 
-    public static String[] homologousRecombinationPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] homolRecombPartPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
 
         //Initialize primer parameters
         String[] oligos = new String[2];
@@ -54,22 +54,10 @@ public class RHomologyPrimerDesign {
         Part leftNeighbor = null;
         Part rightNeighbor = null;
         Part rootPart = coll.getPart(root.getUUID(), true);
-        ArrayList<Part> composition = rootPart.getComposition();
-
-        String currentSeq = currentPart.getSeq();
-        ArrayList<String> direction = node.getDirection();
-        
-        //Reverse complement sequences that are on the reverse strand
-        if ("-".equals(direction.get(0))) {
-            currentSeq = PrimerDesign.reverseComplement(currentSeq);
-        }
-        
-        if (currentSeq.equals("")) {
-            missingSequence = true;
-        }      
-        
+        ArrayList<Part> composition = rootPart.getComposition();             
         Vector vector = coll.getVector(root.getVector().getUUID(), true);
         
+        //Determine part neighbors based upon root composition
         //Edge case where a plasmid only has one part or a part is re-used from the library
         if (root.getNeighbors().isEmpty()) {                                  
             lSeq = vector.getSeq();
@@ -129,13 +117,25 @@ public class RHomologyPrimerDesign {
             }
         }
 
+        String currentSeq = currentPart.getSeq();
+        
         //Look to see if there are blank sequences for the right or left part
         if (lSeq.equals("")) {
             missingLeftSequence = true;
-        } else if (rSeq.equals("")) {
+        } 
+        if (rSeq.equals("")) {
             missingRightSequence = true;
         }
-
+        if (currentSeq.equals("")) {
+            missingSequence = true;
+        } 
+        
+        //Reverse complement sequences that are on the reverse strand       
+        ArrayList<String> direction = node.getDirection();
+        if ("-".equals(direction.get(0))) {
+            currentSeq = PrimerDesign.reverseComplement(currentSeq);
+        }
+        
         //Reverse sequence direction for parts on the reverse strand
         if (rightNeighbor != null) {
             ArrayList<String> rightNeighborDirection = rightNeighbor.getDirections();
@@ -158,17 +158,8 @@ public class RHomologyPrimerDesign {
         
         //If there are any missing sequences, return default homology indications
         if (missingSequence || missingLeftSequence || missingRightSequence) {
-//            if (leftNeighbor != null) {
-                forwardOligoSequence = "[" + currentPart.getLeftOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-//            } else {
-//                forwardOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-//            }
-
-//            if (rightNeighbor != null) {
-                reverseOligoSequence = "[" + currentPart.getRightOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-//            } else {
-//                reverseOligoSequence = "[" + vector.getName() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
-//            }
+            forwardOligoSequence = "[" + currentPart.getLeftOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
+            reverseOligoSequence = "[" + currentPart.getRightOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
 
         } else {
             forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
@@ -179,6 +170,76 @@ public class RHomologyPrimerDesign {
         oligos[1]=reverseOligoSequence;
 
         return oligos;
+    }
+    
+    public static String[] homolRecombVectorPrimers(RVector vector, Collector coll, Double meltingTemp, Integer targetLength) {
+        
+        //Initialize primer parameters
+        String[] oligos = new String[2];
+        String forwardOligoSequence;
+        String reverseOligoSequence;
+        String lSeq = "";
+        String rSeq = "";
+        
+        boolean missingLeftSequence = false;
+        boolean missingSequence = false;
+        boolean missingRightSequence = false;
+        
+        String currentSeq = "";
+        ArrayList<Vector> allVectorsWithName = coll.getAllVectorsWithName(vector.getName(), true);
+        if (!allVectorsWithName.isEmpty()) {
+            currentSeq = allVectorsWithName.get(0).getSeq();
+        }
+        
+        String rPartName = vector.getROverhang().substring(0, vector.getROverhang().length()-1);
+        ArrayList<Part> allPartsWithNameL = coll.getAllPartsWithName(rPartName, true);
+        if (!allPartsWithNameL.isEmpty()) {
+            lSeq = allPartsWithNameL.get(0).getSeq();
+            if (vector.getROverhang().substring(vector.getROverhang().length()-1).equals("-")) {
+                lSeq = PrimerDesign.reverseComplement(lSeq);
+            }
+        }
+        
+        String lPartName = vector.getLOverhang().substring(0, vector.getLOverhang().length()-1);
+        ArrayList<Part> allPartsWithNameR = coll.getAllPartsWithName(lPartName, true);
+        if (!allPartsWithNameR.isEmpty()) {
+            rSeq = allPartsWithNameR.get(0).getSeq();
+            if (vector.getLOverhang().substring(vector.getLOverhang().length()-1).equals("-")) {
+                rSeq = PrimerDesign.reverseComplement(rSeq);
+            }
+        }
+        
+        //Look to see if there are blank sequences for the right or left part
+        if (lSeq.equals("")) {
+            missingLeftSequence = true;
+        } 
+        if (rSeq.equals("")) {
+            missingRightSequence = true;
+        }
+        if (currentSeq.equals("")) {
+            missingSequence = true;
+        }
+
+        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, lSeq, false, true);
+        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rSeq), false, true);
+        int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentSeq, true, true);
+        int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
+        
+        //If there are any missing sequences, return default homology indications
+        if (missingSequence || missingLeftSequence || missingRightSequence) {
+            forwardOligoSequence = "[" + vector.getLOverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
+            reverseOligoSequence = "[" + vector.getROverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
+
+        } else {
+            forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
+            reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+        }
+        
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
+        
+        return oligos;
+        
     }
 }
 

@@ -66,10 +66,11 @@ public class RSLIC extends RGeneral {
             RVector vector = stageRVectors.get(root.getStage() % stageRVectors.size());
             
             ArrayList<String> composition = root.getComposition();
+            ArrayList<String> direction = root.getDirection();
             
             //Assign overhangs of vector and goal part if a vector exists
             if (vector != null) {                
-                RVector newVector = new RVector(composition.get(0), composition.get(composition.size()-1), root.getStage(), vector.getName(), null);
+                RVector newVector = new RVector(composition.get(0) + direction.get(0), composition.get(composition.size()-1) + direction.get(composition.size()-1), root.getStage(), vector.getName(), null);
                 root.setVector(newVector);              
                 root.setLOverhang(vector.getName() + "_R");
                 root.setROverhang(vector.getName() + "_L");
@@ -132,32 +133,36 @@ public class RSLIC extends RGeneral {
             
             if (j == 0) {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
+                ArrayList<String> nextDir = children.get(j + 1).getDirection();
                 child.setROverhang(nextComp.get(0));
                 child.setLOverhang(parent.getLOverhang());
                 
                 if (vector != null && child.getStage() != 0) {
-                    RVector newVector = new RVector(parent.getVector().getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(parent.getVector().getLOverhang(), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }          
 
             } else if (j == children.size() - 1) {
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
+                ArrayList<String> prevDir = children.get(j - 1).getDirection();
                 child.setLOverhang(prevComp.get(prevComp.size() - 1));
                 child.setROverhang(parent.getROverhang());
                 
                 if (vector != null && child.getStage() != 0) {
-                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), parent.getVector().getROverhang(), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), parent.getVector().getROverhang(), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }
                 
             } else {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
+                ArrayList<String> nextDir = children.get(j + 1).getDirection();
+                ArrayList<String> prevDir = children.get(j - 1).getDirection();
                 child.setLOverhang(prevComp.get(prevComp.size() - 1));
                 child.setROverhang(nextComp.get(0));
                 
                 if (vector != null && child.getStage() != 0) {
-                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }               
             }

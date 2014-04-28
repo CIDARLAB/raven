@@ -189,7 +189,7 @@ public class RInstructions {
                                 fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll, fusionSites);
                                 oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, primerLength);
                             } else {
-                                oligos = RHomologyPrimerDesign.homologousRecombinationPrimers(l0Node, root, coll, meltingTemp, primerLength);
+                                oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, primerLength);
                             }
 
                             //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
@@ -258,6 +258,8 @@ public class RInstructions {
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
                                 RNode node = vecNodeMap.get(vector);
                                 oligos = RGoldenGate.generateVectorPrimers(vector, fusionSites.get(node));
+                            } else {
+                                oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, coll, meltingTemp, primerLength);
                             }
 
                             String fwdOligo = oligos[0];
