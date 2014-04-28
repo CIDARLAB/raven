@@ -69,7 +69,7 @@
                                 <div class="well" id="method">
                                     <h3>Assembly Method</h3>
                                     <!--<hr/>-->
-                                    <h4>Select the assembly method you want to use</h4>
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="Each assembly is calculated with a single assembly method. The cloning methods currently supported are shown here.">Select the assembly method you want to use</a></h4>
                                     <div class="row-fluid">
                                         <div class="span12">
                                             <div class="tabbable tabs-left">
@@ -85,7 +85,7 @@
                                                     <div class="tab-pane active" id="biobricksTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
-                                                                <h5>Description of Assembly Method</h5>
+                                                                <h5>Description of Cloning Method</h5>
                                                                 <!--Description of BioBrick-->
                                                                 <p>
                                                                     BioBricks is a digestion-ligation based binary assembly method.
@@ -95,10 +95,10 @@
                                                                 <p>
                                                                     ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts are digested and gel extracted for each cloning step.
                                                                 </p>
-                                                                <small>Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).</small>
+                                                                <!--<small>Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).</small>-->
                                                             </div>
                                                             <div class="offset1 span5">
-                                                                <h5>Assembly Efficiency</h5>
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This number will not impact the calculation for this method.">Assembly Efficiency</a></h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
                                                                         <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
@@ -114,20 +114,22 @@
                                                     <div class="tab-pane" id="cpecTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
-                                                                <h5>Description of Assembly Method</h5>
+                                                                <h5>Description of Cloning Method</h5>
                                                                 <!--Description of CPEC-->
                                                                 <p>
                                                                     CPEC (Circular Polymerase Extension Cloning) is a scarless multi-way assembly method that does not require digestion, ligation or homologous recombination.
                                                                     Multiple double stranded DNA fragments with overlapping flanking regions are denatured and amplified using DNA polymerase.
                                                                     The version of the method applied here adds NotI sites at the end of PCR fragments if intermediate clones are required. These fragments can then be extracted and used in the next cloning stage.
+                                                                    The version of the method applied here, if there are solutions that require more than one stage, intermediate vectors are designed with homology to regions flanking these intermediates for the next step.
+                                                                    In between that homology region, there is an inserted NotI site so that these intermediates may be cleaved and used in the next stage. These intermediate fragments are then extracted and used in the next cloning stage.
                                                                 </p>
                                                                 <p>
-                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested and gel extracted for the subsequent cloning stage.
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested with NotI and gel extracted for the subsequent cloning stage.
                                                                 </p>
-                                                                <small>Quan, J. & Tian, J. Circular Polymerase Extension Cloning of Complex Gene Libraries and Pathways. PLoS ONE 4, e6441 (2009).</small>
+                                                                <!--<small>Quan, J. & Tian, J. Circular Polymerase Extension Cloning of Complex Gene Libraries and Pathways. PLoS ONE 4, e6441 (2009).</small>-->
                                                             </div>
                                                             <div class="offset1 span5">
-                                                                <h5>Assembly Efficiency</h5>
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point">Assembly Efficiency</a></h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
                                                                         <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
@@ -148,22 +150,23 @@
                                                     <div class="tab-pane" id="gibsonTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
-                                                                <h5>Description of Assembly Method</h5>
+                                                                <h5>Description of Cloning Method</h5>
                                                                 <!--Description of Gibson-->
                                                                 <p>
                                                                     Gibson is an isothermal, scarless multi-way assembly method that leverages homologous recombination. 
                                                                     Gibson assembly relies on the combined activities of a T5 exonuclease, DNA polymerase, and a DNA ligase to assemble DNA molecules with overlapping flanking regions.
                                                                     In the first part of the reaction, the 5' ends of each DNA fragment is chewed-back by the exonuclease, allowing homologous single-stranded regions to anneal.
                                                                     The gaps on each DNA strand is then repaired with DNA polymerase and DNA ligase to leave a final clone.
-                                                                    The version of the method applied here adds NotI sites at the end of PCR fragments if intermediate clones are required. These fragments can then be extracted and used in the next cloning stage.                
+                                                                    The version of the method applied here, if there are solutions that require more than one stage, intermediate vectors are designed with homology to regions flanking these intermediates for the next step.
+                                                                    In between that homology region, there is an inserted NotI site so that these intermediates may be cleaved and used in the next stage. These intermediate fragments are then extracted and used in the next cloning stage.                
                                                                 </p>
                                                                 <p>
-                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested and gel extracted for the subsequent cloning stage.
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested with NotI and gel extracted for the subsequent cloning stage.
                                                                 </p>
-                                                                <small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>
+                                                                <!--<small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>-->
                                                             </div>
                                                             <div class="offset1 span5">
-                                                                <h5>Assembly Efficiency</h5>
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point">Assembly Efficiency</a></h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
                                                                         <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
@@ -184,7 +187,7 @@
                                                     <div class="tab-pane" id="goldengateTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
-                                                                <h5>Description of Assembly Method</h5>
+                                                                <h5>Description of Cloning Method</h5>
                                                                 <!--Description of Golden Gate-->
                                                                 <p>
                                                                     Golden Gate is a scarless multi-way assembly method that relies on Type IIs restriction enzymes.
@@ -196,10 +199,10 @@
                                                                 <p>
                                                                     ASSUMPTIONS: It is assumed that cloning vectors pSB1A2 and pSB1K3 are used for alternating cloning stages and that the LacZ fragment necessary for blue-white screening is acquired and used to make destination vectors.
                                                                 </p>
-                                                                <small>Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3 (2008).</small>
+                                                                <!--<small>Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3 (2008).</small>-->
                                                             </div>
                                                             <div class="offset1 span5">
-                                                                <h5>Assembly Efficiency</h5>
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point">Assembly Efficiency</a></h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
                                                                         <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
@@ -221,7 +224,7 @@
                                                     <div class="tab-pane" id="mocloTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
-                                                                <h5>Description of Assembly Method</h5>
+                                                                <h5>Description of Cloning Method</h5>
                                                                 <!--Description of MoClo-->
                                                                 <p>
                                                                     MoClo is a multi-way assembly method that uses common overhang junctions generated by type IIs restriction enzymes.
@@ -233,10 +236,10 @@
                                                                 <p>
                                                                     ASSUMPTIONS: It is assumed that cloning vectors pSB1A2 and pSB1K3 are used for alternating cloning stages and that the LacZ fragment necessary for blue-white screening is acquired and used to make destination vectors.
                                                                 </p>
-                                                                <small> Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A Modular Cloning System for Standardized Assembly of Multigene Constructs. PloS ONE 6 (2010).</small>
+                                                                <!--<small> Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A Modular Cloning System for Standardized Assembly of Multigene Constructs. PloS ONE 6 (2010).</small>-->
                                                             </div>
                                                             <div class="offset1 span5">
-                                                                <h5>Assembly Efficiency</h5>
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point">Assembly Efficiency</a></h5>
                                                                 <div>
                                                                     <table class="table table-bordered table-condensed">
                                                                         <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
@@ -256,21 +259,21 @@
                                                     </div>
                                                     <div class="tab-pane" id="slicTab">
                                                         <div class="span6">
-                                                            <h5>Description of Assembly Method</h5>
+                                                            <h5>Description of Cloning Method</h5>
                                                             <!--Description of SLIC-->
                                                             <p>
                                                                 SLIC (Sequence and Ligation Independent Cloning) is a scarless multi-way assembly methods that leverages in vitro homologous recombination and single-strand annealing.
-                                                                SLIC uses exonuclease to generate single stranded DNA overhangs in inserts and cloning vectors.
-                                                                SLIC effectively mimics in vivo homologous recombination.
-                                                                The version of the method applied here adds NotI sites at the end of PCR fragments if intermediate clones are required. These fragments can then be extracted and used in the next cloning stage.
+                                                                SLIC uses exonuclease to generate single stranded DNA overhangs in inserts and cloning vectors. SLIC effectively mimics in vivo homologous recombination.
+                                                                The version of the method applied here, if there are solutions that require more than one stage, intermediate vectors are designed with homology to regions flanking these intermediates for the next step.
+                                                                In between that homology region, there is an inserted NotI site so that these intermediates may be cleaved and used in the next stage. These intermediate fragments are then extracted and used in the next cloning stage.
                                                             </p>
                                                             <p>
-                                                                ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested and gel extracted for the subsequent cloning stage.
+                                                                ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested with NotI and gel extracted for the subsequent cloning stage.
                                                             </p>
-                                                            <small>Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251 - 256 (2007).</small>
+                                                            <!--<small>Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251 - 256 (2007).</small>-->
                                                         </div>
                                                         <div class="offset1 span5">
-                                                            <h5>Assembly Efficiency</h5>
+                                                            <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point">Assembly Efficiency</a></h5>
                                                             <div>
                                                                 <table class="table table-bordered table-condensed">
                                                                     <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
@@ -296,7 +299,7 @@
                                 <div class="well" id="target">
                                     <h3>Constructs</h3> 
                                     <!--<hr/>-->
-                                    <h4>Select the plasmids you want to construct</h4>
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="The plasmids you would like to construct in one assembly are selected here.">Select the plasmids you want to construct</a></h4>
                                     <div class="row-fluid">
                                         <div class="span4 text-center">
                                             <h5>Available Plasmids to Construct</h5>
@@ -392,8 +395,7 @@
                                 <div class="well" id="vector">
                                     <h3>Vectors</h3>
                                     <!--<hr/>-->
-                                    <h4>Specify vectors to be used for each cloning stage</h4>
-                                    <a class="tip" data-toggle="tooltip" title="" data-original-title="Raven requires a vector to be specified in each assembly method. If you don't specify one, we'll provide one for you.">About Default Vectors</a>
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="A cloning vector must be specified for each cloning stage. If you don't specify one, default cloning vector assignments are made.">Specify vectors to be used for each cloning stage</a></h4>                                    
                                     <table id ="vectorTable" class="table table-bordered table-condensed">
                                         <thead><tr><th>Stage</th><th>Vector - Resistance</th></tr></thead>
                                         <tbody>
@@ -405,14 +407,14 @@
                                 <div class="well" id="primer">
                                     <h3>Primers</h3>
                                     <!--<hr/>-->
-                                    <h4>Specify your requirements for primers that will be designed for your assembly</h4>
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="Parameters for primer designs are entered here.">Specify your requirements for primers that will be designed for your assembly</a></h4>
                                     <div class="row-fluid">
                                         <div class="span6">
                                             <table id="primerTable1" class="table table-condensed">
                                                 <tr><th>Oligo Name Prefix</th><td><input id="oligoNameRoot" placeholder="oligo"/></td></tr>
                                                 <tr><th>Target Melting Temperature</th><td><input id="meltingTemperature" placeholder="50.0"/></td></tr>
                                                 <tr><th>Target Primer Length</th><td><input id="targetLength" placeholder="20"/></td></tr>
-                                                <tr><th>Minimum Part Size</th><td><input id="targetLength" placeholder="24"/></td></tr>
+                                                <!--<tr><th>Minimum Part Size</th><td><input id="targetLength" placeholder="24"/></td></tr>-->
                                             </table> 
                                         </div>
                                     </div>
@@ -420,7 +422,7 @@
                                 <div class="well" id="intermediate">
                                     <h3>Intermediates</h3>
                                     <!--<hr/>-->
-                                    <h4>Force or bias, for or against certain cloning intermediates appearing in the plan</h4>
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="If assembly outcomes are undesired or ineffective, you can adjust which intermediates constructs may appear here. These values can also be auto-populated from the Raven upload file.">Force or bias, for or against certain cloning intermediates appearing in the plan</a></h4>
                                     <div id="intermediatesArea">
                                         <div class="row-fluid">
                                             <div class="span6">
@@ -474,7 +476,7 @@
                                 <div class="well" id="run"> 
                                     <h3>Run</h3>
                                     <!--<hr/>-->
-                                    <h4>Summary of your design plan</h4>
+                                    <h4>Summary of your design parameters</h4>
                                     <div class ="well" ><div id="designSummaryArea" style="height:500px; overflow:auto">A summary of your assembly plan will appear here</div></div>
                                     <button id="runButton" type="button" class="btn btn-success">Design Assembly</button>
                                 </div>
