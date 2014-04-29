@@ -771,8 +771,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<div class="tab-pane" id="summaryTab' + _designCount + '"><div class="well" id="summaryArea' + _designCount + '" style="height:360px;overflow:auto">' + $('#designSummaryArea').html() + '</div></div>' +
                 '</div>');
         //add download buttons and bind events to them
-        $('#download' + _designCount).append('<h4>Download Options</h4>' +
-                '<p><a target="_blank" id="downloadImage' + _designCount + '">Download Graph Image</a></p>' +
+        $('#download' + _designCount).append('<h4>Download Options</a></h4>' +
+                '<p><a target="_blank" id="downloadImage' + _designCount + '">Download Graph Image</p>' +
                 '<p><a target="_blank" id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
                 '<p><a target="_blank" id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
                 '<p><a target="_blank" id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
