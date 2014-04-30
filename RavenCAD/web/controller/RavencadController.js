@@ -319,6 +319,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 var oligoNameRoot = $('input#oligoNameRoot').val();
                 var meltingTemperature = $('input#meltingTemperature').val();
                 var targetLength = $('input#targetLength').val();
+                var minLength = $('input#minLength').val();
                 //if they are primer parameters are not filled in, use defaults
 
                 if (oligoNameRoot === "") {
@@ -329,6 +330,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 }
                 if (targetLength === "") {
                     targetLength = $('input#targetLength').attr("placeholder");
+                }
+                if (minLength === "") {
+                    minLength = $('input#minLength').attr("placeholder");
                 }
 
                 //vector_uuid - stage pairs
@@ -345,7 +349,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     efficiency: "" + efficiencyArray,
                     "primer": JSON.stringify({oligoNameRoot: oligoNameRoot,
                         meltingTemperature: meltingTemperature,
-                        targetLength: targetLength
+                        targetLength: targetLength,
+                        minLength: minLength
                     })};
                 _runParameters[currentDesignCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {

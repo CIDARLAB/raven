@@ -31,15 +31,18 @@ public class RInstructions {
         String oligoNameRoot;
         Double meltingTemp;
         int primerLength;
+        int minLength;
 
         try {
             oligoNameRoot = primerParameters.get(0);
             meltingTemp = Double.valueOf(primerParameters.get(1));
             primerLength = Integer.valueOf(primerParameters.get(2));
+            minLength = Integer.valueOf(primerParameters.get(3));
         } catch (Exception e) {
             oligoNameRoot = "oligo";
             meltingTemp = 55.0;
             primerLength = 24;
+            minLength = 24;
         }
 
         ArrayList<String> oligoNames = new ArrayList<String>();
@@ -105,11 +108,7 @@ public class RInstructions {
                     }
 
                     //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
-                    if (vector != null) {
-                        instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
-                    } else {
-                        instructions = instructions.substring(0, instructions.length() - 2) + "\n";
-                    }
+                    instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
 
                     //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
                 } else {
@@ -170,7 +169,7 @@ public class RInstructions {
 
                         //For small part, just order annealing primers
                         boolean anneal = false;
-                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= 24 && !coll.getPart(l0Node.getUUID(), true).getSeq().isEmpty()) {
+                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= minLength && !coll.getPart(l0Node.getUUID(), true).getSeq().isEmpty()) {
                             anneal = true;
                         }
 
@@ -182,12 +181,12 @@ public class RInstructions {
                             //Determine which kind of primers to generate
                             String[] oligos;
                             if (method.equalsIgnoreCase("MoClo")) {
-                                oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
+                                oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, primerLength, minLength);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
-                                oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength);
+                                oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength, minLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
                                 fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll, fusionSites);
-                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, primerLength);
+                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, primerLength, minLength);
                             } else {
                                 oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, primerLength);
                             }
@@ -250,7 +249,7 @@ public class RInstructions {
                             ArrayList<String> vectorOligoNamesForNode = new ArrayList<String>();
 
                             //Determine which kind of primers to generate
-                            String[] oligos = new String[2];
+                            String[] oligos;
                             if (method.equalsIgnoreCase("MoClo")) {
                                 oligos = RMoClo.generateVectorPrimers(vector);
                             } else if (method.equalsIgnoreCase("BioBricks")) {

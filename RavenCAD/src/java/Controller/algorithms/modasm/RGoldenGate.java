@@ -359,7 +359,7 @@ public class RGoldenGate extends RGeneral {
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static String[] generatePartPrimers(RNode node, String[] fusionSites, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] generatePartPrimers(RNode node, String[] fusionSites, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength) {
 
         //Initialize primer parameters
         String[] oligos = new String[2];
@@ -383,7 +383,7 @@ public class RGoldenGate extends RGeneral {
         String fwdEnzymeRecSite1 = "gaagac";
         String revEnzymeRecSite1 = "gtcttc";
 
-        if (seq.length() > 24) {
+        if (seq.length() > minLength) {
             if (seq.equals("")) {
                 fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
                 revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";

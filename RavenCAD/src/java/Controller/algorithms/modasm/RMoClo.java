@@ -243,7 +243,7 @@ public class RMoClo extends RGeneral {
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength) {
 
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
         String[] oligos = new String[2];
@@ -264,7 +264,7 @@ public class RMoClo extends RGeneral {
 
         String forwardOligoSequence;
         String reverseOligoSequence;
-        if (seq.length() > 24) {
+        if (seq.length() > minLength) {
             if (seq.equals("")) {
                 fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
                 revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
@@ -275,6 +275,7 @@ public class RMoClo extends RGeneral {
 
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
             reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
+        
         } else {
             if (seq.equals("")) {
                 fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
@@ -283,7 +284,7 @@ public class RMoClo extends RGeneral {
                 reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
             } else {
                 fwdHomology = seq;
-                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()) + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
                 reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
 
             }
