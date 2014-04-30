@@ -46,3 +46,6 @@ SynbioLucas,taborlab
 dantericci,raven12345
 kirtan,dave
 srbischo,tussyae15
+allen123,sb4lyfe
+acastano,mit2014sb
+ChrisV,password
