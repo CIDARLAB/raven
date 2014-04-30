@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class RHomologyPrimerDesign {
 
-    public static String[] homolRecombPartPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] homolRecombPartPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength) {
 
         //Initialize primer parameters
         String[] oligos = new String[2];
@@ -71,13 +71,11 @@ public class RHomologyPrimerDesign {
                 //Get neighbor sequences
                 int indexOf = composition.indexOf(currentPart);
                 if (indexOf == 0) {
-//                    leftNeighbor = composition.get(composition.size() - 1);
                     rightNeighbor = composition.get(indexOf + 1);
                     rSeq = rightNeighbor.getSeq();
                     lSeq = vector.getSeq();
                     
                 } else if (indexOf == composition.size() - 1) {
-//                    rightNeighbor = composition.get(0);
                     leftNeighbor = composition.get(indexOf - 1);
                     rSeq = vector.getSeq();
                     lSeq = leftNeighbor.getSeq();
@@ -99,7 +97,6 @@ public class RHomologyPrimerDesign {
 
                 //Get neighbor sequences of beginning of part
                 if (indexOfFirst == 0) {
-//                    leftNeighbor = composition.get(composition.size() - 1);
                     lSeq = vector.getSeq();
                 } else {
                     leftNeighbor = composition.get(indexOfFirst - 1);
@@ -108,7 +105,6 @@ public class RHomologyPrimerDesign {
 
                 //Get neighbor sequences of beginning of part
                 if (indexOfLast == composition.size() - 1) {
-//                    rightNeighbor = composition.get(0);
                     rSeq = vector.getSeq();
                 } else {
                     rightNeighbor = composition.get(indexOfFirst + 1);
@@ -162,10 +158,15 @@ public class RHomologyPrimerDesign {
             reverseOligoSequence = "[" + currentPart.getRightOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
 
         } else {
-            forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
-            reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+            if (currentSeq.length() > minLength) {
+                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
+                reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+            } else {
+                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq + currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength));
+                reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+            }
         }
-        
+
         oligos[0]=forwardOligoSequence;
         oligos[1]=reverseOligoSequence;
 

@@ -96,7 +96,7 @@ public class RInstructions {
                         newVectors.add(vector);
                     }
 
-                    //append which parts to use for a moclo reaction
+                    //Append which parts to use for a reaction
                     instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
                     for (RNode neighbor : currentNode.getNeighbors()) {
 
@@ -110,7 +110,7 @@ public class RInstructions {
                     //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                     instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
 
-                    //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
+                //If the node is in stage 0, it must be determined whether or not PCRs need to be done and design primers if necessary    
                 } else {
 
                     //Determine if a new vectors needs to be made
@@ -188,7 +188,7 @@ public class RInstructions {
                                 fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll, fusionSites);
                                 oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, primerLength, minLength);
                             } else {
-                                oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, primerLength);
+                                oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, primerLength, minLength);
                             }
 
                             //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
@@ -214,7 +214,7 @@ public class RInstructions {
 
                                 //If the primers are small and therefore annealing primers
                                 if (anneal) {
-                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 } else {
                                     instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 }
@@ -223,7 +223,7 @@ public class RInstructions {
                         } else {
                             String[] nodeOligos = nodeOligoHash.get(l0Node.getNodeKey("+"));
                             if (anneal) {
-                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             } else {
                                 instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             }
