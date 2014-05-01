@@ -66,9 +66,17 @@ public class RMoClo extends RGeneral {
             if (optimalGraph.getSteps() == 0) {
                 RNode root = optimalGraph.getRootNode();
                 String OHs = libraryOHs.get(root.getUUID());
-                String[] tokens = OHs.split("|");
-                if (tokens.length == 4) {
-                    singlePartGraphs.add(optimalGraph);
+                String[] tokens = OHs.split("\\|");
+                if (tokens.length == 2) {
+                    boolean allInts = true;
+                    for (String token : tokens) {
+                        if (!token.matches("[*]?\\d+")) {
+                            allInts = false;
+                        }
+                    }
+                    if (allInts) {
+                        singlePartGraphs.add(optimalGraph);
+                    }
                 }
             }
         }
@@ -79,10 +87,10 @@ public class RMoClo extends RGeneral {
         for (RGraph spGraph : singlePartGraphs) {
             RNode root = spGraph.getRootNode();
             String OHs = libraryOHs.get(root.getUUID());
-            String[] tokens = OHs.split("|");
-            root.setLOverhang(tokens[1]);
-            root.setROverhang(tokens[3]);
-            RVector newVector = new RVector(tokens[1], tokens[3], 0, stageVectors.get(0).getName(), null);
+            String[] tokens = OHs.split("\\|");
+            root.setLOverhang(tokens[0]);
+            root.setROverhang(tokens[1]);
+            RVector newVector = new RVector(tokens[0], tokens[1], 0, stageVectors.get(0).getName(), null);
             root.setVector(newVector);
         }
         
@@ -265,14 +273,8 @@ public class RMoClo extends RGeneral {
         String forwardOligoSequence;
         String reverseOligoSequence;
         if (seq.length() > minLength) {
-            if (seq.equals("")) {
-                fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
-                revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
-            } else {
-                fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, true)));
-                revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, true)));
-            }
-
+            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, true)));
+            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, true)));
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
             reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
         

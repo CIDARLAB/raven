@@ -1141,8 +1141,10 @@ public class RavenController {
                         ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(p.getName(), true);
                         for (Part partWithName : allPartsWithName) {
                             if (p.getLeftOverhang().equalsIgnoreCase(partWithName.getLeftOverhang()) && p.getRightOverhang().equalsIgnoreCase(partWithName.getRightOverhang()) && p.getStringComposition().equals(partWithName.getStringComposition()) && p.getScars().equals(partWithName.getScars()) && p.getDirections().equals(partWithName.getDirections()) && !partWithName.getType().equalsIgnoreCase("plasmid")) {
-                                partWithName.setTransientStatus(false);
-                                _partLibrary.add(partWithName);
+                                if (p != partWithName) {
+                                    partWithName.setTransientStatus(false);
+                                    _partLibrary.add(partWithName);
+                                }
                             }
                         }
 

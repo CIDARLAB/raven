@@ -271,17 +271,11 @@ public class RBioBricks extends RGeneral {
             
             //Special case primers for coding sequences
             if (type.get(0).equals("gene") || type.get(0).equals("reporter")) {
-
-                if (seq.equals("")) {
-                    fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                    revHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";
-                } else {
-                    fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
-                    revHomology = seq.substring(Math.max(0, currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false)));
-                }
+                fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, false)));
+                revHomology = seq.substring(Math.max(0, currentPart.getSeq().length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, false)));
                 forwardOligoSequence = partPrimerPrefixAlt + fwdHomology;
                 reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + partPrimerSuffix);
-            
+
             } else {
                 if (seq.equals("")) {
                     fwdHomology = "[ PART " + currentPart.getName() + " HOMOLOGY REGION ]";

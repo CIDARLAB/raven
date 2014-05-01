@@ -204,7 +204,7 @@ public class RGraph {
                         }
                     }
 
-                    //If it has been seen merge the node in the hash and disconnect this node from solution
+                //If it has been seen merge the node in the hash and disconnect this node from solution
                 } else {
 
                     RNode finalNode;

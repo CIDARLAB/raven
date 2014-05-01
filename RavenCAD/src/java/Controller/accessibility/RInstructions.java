@@ -101,8 +101,8 @@ public class RInstructions {
                     for (RNode neighbor : currentNode.getNeighbors()) {
 
                         if (currentNode.getStage() > neighbor.getStage()) {
-                            Part neighborPart = coll.getPart(neighbor.getUUID(), true);
-                            instructions = instructions + neighborPart.getName() + "|" + neighborPart.getLeftOverhang() + "|" + neighborPart.getRightOverhang() + "|" + neighborPart.getDirections() + ", ";
+                            Part childPart = coll.getPart(neighbor.getUUID(), true);
+                            instructions = instructions + childPart.getName() + "|" + childPart.getLeftOverhang() + "|" + childPart.getRightOverhang() + "|" + childPart.getDirections() + ", ";
                             queue.add(neighbor);
                         }
                     }

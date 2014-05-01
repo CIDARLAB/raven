@@ -236,7 +236,10 @@ public class ClothoReader {
                     //Trim tokens to add to final list
                     for (String token : tokens) {
                         String trimmedToken = token.trim();
-                        trimmedTokens.add(trimmedToken);
+                        if (!token.equals("")) {
+                            trimmedTokens.add(trimmedToken);
+                        }
+//                        trimmedTokens.add(trimmedToken);
                     }
                     list.addAll(trimmedTokens);
                     

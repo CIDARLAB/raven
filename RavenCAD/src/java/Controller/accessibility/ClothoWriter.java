@@ -121,18 +121,23 @@ public class ClothoWriter {
                         if (currentPart.isBasic()) {
                             newPlasmid = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
                             
-                            //Make a new part for scarless assembly
-//                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("goldengate")) {
-                                Part newBasic = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
-                                newBasic.addSearchTag("LO: " + LO);
-                                newBasic.addSearchTag("RO: " + RO);
-                                newBasic.addSearchTag("Direction: " + currentNode.getDirection().toString());
-                                newBasic.addSearchTag("Scars: []");
-                                String type = currentNode.getType().toString();
-                                type = type.substring(1, type.length() - 1);
-                                newBasic.addSearchTag("Type: " + type);
-                                newBasic.saveDefault(coll);
-//                            }
+                            //Make a new part
+                            Part newBasic = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
+                            newBasic.addSearchTag("LO: " + LO);
+                            newBasic.addSearchTag("RO: " + RO);
+                            newBasic.addSearchTag("Direction: " + currentNode.getDirection().toString());
+                            newBasic.addSearchTag("Scars: []");
+                            String type = currentNode.getType().toString();
+                            type = type.substring(1, type.length() - 1);
+                            newBasic.addSearchTag("Type: " + type);
+                            newBasic.saveDefault(coll);
+                            
+                            //Assign this basic part to the node if scarless assembly
+                            if (!(method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate"))) {
+                                currentNode.setUUID(newBasic.getUUID());
+                                continue;
+                            }
+
                         } else {
 
                             //If a new composite part needs to be made
@@ -234,16 +239,21 @@ public class ClothoWriter {
                             newPlasmid = Part.generateComposite(newComposition, currentPart.getName());
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
-//                            if (method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("goldengate")) {
-                                Part newComposite = Part.generateComposite(newComposition, currentPart.getName());
-                                newComposite.addSearchTag("LO: " + LO);
-                                newComposite.addSearchTag("RO: " + RO);
-                                newComposite.addSearchTag("Direction: " + currentNode.getDirection().toString());
-                                newComposite.addSearchTag("Scars: " + currentNode.getScars().toString());
-                                newComposite.addSearchTag("Type: composite");
-                                newComposite.saveDefault(coll);
-//                            }                            
+                            Part newComposite = Part.generateComposite(newComposition, currentPart.getName());
+                            newComposite.addSearchTag("LO: " + LO);
+                            newComposite.addSearchTag("RO: " + RO);
+                            newComposite.addSearchTag("Direction: " + currentNode.getDirection().toString());
+                            newComposite.addSearchTag("Scars: " + currentNode.getScars().toString());
+                            newComposite.addSearchTag("Type: composite");
+                            newComposite.saveDefault(coll);
                             
+                            //Assign this basic part to the node if scarless assembly
+                            if (!(method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate"))) {
+                                if (currentNode.getStage() == 0) {
+                                    currentNode.setUUID(newComposite.getUUID());
+//                                    continue;
+                                }
+                            }
                         }
 
                         newPlasmid.addSearchTag("LO: " + LO);
@@ -251,9 +261,14 @@ public class ClothoWriter {
                         newPlasmid.addSearchTag("Direction: " + currentNode.getDirection().toString());
                         newPlasmid.addSearchTag("Scars: " + currentNode.getScars().toString());
                         newPlasmid.addSearchTag("Type: plasmid");
-                        newPlasmid = newPlasmid.saveDefault(coll);
-                        currentNode.setUUID(newPlasmid.getUUID());
-                        currentPart = newPlasmid;
+                        
+                        if ((method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate")) || currentNode.getStage() > 0) {                          
+
+                            //Do not save basic plasmid for scarless method - they do not exist
+                            newPlasmid = newPlasmid.saveDefault(coll);
+                            currentNode.setUUID(newPlasmid.getUUID());
+                            currentPart = newPlasmid;
+                        } 
                     } else {
                         currentNode.setUUID(currentPart.getUUID());
                     }
