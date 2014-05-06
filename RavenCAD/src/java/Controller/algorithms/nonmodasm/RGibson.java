@@ -32,10 +32,9 @@ public class RGibson extends RGeneral {
             }
         }
         _maxNeighbors = max;
-        ArrayList<Part> goalParts = new ArrayList<Part>(gps);
 
         //Initialize part hash and vector set
-        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(partLibrary, discouraged, recommended);
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps);

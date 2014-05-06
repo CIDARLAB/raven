@@ -40,6 +40,13 @@ public class RHomologyPrimerDesign {
         ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
         if (!allPartsWithName.isEmpty()) {
             seq = allPartsWithName.get(0).getSeq();
+            if (node.getDirection().size() == 1) {
+                if (node.getDirection().get(0).equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+                    seq = PrimerDesign.reverseComplement(seq);
+                } else if (node.getDirection().get(0).equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+                    seq = PrimerDesign.reverseComplement(seq);
+                }
+            }
             for (int i = 0; i < allPartsWithName.size(); i++) {
                 type = allPartsWithName.get(i).getType();
                 if (!type.equalsIgnoreCase("plasmid")){
@@ -51,8 +58,8 @@ public class RHomologyPrimerDesign {
         tags.add("Type: " + type);
         Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
 
-        Part leftNeighbor = null;
-        Part rightNeighbor = null;
+        Part leftNeighbor;
+        Part rightNeighbor;
         Part rootPart = coll.getPart(root.getUUID(), true);
         ArrayList<Part> composition = rootPart.getComposition();             
         Vector vector = coll.getVector(root.getVector().getUUID(), true);
@@ -125,27 +132,6 @@ public class RHomologyPrimerDesign {
         if (currentSeq.equals("")) {
             missingSequence = true;
         } 
-        
-        //Reverse complement sequences that are on the reverse strand       
-        ArrayList<String> direction = node.getDirection();
-        if ("-".equals(direction.get(0))) {
-            currentSeq = PrimerDesign.reverseComplement(currentSeq);
-        }
-        
-        //Reverse sequence direction for parts on the reverse strand
-        if (rightNeighbor != null) {
-            ArrayList<String> rightNeighborDirection = rightNeighbor.getDirections();
-            if ("-".equals(rightNeighborDirection.get(0))) {
-                rSeq = PrimerDesign.reverseComplement(rSeq);
-            }
-        }
-        
-        if (leftNeighbor != null) {
-            ArrayList<String> leftNeighborDirection = leftNeighbor.getDirections();
-            if ("-".equals(leftNeighborDirection.get(0))) {
-                lSeq = PrimerDesign.reverseComplement(lSeq);
-            }
-        }
         
         int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, lSeq, false, true);
         int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rSeq), false, true);

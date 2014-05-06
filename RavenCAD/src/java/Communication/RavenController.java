@@ -8,6 +8,7 @@ import Controller.accessibility.RInstructions;
 import Controller.algorithms.modasm.RBioBricks;
 import Controller.accessibility.ClothoWriter;
 import Controller.accessibility.ClothoReader;
+import Controller.algorithms.PrimerDesign;
 import Controller.algorithms.modasm.*;
 import Controller.algorithms.nonmodasm.*;
 import Controller.datastructures.*;
@@ -869,11 +870,10 @@ public class RavenController {
                     badLines.add(line);
                 }
 
-                //Destinaiton Vectors - read and generate new vector if in library
+            //Destinaiton Vectors - read and generate new vector if in library
             } else if (type.equalsIgnoreCase("destination vector")) {
 
                 try {
-//                  
                     if (!tokens[0].trim().isEmpty()) {
                         String sequence = tokens[2].trim();
                         String leftOverhang = tokens[3].trim();
@@ -919,20 +919,28 @@ public class RavenController {
                 try {
                     String name = tokens[1].trim();
                     String sequence = tokens[2].trim();
-                    String leftOverhang = tokens[3].trim();
-                    String rightOverhang = tokens[4].trim();
 
                     Part newBasicPart = Part.generateBasic(name, sequence, null);
-                    newBasicPart.addSearchTag("LO: " + leftOverhang);
-                    newBasicPart.addSearchTag("RO: " + rightOverhang);
+                    newBasicPart.addSearchTag("LO: ");
+                    newBasicPart.addSearchTag("RO: ");
                     newBasicPart.addSearchTag("Type: " + type);
                     newBasicPart.addSearchTag("Direction: [+]");
                     newBasicPart.addSearchTag("Scars: []");
+                    
+                    Part newReverseBasicPart = Part.generateBasic(name, PrimerDesign.reverseComplement(sequence), null);
+                    newReverseBasicPart.addSearchTag("LO: ");
+                    newReverseBasicPart.addSearchTag("RO: ");
+                    newReverseBasicPart.addSearchTag("Type: " + type);
+                    newReverseBasicPart.addSearchTag("Direction: [-]");
+                    newReverseBasicPart.addSearchTag("Scars: []");
 
                     //Library logic
                     _partLibrary.add(newBasicPart);
                     newBasicPart.saveDefault(_collector);
                     newBasicPart.setTransientStatus(false);
+                    _partLibrary.add(newReverseBasicPart);
+                    newReverseBasicPart.saveDefault(_collector);
+                    newReverseBasicPart.setTransientStatus(false);
 
                 } catch (Exception e) {
                     badLines.add(line);
@@ -965,7 +973,6 @@ public class RavenController {
                     String bpForcedRight = " ";
                     String bpDirection = "+";
                     String scar = "_";
-//                    String compositePartName = tokens[1];
                     String basicPartName = partNameTokens[0];
 
                     //Check for forced overhangs and direction
@@ -998,7 +1005,7 @@ public class RavenController {
                             Part basic = null;
                             ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
                             for (Part aPart : allPartsWithName) {
-                                if (!aPart.getType().equals("plasmid")) {
+                                if (!aPart.getType().equals("plasmid") && bpDirection.equals(aPart.getDirections().get(0))) {
                                     basic = aPart;
                                 }
                             }
@@ -1038,7 +1045,7 @@ public class RavenController {
                     for (Part partWithName : allPartsWithName) {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
-                        if (LO.isEmpty() && RO.isEmpty()) {
+                        if (LO.isEmpty() && RO.isEmpty() && bpDirection.equals(partWithName.getDirections().get(0))) {
                             if (!partWithName.getType().equals("plasmid")) {
                                 bp = partWithName;
                             }
@@ -1049,7 +1056,7 @@ public class RavenController {
                     for (Part partWithName : allPartsWithName) {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
-                        if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight)) {
+                        if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight) && bpDirection.equals(partWithName.getDirections().get(0))) {
                             if (!partWithName.getType().equals("plasmid")) {
                                 bp = partWithName;
                             }

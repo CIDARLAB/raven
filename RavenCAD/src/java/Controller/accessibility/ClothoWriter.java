@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 package Controller.accessibility;
+import Controller.algorithms.PrimerDesign;
 import java.util.ArrayList;
 import java.util.HashSet;
 import Controller.datastructures.*;
@@ -107,10 +108,16 @@ public class ClothoWriter {
                     ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(currentNode.getName(), true);
                     if (!allPartsWithName.isEmpty()) {
                         seq = allPartsWithName.get(0).getSeq();
+                        if (currentNode.getDirection().size() == 1) {
+                            if (currentNode.getDirection().get(0).equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+                                seq = PrimerDesign.reverseComplement(seq);
+                            } else if (currentNode.getDirection().get(0).equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+                                seq = PrimerDesign.reverseComplement(seq);
+                            }
+                        }
                     }
                     
                     currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), tags, false);
-//                    currentPart = coll.getExactPart(null, seq, tags, true);
                     
                     if (currentPart == null) {
 
@@ -119,10 +126,16 @@ public class ClothoWriter {
                         //If a new part must be created
                         Part newPlasmid;
                         if (currentPart.isBasic()) {
-                            newPlasmid = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
+                            
+                            String currentSeq = currentPart.getSeq();
+//                            if (currentNode.getDirection().get(0).equals("-")) {
+//                                currentSeq = PrimerDesign.reverseComplement(currentSeq);
+//                            }
+                            
+                            newPlasmid = Part.generateBasic(currentPart.getName(), currentSeq, currentPart.getComposition().get(0));
                             
                             //Make a new part
-                            Part newBasic = Part.generateBasic(currentPart.getName(), currentPart.getSeq(), currentPart.getComposition().get(0));
+                            Part newBasic = Part.generateBasic(currentPart.getName(), currentSeq, currentPart.getComposition().get(0));
                             newBasic.addSearchTag("LO: " + LO);
                             newBasic.addSearchTag("RO: " + RO);
                             newBasic.addSearchTag("Direction: " + currentNode.getDirection().toString());
@@ -213,13 +226,14 @@ public class ClothoWriter {
                                     } else {
                                         invertedcDir = "+";
                                     }
+                                    String rcSeq = PrimerDesign.reverseComplement(cSeq);
                                     cSearchTags.clear();
                                     cSearchTags.add("LO: " + invertedcRO);
                                     cSearchTags.add("RO: " + invertedcLO);
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("Direction: [" + invertedcDir + "]");
                                     cSearchTags.add("Scars: []");
-                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, cSearchTags, true);
+                                    exactPart = coll.getExactPart(cName, rcSeq, bpComp, cSearchTags, true);
                                 }
 
                                 //In the edge case where the overhangs of a re-used composite part is changed
@@ -228,7 +242,7 @@ public class ClothoWriter {
                                     cSearchTags.add("Type: " + cType);
                                     cSearchTags.add("RO: ");
                                     cSearchTags.add("LO: ");
-                                    cSearchTags.add("Direction: [+]" );
+                                    cSearchTags.add("Direction: [" + cDir + "]" );
                                     cSearchTags.add("Scars: []");
                                     exactPart = coll.getExactPart(cName, cSeq, bpComp, cSearchTags, true);
                                 }
@@ -251,7 +265,6 @@ public class ClothoWriter {
                             if (!(method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate"))) {
                                 if (currentNode.getStage() == 0) {
                                     currentNode.setUUID(newComposite.getUUID());
-//                                    continue;
                                 }
                             }
                         }
@@ -384,7 +397,15 @@ public class ClothoWriter {
             String cName = composition.get(i);
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, false);
             String cSeq = allPartsWithName.get(0).getSeq();
+            
+            //Correct for direction
             String cDir = direction.get(i);
+            if (cDir.equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+                cSeq = PrimerDesign.reverseComplement(cSeq);
+            } else if (cDir.equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+                cSeq = PrimerDesign.reverseComplement(cSeq);
+            }
+
             String cType = allPartsWithName.get(0).getType();
             ArrayList<String> thisComp = new ArrayList<String>();
             thisComp.add(cName);

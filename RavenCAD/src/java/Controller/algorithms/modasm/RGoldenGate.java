@@ -36,7 +36,7 @@ public class RGoldenGate extends RGeneral {
         ArrayList<Part> goalParts = new ArrayList<Part>(gps);
 
         //Initialize part hash and vector set
-        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(partLibrary, discouraged, recommended);
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps);
@@ -203,7 +203,7 @@ public class RGoldenGate extends RGeneral {
         ArrayList<Part> composition = rootPart.getComposition();
         Part leftNeighbor;
         Part rightNeighbor;
-        String currentSeq = "";
+        String currentSeq;
         
         //Edge case where the node in question is the root node
         if (node == root) {
@@ -227,14 +227,7 @@ public class RGoldenGate extends RGeneral {
             }
             tags.add("Type: " + type);
             Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
-            currentSeq = currentPart.getSeq();
-            ArrayList<String> direction = node.getDirection();
-
-            //Reverse complement sequences that are on the reverse strand
-            if ("-".equals(direction.get(0))) {
-                currentSeq = PrimerDesign.reverseComplement(currentSeq);
-            }
-            
+            currentSeq = currentPart.getSeq();            
             Vector vector = coll.getVector(node.getVector().getUUID(), true);
             rSeq = vector.getSeq();
             lSeq = vector.getSeq();
@@ -251,6 +244,13 @@ public class RGoldenGate extends RGeneral {
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
             if (!allPartsWithName.isEmpty()) {
                 seq = allPartsWithName.get(0).getSeq();
+                if (node.getDirection().size() == 1) {
+                    if (node.getDirection().get(0).equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+                        seq = PrimerDesign.reverseComplement(seq);
+                    } else if (node.getDirection().get(0).equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+                        seq = PrimerDesign.reverseComplement(seq);
+                    }
+                }
                 for (int i = 0; i < allPartsWithName.size(); i++) {
                     type = allPartsWithName.get(i).getType();
                     if (!type.equalsIgnoreCase("plasmid")) {
@@ -372,9 +372,9 @@ public class RGoldenGate extends RGeneral {
         ArrayList<String> direction = node.getDirection();
         
         //Reverse complement sequences that are on the reverse strand
-        if ("-".equals(direction.get(0))) {
-            seq = PrimerDesign.reverseComplement(seq);
-        }
+//        if ("-".equals(direction.get(0))) {
+//            seq = PrimerDesign.reverseComplement(seq);
+//        }
 
         String fwdHomology;
         String revHomology;

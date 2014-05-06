@@ -31,93 +31,61 @@ public class ClothoReader {
      */
     
     /** Given goal parts and library, create hashMem, key: composition with overhangs concatenated at the end, value: corresponding graph **/
-    public static HashMap<String, RGraph> partImportClotho(ArrayList<Part> goalParts, ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
+    public static HashMap<String, RGraph> partImportClotho(ArrayList<Part> partLibrary, HashSet<String> discouraged, HashSet<String> recommended) throws Exception {
 
         //Create library to initialize hashMem
         HashMap<String, RGraph> library = new HashMap<String, RGraph>();
 
-        //Add all basic parts in the goal parts to the memoization hash
-        for (Part goalPart : goalParts) {
-
-                //Add all basic parts to the memoization hash
-                ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
-                for (int i = 0; i < basicParts.size(); i++) {
-
-                    //Initialize new graph for a basic part
-                    RGraph newBasicGraph = new RGraph();
-                    newBasicGraph.getRootNode().setUUID(basicParts.get(i).getUUID());
-
-                    //Get basic part compositions and search tags relating to feature type, overhangs ignored for this step
-                    ArrayList<String> composition = new ArrayList<String>();
-                    ArrayList<String> direction = new ArrayList<String>();
-                    composition.add(basicParts.get(i).getName());
-                    ArrayList<String> sTags = basicParts.get(i).getSearchTags();
-                    ArrayList<String> type = parseTags(sTags, "Type:");
-
-                    //Set type and composition
-                    RNode root = newBasicGraph.getRootNode();
-                    root.setName(basicParts.get(i).getName());
-                    root.setComposition(composition);
-                    root.setDirection(direction);
-                    root.setType(type);
-                    
-                    library.put(composition.toString() + direction.toString(), newBasicGraph);
-                }
-  
-        }
-
         //If there is an input Clotho part library, make a new node with only type and composition from library
         if (partLibrary != null) {
-            if (partLibrary.size() > 0) {
-                for (Part libraryPart : partLibrary) {
-                    if (!libraryPart.getType().equalsIgnoreCase("plasmid")) {
+            for (Part libraryPart : partLibrary) {
+                if (!libraryPart.getType().equalsIgnoreCase("plasmid")) {
 
-                        //Check if basic part or not and assign composition 
-                        ArrayList<Part> libPartComposition = new ArrayList<Part>();
-                        if (!libraryPart.isBasic()) {
-                            libPartComposition = ClothoWriter.getComposition(libraryPart);
-                        } else {
-                            libPartComposition.add(libraryPart);
-                        }
-
-                        //For all of this library part's components make new basic graph
-                        ArrayList<String> type = new ArrayList<String>();
-                        ArrayList<String> composition = new ArrayList<String>();
-                        ArrayList<String> tags = libraryPart.getSearchTags();
-                        ArrayList<String> direction = parseTags(tags, "Direction:");
-                        ArrayList<String> scars = parseTags(tags, "Scars:");
-
-                        //Get basic part types
-                        for (Part libPartComponent : libPartComposition) {
-                            ArrayList<String> sTags = libPartComponent.getSearchTags();
-                            composition.add(libPartComponent.getName());
-                            type.addAll(parseTags(sTags, "Type: "));
-                        }
-
-                        //Initialize new graph for library part
-                        RGraph libraryPartGraph = new RGraph();
-                        libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
-                        libraryPartGraph.getRootNode().setComposition(composition);
-                        libraryPartGraph.getRootNode().setType(type);
-                        libraryPartGraph.getRootNode().setDirection(direction);
-                        libraryPartGraph.getRootNode().setScars(scars);
-                        libraryPartGraph.getRootNode().setName(libraryPart.getName());
-
-                        //If recommended, give graph a recommended score of 1, make root node recommended
-                        if (recommended.contains(composition.toString())) {
-                            libraryPartGraph.setReccomendedCount(libraryPartGraph.getReccomendedCount() + 1);
-                            libraryPartGraph.getRootNode().setRecommended(true);
-                        }
-
-                        //If discouraged, give graph a recommended score of 1, make root node recommended
-                        if (discouraged.contains(composition.toString())) {
-                            libraryPartGraph.setDiscouragedCount(libraryPartGraph.getDiscouragedCount() + 1);
-                            libraryPartGraph.getRootNode().setDiscouraged(true);
-                        }
-
-                        //Put library part into library for assembly
-                        library.put(composition.toString() + direction.toString(), libraryPartGraph);
+                    //Check if basic part or not and assign composition 
+                    ArrayList<Part> libPartComposition = new ArrayList<Part>();
+                    if (!libraryPart.isBasic()) {
+                        libPartComposition = ClothoWriter.getComposition(libraryPart);
+                    } else {
+                        libPartComposition.add(libraryPart);
                     }
+
+                    //For all of this library part's components make new basic graph
+                    ArrayList<String> type = new ArrayList<String>();
+                    ArrayList<String> composition = new ArrayList<String>();
+                    ArrayList<String> tags = libraryPart.getSearchTags();
+                    ArrayList<String> direction = parseTags(tags, "Direction:");
+                    ArrayList<String> scars = parseTags(tags, "Scars:");
+
+                    //Get basic part types
+                    for (Part libPartComponent : libPartComposition) {
+                        ArrayList<String> sTags = libPartComponent.getSearchTags();
+                        composition.add(libPartComponent.getName());
+                        type.addAll(parseTags(sTags, "Type: "));
+                    }
+
+                    //Initialize new graph for library part
+                    RGraph libraryPartGraph = new RGraph();
+                    libraryPartGraph.getRootNode().setUUID(libraryPart.getUUID());
+                    libraryPartGraph.getRootNode().setComposition(composition);
+                    libraryPartGraph.getRootNode().setType(type);
+                    libraryPartGraph.getRootNode().setDirection(direction);
+                    libraryPartGraph.getRootNode().setScars(scars);
+                    libraryPartGraph.getRootNode().setName(libraryPart.getName());
+
+                    //If recommended, give graph a recommended score of 1, make root node recommended
+                    if (recommended.contains(composition.toString())) {
+                        libraryPartGraph.setReccomendedCount(libraryPartGraph.getReccomendedCount() + 1);
+                        libraryPartGraph.getRootNode().setRecommended(true);
+                    }
+
+                    //If discouraged, give graph a recommended score of 1, make root node recommended
+                    if (discouraged.contains(composition.toString())) {
+                        libraryPartGraph.setDiscouragedCount(libraryPartGraph.getDiscouragedCount() + 1);
+                        libraryPartGraph.getRootNode().setDiscouraged(true);
+                    }
+
+                    //Put library part into library for assembly
+                    library.put(composition.toString() + direction.toString(), libraryPartGraph);
                 }
             }
         }
@@ -239,7 +207,6 @@ public class ClothoReader {
                         if (!token.equals("")) {
                             trimmedTokens.add(trimmedToken);
                         }
-//                        trimmedTokens.add(trimmedToken);
                     }
                     list.addAll(trimmedTokens);
                     
@@ -290,6 +257,7 @@ public class ClothoReader {
             String rOverhang = aPart.getRightOverhang();
             String lOverhangR = rOverhang;
             String rOverhangR = lOverhang;
+            
             // invert the right overhang
             if (lOverhangR.contains("*")) {
                 lOverhangR = lOverhangR.replace("*", "");

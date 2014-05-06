@@ -28,7 +28,7 @@ public class RBioBricks extends RGeneral {
         ArrayList<Part> goalParts = new ArrayList<Part>(goalPartsVectors);
 
         //Initialize part hash and vector set
-        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended);
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(partLibrary, discouraged, recommended);
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(goalPartsVectors);
@@ -257,11 +257,6 @@ public class RBioBricks extends RGeneral {
 
         Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = currentPart.getSeq();
-
-        ArrayList<String> direction = node.getDirection();
-        if ("-".equals(direction.get(0))) {
-            seq = PrimerDesign.reverseComplement(seq);
-        }
         ArrayList<String> type = node.getType();
         String fwdHomology;
         String revHomology;

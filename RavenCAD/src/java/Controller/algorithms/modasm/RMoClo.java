@@ -36,10 +36,9 @@ public class RMoClo extends RGeneral {
             }
         }
         _maxNeighbors = max;
-        ArrayList<Part> goalParts = new ArrayList<Part>(gps);
 
         //Create hashMem parameter for createAsmGraph_sgp() call
-        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(goalParts, partLibrary, discouraged, recommended); //key: composiion, direction || value: library graph
+        HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(partLibrary, discouraged, recommended); //key: composiion, direction || value: library graph
 
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps);
@@ -263,9 +262,9 @@ public class RMoClo extends RGeneral {
         Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = currentPart.getSeq();
         ArrayList<String> direction = node.getDirection();
-        if ("-".equals(direction.get(0))) {
-            seq = PrimerDesign.reverseComplement(seq);
-        }
+//        if ("-".equals(direction.get(0))) {
+//            seq = PrimerDesign.reverseComplement(seq);
+//        }
 
         String fwdHomology;
         String revHomology;
