@@ -121,14 +121,27 @@ public class RNode {
     }
     
     /** Merge nodes with part sequences that are too small with the current node **/
-    public RNode mergeNodes(RNode smallNode, RNode currentNode, String smallNodeSeq, String currentNodeSeq) {
+    public RNode mergeNodes(RNode smallNode, RNode parent, String thisSeq) {
         
-        RNode mergedNode = currentNode.clone();
+        //Make new merged node
+        RNode mergedNode = this.clone();
         mergedNode._lOverhang = smallNode._lOverhang;
-        mergedNode._name = smallNode._name + "|" + currentNode._name;
+        mergedNode._name = smallNode._name + "|" + this._name;
         ArrayList<String> mergedType = smallNode._type;
-        mergedType.addAll(currentNode._type);
+        mergedType.addAll(this._type);
         mergedNode._type = mergedType;
+        mergedNode._specialSeq = smallNode._specialSeq + thisSeq;
+        
+//        //Adjust neighbor nodes
+//        ArrayList<RNode> neighbors = smallNode.getNeighbors();
+//        for (RNode neighbor : neighbors) {
+//
+//            //Remove all connections to the merged node
+//            neighbor.removeNeighbor(smallNode);
+            parent.removeNeighbor(smallNode);
+            parent.replaceNeighbor(this, mergedNode);
+//        }
+//        smallNode._neighbors.removeAll(neighbors);
         
         return mergedNode;
     }

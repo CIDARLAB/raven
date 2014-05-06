@@ -145,16 +145,12 @@ public class RGibson extends RGeneral {
                     
                     //Merge nodes representing small parts into one node
                     String seq;
-                    if (smallNode != null) {
-//                        child = mergeNodes(smallNode, child, smallNode.getSpecialSeq(), collector.getPart(child.getUUID(), true).getSeq());
-                        seq = child.getSpecialSeq();
-                    } else {
-                        seq = collector.getPart(child.getUUID(), true).getSeq();
-                    }
+                    RNode mergedNode = child;
+                    seq = collector.getPart(child.getUUID(), true).getSeq();
                     
                     if (seq.length() < minCloneLength && !seq.isEmpty()) {
-                        smallNode = child;
-                        smallNode.setSpecialSeq(seq);
+                        mergedNode.setSpecialSeq(seq);
+                        smallNode = mergedNode;
                     } 
                 }
 
@@ -167,6 +163,13 @@ public class RGibson extends RGeneral {
                 if (vector != null && child.getStage() != 0) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), parent.getVector().getROverhang(), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
+                } else {
+                    
+                    //Merge nodes representing small parts into one node
+                    if (smallNode != null) {
+                        String childSeq = collector.getPart(child.getUUID(), true).getSeq();
+                        child.mergeNodes(smallNode, parent, childSeq);
+                    }
                 }
                 
             } else {
@@ -180,7 +183,26 @@ public class RGibson extends RGeneral {
                 if (vector != null && child.getStage() != 0) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
-                }               
+                } else {
+                    
+                    //Merge nodes representing small parts into one node
+                    String seq;
+                    RNode mergedNode = child;
+                    if (smallNode != null) {
+                        String childSeq = collector.getPart(child.getUUID(), true).getSeq();
+                        mergedNode = child.mergeNodes(smallNode, parent, childSeq);
+                        seq = mergedNode.getSpecialSeq();
+                    } else {
+                        seq = collector.getPart(child.getUUID(), true).getSeq();
+                    }
+                    
+                    if (seq.length() < minCloneLength && !seq.isEmpty()) {
+                        mergedNode.setSpecialSeq(seq);
+                        smallNode = mergedNode;
+                    } else {
+                        smallNode = null;
+                    }
+                }
             }
 
             if (child.getStage() == 0) {
