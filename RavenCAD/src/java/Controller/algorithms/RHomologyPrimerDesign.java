@@ -165,53 +165,53 @@ public class RHomologyPrimerDesign {
         String[] oligos = new String[2];
         String forwardOligoSequence;
         String reverseOligoSequence;
-        String lSeq = "";
-        String rSeq = "";
+        String lSeq;
+        String rSeq;
         
         boolean missingLeftSequence = false;
         boolean missingSequence = false;
         boolean missingRightSequence = false;
-        
+
         String currentSeq = "";
         ArrayList<Vector> allVectorsWithName = coll.getAllVectorsWithName(vector.getName(), true);
         if (!allVectorsWithName.isEmpty()) {
             currentSeq = allVectorsWithName.get(0).getSeq();
         }
-        
+
         //Get the left flanking sequence
-        String rPartName = vector.getROverhang().substring(0, vector.getROverhang().length()-1);
+        String rPartName = vector.getROverhang().substring(0, vector.getROverhang().length() - 1);
         ArrayList<Part> allPartsWithNameL = coll.getAllPartsWithName(rPartName, true);
         if (!allPartsWithNameL.isEmpty()) {
             lSeq = allPartsWithNameL.get(0).getSeq();
-            if (vector.getROverhang().substring(vector.getROverhang().length()-1).equals("-")) {
+            if (vector.getROverhang().substring(vector.getROverhang().length() - 1).equals("-")) {
                 lSeq = PrimerDesign.reverseComplement(lSeq);
             }
-        
+
         //If the overhang isn't a part name, it's a vector name
         } else {
-            String vecName = vector.getROverhang().substring(0, vector.getROverhang().length()-2);
-            lSeq = coll.getAllVectorsWithName(vecName, true).get(0).getSeq(); 
+            String vecName = vector.getROverhang().substring(0, vector.getROverhang().length() - 2);
+            lSeq = coll.getAllVectorsWithName(vecName, true).get(0).getSeq();
         }
-        
+
         //Get the right flanking sequence
-        String lPartName = vector.getLOverhang().substring(0, vector.getLOverhang().length()-1);
+        String lPartName = vector.getLOverhang().substring(0, vector.getLOverhang().length() - 1);
         ArrayList<Part> allPartsWithNameR = coll.getAllPartsWithName(lPartName, true);
         if (!allPartsWithNameR.isEmpty()) {
             rSeq = allPartsWithNameR.get(0).getSeq();
-            if (vector.getLOverhang().substring(vector.getLOverhang().length()-1).equals("-")) {
+            if (vector.getLOverhang().substring(vector.getLOverhang().length() - 1).equals("-")) {
                 rSeq = PrimerDesign.reverseComplement(rSeq);
             }
-        
+
         //If the overhang isn't a part name, it's a vector name
         } else {
-            String vecName = vector.getLOverhang().substring(0, vector.getLOverhang().length()-2);
+            String vecName = vector.getLOverhang().substring(0, vector.getLOverhang().length() - 2);
             rSeq = coll.getAllVectorsWithName(vecName, true).get(0).getSeq();
         }
-        
+
         //Look to see if there are blank sequences for the right or left part
         if (lSeq.equals("")) {
             missingLeftSequence = true;
-        } 
+        }
         if (rSeq.equals("")) {
             missingRightSequence = true;
         }
@@ -225,19 +225,19 @@ public class RHomologyPrimerDesign {
         int vectorRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
         
         //If the vector is the root's vector, no restriction site is needed, otherwise it must be added
-        if (root.getVector().getUUID().equals(vector.getUUID())) {
-            
-            //If there are any missing sequences, return default homology indications
-            if (missingSequence || missingLeftSequence || missingRightSequence) {
-                forwardOligoSequence = "[" + vector.getLOverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
-                reverseOligoSequence = "[" + vector.getROverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
-
-            } else {
-                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), vectorLHomologyLength));
-                reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - vectorRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
-            }
-        
-        } else {
+//        if (root.getVector().getUUID().equals(vector.getUUID())) {
+//            
+//            //If there are any missing sequences, return default homology indications
+//            if (missingSequence || missingLeftSequence || missingRightSequence) {
+//                forwardOligoSequence = "[" + vector.getLOverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
+//                reverseOligoSequence = "[" + vector.getROverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
+//
+//            } else {
+//                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), vectorLHomologyLength));
+//                reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - vectorRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+//            }
+//        
+//        } else {
             
             String NotIsite = "gcggccgc";
             
@@ -250,7 +250,7 @@ public class RHomologyPrimerDesign {
                 forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + NotIsite + currentSeq.substring(0, Math.min(currentSeq.length(), vectorLHomologyLength));
                 reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - vectorRHomologyLength)) + NotIsite + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
             }
-        }
+//        }
         
         
         
