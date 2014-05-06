@@ -21,7 +21,7 @@ public class RSLIC extends RGeneral {
     /**
      * Clotho part wrapper for SLIC *
      */
-    public ArrayList<RGraph> slicClothoWrapper(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> slicClothoWrapper(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Integer minCloneLength) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;

@@ -82,7 +82,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for Gibson *
      */
-    public ArrayList<RGraph> runGibson() throws Exception {
+    public ArrayList<RGraph> runGibson(Integer minCloneLength) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -109,14 +109,14 @@ public class RavenController {
         //Run algorithm for Gibson assembly
         _assemblyGraphs.clear();
         RGibson gibson = new RGibson();
-        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
+        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength, _collector);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for CPEC *
      */
-    public ArrayList<RGraph> runCPEC() throws Exception {
+    public ArrayList<RGraph> runCPEC(Integer minCloneLength) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -143,14 +143,14 @@ public class RavenController {
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
-        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
+        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for SLIC *
      */
-    public ArrayList<RGraph> runSLIC() throws Exception {
+    public ArrayList<RGraph> runSLIC(Integer minCloneLength) throws Exception {
         if (_goalParts == null) {
             return null;
         }
@@ -177,7 +177,7 @@ public class RavenController {
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
-        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
+        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength);
         return optimalGraphs;
     }
 
@@ -1267,6 +1267,13 @@ public class RavenController {
         _efficiency = efficiencyHash;
         _valid = false;
         method = method.trim();
+        
+        int minCloneLength;
+        try {
+            minCloneLength = Integer.valueOf(primerParameters.get(4));
+        } catch (Exception e) {
+            minCloneLength = 250;
+        }
 
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
@@ -1287,10 +1294,10 @@ public class RavenController {
         if (method.equalsIgnoreCase("biobricks")) {
             _assemblyGraphs = runBioBricks();
         } else if (method.equalsIgnoreCase("cpec")) {
-            _assemblyGraphs = runCPEC();
+            _assemblyGraphs = runCPEC(minCloneLength);
             scarless = true;
         } else if (method.equalsIgnoreCase("gibson")) {
-            _assemblyGraphs = runGibson();
+            _assemblyGraphs = runGibson(minCloneLength);
             scarless = true;
         } else if (method.equalsIgnoreCase("goldengate")) {
             _assemblyGraphs = runGoldenGate();
@@ -1298,7 +1305,7 @@ public class RavenController {
         } else if (method.equalsIgnoreCase("moclo")) {
             _assemblyGraphs = runMoClo();
         } else if (method.equalsIgnoreCase("slic")) {
-            _assemblyGraphs = runSLIC();
+            _assemblyGraphs = runSLIC(minCloneLength);
             scarless = true;
         }
 

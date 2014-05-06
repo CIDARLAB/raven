@@ -146,6 +146,7 @@ public class RavenServlet extends HttpServlet {
                 primerParameters.add(primerParam.getString("meltingTemperature"));
                 primerParameters.add(primerParam.getString("targetLength"));
                 primerParameters.add(primerParam.getString("minLength"));
+                primerParameters.add(primerParam.getString("minCloneLength"));
 
                 String[] stageVectorArray = request.getParameter("stageVectors").split(","); 
                 HashMap<String,String> stageVectorHash = new HashMap<String, String>(); //key - stage as string, value - vector uuid

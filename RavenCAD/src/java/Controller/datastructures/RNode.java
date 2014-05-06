@@ -120,6 +120,19 @@ public class RNode {
         }
     }
     
+    /** Merge nodes with part sequences that are too small with the current node **/
+    public RNode mergeNodes(RNode smallNode, RNode currentNode, String smallNodeSeq, String currentNodeSeq) {
+        
+        RNode mergedNode = currentNode.clone();
+        mergedNode._lOverhang = smallNode._lOverhang;
+        mergedNode._name = smallNode._name + "|" + currentNode._name;
+        ArrayList<String> mergedType = smallNode._type;
+        mergedType.addAll(currentNode._type);
+        mergedNode._type = mergedType;
+        
+        return mergedNode;
+    }
+    
     /**************************************************************************
      * 
      * GETTER AND SETTER METHODS
@@ -215,7 +228,12 @@ public class RNode {
         return _scars;
     }
     
-   /** Get node keys for either forward or reverse direction **/
+    /** Get the special sequence - only the case for merged nodes **/
+    public String getSpecialSeq() {
+        return _specialSeq;
+    }
+    
+    /** Get node keys for either forward or reverse direction **/
     public String getNodeKey(String dir) {
         
         //Forward key information
@@ -371,6 +389,11 @@ public class RNode {
         _scars = scars;
     }
     
+    /** Set a special sequence for a merged node **/
+    public void setSpecialSeq(String seq) {
+        _specialSeq = seq;
+    }
+    
     //FIELDS
     private int _successCnt;
     private int _failureCnt;
@@ -388,6 +411,7 @@ public class RNode {
     private String _rOverhang;
     private RVector _vector;
     private String _name;
+    private String _specialSeq;
     private int _nodeID;
     private int _stage;
     private static int _nodeCount = 0;

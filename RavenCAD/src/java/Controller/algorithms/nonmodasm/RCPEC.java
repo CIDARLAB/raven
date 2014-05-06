@@ -21,7 +21,7 @@ public class RCPEC extends RGeneral {
     /**
      * Clotho part wrapper for CPEC *
      */
-    public ArrayList<RGraph> cpecClothoWrapper(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs) throws Exception {
+    public ArrayList<RGraph> cpecClothoWrapper(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Integer minCloneLength) throws Exception {
 
         //Designate how many parts can be efficiently ligated in one step
         int max = 0;
