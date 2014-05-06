@@ -86,13 +86,15 @@ public class ClothoWriter {
                     }
 
                     //If there's overhangs, add search tags
-                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
-                    Part newComposite = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
+                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);                    
                     newPlasmid.addSearchTag("Type: plasmid");
-                    newComposite.addSearchTag("Type: composite");
-                    currentNode.setName(partName);
                     newPlasmid = newPlasmid.saveDefault(coll);
+                    
+                    Part newComposite = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
+                    newComposite.addSearchTag("Type: composite");
                     newComposite.saveDefault(coll);
+                    
+                    currentNode.setName(partName);
                     currentNode.setUUID(newPlasmid.getUUID());
 
                 } else {
@@ -127,18 +129,34 @@ public class ClothoWriter {
                         Part newPlasmid;
                         if (currentPart.isBasic()) {
                             
-                            String currentSeq = currentPart.getSeq();
-                            newPlasmid = Part.generateBasic(currentPart.getName(), currentSeq, currentPart.getComposition().get(0));
+                            String name;
+                            String currentSeq;
+                            if (currentNode.getSpecialSeq() != null) {
+                                currentSeq = currentNode.getSpecialSeq();
+                                name = currentNode.getName();
+                            } else {
+                                currentSeq = currentPart.getSeq();
+                                name = currentPart.getName();
+                            }
+                            
+                            newPlasmid = Part.generateBasic(name, currentSeq, currentPart.getComposition().get(0));
                             
                             //Make a new part
-                            Part newBasic = Part.generateBasic(currentPart.getName(), currentSeq, currentPart.getComposition().get(0));
+                            Part newBasic = Part.generateBasic(name, currentSeq, currentPart.getComposition().get(0));
                             newBasic.addSearchTag("LO: " + LO);
                             newBasic.addSearchTag("RO: " + RO);
                             newBasic.addSearchTag("Direction: " + currentNode.getDirection().toString());
                             newBasic.addSearchTag("Scars: []");
-                            String type = currentNode.getType().toString();
-                            type = type.substring(1, type.length() - 1);
-                            newBasic.addSearchTag("Type: " + type);
+                            
+                            //Special types for merged parts 
+                            if (currentNode.getSpecialSeq() != null) {
+                                newBasic.addSearchTag("Type: " + currentNode.getType());
+                            } else {
+                                String type = currentNode.getType().toString();
+                                type = type.substring(1, type.length() - 1);
+                                newBasic.addSearchTag("Type: " + type);
+                            }
+                            
                             newBasic.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
@@ -483,7 +501,7 @@ public class ClothoWriter {
                 cSearchTags.add("Type: " + cType);
                 cSearchTags.add("RO: ");
                 cSearchTags.add("LO: ");
-                cSearchTags.add("Direction: [+]");
+                cSearchTags.add("Direction: [" + cDir + "]");
                 cSearchTags.add("Scars: []");
                 exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
             }

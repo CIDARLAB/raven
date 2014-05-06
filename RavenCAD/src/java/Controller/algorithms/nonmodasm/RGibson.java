@@ -74,40 +74,13 @@ public class RGibson extends RGeneral {
             root.setROverhang(vector.getName() + "_L");
 
             ArrayList<RNode> neighbors = root.getNeighbors();
-//            ArrayList<RNode> l0nodes = new ArrayList<RNode>();
-//            _rootBasicNodeHash.put(root, l0nodes);
 
             //Make a new dummy root node to accomodate overhang assignment
             RNode fakeRootClone = root.clone();
             RVector fakeRootVec = new RVector(vector.getName() + "_R", vector.getName() + "_L", root.getStage(), "dummyVec", null);
             fakeRootClone.setVector(fakeRootVec);
             assignOverhangsHelper(fakeRootClone, neighbors, root, stageRVectors, minCloneLength, collector);
-        }
-        
-        //Loop through the l0 nodes and assign direction
-//        for (RGraph graph : asmGraphs) {
-//            RNode root = graph.getRootNode();
-//            ArrayList<String> rootDir = new ArrayList<String>();
-//            ArrayList<String> direction = root.getDirection();
-//            rootDir.addAll(direction);
-//            ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
-//
-//            //Determine which levels each basic node impacts            
-//            for (int i = 0; i < l0Nodes.size(); i++) {
-//
-//                //Determine direction of basic level 0 nodes               
-//                RNode l0Node = l0Nodes.get(i);               
-//                String l0Direction = rootDir.get(0);               
-//                if (l0Node.getComposition().size() == 1) {
-//                    ArrayList<String> l0Dir = new ArrayList<String>();
-//                    l0Dir.add(l0Direction);
-//                    l0Node.setDirection(l0Dir);
-//                }               
-//                int size = l0Node.getDirection().size();
-//                rootDir.subList(0, size).clear();
-//            }
-//        }
-        
+        }       
     }
     
     /** Overhang assignment helper **/
@@ -204,12 +177,6 @@ public class RGibson extends RGeneral {
                     }
                 }
             }
-
-//            if (child.getStage() == 0) {
-//                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
-//                l0nodes.add(child);
-//                _rootBasicNodeHash.put(root, l0nodes);
-//            }
             
             ArrayList<RNode> grandChildren = child.getNeighbors();           
             assignOverhangsHelper(child, grandChildren, root, stageRVectors, minCloneLength, collector);
@@ -219,7 +186,4 @@ public class RGibson extends RGeneral {
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
     }
-    
-    //FIELDS
-    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }
