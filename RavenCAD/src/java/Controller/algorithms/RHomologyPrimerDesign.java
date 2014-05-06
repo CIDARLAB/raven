@@ -225,19 +225,19 @@ public class RHomologyPrimerDesign {
         int vectorRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
         
         //If the vector is the root's vector, no restriction site is needed, otherwise it must be added
-        if (root.getVector().getUUID().equals(vector.getUUID())) {
-            
-            //If there are any missing sequences, return default homology indications
-            if (missingSequence || missingLeftSequence || missingRightSequence) {
-                forwardOligoSequence = "[" + vector.getLOverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
-                reverseOligoSequence = "[" + vector.getROverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
-
-            } else {
-                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), vectorLHomologyLength));
-                reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - vectorRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
-            }
-        
-        } else {
+//        if (root.getVector().getUUID().equals(vector.getUUID())) {
+//            
+//            //If there are any missing sequences, return default homology indications
+//            if (missingSequence || missingLeftSequence || missingRightSequence) {
+//                forwardOligoSequence = "[" + vector.getLOverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
+//                reverseOligoSequence = "[" + vector.getROverhang() + " HOMOLOGY][" + vector.getName() + " HOMOLOGY]";
+//
+//            } else {
+//                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), vectorLHomologyLength));
+//                reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - vectorRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+//            }
+//        
+//        } else {
             
             String NotIsite = "gcggccgc";
             
@@ -250,7 +250,7 @@ public class RHomologyPrimerDesign {
                 forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + NotIsite + currentSeq.substring(0, Math.min(currentSeq.length(), vectorLHomologyLength));
                 reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - vectorRHomologyLength)) + NotIsite + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
             }
-        }
+//        }
         
         
         
