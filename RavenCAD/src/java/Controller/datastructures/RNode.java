@@ -131,18 +131,13 @@ public class RNode {
         mergedType.addAll(this._type);
         mergedNode._type = mergedType;
         mergedNode._specialSeq = smallNode._specialSeq + thisSeq;
-        
-//        //Adjust neighbor nodes
-//        ArrayList<RNode> neighbors = smallNode.getNeighbors();
-//        for (RNode neighbor : neighbors) {
-//
-//            //Remove all connections to the merged node
-//            neighbor.removeNeighbor(smallNode);
-            parent.removeNeighbor(smallNode);
-            parent.replaceNeighbor(this, mergedNode);
-//        }
-//        smallNode._neighbors.removeAll(neighbors);
-        
+
+        //Adjust neighbor nodes
+        parent.removeNeighbor(smallNode);
+        parent.replaceNeighbor(this, mergedNode);
+        mergedNode._neighbors.clear();
+        mergedNode._neighbors.add(parent);
+
         return mergedNode;
     }
     

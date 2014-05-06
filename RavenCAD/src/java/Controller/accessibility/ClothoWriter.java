@@ -128,10 +128,6 @@ public class ClothoWriter {
                         if (currentPart.isBasic()) {
                             
                             String currentSeq = currentPart.getSeq();
-//                            if (currentNode.getDirection().get(0).equals("-")) {
-//                                currentSeq = PrimerDesign.reverseComplement(currentSeq);
-//                            }
-                            
                             newPlasmid = Part.generateBasic(currentPart.getName(), currentSeq, currentPart.getComposition().get(0));
                             
                             //Make a new part

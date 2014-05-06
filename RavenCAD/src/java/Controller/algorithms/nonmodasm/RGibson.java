@@ -50,7 +50,7 @@ public class RGibson extends RGeneral {
     private void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<Integer, Vector> stageVectors, Integer minCloneLength, Collector collector) {
         
         //Initialize fields that record information to save complexity for future steps
-        _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
+//        _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
         
         HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
         for (Integer stage : stageVectors.keySet()) {
@@ -74,8 +74,8 @@ public class RGibson extends RGeneral {
             root.setROverhang(vector.getName() + "_L");
 
             ArrayList<RNode> neighbors = root.getNeighbors();
-            ArrayList<RNode> l0nodes = new ArrayList<RNode>();
-            _rootBasicNodeHash.put(root, l0nodes);
+//            ArrayList<RNode> l0nodes = new ArrayList<RNode>();
+//            _rootBasicNodeHash.put(root, l0nodes);
 
             //Make a new dummy root node to accomodate overhang assignment
             RNode fakeRootClone = root.clone();
@@ -85,28 +85,28 @@ public class RGibson extends RGeneral {
         }
         
         //Loop through the l0 nodes and assign direction
-        for (RGraph graph : asmGraphs) {
-            RNode root = graph.getRootNode();
-            ArrayList<String> rootDir = new ArrayList<String>();
-            ArrayList<String> direction = root.getDirection();
-            rootDir.addAll(direction);
-            ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
-
-            //Determine which levels each basic node impacts            
-            for (int i = 0; i < l0Nodes.size(); i++) {
-
-                //Determine direction of basic level 0 nodes               
-                RNode l0Node = l0Nodes.get(i);               
-                String l0Direction = rootDir.get(0);               
-                if (l0Node.getComposition().size() == 1) {
-                    ArrayList<String> l0Dir = new ArrayList<String>();
-                    l0Dir.add(l0Direction);
-                    l0Node.setDirection(l0Dir);
-                }               
-                int size = l0Node.getDirection().size();
-                rootDir.subList(0, size).clear();
-            }
-        }
+//        for (RGraph graph : asmGraphs) {
+//            RNode root = graph.getRootNode();
+//            ArrayList<String> rootDir = new ArrayList<String>();
+//            ArrayList<String> direction = root.getDirection();
+//            rootDir.addAll(direction);
+//            ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
+//
+//            //Determine which levels each basic node impacts            
+//            for (int i = 0; i < l0Nodes.size(); i++) {
+//
+//                //Determine direction of basic level 0 nodes               
+//                RNode l0Node = l0Nodes.get(i);               
+//                String l0Direction = rootDir.get(0);               
+//                if (l0Node.getComposition().size() == 1) {
+//                    ArrayList<String> l0Dir = new ArrayList<String>();
+//                    l0Dir.add(l0Direction);
+//                    l0Node.setDirection(l0Dir);
+//                }               
+//                int size = l0Node.getDirection().size();
+//                rootDir.subList(0, size).clear();
+//            }
+//        }
         
     }
     
@@ -205,11 +205,11 @@ public class RGibson extends RGeneral {
                 }
             }
 
-            if (child.getStage() == 0) {
-                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
-                l0nodes.add(child);
-                _rootBasicNodeHash.put(root, l0nodes);
-            }
+//            if (child.getStage() == 0) {
+//                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
+//                l0nodes.add(child);
+//                _rootBasicNodeHash.put(root, l0nodes);
+//            }
             
             ArrayList<RNode> grandChildren = child.getNeighbors();           
             assignOverhangsHelper(child, grandChildren, root, stageRVectors, minCloneLength, collector);
@@ -218,14 +218,6 @@ public class RGibson extends RGeneral {
     
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         return true;
-    }
-    
-    /** Merge nodes with part sequences that are too small with the current node **/
-    private RNode mergeNodes(RNode smallNode, RNode currentNode, String smallNodeSeq, String currentNodeSeq) {
-        
-        RNode mergedNode = new RNode();
-        
-        return mergedNode;
     }
     
     //FIELDS
