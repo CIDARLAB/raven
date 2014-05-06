@@ -126,7 +126,7 @@ public class RNode {
         //Make new merged node
         RNode mergedNode = this.clone();
         mergedNode._lOverhang = smallNode._lOverhang;
-        mergedNode._name = smallNode._name + "|" + this._name;
+        mergedNode._name = smallNode._name + "_" + this._name;
         ArrayList<String> mergedType = smallNode._type;
         mergedType.addAll(this._type);
         mergedNode._type = mergedType;

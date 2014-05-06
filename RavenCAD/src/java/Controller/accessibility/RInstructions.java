@@ -30,19 +30,22 @@ public class RInstructions {
         designPrimers = true;
         String oligoNameRoot;
         Double meltingTemp;
-        int primerLength;
-        int minLength;
+        int targetHomologyLength;
+        int minPCRLength;
+        int maxPrimerLength;
 
         try {
             oligoNameRoot = primerParameters.get(0);
             meltingTemp = Double.valueOf(primerParameters.get(1));
-            primerLength = Integer.valueOf(primerParameters.get(2));
-            minLength = Integer.valueOf(primerParameters.get(3));
+            targetHomologyLength = Integer.valueOf(primerParameters.get(2));
+            minPCRLength = Integer.valueOf(primerParameters.get(3));
+            maxPrimerLength = Integer.valueOf(primerParameters.get(5));
         } catch (Exception e) {
             oligoNameRoot = "oligo";
             meltingTemp = 55.0;
-            primerLength = 24;
-            minLength = 24;
+            targetHomologyLength = 24;
+            minPCRLength = 24;
+            maxPrimerLength = 60;
         }
 
         ArrayList<String> oligoNames = new ArrayList<String>();
@@ -169,7 +172,7 @@ public class RInstructions {
 
                         //For small part, just order annealing primers
                         boolean anneal = false;
-                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= minLength && !coll.getPart(l0Node.getUUID(), true).getSeq().isEmpty()) {
+                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= minPCRLength && !coll.getPart(l0Node.getUUID(), true).getSeq().isEmpty()) {
                             anneal = true;
                         }
 
@@ -181,14 +184,14 @@ public class RInstructions {
                             //Determine which kind of primers to generate
                             String[] oligos;
                             if (method.equalsIgnoreCase("MoClo")) {
-                                oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, primerLength, minLength);
+                                oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
-                                oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, primerLength, minLength);
+                                oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
                                 fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll, fusionSites);
-                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, primerLength, minLength);
+                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
                             } else {
-                                oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, primerLength, minLength);
+                                oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
                             }
 
                             //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
@@ -253,12 +256,12 @@ public class RInstructions {
                             if (method.equalsIgnoreCase("MoClo")) {
                                 oligos = RMoClo.generateVectorPrimers(vector);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
-                                oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, primerLength);
+                                oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, targetHomologyLength, maxPrimerLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
                                 RNode node = vecNodeMap.get(vector);
                                 oligos = RGoldenGate.generateVectorPrimers(vector, fusionSites.get(node));
                             } else {
-                                oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, root, coll, meltingTemp, primerLength);
+                                oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, root, coll, meltingTemp, targetHomologyLength, maxPrimerLength);
                             }
 
                             String fwdOligo = oligos[0];

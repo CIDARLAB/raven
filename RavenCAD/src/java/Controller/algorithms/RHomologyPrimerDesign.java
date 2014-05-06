@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class RHomologyPrimerDesign {
 
-    public static String[] homolRecombPartPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength) {
+    public static String[] homolRecombPartPrimers(RNode node, RNode root, Collector coll, Double meltingTemp, Integer targetLength, Integer minPCRLength, Integer maxPrimerLength) {
 
         //Initialize primer parameters
         String[] oligos = new String[2];
@@ -133,10 +133,10 @@ public class RHomologyPrimerDesign {
             missingSequence = true;
         } 
         
-        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, lSeq, false, true);
-        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rSeq), false, true);
-        int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentSeq, true, true);
-        int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
+        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, lSeq, false, true);
+        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, PrimerDesign.reverseComplement(rSeq), false, true);
+        int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, currentSeq, true, true);
+        int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, PrimerDesign.reverseComplement(currentSeq), true, true);
         
         //If there are any missing sequences, return default homology indications
         if (missingSequence || missingLeftSequence || missingRightSequence) {
@@ -144,7 +144,7 @@ public class RHomologyPrimerDesign {
             reverseOligoSequence = "[" + currentPart.getRightOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
 
         } else {
-            if (currentSeq.length() > minLength) {
+            if (currentSeq.length() > minPCRLength) {
                 forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
                 reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
             } else {
@@ -159,7 +159,7 @@ public class RHomologyPrimerDesign {
         return oligos;
     }
     
-    public static String[] homolRecombVectorPrimers(RVector vector, RNode root, Collector coll, Double meltingTemp, Integer targetLength) {
+    public static String[] homolRecombVectorPrimers(RVector vector, RNode root, Collector coll, Double meltingTemp, Integer targetLength, Integer maxPrimerLength) {
         
         //Initialize primer parameters
         String[] oligos = new String[2];
@@ -219,10 +219,10 @@ public class RHomologyPrimerDesign {
             missingSequence = true;
         }
 
-        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, lSeq, false, true);
-        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(rSeq), false, true);
-        int vectorLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, currentSeq, true, true);
-        int vectorRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(currentSeq), true, true);
+        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2 - 4, lSeq, false, true);
+        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2 - 4, PrimerDesign.reverseComplement(rSeq), false, true);
+        int vectorLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2 - 4, currentSeq, true, true);
+        int vectorRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2 - 4, PrimerDesign.reverseComplement(currentSeq), true, true);
         
         //If the vector is the root's vector, no restriction site is needed, otherwise it must be added
 //        if (root.getVector().getUUID().equals(vector.getUUID())) {

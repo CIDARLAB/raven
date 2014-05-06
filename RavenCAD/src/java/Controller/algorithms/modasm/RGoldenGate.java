@@ -359,7 +359,7 @@ public class RGoldenGate extends RGeneral {
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static String[] generatePartPrimers(RNode node, String[] fusionSites, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength) {
+    public static String[] generatePartPrimers(RNode node, String[] fusionSites, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength, Integer maxPrimerLength) {
 
         //Initialize primer parameters
         String[] oligos = new String[2];
@@ -367,14 +367,7 @@ public class RGoldenGate extends RGeneral {
         String reverseOligoSequence;
         
         Part currentPart = coll.getPart(node.getUUID(), true);
-
         String seq = currentPart.getSeq();
-        ArrayList<String> direction = node.getDirection();
-        
-        //Reverse complement sequences that are on the reverse strand
-//        if ("-".equals(direction.get(0))) {
-//            seq = PrimerDesign.reverseComplement(seq);
-//        }
 
         String fwdHomology;
         String revHomology;
@@ -384,8 +377,8 @@ public class RGoldenGate extends RGeneral {
         String revEnzymeRecSite1 = "gtcttc";
 
         if (seq.length() > minLength) {
-            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, seq, true, true)));
-            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, PrimerDesign.reverseComplement(seq), true, true)));
+            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, seq, true, true)));
+            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, PrimerDesign.reverseComplement(seq), true, true)));
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0].toUpperCase() + fwdHomology;
             reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + fusionSites[1].toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
 
@@ -424,7 +417,7 @@ public class RGoldenGate extends RGeneral {
             forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + fusionSites[0].toUpperCase() + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
             reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + fusionSites[1].toUpperCase() + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
 
-            //Level 1, 3, 5, 7, etc. vectors
+        //Level 1, 3, 5, 7, etc. vectors
         } else {
             forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + fusionSites[0].toUpperCase() + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
             reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + fusionSites[1].toUpperCase() + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);

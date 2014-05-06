@@ -315,48 +315,47 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 partLibrary = partLibrary.substring(0, partLibrary.length - 1);
                 _method = _method.replace(/\s+/g, '');
 
-                //primer parameters
+                //Primer parameters
                 var oligoNameRoot = $('input#oligoNameRoot').val();
                 var meltingTemperature = $('input#meltingTemperature').val();
-                var targetLength = $('input#targetLength').val();
-                var minLength = $('input#minLength').val();
+                var targetHomologyLength = $('input#targetHomologyLength').val();
+                var minPCRLength = $('input#minPCRLength').val();
                 var minCloneLength = $('input#minCloneLength').val();
-                //if they are primer parameters are not filled in, use defaults
+                var maxPrimerLength = $('input#maxPrimerLength').val();
 
+                //If primer parameters are not filled in, use defaults
                 if (oligoNameRoot === "") {
                     oligoNameRoot = $('input#oligoNameRoot').attr("placeholder");
                 }
                 if (meltingTemperature === "") {
                     meltingTemperature = $('input#meltingTemperature').attr("placeholder");
                 }
-                if (targetLength === "") {
-                    targetLength = $('input#targetLength').attr("placeholder");
+                if (targetHomologyLength === "") {
+                    targetHomologyLength = $('input#targetHomologyLength').attr("placeholder");
                 }
-                if (minLength === "") {
-                    minLength = $('input#minLength').attr("placeholder");
+                if (minPCRLength === "") {
+                    minPCRLength = $('input#minPCRLength').attr("placeholder");
                 }
                 if (minCloneLength === "") {
-                    minLength = $('input#minCloneLength').attr("placeholder");
+                    minCloneLength = $('input#minCloneLength').attr("placeholder");
+                }
+                if (maxPrimerLength === "") {
+                    maxPrimerLength = $('input#maxPrimerLength').attr("placeholder");
                 }
 
                 //vector_uuid - stage pairs
-                var stageVectorArray = []
+                var stageVectorArray = [];
                 $('table#vectorTable tbody tr').each(function() {
                     var stage = $(this).children('td:first').text();
                     var vectoruuid = $(this).find('select option:selected').attr("id");
                     stageVectorArray.push(vectoruuid);
-                })
+                });
                 var requestInput = {command: "run", designCount: "" + currentDesignCount, targets: "" + targets, method: ""
                             + _method, partLibrary: "" + partLibrary, vectorLibrary: "" + vectorLibrary, recommended: ""
                             + rec, required: "" + req, forbidden: "" + forbid, discouraged: "" + discourage,
                     "stageVectors": "" + stageVectorArray,
                     efficiency: "" + efficiencyArray,
-                    "primer": JSON.stringify({oligoNameRoot: oligoNameRoot,
-                        meltingTemperature: meltingTemperature,
-                        targetLength: targetLength,
-                        minLength: minLength,
-                        minCloneLength : minCloneLength
-                    })};
+                    "primer": JSON.stringify({oligoNameRoot: oligoNameRoot, meltingTemperature: meltingTemperature, targetHomologyLength: targetHomologyLength, minPCRLength: minPCRLength, minCloneLength : minCloneLength, maxPrimerLength : maxPrimerLength})};
                 _runParameters[currentDesignCount] = requestInput;
                 $.get("RavenServlet", requestInput, function(data) {
                     interpretDesignResult(currentDesignCount, data);
