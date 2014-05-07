@@ -128,13 +128,18 @@ public class RNode {
         mergedNode._lOverhang = smallNode._lOverhang;
         mergedNode._name = smallNode._name + "_" + this._name;
         
-        ArrayList<String> mergedType = smallNode._type;
+        ArrayList<String> mergedType = new ArrayList<String>();
+        mergedType.addAll(smallNode._type);
         mergedType.addAll(this._type);
         mergedNode._type = mergedType;
-        ArrayList<String> mergedComp = smallNode._composition;
+        
+        ArrayList<String> mergedComp = new ArrayList<String>();
+        mergedComp.addAll(smallNode._composition);
         mergedComp.addAll(this._composition);
         mergedNode._composition = mergedComp;
-        ArrayList<String> mergedDir = smallNode._direction;
+        
+        ArrayList<String> mergedDir = new ArrayList<String>();
+        mergedDir.addAll(smallNode._direction);
         mergedDir.addAll(this._direction);
         mergedNode._direction = mergedDir;
         
