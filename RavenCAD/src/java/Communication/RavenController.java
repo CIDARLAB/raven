@@ -143,7 +143,7 @@ public class RavenController {
         //Run algorithm for CPEC assembly
         _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
-        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength);
+        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength, _collector);
         return optimalGraphs;
     }
 
@@ -177,7 +177,7 @@ public class RavenController {
         //Run algorithm for SLIC assembly
         _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
-        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength);
+        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength, _collector);
         return optimalGraphs;
     }
 
