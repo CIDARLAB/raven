@@ -226,7 +226,11 @@ public class RInstructions {
                             } else if (synthesize) {
                                 instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             } else {
-                                instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                if (l0Node.getSpecialSeq() != null) {
+                                    instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                } else {
+                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                }
                             }
                         }
 
@@ -243,7 +247,11 @@ public class RInstructions {
                         } else if (synthesize) {
                             instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                         } else {
-                            instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            if (l0Node.getSpecialSeq() != null) {
+                                instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            } else {
+                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            }
                         }
                     }
 

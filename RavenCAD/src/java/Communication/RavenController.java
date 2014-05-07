@@ -1290,23 +1290,18 @@ public class RavenController {
         }
 
         Statistics.start();
-        boolean scarless = false;
         if (method.equalsIgnoreCase("biobricks")) {
             _assemblyGraphs = runBioBricks();
         } else if (method.equalsIgnoreCase("cpec")) {
             _assemblyGraphs = runCPEC(minCloneLength);
-            scarless = true;
         } else if (method.equalsIgnoreCase("gibson")) {
             _assemblyGraphs = runGibson(minCloneLength);
-            scarless = true;
         } else if (method.equalsIgnoreCase("goldengate")) {
             _assemblyGraphs = runGoldenGate();
-            scarless = true;
         } else if (method.equalsIgnoreCase("moclo")) {
             _assemblyGraphs = runMoClo();
         } else if (method.equalsIgnoreCase("slic")) {
             _assemblyGraphs = runSLIC(minCloneLength);
-            scarless = true;
         }
 
         Statistics.stop();
@@ -1352,19 +1347,10 @@ public class RavenController {
                 writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, _stageVectors, method, _user);
             }
 
-            RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, scarless, 0.0, 0.0, 0.0, 0.0);
+            RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, 0.0, 0.0, 0.0, 0.0);
             getSolutionStats(method);
-
-            for (RGraph result : _assemblyGraphs) {
-                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, scarless, method));
-            }
         }
-        System.out.println("GRAPH AND ARCS FILES CREATED");
-//        JSONObject d3Graph = new JSONObject();
-//        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
-        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+        
 
         //generate instructions
         _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, primerParameters, true, method);
@@ -1372,6 +1358,16 @@ public class RavenController {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
         }
 
+        for (RGraph result : _assemblyGraphs) {
+            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+            arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+            graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method));
+        }
+        
+        System.out.println("GRAPH AND ARCS FILES CREATED");
+//        JSONObject d3Graph = new JSONObject();
+//        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
+        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);       
         String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
         File file = new File(_path + _user + "/instructions" + designCount + ".txt");
         FileWriter fw = new FileWriter(file);

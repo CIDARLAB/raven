@@ -171,6 +171,7 @@ public class RHomologyPrimerDesign {
                 if (totalLengthL >= maxPrimerLength || totalLengthR >= maxPrimerLength) {
                     forwardOligoSequence = "SYNTHESIZE";
                     reverseOligoSequence = "SYNTHESIZE";
+                    node.setPCRSeq("synthesize");
                 } else {
                     forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + extraSeq + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
                     reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
