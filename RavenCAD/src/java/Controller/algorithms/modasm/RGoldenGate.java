@@ -33,7 +33,6 @@ public class RGoldenGate extends RGeneral {
             }
         }
         _maxNeighbors = max;
-        ArrayList<Part> goalParts = new ArrayList<Part>(gps);
 
         //Initialize part hash and vector set
         HashMap<String, RGraph> partHash = ClothoReader.partImportClotho(partLibrary, discouraged, recommended);
@@ -359,7 +358,7 @@ public class RGoldenGate extends RGeneral {
     /**
      * Generation of new MoClo primers for parts *
      */
-    public static String[] generatePartPrimers(RNode node, String[] fusionSites, Collector coll, Double meltingTemp, Integer targetLength, Integer minLength, Integer maxPrimerLength) {
+    public static String[] generatePartPrimers(RNode node, String[] fusionSites, Collector coll, Double meltingTemp, Integer targetLength, Integer minPCRLength, Integer maxPrimerLength) {
 
         //Initialize primer parameters
         String[] oligos = new String[2];
@@ -376,9 +375,9 @@ public class RGoldenGate extends RGeneral {
         String fwdEnzymeRecSite1 = "gaagac";
         String revEnzymeRecSite1 = "gtcttc";
 
-        if (seq.length() > minLength) {
-            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, seq, true, true)));
-            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, PrimerDesign.reverseComplement(seq), true, true)));
+        if (seq.length() > minPCRLength) {
+            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, seq, true)));
+            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, PrimerDesign.reverseComplement(seq), true)));
             forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + fusionSites[0].toUpperCase() + fwdHomology;
             reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + fusionSites[1].toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
 

@@ -256,12 +256,12 @@ public class RInstructions {
                             if (method.equalsIgnoreCase("MoClo")) {
                                 oligos = RMoClo.generateVectorPrimers(vector);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
-                                oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, targetHomologyLength, maxPrimerLength);
+                                oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, targetHomologyLength, maxPrimerLength, minPCRLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
                                 RNode node = vecNodeMap.get(vector);
                                 oligos = RGoldenGate.generateVectorPrimers(vector, fusionSites.get(node));
                             } else {
-                                oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, root, coll, meltingTemp, targetHomologyLength, maxPrimerLength);
+                                oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, root, coll, meltingTemp, targetHomologyLength, maxPrimerLength, minPCRLength);
                             }
 
                             String fwdOligo = oligos[0];
