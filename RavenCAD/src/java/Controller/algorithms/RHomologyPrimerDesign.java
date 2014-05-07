@@ -69,6 +69,11 @@ public class RHomologyPrimerDesign {
         if (root.getNeighbors().isEmpty()) {                                  
             lSeq = vector.getSeq();
             rSeq = vector.getSeq();
+        
+        //Edge case of merged parts
+        } else if (node.getSpecialSeq() != null) {
+            lSeq = node.getLeftSeq();
+            rSeq = node.getRightSeq();
             
         } else {
             

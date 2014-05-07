@@ -1082,7 +1082,7 @@ public class RavenController {
                 if (composition.size() > 1) {
                     newPlasmid = Part.generateComposite(composition, name);
                 } else {
-                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition.get(0));
+                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition);
                 }
                 newPlasmid.addSearchTag("Direction: " + directions);
                 newPlasmid.addSearchTag("LO: " + leftOverhang);

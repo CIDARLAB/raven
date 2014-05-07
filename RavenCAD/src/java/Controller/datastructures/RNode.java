@@ -127,10 +127,19 @@ public class RNode {
         RNode mergedNode = this.clone();
         mergedNode._lOverhang = smallNode._lOverhang;
         mergedNode._name = smallNode._name + "_" + this._name;
+        
         ArrayList<String> mergedType = smallNode._type;
         mergedType.addAll(this._type);
         mergedNode._type = mergedType;
+        ArrayList<String> mergedComp = smallNode._composition;
+        mergedComp.addAll(this._composition);
+        mergedNode._composition = mergedComp;
+        ArrayList<String> mergedDir = smallNode._direction;
+        mergedDir.addAll(this._direction);
+        mergedNode._direction = mergedDir;
+        
         mergedNode._specialSeq = smallNode._specialSeq + thisSeq;
+        mergedNode._PCRSeq = thisSeq;
 
         //Adjust neighbor nodes
         parent.removeNeighbor(smallNode);
@@ -239,6 +248,21 @@ public class RNode {
     /** Get the special sequence - only the case for merged nodes **/
     public String getSpecialSeq() {
         return _specialSeq;
+    }
+    
+    /** Get the special PCR sequence - only the case for merged nodes **/
+    public String getPCRSeq() {
+        return _PCRSeq;
+    }
+    
+    /** Get the special left flanking sequence - only the case for merged nodes **/
+    public String getLeftSeq() {
+        return _lSeq;
+    }
+    
+    /** Get the special right flanking sequence - only the case for merged nodes **/
+    public String getRightSeq() {
+        return _rSeq;
     }
     
     /** Get node keys for either forward or reverse direction **/
@@ -402,6 +426,21 @@ public class RNode {
         _specialSeq = seq;
     }
     
+    /** Set a special sequence for a merged node **/
+    public void setPCRSeq(String seq) {
+        _PCRSeq = seq;
+    }
+    
+    /** Set a special sequence for a merged node **/
+    public void setLeftSeq(String seq) {
+        _lSeq = seq;
+    }
+    
+    /** Set a special sequence for a merged node **/
+    public void setRightSeq(String seq) {
+        _rSeq = seq;
+    }
+    
     //FIELDS
     private int _successCnt;
     private int _failureCnt;
@@ -420,6 +459,9 @@ public class RNode {
     private RVector _vector;
     private String _name;
     private String _specialSeq;
+    private String _PCRSeq;
+    private String _lSeq;
+    private String _rSeq;
     private int _nodeID;
     private int _stage;
     private static int _nodeCount = 0;

@@ -194,13 +194,19 @@ public class RInstructions {
                                 oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
                             }
 
-                            //With homologous recombination of very small parts primers for these parts is unecessary and the get implanted into other primers
-                            if (oligos[0].length() > 0 && oligos[0].length() > 0) {
+                            //Add to instructions file
+                            if (oligos[0].length() > 0 && oligos[1].length() > 0) {
                                 String fwdOligo = oligos[0];
                                 String revOligo = oligos[1];
                                 String forwardOligoName;
                                 String reverseOligoName;
-
+                                
+                                //If a merged part oligo is longer than the specified amount, 
+                                boolean synthesize = false;
+                                if (fwdOligo.equalsIgnoreCase("synthesize") || revOligo.equalsIgnoreCase("synthesize")) {
+                                    synthesize = true;
+                                }
+                                
                                 forwardOligoName = oligoNameRoot + oligoCount;
                                 oligoNames.add(forwardOligoName);
                                 oligoSequences.add(fwdOligo);
@@ -218,6 +224,8 @@ public class RInstructions {
                                 //If the primers are small and therefore annealing primers
                                 if (anneal) {
                                     instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                } else if (synthesize) {
+                                    instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 } else {
                                     instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 }

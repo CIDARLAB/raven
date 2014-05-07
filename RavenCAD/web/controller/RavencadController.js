@@ -988,7 +988,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
                     '<tr><td><strong>Number of Goal Parts</strong></td><td>' + data["statistics"]["goalParts"] + '</td></tr>' +
                     '<tr><td><strong>Number of Assembly Steps</strong></td><td>' + data["statistics"]["steps"] + '</td></tr>' +
                     '<tr><td><strong>Number of Assembly Stages</strong></td><td>' + data["statistics"]["stages"] + '</td></tr>' +
-                    '<tr><td><strong>Number of PCR Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
+                    '<tr><td><strong>Number of PCR/Synthesis Reactions</strong></td><td>' + data["statistics"]["reactions"] + '</td></tr>' +
                     '<tr><td><strong>Number of Recommended Parts</strong></td><td>' + data["statistics"]["recommended"] + '</td></tr>' +
                     '<tr><td><strong>Number of Discouraged Parts</strong></td><td>' + data["statistics"]["discouraged"] + '</td></tr>' +
                     '<tr><td><strong>Assembly Efficiency</strong></td><td>' + data["statistics"]["efficiency"] + '</td></tr>' +

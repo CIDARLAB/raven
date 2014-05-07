@@ -131,18 +131,44 @@ public class ClothoWriter {
                             
                             String name;
                             String currentSeq;
+                            ArrayList<Part> bpComposition = new ArrayList<Part>();
+                            
+                            //Edge case for special merged nodes
                             if (currentNode.getSpecialSeq() != null) {
                                 currentSeq = currentNode.getSpecialSeq();
                                 name = currentNode.getName();
+                                
+                                ArrayList<String> nodeComposition = currentNode.getComposition();
+                                for (int i = 0; i < nodeComposition.size(); i++) {
+
+                                    //Forming the composite part composition
+                                    ArrayList<Part> bpsWithName = coll.getAllPartsWithName(nodeComposition.get(i), false);
+                                    Part bp = null;
+
+                                    //Pick the part with no overhangs in the right direction
+                                    for (Part bpWithName : bpsWithName) {
+                                        String bpLO = bpWithName.getLeftOverhang();
+                                        String bpRO = bpWithName.getRightOverhang();
+                                        if (bpLO.isEmpty() && bpRO.isEmpty() && currentNode.getDirection().get(i).equals(bpWithName.getDirections().get(0))) {
+                                            if (!bpWithName.getType().equals("plasmid")) {
+                                                bp = bpWithName;
+                                            }
+                                        }
+                                    }
+                                    
+                                    bpComposition.add(bp);
+                                }
+                                
                             } else {
                                 currentSeq = currentPart.getSeq();
                                 name = currentPart.getName();
+                                bpComposition = currentPart.getComposition();
                             }
                             
-                            newPlasmid = Part.generateBasic(name, currentSeq, currentPart.getComposition().get(0));
+                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition);
                             
                             //Make a new part
-                            Part newBasic = Part.generateBasic(name, currentSeq, currentPart.getComposition().get(0));
+                            Part newBasic = Part.generateBasic(name, currentSeq, bpComposition);
                             newBasic.addSearchTag("LO: " + LO);
                             newBasic.addSearchTag("RO: " + RO);
                             newBasic.addSearchTag("Direction: " + currentNode.getDirection().toString());
@@ -480,7 +506,7 @@ public class ClothoWriter {
                 } else {
                     invertedcLO = invertedcLO + "*";
                 }
-                String invertedcDir = cDir;
+                String invertedcDir;
                 if (cDir.equals("+")) {
                     invertedcDir = "-";
                 } else {
