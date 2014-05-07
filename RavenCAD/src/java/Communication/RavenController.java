@@ -351,14 +351,19 @@ public class RavenController {
                 if (!libPart.getLeftOverhang().isEmpty() && !libPart.getRightOverhang().isEmpty()) {
                     composition = libPart.getComposition().get(0).getName() + "|" + libPart.getLeftOverhang() + "|" + libPart.getRightOverhang() + "|" + direction.get(0);
                 } else {
-                    composition = libPart.getComposition().get(0).getName() + "|" + direction.get(0);
+//                    if (!"-".equals(direction.get(0))) {
+                        composition = libPart.getComposition().get(0).getName() + "|" + direction.get(0);
+//                    }
                 }
                 Vector v = _libraryPartsVectors.get(libPart);
                 if (v != null) {
                     vectorName = v.getName();
                 }
-                partsListBufferedWriter.write("\nx," + libPart.getName() + "," + libPart.getSeq() + "," + libPart.getLeftOverhang() + "," + libPart.getRightOverhang() + "," + libPart.getType() + ",,," + vectorName + "," + composition);
-                configBufferedWriter.write("\nx," + libPart.getName() + "," + libPart.getSeq() + "," + libPart.getLeftOverhang() + "," + libPart.getRightOverhang() + "," + libPart.getType() + ",,," + vectorName + "," + composition);
+
+                if (!"-".equals(direction.get(0))) {
+                    partsListBufferedWriter.write("\nx," + libPart.getName() + "," + libPart.getSeq() + "," + libPart.getLeftOverhang() + "," + libPart.getRightOverhang() + "," + libPart.getType() + ",,," + vectorName + "," + composition);
+                    configBufferedWriter.write("\nx," + libPart.getName() + "," + libPart.getSeq() + "," + libPart.getLeftOverhang() + "," + libPart.getRightOverhang() + "," + libPart.getType() + ",,," + vectorName + "," + composition);
+                }
             } else {
 
                 //For composite parts
@@ -409,15 +414,26 @@ public class RavenController {
             String vectorName = "";
 
             if (p.isBasic()) {
-                if (!p.getLeftOverhang().isEmpty() && !p.getRightOverhang().isEmpty()) {
-                    composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + direction.get(0);
+                
+                //Edge case for merged parts
+                String bpDirection;
+                if (type.startsWith("[") && type.endsWith("]")) {
+                    type = "multitype";
+                    bpDirection = "+";
                 } else {
-                    composition = p.getName() + "|" + direction.get(0);
+                    bpDirection = direction.get(0);
+                }
+                
+                if (!p.getLeftOverhang().isEmpty() && !p.getRightOverhang().isEmpty()) {
+                    composition = p.getName() + "|" + p.getLeftOverhang() + "|" + p.getRightOverhang() + "|" + bpDirection;
+                } else {
+                    composition = p.getName() + "|" + bpDirection;
                 }
                 Vector v = partVectorHash.get(p);
                 if (v != null) {
                     vectorName = v.getName();
                 }
+                
                 partsListBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
                 configBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             } else {
@@ -1312,13 +1328,11 @@ public class RavenController {
         HashSet<String> targetRootNodeKeys = new HashSet();
 
         //Get target root node list for instructions and picture generation
-        if (!_assemblyGraphs.isEmpty()) {
-            for (RGraph result : _assemblyGraphs) {
-                if (!targetRootNodeKeys.contains(result.getRootNode().getNodeKey("+")) || !targetRootNodeKeys.contains(result.getRootNode().getNodeKey("-"))) {
-                    targetRootNodes.add(result.getRootNode());
-                    targetRootNodeKeys.add(result.getRootNode().getNodeKey("+"));
-                    targetRootNodeKeys.add(result.getRootNode().getNodeKey("-"));
-                }
+        for (RGraph result : _assemblyGraphs) {
+            if (!targetRootNodeKeys.contains(result.getRootNode().getNodeKey("+")) || !targetRootNodeKeys.contains(result.getRootNode().getNodeKey("-"))) {
+                targetRootNodes.add(result.getRootNode());
+                targetRootNodeKeys.add(result.getRootNode().getNodeKey("+"));
+                targetRootNodeKeys.add(result.getRootNode().getNodeKey("-"));
             }
         }
 
@@ -1339,25 +1353,24 @@ public class RavenController {
         }
         boolean valid = validateGraphComposition();
         _valid = valid && overhangValid;
-        _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
-
-        if (!_assemblyGraphs.isEmpty()) {
-
-            for (RGraph result : _assemblyGraphs) {
-                writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, _stageVectors, method, _user);
-            }
-
-            RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, 0.0, 0.0, 0.0, 0.0);
-            getSolutionStats(method);
-        }
         
+        //Merge graphs and make new clotho parts where appropriate
+        _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
+        for (RGraph result : _assemblyGraphs) {
+            writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, _stageVectors, method, _user);
+        }
 
-        //generate instructions
+        //Get graph stats
+        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, 0.0, 0.0, 0.0, 0.0);
+        getSolutionStats(method);       
+
+        //Generate Instructions
         _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, primerParameters, true, method);
         if (_instructions == null) {
             _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
         }
 
+        //Generate graph and arc files
         for (RGraph result : _assemblyGraphs) {
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));

@@ -50,9 +50,6 @@ public class RGoldenGate extends RGeneral {
     /** Assign overhangs for scarless assembly **/
     private void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<Integer, Vector> stageVectors) {
         
-        //Initialize fields that record information to save complexity for future steps
-        _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
-        
         HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
         for (Integer stage : stageVectors.keySet()) {
             RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
@@ -86,33 +83,7 @@ public class RGoldenGate extends RGeneral {
             }
                         
             ArrayList<RNode> neighbors = root.getNeighbors();
-            ArrayList<RNode> l0nodes = new ArrayList<RNode>();
-            _rootBasicNodeHash.put(root, l0nodes);
             assignOverhangsHelper(root, neighbors, root, stageRVectors);
-        }
-        
-        //
-        for (RGraph graph : asmGraphs) {
-            RNode root = graph.getRootNode();
-            ArrayList<String> rootDir = new ArrayList<String>();
-            ArrayList<String> direction = root.getDirection();
-            rootDir.addAll(direction);
-            ArrayList<RNode> l0Nodes = _rootBasicNodeHash.get(root);
-
-            //Determine which levels each basic node impacts            
-            for (int i = 0; i < l0Nodes.size(); i++) {
-
-                //Determine direction of basic level 0 nodes               
-                RNode l0Node = l0Nodes.get(i);               
-                String l0Direction = rootDir.get(0);               
-                if (l0Node.getComposition().size() == 1) {
-                    ArrayList<String> l0Dir = new ArrayList<String>();
-                    l0Dir.add(l0Direction);
-                    l0Node.setDirection(l0Dir);
-                }               
-                int size = l0Node.getDirection().size();
-                rootDir.subList(0, size).clear();
-            }
         }
         
     }
@@ -139,40 +110,38 @@ public class RGoldenGate extends RGeneral {
             
             if (j == 0) {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
-
+                ArrayList<String> nextDir = children.get(j + 1).getDirection();
+                child.setROverhang(nextComp.get(0) + nextDir.get(0));
+                child.setLOverhang(parent.getLOverhang());
+                
                 if (vector != null) {
-                    RVector newVector = new RVector(parent.getLOverhang(), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(parent.getVector().getLOverhang(), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }
-                child.setROverhang(nextComp.get(0));
-                child.setLOverhang(parent.getLOverhang());
 
             } else if (j == children.size() - 1) {
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
-
+                ArrayList<String> prevDir = children.get(j - 1).getDirection();
+                child.setLOverhang(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1));
+                child.setROverhang(parent.getROverhang());
+                
                 if (vector != null) {
-                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), parent.getROverhang(), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), parent.getVector().getROverhang(), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }
-                child.setLOverhang(prevComp.get(prevComp.size() - 1));
-                child.setROverhang(parent.getROverhang());
 
             } else {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
-
+                ArrayList<String> nextDir = children.get(j + 1).getDirection();
+                ArrayList<String> prevDir = children.get(j - 1).getDirection();
+                child.setLOverhang(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1));
+                child.setROverhang(nextComp.get(0) + nextDir.get(0));
+                
                 if (vector != null) {
-                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1), nextComp.get(0), child.getStage(), vector.getName(), null);
+                    RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
-                }
-                child.setLOverhang(prevComp.get(prevComp.size() - 1));
-                child.setROverhang(nextComp.get(0));
-            }
-
-            if (child.getStage() == 0) {
-                ArrayList<RNode> l0nodes = _rootBasicNodeHash.get(root);
-                l0nodes.add(child);
-                _rootBasicNodeHash.put(root, l0nodes);
+                } 
             }
             
             ArrayList<RNode> grandChildren = child.getNeighbors();           
@@ -260,12 +229,6 @@ public class RGoldenGate extends RGeneral {
             tags.add("Type: " + type);
             Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
             currentSeq = currentPart.getSeq();
-            ArrayList<String> direction = node.getDirection();
-
-            //Reverse complement sequences that are on the reverse strand
-            if ("-".equals(direction.get(0))) {
-                currentSeq = PrimerDesign.reverseComplement(currentSeq);
-            }
 
             if (currentPart.isBasic()) {
 
@@ -426,7 +389,4 @@ public class RGoldenGate extends RGeneral {
         oligos[1]=reverseOligoSequence;
         return oligos;
     }
-    
-    //FIELDS
-    private static HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }

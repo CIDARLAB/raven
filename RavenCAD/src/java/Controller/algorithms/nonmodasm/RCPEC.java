@@ -138,7 +138,7 @@ public class RCPEC extends RGeneral {
             if (j == 0) {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
                 ArrayList<String> nextDir = children.get(j + 1).getDirection();
-                child.setROverhang(nextComp.get(0));
+                child.setROverhang(nextComp.get(0) + nextDir.get(0));
                 child.setLOverhang(parent.getLOverhang());
                 
                 if (vector != null && child.getStage() != 0) {
@@ -163,7 +163,7 @@ public class RCPEC extends RGeneral {
             } else if (j == children.size() - 1) {
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
                 ArrayList<String> prevDir = children.get(j - 1).getDirection();
-                child.setLOverhang(prevComp.get(prevComp.size() - 1));
+                child.setLOverhang(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1));
                 child.setROverhang(parent.getROverhang());
                 
                 if (vector != null && child.getStage() != 0) {
@@ -187,8 +187,8 @@ public class RCPEC extends RGeneral {
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
                 ArrayList<String> nextDir = children.get(j + 1).getDirection();
                 ArrayList<String> prevDir = children.get(j - 1).getDirection();
-                child.setLOverhang(prevComp.get(prevComp.size() - 1));
-                child.setROverhang(nextComp.get(0));
+                child.setLOverhang(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1));
+                child.setROverhang(nextComp.get(0) + nextDir.get(0));
                 
                 if (vector != null && child.getStage() != 0) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);

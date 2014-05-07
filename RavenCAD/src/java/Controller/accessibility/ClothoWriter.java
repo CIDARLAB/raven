@@ -222,13 +222,13 @@ public class ClothoWriter {
                                 } else {
                                     if (i == 0) {
                                         cLO = LO;
-                                        cRO = composition.get(1);
+                                        cRO = composition.get(1) + direction.get(1);
                                     } else if (i == composition.size() - 1) {
-                                        cLO = composition.get(composition.size() - 2);
+                                        cLO = composition.get(composition.size() - 2) + direction.get(direction.size() - 2);
                                         cRO = RO;
                                     } else {
-                                        cLO = composition.get(i - 1);
-                                        cRO = composition.get(i + 1);
+                                        cLO = composition.get(i - 1) + direction.get(i - 1);
+                                        cRO = composition.get(i + 1) + direction.get(i + 1);
                                     }
                                 }
 
@@ -467,13 +467,13 @@ public class ClothoWriter {
             } else {
                 if (i == 0) {
                     cLO = LO;
-                    cRO = composition.get(1);
+                    cRO = composition.get(1) + direction.get(1);
                 } else if (i == composition.size() - 1) {
-                    cLO = composition.get(composition.size() - 2);
+                    cLO = composition.get(composition.size() - 2) + direction.get(direction.size() - 2);
                     cRO = RO;
                 } else {
-                    cLO = composition.get(i - 1);
-                    cRO = composition.get(i + 1);
+                    cLO = composition.get(i - 1) + direction.get(i - 1);
+                    cRO = composition.get(i + 1) + direction.get(i + 1);
                 }
             }
 
