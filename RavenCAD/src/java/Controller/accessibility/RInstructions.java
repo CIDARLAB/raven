@@ -168,80 +168,85 @@ public class RInstructions {
 
                 //Design primers for new level 0 nodes
                 if (newNodes.contains(l0Node)) {
-                    if (designPrimers) {
 
-                        //For small part, just order annealing primers
-                        boolean anneal = false;
-                        if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= minPCRLength && !coll.getPart(l0Node.getUUID(), true).getSeq().isEmpty()) {
-                            anneal = true;
-                        }
-
-                        //If primers for this node have not yet been created (seen in the hash), create them
-                        if (!nodeOligoHash.containsKey(l0Node.getNodeKey("+"))) {
-
-                            String[] oligoNamesForNode = new String[2];
-
-                            //Determine which kind of primers to generate
-                            String[] oligos;
-                            if (method.equalsIgnoreCase("MoClo")) {
-                                oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
-                            } else if (method.equalsIgnoreCase("BioBricks")) {
-                                oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
-                            } else if (method.equalsIgnoreCase("GoldenGate")) {
-                                fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll, fusionSites);
-                                oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
-                            } else {
-                                oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
-                            }
-
-                            //Add to instructions file
-                            if (oligos[0].length() > 0 && oligos[1].length() > 0) {
-                                String fwdOligo = oligos[0];
-                                String revOligo = oligos[1];
-                                String forwardOligoName;
-                                String reverseOligoName;
-                                
-                                //If a merged part oligo is longer than the specified amount, 
-                                boolean synthesize = false;
-                                if (fwdOligo.equalsIgnoreCase("synthesize") || revOligo.equalsIgnoreCase("synthesize")) {
-                                    synthesize = true;
-                                }
-                                
-                                forwardOligoName = oligoNameRoot + oligoCount;
-                                oligoNames.add(forwardOligoName);
-                                oligoSequences.add(fwdOligo);
-                                oligoCount++;
-
-                                reverseOligoName = oligoNameRoot + oligoCount;
-                                oligoNames.add(reverseOligoName);
-                                oligoSequences.add(revOligo);
-                                oligoCount++;
-
-                                oligoNamesForNode[0] = forwardOligoName;
-                                oligoNamesForNode[1] = reverseOligoName;
-                                nodeOligoHash.put(l0Node.getNodeKey("+"), oligoNamesForNode);
-
-                                //If the primers are small and therefore annealing primers
-                                if (anneal) {
-                                    instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
-                                } else if (synthesize) {
-                                    instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
-                                } else {
-                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
-                                }
-                            }
-
-                        } else {
-                            String[] nodeOligos = nodeOligoHash.get(l0Node.getNodeKey("+"));
-                            if (anneal) {
-                                instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
-                            } else {
-                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
-                            }
-                        }
-                    } else {
-                        instructions = instructions + "\nPCR " + currentPart.getName() + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang();
+                    //For small part, just order annealing primers
+                    boolean anneal = false;
+                    if (coll.getPart(l0Node.getUUID(), true).getSeq().length() <= minPCRLength && !coll.getPart(l0Node.getUUID(), true).getSeq().isEmpty()) {
+                        anneal = true;
                     }
+
+                    //If primers for this node have not yet been created (seen in the hash), create them
+                    if (!nodeOligoHash.containsKey(l0Node.getNodeKey("+"))) {
+
+                        String[] oligoNamesForNode = new String[2];
+
+                        //Determine which kind of primers to generate
+                        String[] oligos;
+                        if (method.equalsIgnoreCase("MoClo")) {
+                            oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
+                        } else if (method.equalsIgnoreCase("BioBricks")) {
+                            oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
+                        } else if (method.equalsIgnoreCase("GoldenGate")) {
+                            fusionSites = RGoldenGate.getFusionSites(l0Node, root, coll, fusionSites);
+                            oligos = RGoldenGate.generatePartPrimers(l0Node, fusionSites.get(l0Node), coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
+                        } else {
+                            oligos = RHomologyPrimerDesign.homolRecombPartPrimers(l0Node, root, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
+                        }
+
+                        //Add to instructions file
+                        if (oligos[0].length() > 0 && oligos[1].length() > 0) {
+                            String fwdOligo = oligos[0];
+                            String revOligo = oligos[1];
+                            String forwardOligoName;
+                            String reverseOligoName;
+
+                            //If a merged part oligo is longer than the specified amount, 
+                            boolean synthesize = false;
+                            if (fwdOligo.equalsIgnoreCase("synthesize") || revOligo.equalsIgnoreCase("synthesize")) {
+                                synthesize = true;
+                            }
+
+                            forwardOligoName = oligoNameRoot + oligoCount;
+                            oligoNames.add(forwardOligoName);
+                            oligoSequences.add(fwdOligo);
+                            oligoCount++;
+
+                            reverseOligoName = oligoNameRoot + oligoCount;
+                            oligoNames.add(reverseOligoName);
+                            oligoSequences.add(revOligo);
+                            oligoCount++;
+
+                            oligoNamesForNode[0] = forwardOligoName;
+                            oligoNamesForNode[1] = reverseOligoName;
+                            nodeOligoHash.put(l0Node.getNodeKey("+"), oligoNamesForNode);
+
+                            //If the primers are small and therefore annealing primers
+                            if (anneal) {
+                                instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            } else if (synthesize) {
+                                instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            } else {
+                                instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            }
+                        }
+
+                    //If primers are being reused
+                    } else {
+                        String[] nodeOligos = nodeOligoHash.get(l0Node.getNodeKey("+"));
+                        boolean synthesize = false;
+                        if (nodeOligos[0].equalsIgnoreCase("synthesize") || nodeOligos[1].equalsIgnoreCase("synthesize")) {
+                            synthesize = true;
+                        }
+
+                        if (anneal) {
+                            instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                        } else if (synthesize) {
+                            instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                        } else {
+                            instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                        }
+                    }
+
                 }
             }
 

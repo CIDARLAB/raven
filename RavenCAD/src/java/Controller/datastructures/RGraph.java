@@ -316,9 +316,13 @@ public class RGraph {
                     }
                 }
 
-                ArrayList<String> composition = current.getComposition();
                 String currentPartKey = current.getNodeKey("+");
-
+                
+                //Ammend the node key for merged nodes
+                if (current.getSpecialSeq() != null) {
+                    currentPartKey = currentPartKey + "|s";
+                }
+                
                 String currentVectorKey = "";
                 if (current.getVector() != null) {
                     currentVectorKey = current.getVector().getVectorKey("+");

@@ -63,6 +63,7 @@ public class RHomologyPrimerDesign {
         Part rootPart = coll.getPart(root.getUUID(), true);
         ArrayList<Part> composition = rootPart.getComposition();             
         Vector vector = coll.getVector(root.getVector().getUUID(), true);
+        String extraSeq = "";
         
         //Determine part neighbors based upon root composition
         //Edge case where a plasmid only has one part or a part is re-used from the library
@@ -74,7 +75,9 @@ public class RHomologyPrimerDesign {
         } else if (node.getSpecialSeq() != null) {
             lSeq = node.getLeftSeq();
             rSeq = node.getRightSeq();
-            
+            String specialSeq = node.getSpecialSeq();
+            extraSeq = specialSeq.substring(0, specialSeq.length() - node.getPCRSeq().length());
+
         } else {
             
             //If the current part is a basic part, as opposed to composite
@@ -136,12 +139,22 @@ public class RHomologyPrimerDesign {
         }
         if (currentSeq.equals("")) {
             missingSequence = true;
-        } 
+        }
+
+        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength / 2, minPCRLength, lSeq, false);
+        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength / 2, minPCRLength, PrimerDesign.reverseComplement(rSeq), false);
+
+        int currentPartLHomologyLength;
+        int currentPartRHomologyLength;
         
-        int lNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, minPCRLength, lSeq, false);
-        int rNeighborHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, minPCRLength, PrimerDesign.reverseComplement(rSeq), false);
-        int currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, minPCRLength, currentSeq, true);
-        int currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength/2, minPCRLength, PrimerDesign.reverseComplement(currentSeq), true);
+        //Edge determine part homology depending on whether or not this is a merged node
+        if (!extraSeq.isEmpty()) {
+            currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength / 2, minPCRLength, node.getPCRSeq(), true);
+            currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength / 2, minPCRLength, PrimerDesign.reverseComplement(node.getPCRSeq()), true);
+        } else {
+            currentPartLHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength / 2, minPCRLength, currentSeq, true);
+            currentPartRHomologyLength = PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength / 2, minPCRLength, PrimerDesign.reverseComplement(currentSeq), true);
+        }
         
         //If there are any missing sequences, return default homology indications
         if (missingSequence || missingLeftSequence || missingRightSequence) {
@@ -149,12 +162,29 @@ public class RHomologyPrimerDesign {
             reverseOligoSequence = "[" + currentPart.getRightOverhang() + " HOMOLOGY][" + currentPart.getName() + " HOMOLOGY]";
 
         } else {
-            if (currentSeq.length() > minPCRLength) {
-                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
-                reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+            
+            //If the total length of a merged node primer exceeds the max length, it must be synthesized
+            if (!extraSeq.isEmpty()) {
+                int totalLengthL = lNeighborHomologyLength + extraSeq.length() + currentPartLHomologyLength;
+                int totalLengthR = currentPartRHomologyLength + rNeighborHomologyLength;
+                
+                if (totalLengthL >= maxPrimerLength || totalLengthR >= maxPrimerLength) {
+                    forwardOligoSequence = "SYNTHESIZE";
+                    reverseOligoSequence = "SYNTHESIZE";
+                } else {
+                    forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + extraSeq + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
+                    reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+                }
+                
             } else {
-                forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq + currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength));
-                reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+
+                if (currentSeq.length() > minPCRLength) {
+                    forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq.substring(0, Math.min(currentSeq.length(), currentPartLHomologyLength));
+                    reverseOligoSequence = PrimerDesign.reverseComplement(currentSeq.substring(Math.max(0, currentSeq.length() - currentPartRHomologyLength)) + rSeq.substring(0, Math.min(rSeq.length(), rNeighborHomologyLength)));
+                } else {
+                    forwardOligoSequence = lSeq.substring(Math.max(0, lSeq.length() - lNeighborHomologyLength)) + currentSeq + rSeq.substring(0, Math.max(0, currentPartRHomologyLength));
+                    reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+                }
             }
         }
 
