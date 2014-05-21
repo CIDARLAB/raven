@@ -1170,8 +1170,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 forbid = forbid.substring(0, forbid.length - 1);
                 require = require.substring(0, require.length - 1);
                 redesignInput["designCount"] = (parseInt(redesignInput["designCount"]) + 1) + "";
-                redesignInput["forbidden"] = redesignInput["forbidden"] + forbid;
-                redesignInput["required"] = redesignInput["required"] + require;
+                redesignInput["forbidden"] = forbid;
+                redesignInput["required"] = require;
                 redesignInput["partLibrary"] = redesignInput["partLibrary"] + "," + toAddToPartLibrary;
                 redesignInput["vectorLibrary"] = redesignInput["vectorLibrary"] + "," + toAddToVectorLibrary;
                 _runParameters[designNumber] = redesignInput;
@@ -1179,7 +1179,6 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 refreshData();
                 updateSummary();
             });
-//            });
 
             $('.reqForbidButton').click(function() {
                 if ($(this).attr("name") === "neither") {

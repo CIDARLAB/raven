@@ -349,11 +349,9 @@ public class RavenController {
             //For basic parts
             if (libPart.isBasic()) {
                 if (!libPart.getLeftOverhang().isEmpty() && !libPart.getRightOverhang().isEmpty()) {
-                    composition = libPart.getComposition().get(0).getName() + "|" + libPart.getLeftOverhang() + "|" + libPart.getRightOverhang() + "|" + direction.get(0);
+                    composition = libPart.getComposition().get(0).getName() + "|" + libPart.getLeftOverhang() + "|" + libPart.getRightOverhang() + "|" + direction.get(0).trim();
                 } else {
-//                    if (!"-".equals(direction.get(0))) {
-                        composition = libPart.getComposition().get(0).getName() + "|" + direction.get(0);
-//                    }
+                    composition = libPart.getComposition().get(0).getName() + "|" + direction.get(0).trim();
                 }
                 Vector v = _libraryPartsVectors.get(libPart);
                 if (v != null) {
@@ -375,9 +373,9 @@ public class RavenController {
                 for (int i = 0; i < libPart.getComposition().size(); i++) {
                     Part subpart = libPart.getComposition().get(i);
                     if (!subpart.getLeftOverhang().isEmpty() && !subpart.getRightOverhang().isEmpty()) {
-                        composition = composition + ", " + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(0);
+                        composition = composition + ", " + subpart.getName() + "|" + subpart.getLeftOverhang() + "|" + subpart.getRightOverhang() + "|" + direction.get(i).trim();
                     } else {
-                        composition = composition + ", " + subpart.getName() + "|" + direction.get(0);
+                        composition = composition + ", " + subpart.getName() + "|" + direction.get(i).trim();
                     }
                 }
 
@@ -421,7 +419,7 @@ public class RavenController {
                     type = "multitype";
                     bpDirection = "+";
                 } else {
-                    bpDirection = direction.get(0);
+                    bpDirection = direction.get(0).trim();
                 }
                 
                 if (!p.getLeftOverhang().isEmpty() && !p.getRightOverhang().isEmpty()) {
@@ -465,9 +463,9 @@ public class RavenController {
                     }
 
                     if (!cLO.isEmpty() && !cRO.isEmpty()) {
-                        composition = composition + ", " + subpart.getName() + "|" + cLO + "|" + cRO + "|" + direction.get(0);
+                        composition = composition + ", " + subpart.getName() + "|" + cLO + "|" + cRO + "|" + direction.get(i).trim();
                     } else {
-                        composition = composition + ", " + subpart.getName() + "|" + direction.get(0);
+                        composition = composition + ", " + subpart.getName() + "|" + direction.get(i).trim();
                     }
                 }
 
