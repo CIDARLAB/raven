@@ -865,7 +865,7 @@ public class RavenController {
 
                 try {
                     String name = tokens[1].trim();
-                    String sequence = tokens[2].trim();
+                    String sequence = tokens[2].trim().replaceAll(" ","");
                     String leftOverhang = tokens[3].trim();
                     String rightOverhang = tokens[4].trim();
                     String resistance = tokens[6].toLowerCase().trim();
@@ -889,7 +889,7 @@ public class RavenController {
 
                 try {
                     if (!tokens[0].trim().isEmpty()) {
-                        String sequence = tokens[2].trim();
+                        String sequence = tokens[2].trim().replaceAll(" ","");
                         String leftOverhang = tokens[3].trim();
                         String rightOverhang = tokens[4].trim();
                         String resistance = tokens[6].toLowerCase().trim();
@@ -932,7 +932,7 @@ public class RavenController {
 
                 try {
                     String name = tokens[1].trim();
-                    String sequence = tokens[2].trim();
+                    String sequence = tokens[2].trim().replaceAll(" ","");
 
                     Part newBasicPart = Part.generateBasic(name, sequence, null);
                     newBasicPart.addSearchTag("LO: ");
@@ -1023,7 +1023,7 @@ public class RavenController {
                                     basic = aPart;
                                 }
                             }
-                            String sequence = basic.getSeq();
+                            String sequence = basic.getSeq().replaceAll(" ","");
                             String type = basic.getType();
                             Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
                             newBasicPart.addSearchTag("Type: " + type);
