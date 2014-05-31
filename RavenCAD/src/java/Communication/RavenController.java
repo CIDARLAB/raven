@@ -1453,11 +1453,11 @@ public class RavenController {
             }
         }
 
-        if (toReturn && _required.size() == seenRequired.size()) {
-            return true;
-        } else {
+//        if (toReturn && _required.size() == seenRequired.size()) {
+//            return true;
+//        } else {
             return false;
-        }
+//        }
 
     }
 
