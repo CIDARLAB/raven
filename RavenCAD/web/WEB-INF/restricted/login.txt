@@ -116,3 +116,6 @@ alan,katz
 jamesop,JpU-45gb
 cfrick13,xenopus
 AndresOchoa,Lara
+deepak,mishra
+ron,weiss
+kyle,lathem
