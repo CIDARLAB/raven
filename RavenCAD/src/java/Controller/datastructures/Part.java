@@ -36,9 +36,6 @@ public class Part {
     public static Part generateBasic(String name, String sequence, ArrayList<Part> composition) {
         Part newBasic = new Part();
         newBasic.name = name;
-//        if (sequence == null) {
-//            sequence = "";
-//        }
         newBasic.sequence = sequence;
         newBasic.isComposite = false;
         newBasic.composition = new ArrayList<Part>();

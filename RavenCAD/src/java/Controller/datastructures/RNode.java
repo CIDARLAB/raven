@@ -453,7 +453,7 @@ public class RNode {
     private double _modularity;
     private boolean _recommended;
     private boolean _discouraged;
-    private ArrayList<RNode> _neighbors;
+    public ArrayList<RNode> _neighbors;
     private ArrayList<String> _direction;
     private String _uuid;
     private ArrayList<String> _composition;

@@ -949,11 +949,12 @@ public class RavenController {
                     newReverseBasicPart.addSearchTag("Scars: []");
 
                     //Library logic
-                    _partLibrary.add(newBasicPart);
-                    newBasicPart.saveDefault(_collector);
+                    newBasicPart = newBasicPart.saveDefault(_collector);
+                    _partLibrary.add(newBasicPart);                    
                     newBasicPart.setTransientStatus(false);
+                    
+                    newReverseBasicPart = newReverseBasicPart.saveDefault(_collector);
                     _partLibrary.add(newReverseBasicPart);
-                    newReverseBasicPart.saveDefault(_collector);
                     newReverseBasicPart.setTransientStatus(false);
 
                 } catch (Exception e) {

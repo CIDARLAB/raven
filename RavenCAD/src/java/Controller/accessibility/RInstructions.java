@@ -152,10 +152,13 @@ public class RInstructions {
                             instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
                         }
 
-                        //If the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
+                    //Else if the part key is in the list, determine if a steps is necessary based upon whether the vector is also present
                     } else {
-                        if (!libraryVectorKeys.contains(vector.getVectorKey("+")) || !libraryVectorKeys.contains(vector.getVectorKey("-"))) {
-                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                        
+                        if (vector != null) {
+                            if (!libraryVectorKeys.contains(vector.getVectorKey("+")) || !libraryVectorKeys.contains(vector.getVectorKey("-"))) {
+                                instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                            }
                         }
                     }
                 }

@@ -684,7 +684,7 @@ public class RGraph {
             String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
 
             if (method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic") || method.equalsIgnoreCase("goldengate")) {
-                if (gpComps.contains(composition.toString())) {
+                if (gpComps.contains(composition.toString()) && (current.getSpecialSeq() == null)) {
                     if (vecName == null) {
                         vecName = "";
                     }
