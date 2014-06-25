@@ -782,8 +782,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
         //add download buttons and bind events to them
         $('#download' + _designCount).append('<h4>Download Options</a></h4>' +
                 '<p><a target="_blank" id="downloadImage' + _designCount + '">Download Graph Image</p>' +
-                '<p><a target="_blank" id="downloadInstructions' + _designCount + '">Download Instructions</a></p>' +
-                '<p><a target="_blank" id="downloadParts' + _designCount + '">Download Parts/Vectors List</a></p>' +
+                '<p><a target="_blank" id="downloadInstructions' + _designCount + '">Download Instructions File</a></p>' +
+                '<p><a target="_blank" id="downloadParts' + _designCount + '">Download Raven File</a></p>' +
                 '<p><a target="_blank" id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
                 '<p><a target="_blank" id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>' +
                 '<p><a target="_blank" id="downloadConfig' + _designCount + '">Download Configuration File</a></p>'

@@ -222,14 +222,14 @@ public class RInstructions {
 
                             //If the primers are small and therefore annealing primers
                             if (anneal) {
-                                instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                instructions = instructions + "\nAnneal oligos: " + forwardOligoName + " and " + reverseOligoName + " or synthesize to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             } else if (synthesize) {
-                                instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                instructions = instructions + "\nSynthesize part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             } else {
                                 if (l0Node.getSpecialSeq() != null) {
-                                    instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                    instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " part with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 } else {
-                                    instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                    instructions = instructions + "\nPCR " + currentPart.getName() + " part with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                                 }
                             }
                         }
@@ -243,14 +243,14 @@ public class RInstructions {
                         }
 
                         if (anneal) {
-                            instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " or synthesize to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            instructions = instructions + "\nAnneal oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " or synthesize to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                         } else if (synthesize) {
-                            instructions = instructions + "\nSynthesize part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                            instructions = instructions + "\nSynthesize part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                         } else {
                             if (l0Node.getSpecialSeq() != null) {
-                                instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                instructions = instructions + "\nPCR " + l0Node.getComposition().get(l0Node.getComposition().size() - 1) + " part with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             } else {
-                                instructions = instructions + "\nPCR " + currentPart.getName() + " with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part: " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
+                                instructions = instructions + "\nPCR " + currentPart.getName() + " part with oligos: " + nodeOligos[0] + " and " + nodeOligos[1] + " to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections();
                             }
                         }
                     }
@@ -307,9 +307,9 @@ public class RInstructions {
 
                             //Correct for desination vectors with MoClo and GoldenGate
                             if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
-                                instructions = instructions + "\nPCR lacZ with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                instructions = instructions + "\nPCR lacZ part with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             } else {
-                                instructions = instructions + "\nPCR " + vecName + " with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                instructions = instructions + "\nPCR " + vecName + " vector with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             }
 
                         } else {
@@ -317,18 +317,18 @@ public class RInstructions {
                             
                             //Correct for desination vectors with MoClo and GoldenGate
                             if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
-                                instructions = instructions + "\nPCR lacZ with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                instructions = instructions + "\nPCR lacZ with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             } else {
-                                instructions = instructions + "\nPCR " + vecName + " with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector: " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                instructions = instructions + "\nPCR " + vecName + " vector with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             }
                         }
                     } else {
                         
                         //Correct for desination vectors with MoClo and GoldenGate
                         if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
-                            instructions = instructions + "\nPCR lacZ to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            instructions = instructions + "\nPCR lacZ to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                         } else {
-                            instructions = instructions + "\nPCR " + vecName + " to get vector: " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            instructions = instructions + "\nPCR " + vecName + " vector to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                         }
                     }
                 }          
