@@ -56,13 +56,6 @@ public class RGoldenGate extends RGeneral {
             stageRVectors.put(stage, vec);
         }
         
-        //If the stageVector hash is empty, make a new default vector
-        if (stageRVectors.size() == 1) {
-            if (stageRVectors.get(0) == null) {
-                stageRVectors.put(0, new RVector("", "", -1, "pSK1A2", null));
-            }
-        }
-        
         for (int i = 0; i < asmGraphs.size(); i++) {
             
             RGraph graph = asmGraphs.get(i);
@@ -114,10 +107,12 @@ public class RGoldenGate extends RGeneral {
                 child.setROverhang(nextComp.get(0) + nextDir.get(0));
                 child.setLOverhang(parent.getLOverhang());
                 
+//                if (child.getStage() > 0) {
                 if (vector != null) {
                     RVector newVector = new RVector(parent.getVector().getLOverhang(), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }
+//                }
 
             } else if (j == children.size() - 1) {
                 ArrayList<String> prevComp = children.get(j - 1).getComposition();
@@ -125,10 +120,12 @@ public class RGoldenGate extends RGeneral {
                 child.setLOverhang(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1));
                 child.setROverhang(parent.getROverhang());
                 
+//                if (child.getStage() > 0) {
                 if (vector != null) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), parent.getVector().getROverhang(), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 }
+//                }
 
             } else {
                 ArrayList<String> nextComp = children.get(j + 1).getComposition();
@@ -138,10 +135,12 @@ public class RGoldenGate extends RGeneral {
                 child.setLOverhang(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1));
                 child.setROverhang(nextComp.get(0) + nextDir.get(0));
                 
+//                if (child.getStage() > 0) {
                 if (vector != null) {
                     RVector newVector = new RVector(prevComp.get(prevComp.size() - 1) + prevDir.get(prevComp.size() - 1), nextComp.get(0) + nextDir.get(0), child.getStage(), vector.getName(), null);
                     child.setVector(newVector);
                 } 
+//                }
             }
             
             ArrayList<RNode> grandChildren = child.getNeighbors();           
