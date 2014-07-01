@@ -49,7 +49,7 @@ public class RHomologyPrimerDesign {
             }
             for (int i = 0; i < allPartsWithName.size(); i++) {
                 type = allPartsWithName.get(i).getType();
-                if (!type.equalsIgnoreCase("plasmid")){
+                if (!type.equalsIgnoreCase("plasmid") && !type.equalsIgnoreCase("multitype")){
                     break;
                 }
             }
