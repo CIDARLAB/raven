@@ -143,38 +143,62 @@ public class Modularity extends Partitioning {
 
             ArrayList<String> types = gp.getType();
             ArrayList<String> comps = gp.getComposition();
-            int start = 0;
+            ArrayList<String> directions = gp.getDirection();
+//            int start = 0;
 
             //For all the elements of this part's types
             for (int j = 0; j < types.size(); j++) {
 
-
-                //If the element is a terminator and either it's the last element or there is a promoter directly after it
-                if (j < (types.size() - 1)) {
-                    if ((types.get(j).equalsIgnoreCase("terminator") || types.get(j).equalsIgnoreCase("t")) && (types.get(j + 1).equalsIgnoreCase("promoter") || types.get(j + 1).equalsIgnoreCase("p"))) {
-                        if (type == 1) {
-                            ArrayList<String> aTU = new ArrayList<String>();
-                            aTU.addAll(types.subList(start, j + 1));
-                            TUs.add(aTU);
-                            start = j + 1;
-                        } else if (type == 2) {
-                            ArrayList<String> aTU = new ArrayList<String>();
-                            aTU.addAll(comps.subList(start, j + 1));
-                            TUs.add(aTU);
-                            start = j + 1;
+                if (types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("-")) {
+                    int start = j;
+                    j++;
+                    int end = j;
+                    
+                    while (!types.get(j).equalsIgnoreCase("promoter")) {
+                        j++;
+                        end++;
+                        if (j == types.size() - 1 && !types.get(j).equalsIgnoreCase("promoter")) {
+                            end = 0;
+                            break;
                         }
                     }
-                } else {
-                    if (type == 1) {
-                        ArrayList<String> aTU = new ArrayList<String>();
-                        aTU.addAll(types.subList(start, j + 1));
-                        TUs.add(aTU);
-                    } else if (type == 2) {
-                        ArrayList<String> aTU = new ArrayList<String>();
-                        aTU.addAll(comps.subList(start, j + 1));
-                        TUs.add(aTU);
+                    
+                    if (end != 0) {
+//                        ArrayList<String> aTU = new ArrayList<String>(comps.subList(start, end));
+                        TUs.add(new ArrayList<String>(comps.subList(start, end)));
                     }
                 }
+                
+                else if (types.get(j).equalsIgnoreCase("promoter") && directions.get(j).equalsIgnoreCase("+")) {
+                    
+                }
+                
+                //If the element is a terminator and either it's the last element or there is a promoter directly after it
+//                if (j < (types.size() - 1)) {
+//                    if ((types.get(j).equalsIgnoreCase("terminator") || types.get(j).equalsIgnoreCase("t")) && (types.get(j + 1).equalsIgnoreCase("promoter") || types.get(j + 1).equalsIgnoreCase("p"))) {
+//                        if (type == 1) {
+//                            ArrayList<String> aTU = new ArrayList<String>();
+//                            aTU.addAll(types.subList(start, j + 1));
+//                            TUs.add(aTU);
+//                            start = j + 1;
+//                        } else if (type == 2) {
+//                            ArrayList<String> aTU = new ArrayList<String>();
+//                            aTU.addAll(comps.subList(start, j + 1));
+//                            TUs.add(aTU);
+//                            start = j + 1;
+//                        }
+//                    }
+//                } else {
+//                    if (type == 1) {
+//                        ArrayList<String> aTU = new ArrayList<String>();
+//                        aTU.addAll(types.subList(start, j + 1));
+//                        TUs.add(aTU);
+//                    } else if (type == 2) {
+//                        ArrayList<String> aTU = new ArrayList<String>();
+//                        aTU.addAll(comps.subList(start, j + 1));
+//                        TUs.add(aTU);
+//                    }
+//                }
             }
         }
         return TUs;
