@@ -266,8 +266,20 @@
                                                     Type 
                                                 </strong>
                                                 <p>
-                                                    This field is used to create assembly plan pictures using Pigeon-generated SBOLv-compliant glyphs. 
-                                                    All plasmids must have the key string 'plasmid' in this field. Vectors need the key string 'vector' and destination vectors must be marked 'destination vector'. 
+                                                    This field is used to create assembly plan pictures using Pigeon-generated SBOLv-compliant glyphs.
+                                                </p>
+                                                <p>
+                                                    All plasmids must have the key string 'plasmid' in this field. 
+                                                </p>
+                                                <p>
+                                                    Vectors need the key string 'vector' and destination vectors must be marked 'destination vector'. 
+                                                </p>
+                                                <p>
+                                                    NOTE: The difference between 'vector' and 'destination vector' is important. A 'vector' is a linear fragment that represents the vector backbone. 
+                                                    A 'destination vector' is a vector with an insert, making it circular. This fragment is generally a lacZ cassette in Raven. Although the 'destination vector' is a circular, replicating plasmid, it should not be indicated as a 'plasmid' in Raven.
+                                                    MoClo and Golden Gate assemblies produce 'destination vectors' which can be re-used as part of the library.
+                                                </p>
+                                                <p>
                                                     All other entries are valid, and assumed to be basic part types. Part types not recognized by pigeon are assigned the wild-card glyph in Pigeon images.
                                                 </p>
                                                 <p>The following key strings are recognized for pigeon images for basic parts:</p>
@@ -288,8 +300,7 @@
                                                         <tr><td>fusion</td><td>fus</td></tr>
                                                     </tbody>
                                                 </table>
-                                                <p>
-                                                    
+                                                <p style="margin-top:8px">
                                                     Parts with type 'fusion' denote fusion proteins and the Name column is split with the '-' character to get all the fusion names. 
                                                     Parts with type 'resistance' denote a resistance cassette. Take note that restriction-based assembly cloning methods rely on cloning vectors that also have anti-biotic resistance within them.
                                                 </p>

@@ -868,7 +868,10 @@ public class RavenController {
                     String sequence = tokens[2].trim().replaceAll(" ","");
                     String leftOverhang = tokens[3].trim();
                     String rightOverhang = tokens[4].trim();
-                    String resistance = tokens[6].toLowerCase().trim();
+                    String resistance = "";
+                    if (tokens.length > 6) {
+                        resistance = tokens[6].toLowerCase().trim();
+                    }
 
                     Vector newVector = Vector.generateVector(name, sequence);
                     newVector.addSearchTag("LO: " + leftOverhang);
