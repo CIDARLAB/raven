@@ -133,7 +133,7 @@ public class Modularity extends Partitioning {
     /*
      * Get all independent transcriptional units of a construct
      */
-    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<RNode> goalParts, int type) {
+    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<RNode> goalParts) {
 
         ArrayList<ArrayList<String>> TUs = new ArrayList<ArrayList<String>>();
 

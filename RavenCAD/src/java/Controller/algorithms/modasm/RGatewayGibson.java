@@ -17,12 +17,12 @@ import java.util.Set;
  *
  * @author jenhantao
  */
-public class RMoClo extends RGeneral {
+public class RGatewayGibson extends RGeneral {
 
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> mocloClothoWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs) throws Exception {
+    public ArrayList<RGraph> gatewayGibsonWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs) throws Exception {
         
         _partLibrary = partLibrary;
         _vectorLibrary = vectorLibrary;
@@ -43,12 +43,11 @@ public class RMoClo extends RGeneral {
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps);
 
-        //Positional scoring of transcriptional units
-//        HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
-//        if (modular) {
-//            ArrayList<ArrayList<String>> TUs = getTranscriptionalUnits(gpsNodes, 1);
-//            positionScores = getPositionalScoring(TUs);
-//        }
+        //Add single transcriptional units to the required hash
+        ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes);
+        for (int i = 0; i < reqTUs.size(); i++) {
+            required.add(reqTUs.get(i).toString());
+        }
 
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
