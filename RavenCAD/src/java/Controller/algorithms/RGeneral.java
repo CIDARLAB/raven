@@ -25,7 +25,7 @@ public class RGeneral extends Modularity {
         //Search all goal parts for potential conflicts with requried parts, return a blank graph and error message if there is a conflict
         for (int i = 0; i < gps.size(); i++) {
             RNode gp = gps.get(i);
-            conflictSearchRequired(gp, required);
+            required = conflictSearchRequired(gp, required);
         }
 
         HashSet<String> libCompDir = new HashSet(partHash.keySet());

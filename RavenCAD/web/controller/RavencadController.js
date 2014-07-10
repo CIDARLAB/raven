@@ -785,8 +785,8 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 '<p><a target="_blank" id="downloadInstructions' + _designCount + '">Download Instructions File</a></p>' +
                 '<p><a target="_blank" id="downloadParts' + _designCount + '">Download Raven File</a></p>' +
                 '<p><a target="_blank" id="downloadPigeon' + _designCount + '">Download Pigeon File</a></p>' +
-                '<p><a target="_blank" id="downloadArcs' + _designCount + '">Download Puppeteer Arcs File</a></p>' +
-                '<p><a target="_blank" id="downloadConfig' + _designCount + '">Download Configuration File</a></p>'
+                '<p><a target="_blank" id="downloadArcs' + _designCount + '">Download Robot Instructions File</a></p>' +
+                '<p><a target="_blank" id="downloadConfig' + _designCount + '">Download Configured Raven File</a></p>'
 
                 );
         $('#imageTabHeader_' + _designCount).click(function() {

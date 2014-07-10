@@ -233,7 +233,7 @@ public class Partitioning {
      */
     
     /** For all goal parts, search for conflicts with required parts **/
-    protected void conflictSearchRequired(RNode gp, HashSet<String> required) throws Exception {
+    protected HashSet<String> conflictSearchRequired(RNode gp, HashSet<String> required) throws Exception {
 
         //Initialize hash to keep track of potential intermediate conflicts
         ArrayList<String> gpComp = gp.getComposition();
@@ -248,7 +248,7 @@ public class Partitioning {
                 List<String> gpSubListComp = gpComp.subList(start, end);
                 List<String> gpSubListDir = gpDir.subList(start, end);
                 for (int i = 0; i < gpSubListComp.size(); i++) {
-                    gpSub.add(gpSubListComp.get(i) + "|" + gpSubListDir);
+                    gpSub.add(gpSubListComp.get(i) + "|" + gpSubListDir.get(i));
                 }
 
                 //If an intermediate matches a composition in the required part hash
@@ -269,15 +269,18 @@ public class Partitioning {
                         if ((start >= index.get(0) && endCheck <= index.get(1)) || index.get(0) >= start && index.get(1) <= endCheck) {
                             //If completely outside indices
                         } else if (endCheck < index.get(0) || start > index.get(1)) {
-                            //If conflicts, return an error and stop the program
+                            //If conflicts, remove this transcriptional unit from the list of required
                         } else {
-                            JOptionPane.showMessageDialog(null, "Required part conflict discovered with \"" + gpSub.toString() + "\"...\nThis intermediate overlaps with another required intermediate and both cannot appear in one assmebly graph.\nPlease remove this required part or the part(s) that conflict.\nIf using MoClo, beware that all basic transcriptional units are required without manual selection");
-                            throw new Exception("Required part conflict discovered with \"" + gpSub.toString() + "\"...\nThis intermediate overlaps with another required intermediate and both cannot appear in one assmebly graph.\nPlease remove this required part or the part(s) that conflict.\nIf using MoClo, beware that all basic transcriptional units are required without manual selection");
+                            required.remove(gpSub.toString());
+//                            JOptionPane.showMessageDialog(null, "Required part conflict discovered with \"" + gpSub.toString() + "\"...\nThis intermediate overlaps with another required intermediate and both cannot appear in one assmebly graph.\nPlease remove this required part or the part(s) that conflict.\nIf using MoClo, beware that all basic transcriptional units are required without manual selection");
+//                            throw new Exception("Required part conflict discovered with \"" + gpSub.toString() + "\"...\nThis intermediate overlaps with another required intermediate and both cannot appear in one assmebly graph.\nPlease remove this required part or the part(s) that conflict.\nIf using MoClo, beware that all basic transcriptional units are required without manual selection");
                         }
                     }
                 }
             }
         }
+        
+        return required;
     }
     
     //Fields
