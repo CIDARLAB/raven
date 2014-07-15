@@ -5,6 +5,7 @@
 package Controller.accessibility;
 
 import Controller.algorithms.modasm.RBioBricks;
+import Controller.algorithms.modasm.RGatewayGibson;
 import Controller.algorithms.modasm.RGoldenGate;
 import Controller.algorithms.modasm.RMoClo;
 import Controller.algorithms.RHomologyPrimerDesign;
@@ -187,6 +188,8 @@ public class RInstructions {
                         String[] oligos;
                         if (method.equalsIgnoreCase("MoClo")) {
                             oligos = RMoClo.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
+                        } else if (method.equalsIgnoreCase("GatewayGibson")) {
+                            oligos = RGatewayGibson.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
                         } else if (method.equalsIgnoreCase("BioBricks")) {
                             oligos = RBioBricks.generatePartPrimers(l0Node, coll, meltingTemp, targetHomologyLength, minPCRLength, maxPrimerLength);
                         } else if (method.equalsIgnoreCase("GoldenGate")) {
@@ -279,6 +282,8 @@ public class RInstructions {
                             String[] oligos;
                             if (method.equalsIgnoreCase("MoClo")) {
                                 oligos = RMoClo.generateVectorPrimers(vector);
+                            } else if (method.equalsIgnoreCase("GatewayGibson")) {
+                                oligos = RGatewayGibson.generateVectorPrimers(vector);
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, targetHomologyLength, maxPrimerLength, minPCRLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
@@ -309,7 +314,7 @@ public class RInstructions {
                             vectorOligoHash.put(vector.getVectorKey("+"), vectorOligoNamesForNode);
 
                             //Correct for desination vectors with MoClo and GoldenGate
-                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
                                 instructions = instructions + "\nPCR lacZ part with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             } else {
                                 instructions = instructions + "\nPCR " + vecName + " vector with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
@@ -319,7 +324,7 @@ public class RInstructions {
                             ArrayList<String> oligoHash = vectorOligoHash.get(vector.getVectorKey("+"));
                             
                             //Correct for desination vectors with MoClo and GoldenGate
-                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
                                 instructions = instructions + "\nPCR lacZ with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             } else {
                                 instructions = instructions + "\nPCR " + vecName + " vector with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
@@ -328,7 +333,7 @@ public class RInstructions {
                     } else {
                         
                         //Correct for desination vectors with MoClo and GoldenGate
-                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
                             instructions = instructions + "\nPCR lacZ to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                         } else {
                             instructions = instructions + "\nPCR " + vecName + " vector to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();

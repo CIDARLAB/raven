@@ -77,7 +77,8 @@
                                                     <li class="active"><a href="#biobricksTab" data-toggle="tab"  id="biobricksTabHeader">BioBricks</a></li>
                                                     <li><a href="#cpecTab" data-toggle="tab" id="cpecTabHeader">CPEC</a></li>
                                                     <li><a href="#gibsonTab" data-toggle="tab" id="gibsonTabHeader">Gibson</a></li>
-                                                    <li class ><a href="#goldengateTab" data-toggle="tab" id="goldengateTabHeader">Golden Gate</a></li>
+                                                    <li><a href="#gatewaygibsonTab" data-toggle="tab" id="gatewaygibsonTabHeader">Gateway Gibson</a></li>
+                                                    <li><a href="#goldengateTab" data-toggle="tab" id="goldengateTabHeader">Golden Gate</a></li>
                                                     <li><a href="#mocloTab" data-toggle="tab" id="mocloTabHeader">MoClo</a></li>
                                                     <li><a href="#slicTab" data-toggle="tab" id="slicTabHeader">SLIC</a></li>
                                                 </ul>
@@ -147,6 +148,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    
                                                     <div class="tab-pane" id="gibsonTab">
                                                         <div class="row-fluid">
                                                             <div class="span6">
@@ -162,6 +164,38 @@
                                                                 </p>
                                                                 <p>
                                                                     ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested with NotI and gel extracted for the subsequent cloning stage.
+                                                                </p>
+                                                                <!--<small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>-->
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point.">Assembly Efficiency</a></h5>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>5</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="gatewaygibsonTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Cloning Method</h5>
+                                                                <!--Description of Gateway Gibson-->
+                                                                <p>
+                                                                    Gateway Gibson is a hybrid method for building scarless transcriptional units from promoter and gene libraries with Gateway assembly and assemble them hierarchically with Gibson assembly                 
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that coded destination vector pSK1A2 is used for all steps and stages.
                                                                 </p>
                                                                 <!--<small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>-->
                                                             </div>

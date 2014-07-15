@@ -186,7 +186,7 @@ public class ClothoWriter {
                             newBasic.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
-                            if (!(method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate"))) {
+                            if (!(method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson"))) {
                                 currentNode.setUUID(newBasic.getUUID());
                                 continue;
                             }
@@ -302,7 +302,7 @@ public class ClothoWriter {
                             newComposite.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
-                            if (!(method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate"))) {
+                            if (!(method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson"))) {
                                 if (currentNode.getStage() == 0) {
                                     currentNode.setUUID(newComposite.getUUID());
                                 }
@@ -315,7 +315,7 @@ public class ClothoWriter {
                         newPlasmid.addSearchTag("Scars: " + currentNode.getScars().toString());
                         newPlasmid.addSearchTag("Type: plasmid");
                         
-                        if ((method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate")) || currentNode.getStage() > 0) {                          
+                        if ((method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate")) || method.equalsIgnoreCase("gatewaygibson") || currentNode.getStage() > 0) {                          
 
                             //Do not save basic plasmid for scarless method - they do not exist
                             newPlasmid = newPlasmid.saveDefault(coll);
@@ -353,7 +353,7 @@ public class ClothoWriter {
                     if (existingVec != null) {
                         
                         //If levels are a consideration, you may reuse vectors of the same level as long as the resistance does not match the next level
-                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
                             
                             if ((existingVec.getLevel() % 2) == (level % 2)) {
                                 

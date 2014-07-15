@@ -225,8 +225,57 @@ public class RavenController {
         //Run algorithm for MoClo assembly
         _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
-        moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
+//        moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
         ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null, _libraryOHHash);
+        return optimalGraphs;
+    }
+    
+    /**
+     * Run SRS algorithm for Gateway-Gibson *
+     */
+    public ArrayList<RGraph> runGatewayGibson() throws Exception {
+        if (_goalParts == null) {
+            return null;
+        }
+
+        //If stageVectors are empty, fill with defaults
+        if (_stageVectors.get(0) == null) {
+
+            ArrayList<String> defaultTags0 = new ArrayList<String>();
+            defaultTags0.add("LO: ");
+            defaultTags0.add("RO: ");
+            defaultTags0.add("Type: vector");
+            defaultTags0.add("Resistance: kanamycin");
+            Vector st0Vec = _collector.getExactVector("pSB1K3", _pSB1K3, defaultTags0, false);
+            if (st0Vec == null) {
+                st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
+                for (String tag : defaultTags0) {
+                    st0Vec.addSearchTag(tag);
+                }
+            }
+
+            ArrayList<String> defaultTags1 = new ArrayList<String>();
+            defaultTags1.add("LO: ");
+            defaultTags1.add("RO: ");
+            defaultTags1.add("Type: vector");
+            defaultTags1.add("Resistance: ampicilin");
+            Vector st1Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags1, false);
+            if (st1Vec == null) {
+                st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
+                for (String tag : defaultTags1) {
+                    st1Vec.addSearchTag(tag);
+                }
+            }
+
+            _stageVectors.put(0, st1Vec);
+            _stageVectors.put(1, st0Vec);
+        }
+
+        //Run algorithm for MoClo assembly
+        _assemblyGraphs.clear();
+        RGatewayGibson gwgib = new RGatewayGibson();
+//        gwgib.setForcedOverhangs(_collector, _forcedOverhangHash);
+        ArrayList<RGraph> optimalGraphs = gwgib.gatewayGibsonWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null, _libraryOHHash);
         return optimalGraphs;
     }
 
@@ -1316,6 +1365,8 @@ public class RavenController {
             _assemblyGraphs = runGibson(minCloneLength);
         } else if (method.equalsIgnoreCase("goldengate")) {
             _assemblyGraphs = runGoldenGate();
+        } else if (method.equalsIgnoreCase("gatewaygibson")) {
+            _assemblyGraphs = runGatewayGibson();
         } else if (method.equalsIgnoreCase("moclo")) {
             _assemblyGraphs = runMoClo();
         } else if (method.equalsIgnoreCase("slic")) {
@@ -1348,6 +1399,8 @@ public class RavenController {
             overhangValid = RGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("goldengate")) {
             overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
+        } else if (method.equalsIgnoreCase("gatewaygibson")) {
+            overhangValid = RGatewayGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("moclo")) {
             overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("slic")) {
