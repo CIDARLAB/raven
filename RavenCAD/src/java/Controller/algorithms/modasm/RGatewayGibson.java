@@ -90,7 +90,6 @@ public class RGatewayGibson extends RGeneral {
         if (!optimalGraphs.isEmpty()) {
             propagatePrimaryOverhangs(optimalGraphs);
             maximizeOverhangSharing(optimalGraphs);
-//        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
             cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors);
             assignScars(optimalGraphs);            
