@@ -598,6 +598,35 @@ public class Modularity extends Partitioning {
      *************************************************************************
      */
     
+    //Adjust the stages of a graph for special cases - Gateway-Gibson cloning is one example
+    protected void stageAdjuster(ArrayList<RGraph> graphs, int adjuster) {
+    
+        for (RGraph graph : graphs) {
+
+            graph.setStages(graph.getStages() + adjuster);
+
+            //Traverse the graph and adjust stages of each node        
+            RNode rootNode = graph.getRootNode();
+            HashSet<RNode> seenNodes = new HashSet();
+            ArrayList<RNode> queue = new ArrayList();
+            queue.add(rootNode);
+
+            while (!queue.isEmpty()) {
+                RNode current = queue.get(0);
+                queue.remove(0);
+                seenNodes.add(current);
+
+                current.setStage(current.getStage() + adjuster);
+
+                for (RNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+    }
+    
     private HashSet<String> assignSecondaryOverhangs(ArrayList<RNode> nodes, String LR, String direction, HashSet<String> currentLevelOHs, ArrayList<RNode> roots) {
         
         //Loop through all nodes and assign second pass overhangs based on type direction and assigning from left to right
@@ -1498,14 +1527,6 @@ public class Modularity extends Partitioning {
             stageRVectors.put(stage, vec);
         }
         
-        //If the stageVector hash is empty, make a new default vector
-//        if (stageRVectors.size() == 1) {
-//            if (stageRVectors.get(1) == null) {
-//                stageRVectors.put(0, new RVector("", "", 0, "pSB1A2", null));
-//                stageRVectors.put(1, new RVector("", "", 0, "pSB1K3", null));
-//            }
-//        }
-        
         //Assign final overhangs for all graphs
         for (RGraph graph : graphs) {
             ArrayList<RNode> queue = new ArrayList();
@@ -1518,10 +1539,12 @@ public class Modularity extends Partitioning {
                 seenNodes.add(current);
                 for (RNode neighbor : current.getNeighbors()) {
                     if (!seenNodes.contains(neighbor)) {
+                        if (current.getStage() > 0) {
                         queue.add(neighbor);
+                        }
                     }
                 }
-
+                
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
                 current.setLOverhang(bestAssignment.get(currentLeftOverhang));
@@ -1532,8 +1555,8 @@ public class Modularity extends Partitioning {
                 RVector levelVector = stageRVectors.get(current.getStage() % stageRVectors.size());
                 RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), levelVector.getName(), null);
                 current.setVector(newVector);
+                }
             }
-        }
         
     }
     

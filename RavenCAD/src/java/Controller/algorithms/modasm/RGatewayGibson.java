@@ -52,41 +52,44 @@ public class RGatewayGibson extends RGeneral {
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         
-        //Pull out graphs with one node i.e. either in the library already or require only a PCR
-        ArrayList<RGraph> singlePartGraphs = new ArrayList<RGraph>();
-        for (RGraph optimalGraph : optimalGraphs) {
-            if (optimalGraph.getSteps() == 0) {
-                RNode root = optimalGraph.getRootNode();
-                String OHs = libraryOHs.get(root.getUUID());
-                String[] tokens = OHs.split("\\|");
-                if (tokens.length == 2) {
-                    boolean allInts = true;
-                    for (String token : tokens) {
-                        if (!token.matches("[*]?\\d+")) {
-                            allInts = false;
-                        }
-                    }
-                    if (allInts) {
-                        singlePartGraphs.add(optimalGraph);
-                    }
-                }
-            }
-        }
+        //Pre-processing to adjust stages for Gateway steps
+        stageAdjuster(optimalGraphs, -1);
         
-        optimalGraphs.removeAll(singlePartGraphs);
+//        //Pull out graphs with one node i.e. either in the library already or require only a PCR
+//        ArrayList<RGraph> singlePartGraphs = new ArrayList<RGraph>();
+//        for (RGraph optimalGraph : optimalGraphs) {
+//            if (optimalGraph.getStages() == 0) {
+//                RNode root = optimalGraph.getRootNode();
+//                String OHs = libraryOHs.get(root.getUUID());
+//                String[] tokens = OHs.split("\\|");
+//                if (tokens.length == 2) {
+//                    boolean allInts = true;
+//                    for (String token : tokens) {
+//                        if (!token.matches("[*]?\\d+")) {
+//                            allInts = false;
+//                        }
+//                    }
+//                    if (allInts) {
+//                        singlePartGraphs.add(optimalGraph);
+//                    }
+//                }
+//            }
+//        }
+//        
+//        optimalGraphs.removeAll(singlePartGraphs);
+//        
+//        //Assign overhangs based upon input
+//        for (RGraph spGraph : singlePartGraphs) {
+//            RNode root = spGraph.getRootNode();
+//            String OHs = libraryOHs.get(root.getUUID());
+//            String[] tokens = OHs.split("\\|");
+//            root.setLOverhang(tokens[0]);
+//            root.setROverhang(tokens[1]);
+//            RVector newVector = new RVector(tokens[0], tokens[1], 0, stageVectors.get(0).getName(), null);
+//            root.setVector(newVector);
+//        }
         
-        //Assign overhangs based upon input
-        for (RGraph spGraph : singlePartGraphs) {
-            RNode root = spGraph.getRootNode();
-            String OHs = libraryOHs.get(root.getUUID());
-            String[] tokens = OHs.split("\\|");
-            root.setLOverhang(tokens[0]);
-            root.setROverhang(tokens[1]);
-            RVector newVector = new RVector(tokens[0], tokens[1], 0, stageVectors.get(0).getName(), null);
-            root.setVector(newVector);
-        }
-        
-        //Overhang assignment
+        //Overhang assignment for Gibson
         if (!optimalGraphs.isEmpty()) {
             propagatePrimaryOverhangs(optimalGraphs);
             maximizeOverhangSharing(optimalGraphs);
@@ -95,7 +98,11 @@ public class RGatewayGibson extends RGeneral {
             assignScars(optimalGraphs);            
         }
 
-        optimalGraphs.addAll(singlePartGraphs);
+        //After Gibson overhangs assigned, correct stages, assign overhangs for gateway
+        stageAdjuster(optimalGraphs, 1);
+        
+        
+//        optimalGraphs.addAll(singlePartGraphs);
         return optimalGraphs;
     }
 
@@ -170,6 +177,12 @@ public class RGatewayGibson extends RGeneral {
         }        
     }
     
+    //Gateway overhang assignment
+    private void gatewayOverhangs (ArrayList<RGraph> optimalGraphs) {
+        
+    }
+    
+    //Overhang validation
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         boolean toReturn = true;
         for (RGraph graph : graphs) {
