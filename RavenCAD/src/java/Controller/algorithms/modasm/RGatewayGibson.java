@@ -52,9 +52,6 @@ public class RGatewayGibson extends RGeneral {
         //Run hierarchical Raven Algorithm
         ArrayList<RGraph> optimalGraphs = createAsmGraph_mgp(gpsNodes, partHash, required, recommended, forbidden, discouraged, efficiencies, true);
         
-        //Pre-processing to adjust stages for Gateway steps
-        stageAdjuster(optimalGraphs, -1);
-        
 //        //Pull out graphs with one node i.e. either in the library already or require only a PCR
 //        ArrayList<RGraph> singlePartGraphs = new ArrayList<RGraph>();
 //        for (RGraph optimalGraph : optimalGraphs) {
@@ -89,6 +86,14 @@ public class RGatewayGibson extends RGeneral {
 //            root.setVector(newVector);
 //        }
         
+                
+        //Pre-processing to adjust stages for Gateway steps
+        for (RGraph optimalGraph : optimalGraphs) {
+            if (singleBasicPartInGraph(optimalGraph)) {
+                stageAdjuster(optimalGraph, -1);
+            }
+        }
+        
         //Overhang assignment for Gibson
         if (!optimalGraphs.isEmpty()) {
             propagatePrimaryOverhangs(optimalGraphs);
@@ -99,7 +104,12 @@ public class RGatewayGibson extends RGeneral {
         }
 
         //After Gibson overhangs assigned, correct stages, assign overhangs for gateway
-        stageAdjuster(optimalGraphs, 1);
+        gatewayOverhangs(optimalGraphs, stageVectors);
+        for (RGraph optimalGraph : optimalGraphs) {
+            if (singleBasicPartInGraph(optimalGraph)) {
+                stageAdjuster(optimalGraph, 1);
+            }
+        }
         
         
 //        optimalGraphs.addAll(singlePartGraphs);
@@ -178,8 +188,59 @@ public class RGatewayGibson extends RGeneral {
     }
     
     //Gateway overhang assignment
-    private void gatewayOverhangs (ArrayList<RGraph> optimalGraphs) {
+    private void gatewayOverhangs (ArrayList<RGraph> optimalGraphs, HashMap<Integer, Vector> stageVectors) {
         
+        //Loop through each optimal graph and assign gateway overhangs for the level 0 parts
+        for (RGraph graph : optimalGraphs) {
+            RNode root = graph.getRootNode();
+            ArrayList<RNode> children = root.getNeighbors();
+            gatewayOverhangsHelper(root, children, stageVectors);
+        }
+    }
+    
+    //Gateway overhang assignment
+    private void gatewayOverhangsHelper (RNode parent, ArrayList<RNode> children, HashMap<Integer, Vector> stageVectors) {
+        
+        //If this is a Gateway parent
+        if (parent.getStage() == 0) {
+            
+            //Assign overhangs to the gateway clones
+            children.get(0).setLOverhang("attL4");
+            children.get(0).setROverhang("attR1");
+            children.get(1).setLOverhang("attL1");
+            children.get(1).setROverhang("attL2");
+            
+            //Convert vectors to RVectors
+            HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
+            for (Integer stage : stageVectors.keySet()) {
+                RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
+                stageRVectors.put(stage, vec);
+            }
+            
+            //Assign entry vectors to the gateway clones
+            RVector levelVector = stageRVectors.get(parent.getStage() % stageRVectors.size() + 1);
+            RVector newLVector = new RVector(children.get(0).getLOverhang(), children.get(0).getROverhang(), 1, levelVector.getName(), null);
+            RVector newRVector = new RVector(children.get(1).getLOverhang(), children.get(1).getROverhang(), 1, levelVector.getName(), null);
+            children.get(0).setVector(newLVector);
+            children.get(1).setVector(newRVector);
+        
+        } else {
+            for (int i = 0; i < children.size(); i++) {
+                RNode child = children.get(i);
+                ArrayList<RNode> grandchildren = new ArrayList<RNode>();
+                
+                for (int j = 0; j < child.getNeighbors().size(); j++) {
+                    if (child.getNeighbors().get(j).getStage() < child.getStage()) {
+                        grandchildren.add(child.getNeighbors().get(j));
+                    }
+                }
+                
+                //Recursive call if there are grandchildren
+                if (!grandchildren.isEmpty()) {
+                    gatewayOverhangsHelper(child, grandchildren, stageVectors);
+                }
+            }
+        }
     }
     
     //Overhang validation

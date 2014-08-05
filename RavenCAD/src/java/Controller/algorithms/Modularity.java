@@ -599,32 +599,62 @@ public class Modularity extends Partitioning {
      */
     
     //Adjust the stages of a graph for special cases - Gateway-Gibson cloning is one example
-    protected void stageAdjuster(ArrayList<RGraph> graphs, int adjuster) {
-    
-        for (RGraph graph : graphs) {
+    protected void stageAdjuster(RGraph graph, int adjuster) {
 
-            graph.setStages(graph.getStages() + adjuster);
+        graph.setStages(graph.getStages() + adjuster);
 
-            //Traverse the graph and adjust stages of each node        
-            RNode rootNode = graph.getRootNode();
-            HashSet<RNode> seenNodes = new HashSet();
-            ArrayList<RNode> queue = new ArrayList();
-            queue.add(rootNode);
+        //Traverse the graph and adjust stages of each node        
+        RNode rootNode = graph.getRootNode();
+        HashSet<RNode> seenNodes = new HashSet();
+        ArrayList<RNode> queue = new ArrayList();
+        queue.add(rootNode);
 
-            while (!queue.isEmpty()) {
-                RNode current = queue.get(0);
-                queue.remove(0);
-                seenNodes.add(current);
+        while (!queue.isEmpty()) {
+            RNode current = queue.get(0);
+            queue.remove(0);
+            seenNodes.add(current);
 
-                current.setStage(current.getStage() + adjuster);
+            current.setStage(current.getStage() + adjuster);
 
-                for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                    }
+            for (RNode neighbor : current.getNeighbors()) {
+                if (!seenNodes.contains(neighbor)) {
+                    queue.add(neighbor);
                 }
             }
         }
+
+    }
+    
+    //Check to see if there are any single basic parts in a solution graph - i.e. if a graph is all made from composite parts as building blocks, this is false
+    protected boolean singleBasicPartInGraph (RGraph graph) {
+        
+        boolean bpInGraph = false;
+        
+        //Traverse the graph and adjust stages of each node        
+        RNode rootNode = graph.getRootNode();
+        HashSet<RNode> seenNodes = new HashSet();
+        ArrayList<RNode> queue = new ArrayList();
+        queue.add(rootNode);
+
+        while (!queue.isEmpty()) {
+            RNode current = queue.get(0);
+            queue.remove(0);
+            seenNodes.add(current);
+
+            //If a single basic part is seen, change to true and return value
+            if (current.getComposition().size() == 1) {
+                bpInGraph = true;
+                break;
+            }
+
+            for (RNode neighbor : current.getNeighbors()) {
+                if (!seenNodes.contains(neighbor)) {
+                    queue.add(neighbor);
+                }
+            }
+        }
+        
+        return bpInGraph;
     }
     
     private HashSet<String> assignSecondaryOverhangs(ArrayList<RNode> nodes, String LR, String direction, HashSet<String> currentLevelOHs, ArrayList<RNode> roots) {
