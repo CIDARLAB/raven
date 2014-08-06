@@ -329,7 +329,7 @@ public class RavenController {
 
     //returns json array containing all objects in parts list; generates parts list file
     //input: design number refers to the design number on the client
-    public JSONArray generatePartsList(String designNumber, String params) throws Exception {
+    public JSONArray generatePartsList(String designNumber, String params, String method) throws Exception {
         File partsListFile = new File(_path + _user + "/partsList" + designNumber + ".csv");
         File configFile = new File(_path + _user + "/config" + designNumber + ".csv");
 
@@ -492,8 +492,8 @@ public class RavenController {
 
                 for (int i = 0; i < p.getComposition().size(); i++) {
                     Part subpart = p.getComposition().get(i);
-                    String cRO = subpart.getLeftOverhang();
-                    String cLO = subpart.getRightOverhang();
+                    String cRO = subpart.getRightOverhang();
+                    String cLO = subpart.getLeftOverhang();
 
                     //Edge case with new composite part from a PCR of existing composite part
                     if (cLO.isEmpty()) {
@@ -511,8 +511,12 @@ public class RavenController {
                         }
                     }
 
-                    if (!cLO.isEmpty() && !cRO.isEmpty()) {
-                        composition = composition + ", " + subpart.getName() + "|" + cLO + "|" + cRO + "|" + direction.get(i).trim();
+                    if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks")) {
+                        if (!cLO.isEmpty() && !cRO.isEmpty()) {
+                            composition = composition + ", " + subpart.getName() + "|" + cLO + "|" + cRO + "|" + direction.get(i).trim();
+                        } else {
+                            composition = composition + ", " + subpart.getName() + "|" + direction.get(i).trim();
+                        }
                     } else {
                         composition = composition + ", " + subpart.getName() + "|" + direction.get(i).trim();
                     }

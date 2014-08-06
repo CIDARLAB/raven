@@ -521,7 +521,7 @@ public class ClothoWriter {
                 exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
             }    
             
-            //In homologous rcombinations, the overhangs are the neighbor, select the blank part
+            //In homologous recombinations, the overhangs are the neighbor, select the blank part
             if (exactPart == null) {
                 cSearchTags.clear();
                 cSearchTags.add("Type: " + cType);
