@@ -1401,6 +1401,7 @@ public class RavenController {
             overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("gatewaygibson")) {
 //            overhangValid = RGatewayGibson.validateOverhangs(_assemblyGraphs);
+            overhangValid = true;
         } else if (method.equalsIgnoreCase("moclo")) {
             overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("slic")) {

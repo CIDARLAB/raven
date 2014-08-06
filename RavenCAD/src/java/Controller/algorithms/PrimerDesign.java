@@ -193,9 +193,9 @@ public class PrimerDesign {
     }
 
     /**
-     * Logic for going from OH variable place holders to actual sequences *
+     * Logic for going from OH variable place holders to actual sequences for MoClo *
      */
-    public static HashMap<String, String> getModularOHseqs() {
+    public static HashMap<String, String> getMoCloOHseqs() {
 
         HashMap<String, String> overhangVariableSequenceHash = new HashMap<String, String>();
         overhangVariableSequenceHash.put("0", "ggag");
@@ -241,6 +241,39 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("19*", "actg");
         overhangVariableSequenceHash.put("20*", "ttgc");
         return overhangVariableSequenceHash;
+    }
+    
+    public static HashMap<String, String> getGatewayGibsonOHseqs() {
+        
+        HashMap<String, String> overhangVariableSequenceHash = new HashMap<String, String>();
+
+        overhangVariableSequenceHash.put("UNS1", "ggtttaccgagctcttattggttttcaaacttcattgactgtgcc");
+        overhangVariableSequenceHash.put("UNS2", "ggtgcgtttttatgcttgtagtattgtataatgtttttaagatcc");
+        overhangVariableSequenceHash.put("UNS3", "ggtctaatacccaatctctcgtcttatccagatgttttatacgcc");
+        overhangVariableSequenceHash.put("UNS4", "ggtgaattcccttatgtgagtgtaaaaggcaggcgagtttgtccc");
+        overhangVariableSequenceHash.put("UNS5", "ggttgcttgcaaaagcagtaattggaaagcactctcaaagaatcc");
+        overhangVariableSequenceHash.put("UNS6", "ggtagataagttgatttagccataaaatattgtttccgtgacccc");
+        overhangVariableSequenceHash.put("UNS7", "ggttctgagtcacggcttcattggcattccgtacaacgaacgtcc");
+        overhangVariableSequenceHash.put("UNS8", "ggtcctcagagagcctatagcggtaaaacaacaccatgcatcccc");
+        overhangVariableSequenceHash.put("UNS9", "ggtcgcagtcgcttcctgtaaatagagcattaaattccatagtcc");
+        overhangVariableSequenceHash.put("UNS10", "ggtacttaatcgaaaaaaaaacagacagccatgtgctcttcggcc");
+        overhangVariableSequenceHash.put("UNS11", "ggtggacatgattatggaacacacacacgctagccgcccagttcc");
+        overhangVariableSequenceHash.put("UNSX", "ggtatcactagtattacagaggtaagttataacagtcgcctaacc");
+        
+        overhangVariableSequenceHash.put("UNS1*", "ggcacagtcaatgaagtttgaaaaccaataagagctcggtaaacc");
+        overhangVariableSequenceHash.put("UNS2*", "ggatcttaaaaacattatacaatactacaagcataaaaacgcacc");
+        overhangVariableSequenceHash.put("UNS3*", "ggcgtataaaacatctggataagacgagagattgggtattagacc");
+        overhangVariableSequenceHash.put("UNS4*", "gggacaaactcgcctgccttttacactcacataagggaattcacc");
+        overhangVariableSequenceHash.put("UNS5*", "ggattctttgagagtgctttccaattactgcttttgcaagcaacc");
+        overhangVariableSequenceHash.put("UNS6*", "ggggtcacggaaacaatattttatggctaaatcaacttatctacc");
+        overhangVariableSequenceHash.put("UNS7*", "ggacgttcgttgtacggaatgccaatgaagccgtgactcagaacc");
+        overhangVariableSequenceHash.put("UNS8*", "ggggatgcatggtgttgttttaccgctataggctctctgaggacc");
+        overhangVariableSequenceHash.put("UNS9*", "ggactatggaatttaatgctctatttacaggaagcgactgcgacc");
+        overhangVariableSequenceHash.put("UNS10*", "ggccgaagagcacatggctgtctgtttttttttcgattaagtacc");
+        overhangVariableSequenceHash.put("UNS11*", "ggaactgggcggctagcgtgtgtgtgttccataatcatgtccacc");
+        
+        return overhangVariableSequenceHash;
+        
     }
 
     public static double getMeltingTemp(String sequence) {

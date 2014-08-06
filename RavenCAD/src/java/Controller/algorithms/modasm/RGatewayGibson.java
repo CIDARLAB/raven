@@ -99,7 +99,7 @@ public class RGatewayGibson extends RGeneral {
             propagatePrimaryOverhangs(optimalGraphs);
             maximizeOverhangSharing(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
-            cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors);
+            cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors, true);
             assignScars(optimalGraphs);            
         }
 
@@ -218,7 +218,7 @@ public class RGatewayGibson extends RGeneral {
             }
             
             //Assign entry vectors to the gateway clones
-            RVector levelVector = stageRVectors.get(parent.getStage() % stageRVectors.size() + 1);
+            RVector levelVector = stageRVectors.get((parent.getStage()+ 1) % stageRVectors.size());
             RVector newLVector = new RVector(children.get(0).getLOverhang(), children.get(0).getROverhang(), 1, levelVector.getName(), null);
             RVector newRVector = new RVector(children.get(1).getLOverhang(), children.get(1).getROverhang(), 1, levelVector.getName(), null);
             children.get(0).setVector(newLVector);
@@ -318,42 +318,44 @@ public class RGatewayGibson extends RGeneral {
      */
     public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength, Integer minPCRLength, Integer maxPrimerLength) {
 
-        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getGatewayGibsonOHseqs();
         String[] oligos = new String[2];
-        String partPrimerPrefix = "at";
-        String partPrimerSuffix = "gt";
-        String fwdEnzymeRecSite1 = "gaagac";
-        String revEnzymeRecSite1 = "gtcttc";
-
-        Part currentPart = coll.getPart(node.getUUID(), true);
-        String seq = currentPart.getSeq();
-
-        String fwdHomology;
-        String revHomology;
-
-        String forwardOligoSequence;
-        String reverseOligoSequence;
-        if (seq.length() > minPCRLength) {
-            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, seq, true)));
-            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, PrimerDesign.reverseComplement(seq), true)));
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
-            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
-        
-        } else {
-            if (seq.equals("")) {
-                fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
-                revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
-                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
-                reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
-            } else {
-                fwdHomology = seq;
-                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
-                reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
-
-            }
-        }
-        oligos[0]=forwardOligoSequence;
-        oligos[1]=reverseOligoSequence;
+//        String partPrimerPrefix = "at";
+//        String partPrimerSuffix = "gt";
+//        String fwdEnzymeRecSite1 = "gaagac";
+//        String revEnzymeRecSite1 = "gtcttc";
+//
+//        Part currentPart = coll.getPart(node.getUUID(), true);
+//        String seq = currentPart.getSeq();
+//
+//        String fwdHomology;
+//        String revHomology;
+//
+//        String forwardOligoSequence;
+//        String reverseOligoSequence;
+//        if (seq.length() > minPCRLength) {
+//            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, seq, true)));
+//            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, PrimerDesign.reverseComplement(seq), true)));
+//            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
+//            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
+//        
+//        } else {
+//            if (seq.equals("")) {
+//                fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
+//                revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
+//                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
+//                reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
+//            } else {
+//                fwdHomology = seq;
+//                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
+//                reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+//
+//            }
+//        }
+//        oligos[0]=forwardOligoSequence;
+//        oligos[1]=reverseOligoSequence;
+        oligos[0] = "";
+        oligos[1] = "";
         return oligos;
     }
 
@@ -362,31 +364,34 @@ public class RGatewayGibson extends RGeneral {
      */
     public static String[] generateVectorPrimers(RVector vector) {
 
-        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
-        String vectorPrimerPrefix = "actagtg";
-        String vectorPrimerSuffix = "tactagt";
-        String fwdEnzymeRecSite1 = "gaagac";
-        String revEnzymeRecSite1 = "gtcttc";
-        String fwdEnzymeRecSite2 = "ggtctc";
-        String revEnzymeRecSite2 = "gagacc";
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getGatewayGibsonOHseqs();
+//        String vectorPrimerPrefix = "actagtg";
+//        String vectorPrimerSuffix = "tactagt";
+//        String fwdEnzymeRecSite1 = "gaagac";
+//        String revEnzymeRecSite1 = "gtcttc";
+//        String fwdEnzymeRecSite2 = "ggtctc";
+//        String revEnzymeRecSite2 = "gagacc";
 
         String[] oligos = new String[2];
-
-        //Level 0, 2, 4, 6, etc. vectors
-        String forwardOligoSequence;
-        String reverseOligoSequence;
-        if (vector.getLevel() % 2 == 0) {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
-
-            //Level 1, 3, 5, 7, etc. vectors
-        } else {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
-        }
-
-        oligos[0]=forwardOligoSequence;
-        oligos[1]=reverseOligoSequence;
+//
+//        //Level 0, 2, 4, 6, etc. vectors
+//        String forwardOligoSequence;
+//        String reverseOligoSequence;
+//        if (vector.getLevel() % 2 == 0) {
+//            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
+//            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
+//
+//            //Level 1, 3, 5, 7, etc. vectors
+//        } else {
+//            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
+//            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
+//        }
+//
+//        oligos[0]=forwardOligoSequence;
+//        oligos[1]=reverseOligoSequence;
+        
+        oligos[0] = "";
+        oligos[1] = "";
         return oligos;
     }
 }

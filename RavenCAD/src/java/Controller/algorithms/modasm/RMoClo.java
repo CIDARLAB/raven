@@ -93,7 +93,7 @@ public class RMoClo extends RGeneral {
             maximizeOverhangSharing(optimalGraphs);
 //        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
-            cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors);
+            cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors, false);
             assignScars(optimalGraphs);            
         }
 
@@ -246,7 +246,7 @@ public class RMoClo extends RGeneral {
      */
     public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength, Integer minPCRLength, Integer maxPrimerLength) {
 
-        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getMoCloOHseqs();
         String[] oligos = new String[2];
         String partPrimerPrefix = "at";
         String partPrimerSuffix = "gt";
@@ -290,7 +290,7 @@ public class RMoClo extends RGeneral {
      */
     public static String[] generateVectorPrimers(RVector vector) {
 
-        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getModularOHseqs();
+        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getMoCloOHseqs();
         String vectorPrimerPrefix = "actagtg";
         String vectorPrimerSuffix = "tactagt";
         String fwdEnzymeRecSite1 = "gaagac";

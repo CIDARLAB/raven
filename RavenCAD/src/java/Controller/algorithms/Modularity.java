@@ -362,7 +362,7 @@ public class Modularity extends Partitioning {
     /* 
      * Third step of overhang assignment - A partial cartesian product given a library of parts
      */   
-    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors) {
+    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors, Boolean gwgibson) {
         
         //Initialize node and library overhang hashes
         HashMap<String, HashSet<String>> nodePartOHHashes = initializePartOHHashes(graphs);
@@ -380,7 +380,7 @@ public class Modularity extends Partitioning {
         //Assign overhang to nodes and vectors
         assignNewOverhangs(bestAssignment, sortedNodeOverhangs);
 //        HashMap<Integer, String> levelResistanceHash = getLevelResistance(graphs, bestAssignment);
-        mapFinalOverhangs (graphs, bestAssignment, stageVectors);
+        mapFinalOverhangs (graphs, bestAssignment, stageVectors, gwgibson);
     }
     
     /**
@@ -1548,7 +1548,7 @@ public class Modularity extends Partitioning {
     /*
      * Traverse the graphs and assign all final overhangs from map of second to third pass overhangs
      */
-    private void mapFinalOverhangs (ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment, HashMap<Integer, Vector> stageVectors) {
+    private void mapFinalOverhangs (ArrayList<RGraph> graphs, HashMap<String, String> bestAssignment, HashMap<Integer, Vector> stageVectors, Boolean gwgibson) {
         
         //Convert vectors to RVectors
         HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
@@ -1577,10 +1577,17 @@ public class Modularity extends Partitioning {
                 
                 String currentLeftOverhang = current.getLOverhang();
                 String currentRightOverhang = current.getROverhang();
-                current.setLOverhang(bestAssignment.get(currentLeftOverhang));
-                current.setROverhang(bestAssignment.get(currentRightOverhang));
-                currentLeftOverhang = current.getLOverhang();
-                currentRightOverhang = current.getROverhang();
+                currentLeftOverhang = bestAssignment.get(currentLeftOverhang);
+                currentRightOverhang = bestAssignment.get(currentRightOverhang);
+                
+                //Fix for Gateway-Gibson method... these overhangs start numbering at 1 and use the UNS convention
+                if (gwgibson) {
+                    currentLeftOverhang = "UNS" + (Integer.parseInt(currentLeftOverhang) + 1);
+                    currentRightOverhang = "UNS" + (Integer.parseInt(currentRightOverhang) + 1);
+                }
+                
+                current.setLOverhang(currentLeftOverhang);
+                current.setROverhang(currentRightOverhang);
 
                 RVector levelVector = stageRVectors.get(current.getStage() % stageRVectors.size());
                 RVector newVector = new RVector(currentLeftOverhang, currentRightOverhang, current.getStage(), levelVector.getName(), null);
