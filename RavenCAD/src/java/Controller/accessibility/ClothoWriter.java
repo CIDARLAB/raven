@@ -73,6 +73,22 @@ public class ClothoWriter {
                 String RO = currentNode.getROverhang();
                 Part currentPart = null;
 
+                //Get scar sequences
+                ArrayList<String> scarSeqs = new ArrayList<String>();
+                for (String scar : scars) {
+                    if ("BB".equals(scar)) {
+                        scarSeqs.add("tactagag");
+                    } else if ("BBm".equals(scar)) {
+                        scarSeqs.add("tactag");
+                    } else if (PrimerDesign.getMoCloOHseqs().containsKey(scar)) {
+                        scarSeqs.add(PrimerDesign.getMoCloOHseqs().get(scar));
+                    } else if (PrimerDesign.getGatewayGibsonOHseqs().containsKey(scar)) {
+                        scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get(scar));
+                    } else {
+                        scarSeqs.add(" ");
+                    }
+                }
+                
                 //If the node has no uuid, make a new part
                 if (currentNode.getUUID() == null) {
 
@@ -86,11 +102,11 @@ public class ClothoWriter {
                     }
 
                     //If there's overhangs, add search tags
-                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);                    
+                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO, scarSeqs);                    
                     newPlasmid.addSearchTag("Type: plasmid");
                     newPlasmid = newPlasmid.saveDefault(coll);
                     
-                    Part newComposite = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO);
+                    Part newComposite = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO, scarSeqs);
                     newComposite.addSearchTag("Type: composite");
                     newComposite.saveDefault(coll);
                     
@@ -233,7 +249,7 @@ public class ClothoWriter {
                                 }
 
                                 //BioBricks scars
-                                if (cLO.equals("BB") || cRO.equals("BB")) {
+                                if (cLO.equals("BB") || cRO.equals("BB") || cLO.equals("BBm") || cRO.equals("BBm")) {
                                     cLO = "EX";
                                     cRO = "SP";
                                 }
@@ -290,10 +306,10 @@ public class ClothoWriter {
                                 newComposition.add(exactPart);
                             }
 
-                            newPlasmid = Part.generateComposite(newComposition, currentPart.getName());
+                            newPlasmid = Part.generateComposite(newComposition, scarSeqs, currentPart.getName());
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
-                            Part newComposite = Part.generateComposite(newComposition, currentPart.getName());
+                            Part newComposite = Part.generateComposite(newComposition, scarSeqs, currentPart.getName());
                             newComposite.addSearchTag("LO: " + LO);
                             newComposite.addSearchTag("RO: " + RO);
                             newComposite.addSearchTag("Direction: " + currentNode.getDirection().toString());
@@ -425,7 +441,7 @@ public class ClothoWriter {
      * Make intermediate parts of graph with no uuid into Clotho parts
      * (typically only done for solution graphs) *
      */
-    private Part generateNewClothoCompositePart(Collector coll, String name, String description, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO) throws Exception {
+    private Part generateNewClothoCompositePart(Collector coll, String name, String description, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, ArrayList<String> scarSeqs) throws Exception {
         if (_allCompositeParts.isEmpty() || _allBasicParts.isEmpty()) {
             refreshPartVectorList(coll);
         }
@@ -478,7 +494,7 @@ public class ClothoWriter {
             }
 
             //BioBricks scars
-            if (cLO.equals("BB") || cRO.equals("BB")) {
+            if (cLO.equals("BB") || cRO.equals("BB") || cLO.equals("BBm") || cRO.equals("BBm")) {
                 cLO = "EX";
                 cRO = "SP";
             }
@@ -535,7 +551,7 @@ public class ClothoWriter {
             newComposition.add(exactPart);
         }
 
-        Part newPart = Part.generateComposite(newComposition, name);
+        Part newPart = Part.generateComposite(newComposition, scarSeqs, name);
         newPart.addSearchTag("LO: " + LO);
         newPart.addSearchTag("RO: " + RO);
         newPart.addSearchTag("Direction: " + direction);

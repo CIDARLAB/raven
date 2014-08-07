@@ -1055,18 +1055,25 @@ public class RavenController {
                         } else if (partNameTokens.length == 3) {
                             bpForcedLeft = partNameTokens[1];
                             bpForcedRight = partNameTokens[2];
-                            scar = bpForcedRight;
+                            
+                            //Scar upload for BBricks and MoClo/GatewayGibson is differnt
+                            if ("EX".equals(bpForcedLeft)) {
+                                scar = "BB";
+                            } else {
+                                scar = bpForcedLeft;
+                            }
                         } else if (partNameTokens.length == 4) {
                             bpForcedLeft = partNameTokens[1];
                             bpForcedRight = partNameTokens[2];
                             bpDirection = partNameTokens[3];
-                            scar = bpForcedRight;
+                            
+                            //Scar upload for BBricks and MoClo/GatewayGibson is differnt
+                            if ("EX".equals(bpForcedLeft)) {
+                                scar = "BB";
+                            } else {
+                                scar = bpForcedLeft;
+                            }
                         }
-                    }
-
-                    //Add scars from the right side... maybe not perfect, but ok
-                    if (i != (tokens.length - 1)) {
-                        scars.add(scar);
                     }
 
                     //Basic part plasmids - add as new basic parts with overhang for re-use
@@ -1135,6 +1142,14 @@ public class RavenController {
                     }
 
                     composition.add(bp);
+                    
+                    //Add scar to scar set and fix if this is a gene or reporter with biobricks
+                    if (i > 9) {
+                        if (scar.equals("BB") && (bp.getType().equalsIgnoreCase("gene") || bp.getType().equalsIgnoreCase("reporter"))) {
+                            scar = "BBm";
+                        }
+                        scars.add(scar);
+                    }
                 }
 
                 //Add vector pair if it is in the library
@@ -1148,10 +1163,26 @@ public class RavenController {
                     }
                 }
 
+                //Get scar sequences
+                ArrayList<String> scarSeqs = new ArrayList<String>();
+                for (String scar : scars) {
+                    if ("BB".equals(scar)) {
+                        scarSeqs.add("tactagag");
+                    } else if ("BBm".equals(scar)) {
+                        scarSeqs.add("tactag");
+                    } else if (PrimerDesign.getMoCloOHseqs().containsKey(scar)) {
+                        scarSeqs.add(PrimerDesign.getMoCloOHseqs().get(scar));
+                    } else if (PrimerDesign.getGatewayGibsonOHseqs().containsKey(scar)) {
+                        scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get(scar));
+                    } else {
+                        scarSeqs.add(" ");
+                    }
+                }
+                
                 //Library logic - make new plasmids whether or not they are in the library
                 Part newPlasmid;
                 if (composition.size() > 1) {
-                    newPlasmid = Part.generateComposite(composition, name);
+                    newPlasmid = Part.generateComposite(composition, scarSeqs, name);
                 } else {
                     newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition);
                 }
@@ -1169,7 +1200,7 @@ public class RavenController {
                     _libraryPartsVectors.put(newPlasmid, vector);
 
                     if (composition.size() > 1) {
-                        Part newComposite = Part.generateComposite(composition, name);
+                        Part newComposite = Part.generateComposite(composition, scarSeqs, name);
                         newComposite.addSearchTag("Direction: " + directions);
                         newComposite.addSearchTag("LO: " + leftOverhang);
                         newComposite.addSearchTag("RO: " + rightOverhang);
@@ -1386,7 +1417,7 @@ public class RavenController {
             _assemblyGraphs = runSLIC(minCloneLength);
             overhangValid = RSLIC.validateOverhangs(_assemblyGraphs);
         }
-        boolean valid = validateGraphComposition();
+        boolean valid = validateReqForb(_assemblyGraphs, _required, _forbidden);
         _valid = valid && overhangValid;
         
         Statistics.stop();
@@ -1466,21 +1497,31 @@ public class RavenController {
     }
 
     //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition
-    private boolean validateGraphComposition() throws Exception {
+    private boolean validateReqForb(ArrayList<RGraph> optimalGraphs, HashSet<String> required, HashSet<String> forbidden) throws Exception {
         boolean toReturn = true;
         HashSet<String> seenRequired = new HashSet();
-        for (RGraph graph : _assemblyGraphs) {
+        
+        //Traverse each graph to make sure all required compositions are there and no forbidden are there
+        for (RGraph graph : optimalGraphs) {
             ArrayList<RNode> queue = new ArrayList();
             HashSet<RNode> seenNodes = new HashSet();
             queue.add(graph.getRootNode());
             while (!queue.isEmpty()) {
+                
+                //Traversing mechanism
                 RNode current = queue.get(0);
                 queue.remove(0);
                 seenNodes.add(current);
-                //handle directionality
+                for (RNode neighbor : current.getNeighbors()) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+                
+                //Get compositon/direction string for the node
                 ArrayList<String> direction = current.getDirection();
                 ArrayList<String> composition = current.getComposition();
-                String currentCompositionString = composition.toString();
+                String currentCompositionString = composition.toString();               
                 if (direction.size() == composition.size()) {
                     currentCompositionString = "";
                     for (int i = 0; i < composition.size(); i++) {
@@ -1488,17 +1529,16 @@ public class RavenController {
                     }
                 }
                 currentCompositionString = "[" + currentCompositionString.substring(0, currentCompositionString.length() - 2) + "]";
-                if (_forbidden.contains(currentCompositionString)) {
+                
+                //Check for this composition in forbidden set - if forbidden seen, graph invalid
+                if (forbidden.contains(currentCompositionString)) {
                     toReturn = false;
                     break;
                 }
-                if (_required.contains(currentCompositionString)) {
+                
+                //Check for this composition in reqiured set
+                if (required.contains(currentCompositionString)) {
                     seenRequired.add(currentCompositionString);
-                }
-                for (RNode neighbor : current.getNeighbors()) {
-                    if (!seenNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                    }
                 }
             }
             if (toReturn == false) {
@@ -1506,7 +1546,7 @@ public class RavenController {
             }
         }
 
-        if (toReturn && _required.size() == seenRequired.size()) {
+        if (toReturn && required.size() == seenRequired.size()) {
             return true;
         } else {
             return true;
@@ -1542,7 +1582,7 @@ public class RavenController {
                         composition.add(_collector.getPart(compositionArray.getString(j), false));
                         direction.add("+");
                     }
-                    Part newComposite = Part.generateComposite(composition, currentPart.getString("name"));
+                    Part newComposite = Part.generateComposite(composition, null, currentPart.getString("name"));
                     newComposite.setUuid(currentPart.getString("id"));
                     newComposite.addSearchTag("Type: composite");
                     newComposite.addSearchTag("Direction: " + direction);

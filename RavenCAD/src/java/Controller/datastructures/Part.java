@@ -13,12 +13,31 @@ import java.util.Arrays;
  */
 public class Part {
 
-    public static Part generateComposite(ArrayList<Part> newComposition, String name) {
+    public static Part generateComposite(ArrayList<Part> newComposition, ArrayList<String> scarSeqs, String name) {
         Part newComposite = new Part();
         String sequence = "";
-        for (Part p : newComposition) {
-            sequence = sequence + p.getSeq();
+        
+        //Get part sequences
+        for (int i = 0; i < newComposition.size(); i++) {
+            Part p = newComposition.get(i);
+            if ("".equals(p.getSeq())) {
+                sequence = "";
+                break;
+            }
+            
+            //Add sequences for scars
+            if (scarSeqs.size() == (newComposition.size() - 1)) {
+                if (i > 0) {
+                    String scarSeq = scarSeqs.get(i-1);
+                    sequence = sequence + scarSeq.trim().toUpperCase() + p.getSeq();
+                } else {
+                    sequence = sequence + p.getSeq();
+                }
+            } else {
+                sequence = sequence + p.getSeq();
+            }
         }
+        
         newComposite.sequence = sequence;
         newComposite.composition = newComposition;
         newComposite.name = name;
