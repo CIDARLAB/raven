@@ -246,70 +246,70 @@ public class RGatewayGibson extends RGeneral {
     //Overhang validation
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         boolean toReturn = true;
-        for (RGraph graph : graphs) {
-            RNode root = graph.getRootNode();
-            HashSet<RNode> seenNodes = new HashSet();
-            ArrayList<RNode> queue = new ArrayList();
-            queue.add(root);
-            while (!queue.isEmpty()) {
-                RNode parent = queue.get(0);
-                queue.remove(0);
-                seenNodes.add(parent);
-                if (parent.getLOverhang().equals(parent.getROverhang())) {
-                    System.out.println(parent.getComposition() + " has the same left overhang as it's right overhang");
-                    toReturn = false;
-                }
-                if (parent.getNeighbors().size() > 1) {
-                    RNode previous = null;
-                    HashMap<String, Integer> leftFrequencyHash = new HashMap();
-                    HashMap<String, Integer> rightFrequencyHash = new HashMap();
-                    for (int i = 0; i < parent.getNeighbors().size(); i++) {
-                        RNode child = parent.getNeighbors().get(i);
-                        if (!seenNodes.contains(child)) {
-                            if (leftFrequencyHash.get(child.getLOverhang()) != null) {
-                                leftFrequencyHash.put(child.getLOverhang(), leftFrequencyHash.get(child.getLOverhang()) + 1);
-                            } else {
-                                leftFrequencyHash.put(child.getLOverhang(), 1);
-                            }
-                            if (rightFrequencyHash.get(child.getROverhang()) != null) {
-                                rightFrequencyHash.put(child.getROverhang(), rightFrequencyHash.get(child.getROverhang()) + 1);
-                            } else {
-                                rightFrequencyHash.put(child.getROverhang(), 1);
-                            }
-                            if (i == 0) {
-                                if (!child.getLOverhang().equals(parent.getLOverhang())) {
-                                    System.out.println(child.getComposition() + ", which is the 1st part, doesnt have the same left overhang as its parent");
-                                    toReturn = false;
-                                }
-                            }
-                            if (i == parent.getNeighbors().size() - 1) {
-                                if (!child.getROverhang().equals(parent.getROverhang())) {
-                                    System.out.println(child.getComposition() + ", which is the last part, doesnt have the same right overhang as its parent");
-
-                                    toReturn = false;
-                                }
-                            }
-                            if (previous != null) {
-                                if (!child.getLOverhang().equals(previous.getROverhang())) {
-                                    System.out.println(child.getComposition() + " has a left overhang that doesn't match the right overhang of its neighbor");
-                                    toReturn = false;
-                                }
-                            }
-
-                            previous = child;
-                            queue.add(child);
-                        }
-                    }
-                    if (leftFrequencyHash.containsValue(2) || rightFrequencyHash.containsValue(2)) {
-                        System.out.println("in " + parent.getComposition() + ", an overhang is used twice for the left overhang or twice for the right overhang\n");
-                        System.out.println("leftFrequencyHash: " + leftFrequencyHash);
-                        System.out.println("rightFrequencyHash: " + rightFrequencyHash);
-
-                        toReturn = false;
-                    }
-                }
-            }
-        }
+//        for (RGraph graph : graphs) {
+//            RNode root = graph.getRootNode();
+//            HashSet<RNode> seenNodes = new HashSet();
+//            ArrayList<RNode> queue = new ArrayList();
+//            queue.add(root);
+//            while (!queue.isEmpty()) {
+//                RNode parent = queue.get(0);
+//                queue.remove(0);
+//                seenNodes.add(parent);
+//                if (parent.getLOverhang().equals(parent.getROverhang())) {
+//                    System.out.println(parent.getComposition() + " has the same left overhang as it's right overhang");
+//                    toReturn = false;
+//                }
+//                if (parent.getNeighbors().size() > 1) {
+//                    RNode previous = null;
+//                    HashMap<String, Integer> leftFrequencyHash = new HashMap();
+//                    HashMap<String, Integer> rightFrequencyHash = new HashMap();
+//                    for (int i = 0; i < parent.getNeighbors().size(); i++) {
+//                        RNode child = parent.getNeighbors().get(i);
+//                        if (!seenNodes.contains(child)) {
+//                            if (leftFrequencyHash.get(child.getLOverhang()) != null) {
+//                                leftFrequencyHash.put(child.getLOverhang(), leftFrequencyHash.get(child.getLOverhang()) + 1);
+//                            } else {
+//                                leftFrequencyHash.put(child.getLOverhang(), 1);
+//                            }
+//                            if (rightFrequencyHash.get(child.getROverhang()) != null) {
+//                                rightFrequencyHash.put(child.getROverhang(), rightFrequencyHash.get(child.getROverhang()) + 1);
+//                            } else {
+//                                rightFrequencyHash.put(child.getROverhang(), 1);
+//                            }
+//                            if (i == 0) {
+//                                if (!child.getLOverhang().equals(parent.getLOverhang())) {
+//                                    System.out.println(child.getComposition() + ", which is the 1st part, doesnt have the same left overhang as its parent");
+//                                    toReturn = false;
+//                                }
+//                            }
+//                            if (i == parent.getNeighbors().size() - 1) {
+//                                if (!child.getROverhang().equals(parent.getROverhang())) {
+//                                    System.out.println(child.getComposition() + ", which is the last part, doesnt have the same right overhang as its parent");
+//
+//                                    toReturn = false;
+//                                }
+//                            }
+//                            if (previous != null) {
+//                                if (!child.getLOverhang().equals(previous.getROverhang())) {
+//                                    System.out.println(child.getComposition() + " has a left overhang that doesn't match the right overhang of its neighbor");
+//                                    toReturn = false;
+//                                }
+//                            }
+//
+//                            previous = child;
+//                            queue.add(child);
+//                        }
+//                    }
+//                    if (leftFrequencyHash.containsValue(2) || rightFrequencyHash.containsValue(2)) {
+//                        System.out.println("in " + parent.getComposition() + ", an overhang is used twice for the left overhang or twice for the right overhang\n");
+//                        System.out.println("leftFrequencyHash: " + leftFrequencyHash);
+//                        System.out.println("rightFrequencyHash: " + rightFrequencyHash);
+//
+//                        toReturn = false;
+//                    }
+//                }
+//            }
+//        }
         return toReturn;
     }
     

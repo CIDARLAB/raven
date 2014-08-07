@@ -1339,6 +1339,7 @@ public class RavenController {
         _valid = false;
         method = method.trim();
         
+        //Initiate minimum cloning length
         int minCloneLength;
         try {
             minCloneLength = Integer.valueOf(primerParameters.get(4));
@@ -1346,6 +1347,7 @@ public class RavenController {
             minCloneLength = 250;
         }
 
+        //Get target parts
         for (int i = 0; i < targetIDs.length; i++) {
             Part current = _collector.getPart(targetIDs[i], false);
             _goalParts.add(current);
@@ -1361,22 +1363,32 @@ public class RavenController {
         }
 
         Statistics.start();
+        boolean overhangValid = false;
         if (method.equalsIgnoreCase("biobricks")) {
             _assemblyGraphs = runBioBricks();
+            overhangValid = RBioBricks.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("cpec")) {
             _assemblyGraphs = runCPEC(minCloneLength);
+            overhangValid = RCPEC.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("gibson")) {
             _assemblyGraphs = runGibson(minCloneLength);
+            overhangValid = RGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("goldengate")) {
             _assemblyGraphs = runGoldenGate();
+            overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("gatewaygibson")) {
             _assemblyGraphs = runGatewayGibson();
+            overhangValid = RGatewayGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("moclo")) {
             _assemblyGraphs = runMoClo();
+            overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("slic")) {
             _assemblyGraphs = runSLIC(minCloneLength);
+            overhangValid = RSLIC.validateOverhangs(_assemblyGraphs);
         }
-
+        boolean valid = validateGraphComposition();
+        _valid = valid && overhangValid;
+        
         Statistics.stop();
         ClothoWriter writer = new ClothoWriter();
         ArrayList<String> graphTextFiles = new ArrayList();
@@ -1392,27 +1404,6 @@ public class RavenController {
                 targetRootNodeKeys.add(result.getRootNode().getNodeKey("-"));
             }
         }
-
-        //Initialize statistics
-        boolean overhangValid = false;
-        if (method.equalsIgnoreCase("biobricks")) {
-            overhangValid = RBioBricks.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("cpec")) {
-            overhangValid = RCPEC.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("gibson")) {
-            overhangValid = RGibson.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("goldengate")) {
-            overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("gatewaygibson")) {
-//            overhangValid = RGatewayGibson.validateOverhangs(_assemblyGraphs);
-            overhangValid = true;
-        } else if (method.equalsIgnoreCase("moclo")) {
-            overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("slic")) {
-            overhangValid = RSLIC.validateOverhangs(_assemblyGraphs);
-        }
-        boolean valid = validateGraphComposition();
-        _valid = valid && overhangValid;
         
         //Merge graphs and make new clotho parts where appropriate
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
@@ -1515,11 +1506,11 @@ public class RavenController {
             }
         }
 
-//        if (toReturn && _required.size() == seenRequired.size()) {
-//            return true;
-//        } else {
+        if (toReturn && _required.size() == seenRequired.size()) {
             return true;
-//        }
+        } else {
+            return true;
+        }
 
     }
 
