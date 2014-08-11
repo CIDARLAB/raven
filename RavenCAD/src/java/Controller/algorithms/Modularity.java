@@ -154,12 +154,12 @@ public class Modularity extends Partitioning {
                     int end = j;
                     
                     //Keep scanning until a gene in the reverse orientation is found
-                    while (!(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("+"))) {
+                    while (!((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("+"))) {
                         j++;
                         end++;
                         
                         //If a promoter is left open-ended, do not require it
-                        if (j == types.size() - 1 && !(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("+"))) {
+                        if (j == types.size() - 1 && !((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("+"))) {
                             end = -1;
                             break;
                         }
@@ -185,12 +185,12 @@ public class Modularity extends Partitioning {
                     int end = j;
                     
                     //Keep scanning until a gene in the reverse orientation is found
-                    while (!(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("-"))) {
+                    while (!((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("-"))) {
                         j--;
                         end--;
                         
                         //If a promoter is left open-ended, do not require it
-                        if (j == 0 && !(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("-"))) {
+                        if (j == 0 && !((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("-"))) {
                             end = -1;
                             break;
                         }
@@ -1582,8 +1582,27 @@ public class Modularity extends Partitioning {
                 
                 //Fix for Gateway-Gibson method... these overhangs start numbering at 1 and use the UNS convention
                 if (gwgibson) {
-                    currentLeftOverhang = "UNS" + (Integer.parseInt(currentLeftOverhang) + 1);
-                    currentRightOverhang = "UNS" + (Integer.parseInt(currentRightOverhang) + 1);
+                    
+                    //Correct for reverse overhangs
+                    if (currentLeftOverhang.contains("*")) {
+                        String modCurrentLeftOverhang = currentLeftOverhang.replace("*", "");
+                        currentLeftOverhang = "UNS" + (Integer.parseInt(modCurrentLeftOverhang) + 1) + "*";
+                    } else {
+                        currentLeftOverhang = "UNS" + (Integer.parseInt(currentLeftOverhang) + 1);
+                    }
+                    
+                    //Correct for reverse overhangs
+                    if (currentRightOverhang.contains("*")) {
+                        String modCurrentRightOverhang = currentRightOverhang.replace("*", "");
+                        currentRightOverhang = "UNS" + (Integer.parseInt(modCurrentRightOverhang) + 1) + "*";
+                    } else {
+                        currentRightOverhang = "UNS" + (Integer.parseInt(currentRightOverhang) + 1);
+                    }
+                    
+                    //Edge case where a level -1 Gateway Gibson node needs to be fixed to a level 0 node... happens when doing Gateway Gibson outside the context of gene-promoter libraries
+                    if (current.getStage() == -1) {
+                        current.setStage(0);
+                    }
                 }
                 
                 current.setLOverhang(currentLeftOverhang);

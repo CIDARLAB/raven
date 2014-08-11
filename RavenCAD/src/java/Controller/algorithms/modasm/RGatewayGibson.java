@@ -88,11 +88,25 @@ public class RGatewayGibson extends RGeneral {
         
                 
         //Pre-processing to adjust stages for Gateway steps
+        ArrayList<RGraph> singlePartGraphs = new ArrayList<RGraph>();
         for (RGraph optimalGraph : optimalGraphs) {
             if (singleBasicPartInGraph(optimalGraph)) {
                 stageAdjuster(optimalGraph, -1);
+                
+                //Special case where there is only on Gibson step
+                if (optimalGraph.getStages() == 0) {
+                    RNode root = optimalGraph.getRootNode();
+                    root.setLOverhang("UNS1");
+                    root.setROverhang("UNS2");
+                    RVector newVector = new RVector("UNS1", "UNS2", 0, stageVectors.get(0).getName(), null);
+                    root.setVector(newVector);
+                    singlePartGraphs.add(optimalGraph);
+                    
+                }
             }
         }
+        
+        optimalGraphs.removeAll(singlePartGraphs);
         
         //Overhang assignment for Gibson
         if (!optimalGraphs.isEmpty()) {
@@ -102,6 +116,8 @@ public class RGatewayGibson extends RGeneral {
             cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors, true);
             assignScars(optimalGraphs);            
         }
+        
+        optimalGraphs.addAll(singlePartGraphs);
 
         //After Gibson overhangs assigned, correct stages, assign overhangs for gateway
         gatewayOverhangs(optimalGraphs, stageVectors);
@@ -109,10 +125,9 @@ public class RGatewayGibson extends RGeneral {
             if (singleBasicPartInGraph(optimalGraph)) {
                 stageAdjuster(optimalGraph, 1);
             }
+            addAdaptor(optimalGraph);
         }
         
-        
-//        optimalGraphs.addAll(singlePartGraphs);
         return optimalGraphs;
     }
 
@@ -187,6 +202,22 @@ public class RGatewayGibson extends RGeneral {
         }        
     }
     
+    //Add adapter for Gibson steps
+    private void addAdaptor (RGraph optimalGraph) {
+        
+//        RNode rootNode = optimalGraph.getRootNode();
+//        rootNode.getVector().setROverhang("UNSX");
+//        RNode adaptor = new RNode();
+//        adaptor.setLOverhang(rootNode.getROverhang());
+//        adaptor.setROverhang("UNSX");
+//        ArrayList<String> adaptorComp = new ArrayList<String>();
+//        adaptorComp.add("KanR|+");
+//        adaptor.setComposition(adaptorComp);
+//        rootNode.addNeighbor(adaptor);
+//        adaptor.addNeighbor(rootNode);
+//        rootNode.setROverhang("UNS2");
+    }
+    
     //Gateway overhang assignment
     private void gatewayOverhangs (ArrayList<RGraph> optimalGraphs, HashMap<Integer, Vector> stageVectors) {
         
@@ -198,17 +229,11 @@ public class RGatewayGibson extends RGeneral {
         }
     }
     
-    //Gateway overhang assignment
+    //Gateway overhang assignment helper
     private void gatewayOverhangsHelper (RNode parent, ArrayList<RNode> children, HashMap<Integer, Vector> stageVectors) {
         
-        //If this is a Gateway parent
+        //If this is a Gateway parent, assign Gateway overhangs
         if (parent.getStage() == 0) {
-            
-            //Assign overhangs to the gateway clones
-            children.get(0).setLOverhang("attL4");
-            children.get(0).setROverhang("attR1");
-            children.get(1).setLOverhang("attL1");
-            children.get(1).setROverhang("attL2");
             
             //Convert vectors to RVectors
             HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
@@ -216,14 +241,33 @@ public class RGatewayGibson extends RGeneral {
                 RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
                 stageRVectors.put(stage, vec);
             }
-            
-            //Assign entry vectors to the gateway clones
             RVector levelVector = stageRVectors.get((parent.getStage()+ 1) % stageRVectors.size());
-            RVector newLVector = new RVector(children.get(0).getLOverhang(), children.get(0).getROverhang(), 1, levelVector.getName(), null);
-            RVector newRVector = new RVector(children.get(1).getLOverhang(), children.get(1).getROverhang(), 1, levelVector.getName(), null);
-            children.get(0).setVector(newLVector);
-            children.get(1).setVector(newRVector);
+            
+            
+            //Assign gateway overhangs and vectors to Gateway parts
+            int count = 5;
+            for (int i = 0; i < children.size(); i++) {
+                
+                if (i == 0) {
+                    children.get(i).setLOverhang("attL4");
+                    children.get(i).setROverhang("attR1");
+                    RVector newLVector = new RVector("attL4", "attR1", 1, levelVector.getName(), null);
+                    children.get(i).setVector(newLVector);
+                } else if (i == (children.size() - 1)) {         
+                    children.get(i).setLOverhang("attL" + children.get(i-1).getROverhang().substring(4));
+                    children.get(i).setROverhang("attL2");
+                    RVector newRVector = new RVector("attL1", "attL2", 1, levelVector.getName(), null);
+                    children.get(i).setVector(newRVector);
+                } else {
+                    children.get(i).setLOverhang("attL" + children.get(i-1).getROverhang().substring(4));
+                    children.get(i).setROverhang("attR" + count);
+                    count++;
+                    RVector newRVector = new RVector("attL1", "attL2", 1, levelVector.getName(), null);
+                    children.get(i).setVector(newRVector);
+                }
+            }
         
+        //Otherwise make recursive traversal call
         } else {
             for (int i = 0; i < children.size(); i++) {
                 RNode child = children.get(i);
