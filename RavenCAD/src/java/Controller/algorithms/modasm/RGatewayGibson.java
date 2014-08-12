@@ -22,7 +22,7 @@ public class RGatewayGibson extends RGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> gatewayGibsonWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs) throws Exception {
+    public ArrayList<RGraph> gatewayGibsonWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs, Collector collector) throws Exception {
         
         _partLibrary = partLibrary;
         _vectorLibrary = vectorLibrary;
@@ -125,7 +125,7 @@ public class RGatewayGibson extends RGeneral {
             if (singleBasicPartInGraph(optimalGraph)) {
                 stageAdjuster(optimalGraph, 1);
             }
-            addAdaptor(optimalGraph);
+            addAdaptor(optimalGraph, collector);
         }
         
         return optimalGraphs;
@@ -203,19 +203,133 @@ public class RGatewayGibson extends RGeneral {
     }
     
     //Add adapter for Gibson steps
-    private void addAdaptor (RGraph optimalGraph) {
+    private void addAdaptor (RGraph optimalGraph, Collector collector) {
         
-//        RNode rootNode = optimalGraph.getRootNode();
-//        rootNode.getVector().setROverhang("UNSX");
-//        RNode adaptor = new RNode();
-//        adaptor.setLOverhang(rootNode.getROverhang());
-//        adaptor.setROverhang("UNSX");
-//        ArrayList<String> adaptorComp = new ArrayList<String>();
-//        adaptorComp.add("KanR|+");
-//        adaptor.setComposition(adaptorComp);
-//        rootNode.addNeighbor(adaptor);
-//        adaptor.addNeighbor(rootNode);
-//        rootNode.setROverhang("UNS2");
+        //Adapt root node overhangs and root node vector overhangs
+        RNode rootNode = optimalGraph.getRootNode();
+        
+        RNode adaptor = new RNode();
+        adaptor.setLOverhang(rootNode.getROverhang());
+        adaptor.setROverhang("UNSX");
+        
+        ArrayList<String> direction = new ArrayList<String>();
+        direction.add("+");
+        direction.add("+");
+        adaptor.setDirection(direction);
+        ArrayList<String> adaptorComp = new ArrayList<String>();
+        adaptorComp.add("insulator");
+        adaptorComp.add("kanR");
+        adaptor.setComposition(adaptorComp);
+        ArrayList<String> adaptorType = new ArrayList<String>();
+        adaptorType.add("spacer");
+        adaptorType.add("resistance");
+        adaptor.setType(adaptorType);
+        ArrayList<String> adaptorScars = new ArrayList<String>();
+        adaptorScars.add("UNS2");
+        adaptor.setScars(adaptorScars);
+        
+        //Fix the root node
+        String rootNodeOldROverhang = rootNode.getROverhang();
+        rootNode.getComposition().add("insulator");
+        rootNode.getType().add("spacer");
+        rootNode.getDirection().add("+");
+        rootNode.getScars().add(rootNodeOldROverhang);
+        rootNode.getVector().setROverhang("UNSX");
+        rootNode.setROverhang("UNS2");
+        
+        //Make KanR part if it does not exist yet
+        ArrayList<String> tags = new ArrayList<String>();
+        tags.add("LO: " + adaptor.getLOverhang());
+        tags.add("RO: UNSX");
+        tags.add("Type: " + adaptor.getType());
+        tags.add("Direction: " + adaptor.getDirection());
+        tags.add("Scars: " + adaptor.getScars());
+        
+        Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), _adaptor, adaptorComp, tags, true);
+        
+        Part newSpacer = Part.generateBasic("insulator", _adaptor, null);
+        newSpacer.addSearchTag("LO: " + adaptor.getLOverhang());
+        newSpacer.addSearchTag("RO: UNS2");
+        newSpacer.addSearchTag("Type: spacer");
+        newSpacer.addSearchTag("Direction: [+]");
+        newSpacer.addSearchTag("Scars: []");
+        newSpacer = newSpacer.saveDefault(collector);
+
+        if (exactPart == null) {
+            
+            ArrayList<String> kanRTags = new ArrayList<String>();
+            kanRTags.add("LO: UNS2");
+            kanRTags.add("RO: UNSX");
+            kanRTags.add("Type: resistance");
+            kanRTags.add("Direction: [+]");
+            kanRTags.add("Scars: []");
+            ArrayList kanRComp = new ArrayList<String>();
+            kanRComp.add("kanR");
+            
+            Part exactKanR = collector.getExactPart("kanR", _adaptor, kanRComp, kanRTags, true);
+            
+            if (exactKanR == null) {
+                Part newKanR = Part.generateBasic("kanR", _adaptor, null);
+                newKanR.addSearchTag("LO: UNS2");
+                newKanR.addSearchTag("RO: UNSX");
+                newKanR.addSearchTag("Type: resistance");
+                newKanR.addSearchTag("Direction: [+]");
+                newKanR.addSearchTag("Scars: []");
+                newKanR = newKanR.saveDefault(collector);
+                exactKanR = newKanR;
+            }
+            
+            ArrayList<String> scarSeqs = new ArrayList<String>();
+            scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get("UNS2"));
+            ArrayList<Part> composition = new ArrayList<Part>();
+            composition.add(newSpacer);
+            composition.add(exactKanR);
+            
+            Part newBasicPart = Part.generateComposite(composition, scarSeqs, "adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang());
+            newBasicPart.addSearchTag("LO: " + adaptor.getLOverhang());
+            newBasicPart.addSearchTag("RO: UNSX");
+            newBasicPart.addSearchTag("Type: " + adaptor.getType());
+            newBasicPart.addSearchTag("Direction: " + adaptor.getDirection());
+            newBasicPart.addSearchTag("Scars: " + adaptor.getScars());
+            newBasicPart = newBasicPart.saveDefault(collector);
+            
+            adaptor.setUUID(newBasicPart.getUUID());
+            
+        } else {
+            adaptor.setUUID(exactPart.getUUID());
+        }
+        
+        //Fix its target part
+        Part targetPart = collector.getPart(rootNode.getUUID(), true);
+        ArrayList<Part> newComposition = new ArrayList<Part>();
+        newComposition.addAll(targetPart.getComposition());
+        newComposition.add(newSpacer);
+                
+        ArrayList<String> newTargetPartDirections = new ArrayList<String>();
+        newTargetPartDirections.addAll(targetPart.getDirections());
+        newTargetPartDirections.add("+");
+        
+        ArrayList<String> newTargetPartScars = new ArrayList<String>();
+        newTargetPartScars.addAll(targetPart.getScars());
+        newTargetPartScars.add(rootNodeOldROverhang);
+        
+        ArrayList<String> scarSeqs = new ArrayList<String>();
+        for (int i = 0; i < newTargetPartScars.size(); i++) {
+            scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get(newTargetPartScars.get(i)));
+        }
+        
+        Part newTargetPart = Part.generateComposite(newComposition, scarSeqs,targetPart.getName() + "_GatewayGibson");
+        newTargetPart.addSearchTag("LO: ");
+        newTargetPart.addSearchTag("RO: ");
+        newTargetPart.addSearchTag("Type: plasmid");
+        newTargetPart.addSearchTag("Direction: " + newTargetPartDirections);
+        newTargetPart.addSearchTag("Scars: " + newTargetPartScars);
+        newTargetPart.saveDefault(collector);
+        rootNode.setUUID(newTargetPart.getUUID());
+        
+        rootNode.addNeighbor(adaptor);
+        adaptor.addNeighbor(rootNode);
+        
     }
     
     //Gateway overhang assignment
@@ -438,4 +552,6 @@ public class RGatewayGibson extends RGeneral {
         oligos[1] = "";
         return oligos;
     }
+    
+    String _adaptor = "actg";
 }

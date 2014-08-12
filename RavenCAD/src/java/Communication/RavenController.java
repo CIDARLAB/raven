@@ -275,7 +275,7 @@ public class RavenController {
         _assemblyGraphs.clear();
         RGatewayGibson gwgib = new RGatewayGibson();
 //        gwgib.setForcedOverhangs(_collector, _forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = gwgib.gatewayGibsonWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null, _libraryOHHash);
+        ArrayList<RGraph> optimalGraphs = gwgib.gatewayGibsonWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null, _libraryOHHash, _collector);
         return optimalGraphs;
     }
 

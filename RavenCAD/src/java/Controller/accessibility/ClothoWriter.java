@@ -91,7 +91,7 @@ public class ClothoWriter {
                 
                 //If the node has no uuid, make a new part
                 if (currentNode.getUUID() == null) {
-
+                    
                     //Get new intermediate name
                     Date date = new Date();
                     String partName = nameRoot + "_intermediate_" + count + "_" + user + "_" +  date.toString().replaceAll(" ", "");
