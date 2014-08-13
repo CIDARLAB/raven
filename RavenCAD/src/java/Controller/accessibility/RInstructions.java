@@ -100,8 +100,19 @@ public class RInstructions {
                         newVectors.add(vector);
                     }
 
-                    //Append which parts to use for a reaction
-                    instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                    //Append which parts to use for a cloning reaction
+                    if (method.equalsIgnoreCase("GatewayGibson")) {
+                        if (currentNode.getStage() > 1) {
+                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by digesting with I-SceI and performing a Gibson cloning reaction with: "; 
+                        } else {
+                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a Gateway cloning reaction with: "; 
+                        }
+                    } else if (method.equalsIgnoreCase("gibson") || method.equalsIgnoreCase("cpec") || method.equalsIgnoreCase("slic")) {
+                        instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by digesting with NotI and performing a " + method + " cloning reaction with: ";
+                    } else {
+                        instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: "; 
+                    }
+                    
                     for (RNode neighbor : currentNode.getNeighbors()) {
 
                         if (currentNode.getStage() > neighbor.getStage()) {
@@ -148,8 +159,15 @@ public class RInstructions {
 
                         //Assuming there is a vector present, include it in the MoClo reaction (this should always be the case for MoClo assembly)
                         if (vector != null) {
-                            instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
-                            instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + ", ";
+                            
+                            //Gateway-Gibson exception
+                            if (method.equalsIgnoreCase("GatewayGibson")) {
+                                instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a Golden Gate cloning reaction with: ";
+                                instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + ", ";
+                            } else {
+                                instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                                instructions = instructions + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + ", ";
+                            }
                             instructions = instructions + vector.getName() + "|" + vector.getLOverhang() + "|" + vector.getROverhang() + "\n";
                         }
 
@@ -158,7 +176,13 @@ public class RInstructions {
                         
                         if (vector != null) {
                             if (!libraryVectorKeys.contains(vector.getVectorKey("+")) || !libraryVectorKeys.contains(vector.getVectorKey("-"))) {
-                                instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                                
+                                //Gateway-Gibson exception
+                                if (method.equalsIgnoreCase("GatewayGibson")) {
+                                    instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a Golden Gate cloning reaction with: ";
+                                } else {
+                                    instructions = instructions + "\n-> Assemble " + currentPart.getName() + "|" + currentPart.getLeftOverhang() + "|" + currentPart.getRightOverhang() + "|" + currentPart.getDirections() + " by performing a " + method + " cloning reaction with: ";
+                                }
                             }
                         }
                     }
@@ -269,6 +293,7 @@ public class RInstructions {
 
                 Vector currentVector = coll.getVector(vector.getUUID(), true);
                 String vecName = currentVector.getName();
+                RNode node = vecNodeMap.get(vector);
 
                 //Design primers for new vectors
                 if (newVectors.contains(vector)) {
@@ -277,7 +302,8 @@ public class RInstructions {
                         //If primers for this vector have not yet been created (seen in the hash), create them
                         if (!vectorOligoHash.containsKey(vector.getVectorKey("+"))) {
                             ArrayList<String> vectorOligoNamesForNode = new ArrayList<String>();
-
+//                            RNode node = vecNodeMap.get(vector);
+                            
                             //Determine which kind of primers to generate
                             String[] oligos;
                             if (method.equalsIgnoreCase("MoClo")) {
@@ -287,7 +313,6 @@ public class RInstructions {
                             } else if (method.equalsIgnoreCase("BioBricks")) {
                                 oligos = RBioBricks.generateVectorPrimers(vector, coll, meltingTemp, targetHomologyLength, maxPrimerLength, minPCRLength);
                             } else if (method.equalsIgnoreCase("GoldenGate")) {
-                                RNode node = vecNodeMap.get(vector);
                                 oligos = RGoldenGate.generateVectorPrimers(vector, fusionSites.get(node));
                             } else {
                                 oligos = RHomologyPrimerDesign.homolRecombVectorPrimers(vector, root, coll, meltingTemp, targetHomologyLength, maxPrimerLength, minPCRLength);
@@ -314,8 +339,14 @@ public class RInstructions {
                             vectorOligoHash.put(vector.getVectorKey("+"), vectorOligoNamesForNode);
 
                             //Correct for desination vectors with MoClo and GoldenGate
-                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
-                                instructions = instructions + "\nPCR lacZ part with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                                instructions = instructions + "\nPCR lacZ part with oligos: " + forwardOligoName + " and " + reverseOligoName + " and clone into vector: " + vecName + " with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            } else if (method.equalsIgnoreCase("gatewaygibson")) { 
+                                if (vector.getLevel() == 0) {
+                                    instructions = instructions + "\nPCR lacZ part with oligos: " + forwardOligoName + " and " + reverseOligoName + " and clone into vector: " + vecName + " with BsaI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                } else {
+                                    instructions = instructions + "\nPCR " + currentVector.getLeftOverhang() + "-R4-CmR-ccdB-R2-" + currentVector.getRightOverhang() + " part with oligos: " + forwardOligoName + " and " + reverseOligoName + " and clone into vector: " + vecName + " with BsaI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                }
                             } else {
                                 instructions = instructions + "\nPCR " + vecName + " vector with oligos: " + forwardOligoName + " and " + reverseOligoName + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             }
@@ -324,8 +355,14 @@ public class RInstructions {
                             ArrayList<String> oligoHash = vectorOligoHash.get(vector.getVectorKey("+"));
                             
                             //Correct for desination vectors with MoClo and GoldenGate
-                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
-                                instructions = instructions + "\nPCR lacZ with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                                instructions = instructions + "\nPCR lacZ part with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " and clone into vector: " + vecName + " with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            } else if (method.equalsIgnoreCase("gatewaygibson")) { 
+                                if (vector.getLevel() == 0) {
+                                    instructions = instructions + "\nPCR lacZ part with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " and clone into vector: " + vecName + " with BsaI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                } else {
+                                    instructions = instructions + "\nPCR " + currentVector.getLeftOverhang() + "-R4-CmR-ccdB-R2-" + currentVector.getRightOverhang() + " part with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " and clone into vector: " + vecName + " with BsaI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                                }
                             } else {
                                 instructions = instructions + "\nPCR " + vecName + " vector with oligos: " + oligoHash.get(0) + " and " + oligoHash.get(1) + " to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + vecName + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                             }
@@ -333,8 +370,14 @@ public class RInstructions {
                     } else {
                         
                         //Correct for desination vectors with MoClo and GoldenGate
-                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
-                            instructions = instructions + "\nPCR lacZ to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
+                            instructions = instructions + "\nPCR lacZ part and clone into vector: " + vecName + " with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                        } else if (method.equalsIgnoreCase("gatewaygibson")) {
+                            if (vector.getLevel() == 0) {
+                                instructions = instructions + "\nPCR lacZ part and clone into vector: " + vecName + " with BsaI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            } else {
+                                instructions = instructions + "\nPCR " + currentVector.getLeftOverhang() + "-R4-CmR-ccdB-R2-" + currentVector.getRightOverhang() + " part with oligos: " + vecName + " with BsaI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
+                            }
                         } else {
                             instructions = instructions + "\nPCR " + vecName + " vector to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): " + currentVector.getName() + "|" + currentVector.getLeftOverhang() + "|" + currentVector.getRightOverhang();
                         }

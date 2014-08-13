@@ -29,7 +29,11 @@ public class Part {
             if (scarSeqs.size() == (newComposition.size() - 1)) {
                 if (i > 0) {
                     String scarSeq = scarSeqs.get(i-1);
-                    sequence = sequence + scarSeq.trim().toUpperCase() + p.getSeq();
+                    if (scarSeq != null) {
+                        sequence = sequence + scarSeq.trim().toUpperCase() + p.getSeq();
+                    } else {
+                        sequence = sequence + p.getSeq();
+                    }
                 } else {
                     sequence = sequence + p.getSeq();
                 }

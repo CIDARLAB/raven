@@ -594,8 +594,12 @@ public class ClothoWriter {
         }
         
         //If making a destination vector
-        if (method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("moclo")) {
-            newVector.addSearchTag("Composition: lacZ|" + LO + "|" + RO + "|+");
+        if (method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("gatewaygibson")) {
+            if (method.equalsIgnoreCase("gatewaygibson") && level > 0) {
+                newVector.addSearchTag("Composition: CmR-ccdB|" + LO + "|" + RO + "|+");
+            } else {
+                newVector.addSearchTag("Composition: lacZ|" + LO + "|" + RO + "|+");
+            }
             newVector.addSearchTag("Type: destination vector");
             newVector.addSearchTag("Vector: " + name);
         } else {

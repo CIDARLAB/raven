@@ -192,10 +192,16 @@
                                                                 <h5>Description of Cloning Method</h5>
                                                                 <!--Description of Gateway Gibson-->
                                                                 <p>
-                                                                    Gateway Gibson is a hybrid method for building scarless transcriptional units from promoter and gene libraries with Gateway assembly and assemble them hierarchically with Gibson assembly                 
+                                                                    Gateway-Gibson is a hybrid method for building transcriptional units from promoter and gene libraries with Gateway assembly and assemble them hierarchically with Gibson assembly by cleaving intermediates with I-SceI and using them in Gibson reactions.                 
                                                                 </p>
                                                                 <p>
-                                                                    ASSUMPTIONS: It is assumed that coded destination vector pSK1A2 is used for all steps and stages.
+                                                                    ASSUMPTIONS: It is assumed that coded destination vector backbone pSK1A2 is is used for all Gibson steps and stages and that the coded destination vector backbone pSB1K3 is used for all Gateway steps.
+                                                                    It is also assumed that for both types of destination vectors that the appropriate L/R Gateway sites are cloned into the backbones independently with flanking BsaI sites compatible insert sequences.
+                                                                    Raven algorithms will force the construction of transcriptional units with Gateway for this method. These are identified with the "promoter" and "gene" keywords. All pieces in between a promoter and a gene will become an additional piece for the Gateway reaction.
+                                                                    Parts that fall outside of transcriptional units will be made into independent Gibson clones in the completed construct.
+                                                                </p>
+                                                                <p>
+                                                                    *** WARNING *** This assembly method is still undergoing testing! Do not use this method in practice at this time. The final version will be available shortly. Please contact the developers with questions.
                                                                 </p>
                                                                 <!--<small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>-->
                                                             </div>
@@ -212,8 +218,6 @@
                                                                             <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                             <tr><td>7</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                             <tr><td>8</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                            <tr><td>9</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
-                                                                            <tr><td>10</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
                                                                         </tbody>
                                                                     </table>
                                                                 </div>

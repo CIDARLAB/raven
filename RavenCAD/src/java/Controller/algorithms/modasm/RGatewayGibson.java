@@ -101,7 +101,6 @@ public class RGatewayGibson extends RGeneral {
                     RVector newVector = new RVector("UNS1", "UNS2", 0, stageVectors.get(0).getName(), null);
                     root.setVector(newVector);
                     singlePartGraphs.add(optimalGraph);
-                    
                 }
             }
         }
@@ -111,20 +110,23 @@ public class RGatewayGibson extends RGeneral {
         //Overhang assignment for Gibson
         if (!optimalGraphs.isEmpty()) {
             propagatePrimaryOverhangs(optimalGraphs);
-            maximizeOverhangSharing(optimalGraphs);
+            HashMap<String, String> forcedGibsonOHs = getForcedGibsonOHs(optimalGraphs);
+            
+//            maximizeOverhangSharing(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
-            cartesianLibraryAssignment(optimalGraphs, forcedOverhangHash, stageVectors, true);
-            assignScars(optimalGraphs);            
+            cartesianLibraryAssignment(optimalGraphs, forcedGibsonOHs, forcedOverhangHash, stageVectors, true);
         }
         
         optimalGraphs.addAll(singlePartGraphs);
 
         //After Gibson overhangs assigned, correct stages, assign overhangs for gateway
-        gatewayOverhangs(optimalGraphs, stageVectors);
+        
         for (RGraph optimalGraph : optimalGraphs) {
+            gatewayOverhangs(optimalGraph.getRootNode(), optimalGraph.getRootNode().getNeighbors(), stageVectors);
             if (singleBasicPartInGraph(optimalGraph)) {
                 stageAdjuster(optimalGraph, 1);
             }
+            assignScars(optimalGraph.getRootNode(), optimalGraph.getRootNode().getNeighbors());
             addAdaptor(optimalGraph, collector);
         }
         
@@ -132,22 +134,9 @@ public class RGatewayGibson extends RGeneral {
     }
 
     /**
-     * Determine overhang scars *
+     * Overhang scars method *
      */
-    private void assignScars(ArrayList<RGraph> optimalGraphs) {
-
-        //Loop through each optimal graph and grab the root node to prime for the traversal
-        for (RGraph graph : optimalGraphs) {
-            RNode root = graph.getRootNode();
-            ArrayList<RNode> children = root.getNeighbors();
-            root.setScars(assignScarsHelper(root, children));
-        }
-    }
-
-    /**
-     * Overhang scars helper *
-     */
-    private ArrayList<String> assignScarsHelper(RNode parent, ArrayList<RNode> children) {
+    private ArrayList<String> assignScars(RNode parent, ArrayList<RNode> children) {
 
         ArrayList<String> scars = new ArrayList<String>();
 
@@ -159,8 +148,11 @@ public class RGatewayGibson extends RGeneral {
             if (i > 0) {
                 if (child.getLOverhang().isEmpty()) {
                     scars.add("_");
+                } else if (child.getLOverhang().startsWith("attL") || child.getLOverhang().startsWith("attR")) {
+                    scars.add("attP" + child.getLOverhang().substring(4));
+                } else {
+                    scars.add(child.getLOverhang());
                 }
-                scars.add(child.getLOverhang());
             }
 
             //Make recursive call
@@ -173,7 +165,7 @@ public class RGatewayGibson extends RGeneral {
                     grandChildren.remove(parent);
                 }
 
-                ArrayList<String> childScars = assignScarsHelper(child, grandChildren);
+                ArrayList<String> childScars = assignScars(child, grandChildren);
                 scars.addAll(childScars);
             } else {
 
@@ -244,10 +236,11 @@ public class RGatewayGibson extends RGeneral {
         tags.add("Type: " + adaptor.getType());
         tags.add("Direction: " + adaptor.getDirection());
         tags.add("Scars: " + adaptor.getScars());
+        String adaptorSeq = _insulator + PrimerDesign.getGatewayGibsonOHseqs().get("UNS2") + _kanR;
         
-        Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), _adaptor, adaptorComp, tags, true);
+        Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), adaptorSeq, adaptorComp, tags, true);
         
-        Part newSpacer = Part.generateBasic("insulator", _adaptor, null);
+        Part newSpacer = Part.generateBasic("insulator", _insulator, null);
         newSpacer.addSearchTag("LO: " + adaptor.getLOverhang());
         newSpacer.addSearchTag("RO: UNS2");
         newSpacer.addSearchTag("Type: spacer");
@@ -266,10 +259,10 @@ public class RGatewayGibson extends RGeneral {
             ArrayList kanRComp = new ArrayList<String>();
             kanRComp.add("kanR");
             
-            Part exactKanR = collector.getExactPart("kanR", _adaptor, kanRComp, kanRTags, true);
+            Part exactKanR = collector.getExactPart("kanR", _kanR, kanRComp, kanRTags, true);
             
             if (exactKanR == null) {
-                Part newKanR = Part.generateBasic("kanR", _adaptor, null);
+                Part newKanR = Part.generateBasic("kanR", _kanR, null);
                 newKanR.addSearchTag("LO: UNS2");
                 newKanR.addSearchTag("RO: UNSX");
                 newKanR.addSearchTag("Type: resistance");
@@ -332,19 +325,10 @@ public class RGatewayGibson extends RGeneral {
         
     }
     
-    //Gateway overhang assignment
-    private void gatewayOverhangs (ArrayList<RGraph> optimalGraphs, HashMap<Integer, Vector> stageVectors) {
-        
-        //Loop through each optimal graph and assign gateway overhangs for the level 0 parts
-        for (RGraph graph : optimalGraphs) {
-            RNode root = graph.getRootNode();
-            ArrayList<RNode> children = root.getNeighbors();
-            gatewayOverhangsHelper(root, children, stageVectors);
-        }
-    }
-    
-    //Gateway overhang assignment helper
-    private void gatewayOverhangsHelper (RNode parent, ArrayList<RNode> children, HashMap<Integer, Vector> stageVectors) {
+    /* 
+     * Gateway overhang assignment helper 
+     */
+    private void gatewayOverhangs (RNode parent, ArrayList<RNode> children, HashMap<Integer, Vector> stageVectors) {
         
         //If this is a Gateway parent, assign Gateway overhangs
         if (parent.getStage() == 0) {
@@ -355,7 +339,7 @@ public class RGatewayGibson extends RGeneral {
                 RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
                 stageRVectors.put(stage, vec);
             }
-            RVector levelVector = stageRVectors.get((parent.getStage()+ 1) % stageRVectors.size());
+            RVector levelVector = stageRVectors.get((parent.getStage()) % stageRVectors.size());
             
             
             //Assign gateway overhangs and vectors to Gateway parts
@@ -365,19 +349,25 @@ public class RGatewayGibson extends RGeneral {
                 if (i == 0) {
                     children.get(i).setLOverhang("attL4");
                     children.get(i).setROverhang("attR1");
-                    RVector newLVector = new RVector("attL4", "attR1", 1, levelVector.getName(), null);
+                    ArrayList<String> scars = new ArrayList<String>();
+                    scars.add("attP1");
+                    parent.setScars(scars);
+                    RVector newLVector = new RVector("attL4", "attR1", -1, levelVector.getName(), null);
                     children.get(i).setVector(newLVector);
                 } else if (i == (children.size() - 1)) {         
                     children.get(i).setLOverhang("attL" + children.get(i-1).getROverhang().substring(4));
                     children.get(i).setROverhang("attL2");
-                    RVector newRVector = new RVector("attL1", "attL2", 1, levelVector.getName(), null);
+                    RVector newRVector = new RVector("attL1", "attL2", -1, levelVector.getName(), null);
                     children.get(i).setVector(newRVector);
                 } else {
                     children.get(i).setLOverhang("attL" + children.get(i-1).getROverhang().substring(4));
                     children.get(i).setROverhang("attR" + count);
+                    ArrayList<String> scars = parent.getScars();
+                    scars.add("attP" + count);
                     count++;
-                    RVector newRVector = new RVector("attL1", "attL2", 1, levelVector.getName(), null);
+                    RVector newRVector = new RVector("attL1", "attL2", -1, levelVector.getName(), null);
                     children.get(i).setVector(newRVector);
+                    
                 }
             }
         
@@ -395,7 +385,7 @@ public class RGatewayGibson extends RGeneral {
                 
                 //Recursive call if there are grandchildren
                 if (!grandchildren.isEmpty()) {
-                    gatewayOverhangsHelper(child, grandchildren, stageVectors);
+                    gatewayOverhangs(child, grandchildren, stageVectors);
                 }
             }
         }
@@ -404,71 +394,46 @@ public class RGatewayGibson extends RGeneral {
     //Overhang validation
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {
         boolean toReturn = true;
-//        for (RGraph graph : graphs) {
-//            RNode root = graph.getRootNode();
-//            HashSet<RNode> seenNodes = new HashSet();
-//            ArrayList<RNode> queue = new ArrayList();
-//            queue.add(root);
-//            while (!queue.isEmpty()) {
-//                RNode parent = queue.get(0);
-//                queue.remove(0);
-//                seenNodes.add(parent);
-//                if (parent.getLOverhang().equals(parent.getROverhang())) {
-//                    System.out.println(parent.getComposition() + " has the same left overhang as it's right overhang");
-//                    toReturn = false;
-//                }
-//                if (parent.getNeighbors().size() > 1) {
-//                    RNode previous = null;
-//                    HashMap<String, Integer> leftFrequencyHash = new HashMap();
-//                    HashMap<String, Integer> rightFrequencyHash = new HashMap();
-//                    for (int i = 0; i < parent.getNeighbors().size(); i++) {
-//                        RNode child = parent.getNeighbors().get(i);
-//                        if (!seenNodes.contains(child)) {
-//                            if (leftFrequencyHash.get(child.getLOverhang()) != null) {
-//                                leftFrequencyHash.put(child.getLOverhang(), leftFrequencyHash.get(child.getLOverhang()) + 1);
-//                            } else {
-//                                leftFrequencyHash.put(child.getLOverhang(), 1);
-//                            }
-//                            if (rightFrequencyHash.get(child.getROverhang()) != null) {
-//                                rightFrequencyHash.put(child.getROverhang(), rightFrequencyHash.get(child.getROverhang()) + 1);
-//                            } else {
-//                                rightFrequencyHash.put(child.getROverhang(), 1);
-//                            }
-//                            if (i == 0) {
-//                                if (!child.getLOverhang().equals(parent.getLOverhang())) {
-//                                    System.out.println(child.getComposition() + ", which is the 1st part, doesnt have the same left overhang as its parent");
-//                                    toReturn = false;
-//                                }
-//                            }
-//                            if (i == parent.getNeighbors().size() - 1) {
-//                                if (!child.getROverhang().equals(parent.getROverhang())) {
-//                                    System.out.println(child.getComposition() + ", which is the last part, doesnt have the same right overhang as its parent");
-//
-//                                    toReturn = false;
-//                                }
-//                            }
-//                            if (previous != null) {
-//                                if (!child.getLOverhang().equals(previous.getROverhang())) {
-//                                    System.out.println(child.getComposition() + " has a left overhang that doesn't match the right overhang of its neighbor");
-//                                    toReturn = false;
-//                                }
-//                            }
-//
-//                            previous = child;
-//                            queue.add(child);
-//                        }
-//                    }
-//                    if (leftFrequencyHash.containsValue(2) || rightFrequencyHash.containsValue(2)) {
-//                        System.out.println("in " + parent.getComposition() + ", an overhang is used twice for the left overhang or twice for the right overhang\n");
-//                        System.out.println("leftFrequencyHash: " + leftFrequencyHash);
-//                        System.out.println("rightFrequencyHash: " + rightFrequencyHash);
-//
-//                        toReturn = false;
-//                    }
-//                }
-//            }
-//        }
+        for (RGraph graph : graphs) {
+            RNode root = graph.getRootNode();
+            HashSet<RNode> seenNodes = new HashSet();
+            ArrayList<RNode> queue = new ArrayList();
+            queue.add(root);
+            while (!queue.isEmpty()) {
+                RNode parent = queue.get(0);
+                queue.remove(0);
+                seenNodes.add(parent);
+                if (parent.getNeighbors().size() > 1) {
+                    for (int i = 0; i < parent.getNeighbors().size(); i++) {
+                        RNode child = parent.getNeighbors().get(i);
+                        if (!seenNodes.contains(child)) {
+                            queue.add(child);
+                        }
+                    }
+                }
+            }
+        }
         return toReturn;
+    }
+    
+    /* 
+     * Forcing overhangs for simpler Gibson 
+     */
+    private HashMap<String,String> getForcedGibsonOHs (ArrayList<RGraph> optimalGraphs) {
+        
+        HashMap<String,String> predeterminedAssignment = new HashMap<String,String>();
+        for (RGraph optimalGraph : optimalGraphs) {
+            ArrayList<RNode> gibsonBPs = _rootBasicNodeHash.get(optimalGraph.getRootNode());
+            
+            int count = 0;
+            for (int i = 0; i < gibsonBPs.size(); i++) {
+                predeterminedAssignment.put(gibsonBPs.get(i).getLOverhang(), Integer.toString(count));
+                count++;
+                predeterminedAssignment.put(gibsonBPs.get(i).getROverhang(), Integer.toString(count));
+            }
+        }
+        
+        return predeterminedAssignment;
     }
     
     /**
@@ -476,44 +441,43 @@ public class RGatewayGibson extends RGeneral {
      */
     public static String[] generatePartPrimers(RNode node, Collector coll, Double meltingTemp, Integer targetLength, Integer minPCRLength, Integer maxPrimerLength) {
 
-        HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getGatewayGibsonOHseqs();
         String[] oligos = new String[2];
-//        String partPrimerPrefix = "at";
-//        String partPrimerSuffix = "gt";
-//        String fwdEnzymeRecSite1 = "gaagac";
-//        String revEnzymeRecSite1 = "gtcttc";
-//
-//        Part currentPart = coll.getPart(node.getUUID(), true);
-//        String seq = currentPart.getSeq();
-//
-//        String fwdHomology;
-//        String revHomology;
-//
-//        String forwardOligoSequence;
-//        String reverseOligoSequence;
-//        if (seq.length() > minPCRLength) {
-//            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, seq, true)));
-//            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, PrimerDesign.reverseComplement(seq), true)));
-//            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
-//            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
-//        
-//        } else {
-//            if (seq.equals("")) {
-//                fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
-//                revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
-//                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
-//                reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
-//            } else {
-//                fwdHomology = seq;
-//                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
-//                reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
-//
-//            }
-//        }
-//        oligos[0]=forwardOligoSequence;
-//        oligos[1]=reverseOligoSequence;
-        oligos[0] = "";
-        oligos[1] = "";
+        String partPrimerPrefix = "atc";
+        String partPrimerSuffix = "atc";
+        String fwdEnzymeRecSite1 = "ggtctc";
+        String revEnzymeRecSite1 = "gagacc";
+        String Q1 = "GCTT";
+        String QX = "AGGT";
+
+        Part currentPart = coll.getPart(node.getUUID(), true);
+        String seq = currentPart.getSeq();
+
+        String fwdHomology;
+        String revHomology;
+
+        String forwardOligoSequence;
+        String reverseOligoSequence;
+        if (seq.length() > minPCRLength) {
+            fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, seq, true)));
+            revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, PrimerDesign.reverseComplement(seq), true)));
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "t" + Q1 + fwdHomology;
+            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + QX + "a" + revEnzymeRecSite1 + partPrimerSuffix);
+        
+        } else {
+            if (seq.equals("")) {
+                fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
+                revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "t" + Q1 + fwdHomology;
+                reverseOligoSequence = PrimerDesign.reverseComplement(QX + "a" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
+            } else {
+                fwdHomology = seq;
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "t" + Q1 + fwdHomology + QX + "a" + revEnzymeRecSite1 + partPrimerSuffix;
+                reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
+
+            }
+        }
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
         return oligos;
     }
 
@@ -523,35 +487,39 @@ public class RGatewayGibson extends RGeneral {
     public static String[] generateVectorPrimers(RVector vector) {
 
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getGatewayGibsonOHseqs();
-//        String vectorPrimerPrefix = "actagtg";
-//        String vectorPrimerSuffix = "tactagt";
-//        String fwdEnzymeRecSite1 = "gaagac";
-//        String revEnzymeRecSite1 = "gtcttc";
-//        String fwdEnzymeRecSite2 = "ggtctc";
-//        String revEnzymeRecSite2 = "gagacc";
+        String vectorPrimerPrefix = "act";
+        String vectorPrimerSuffix = "act";
+        String ISceI = "tagggataacagggtaat";
+        String BsaIfwd = "ggtctc";
+        String BsaIrev = "gagacc";
+        String Q1 = "GCTT";
+        String QX = "AGGT";
 
         String[] oligos = new String[2];
-//
-//        //Level 0, 2, 4, 6, etc. vectors
-//        String forwardOligoSequence;
-//        String reverseOligoSequence;
-//        if (vector.getLevel() % 2 == 0) {
-//            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
-//            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
-//
-//            //Level 1, 3, 5, 7, etc. vectors
-//        } else {
-//            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
-//            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
-//        }
-//
-//        oligos[0]=forwardOligoSequence;
-//        oligos[1]=reverseOligoSequence;
+
+        String forwardOligoSequence;
+        String reverseOligoSequence;
         
-        oligos[0] = "";
-        oligos[1] = "";
+        //Gateway destination vectors
+        if (vector.getLevel() == 0) {
+            forwardOligoSequence = vectorPrimerPrefix + BsaIfwd + "a" + Q1 + "tgagaccacctctgacacatgcag";
+            reverseOligoSequence = PrimerDesign.reverseComplement("gaggcggtttgcgtattggtctca" + QX + "t" + BsaIrev + vectorPrimerSuffix);
+
+        //Gibson destination vectors
+        } else {
+            forwardOligoSequence = vectorPrimerPrefix + BsaIfwd + "a" + Q1 + ISceI + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase();
+            reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + ISceI + QX + "t" + BsaIrev + vectorPrimerSuffix);
+        }
+
+        oligos[0]=forwardOligoSequence;
+        oligos[1]=reverseOligoSequence;
         return oligos;
     }
     
-    String _adaptor = "actg";
+    String _kanR = "tatgagccatattcaacgggaaacgtcgaggccgcgattaaattccaacatggatgctgatttatatgggtataaatgggctcgcgataatgtcgggcaatcaggtgcgacaatctatcgcttgtatgggaagcccgatgcgccagagttgtttctgaaacatggcaaaggtagcgttgccaatgatgttacagatgagatggtcagactaaactggctgacggaatttatgcctcttccgac\n" +
+"catcaagcattttatccgtactcctgatgatgcatggttactcaccactgcgatccccggaaaaacagcattccaggtattagaagaatatcctgattcaggtgaaaatattgttgatgcgctggcagtgttcctgcgccggttgcattcgattcctgtttgtaattgtccttttaacagcgatcgcgtatttcgtctcgctcaggcgcaatc\n" +
+"acgaatgaataacggtttggttgatgcgagtgattttgatgacgagcgtaatggctggcctgttgaacaagtctggaaagaaatgcataaacttttgccattctcaccggattcagtcgtcactcatggtgatttctcacttgataaccttatttttgacgaggggaaattaataggttgtattgatgttggacgagtcggaatcgcagaccg\n" +
+"ataccaggatcttgccatcctatggaactgcctcggtgagttttctccttcattacagaaacggctttttcaaaaatatggtattgataatcctgatatgaataaattgcagtttcatttgatgctcgatgagtttttctaatcagaattggttaattggttgtaacactggcagagcattacgctgacttgacgggacggcgcaagctcatgacca\n" +
+"aaatcccttaacgtgagttacgcgtcgttccactgagcgtcaga";
+    String _insulator = "tctggcccgtgtctcaaaatctctgatgttacattgcacaagataaaataatatcatcatgaacaataaaactgtctgcttacataaacagtaatacaaggggtgt";
 }
