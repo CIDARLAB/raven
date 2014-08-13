@@ -154,12 +154,12 @@ public class Modularity extends Partitioning {
                     int end = j;
                     
                     //Keep scanning until a gene in the reverse orientation is found
-                    while (!(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("+"))) {
+                    while (!((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("+"))) {
                         j++;
                         end++;
                         
                         //If a promoter is left open-ended, do not require it
-                        if (j == types.size() - 1 && !(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("+"))) {
+                        if (j == types.size() - 1 && !((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("+"))) {
                             end = -1;
                             break;
                         }
@@ -185,12 +185,12 @@ public class Modularity extends Partitioning {
                     int end = j;
                     
                     //Keep scanning until a gene in the reverse orientation is found
-                    while (!(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("-"))) {
+                    while (!((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("-"))) {
                         j--;
                         end--;
                         
                         //If a promoter is left open-ended, do not require it
-                        if (j == 0 && !(types.get(j).equalsIgnoreCase("gene") && directions.get(j).equalsIgnoreCase("-"))) {
+                        if (j == 0 && !((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("-"))) {
                             end = -1;
                             break;
                         }
@@ -362,7 +362,7 @@ public class Modularity extends Partitioning {
     /* 
      * Third step of overhang assignment - A partial cartesian product given a library of parts
      */   
-    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors, Boolean gwgibson) {
+    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String,String> predeterminedAssignment, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors, Boolean gwgibson) {
         
         //Initialize node and library overhang hashes
         HashMap<String, HashSet<String>> nodePartOHHashes = initializePartOHHashes(graphs);
@@ -380,7 +380,13 @@ public class Modularity extends Partitioning {
         //Assign overhang to nodes and vectors
         assignNewOverhangs(bestAssignment, sortedNodeOverhangs);
 //        HashMap<Integer, String> levelResistanceHash = getLevelResistance(graphs, bestAssignment);
-        mapFinalOverhangs (graphs, bestAssignment, stageVectors, gwgibson);
+        
+        //Correct for Gateway Gibson
+        if (predeterminedAssignment != null) {
+            mapFinalOverhangs(graphs, predeterminedAssignment, stageVectors, gwgibson);
+        } else {
+            mapFinalOverhangs(graphs, bestAssignment, stageVectors, gwgibson);
+        }
     }
     
     /**
@@ -615,6 +621,10 @@ public class Modularity extends Partitioning {
             seenNodes.add(current);
 
             current.setStage(current.getStage() + adjuster);
+            if (current.getVector() != null) {
+                RVector vector = current.getVector();
+                vector.setLevel(vector.getLevel() + adjuster);
+            }
 
             for (RNode neighbor : current.getNeighbors()) {
                 if (!seenNodes.contains(neighbor)) {
@@ -1554,7 +1564,19 @@ public class Modularity extends Partitioning {
         HashMap<Integer, RVector> stageRVectors = new HashMap<Integer, RVector>();
         for (Integer stage : stageVectors.keySet()) {
             RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
-            stageRVectors.put(stage, vec);
+
+            //Gateway gibson amendment
+            if (gwgibson) {
+                if (stageVectors.size() > 1) {
+                    if (stage > 0) {
+                        stageRVectors.put(stage - 1, vec);
+                    }
+                } else {
+                    stageRVectors.put(stage, vec);
+                }
+            } else {
+                stageRVectors.put(stage, vec);
+            }
         }
         
         //Assign final overhangs for all graphs
@@ -1582,8 +1604,27 @@ public class Modularity extends Partitioning {
                 
                 //Fix for Gateway-Gibson method... these overhangs start numbering at 1 and use the UNS convention
                 if (gwgibson) {
-                    currentLeftOverhang = "UNS" + (Integer.parseInt(currentLeftOverhang) + 1);
-                    currentRightOverhang = "UNS" + (Integer.parseInt(currentRightOverhang) + 1);
+                    
+                    //Correct for reverse overhangs
+                    if (currentLeftOverhang.contains("*")) {
+                        String modCurrentLeftOverhang = currentLeftOverhang.replace("*", "");
+                        currentLeftOverhang = "UNS" + (Integer.parseInt(modCurrentLeftOverhang) + 1) + "*";
+                    } else {
+                        currentLeftOverhang = "UNS" + (Integer.parseInt(currentLeftOverhang) + 1);
+                    }
+                    
+                    //Correct for reverse overhangs
+                    if (currentRightOverhang.contains("*")) {
+                        String modCurrentRightOverhang = currentRightOverhang.replace("*", "");
+                        currentRightOverhang = "UNS" + (Integer.parseInt(modCurrentRightOverhang) + 1) + "*";
+                    } else {
+                        currentRightOverhang = "UNS" + (Integer.parseInt(currentRightOverhang) + 1);
+                    }
+                    
+                    //Edge case where a level -1 Gateway Gibson node needs to be fixed to a level 0 node... happens when doing Gateway Gibson outside the context of gene-promoter libraries
+                    if (current.getStage() == -1) {
+                        current.setStage(0);
+                    }
                 }
                 
                 current.setLOverhang(currentLeftOverhang);
@@ -1668,7 +1709,7 @@ public class Modularity extends Partitioning {
     private HashMap<RNode, RNode> _parentHash; //key: node, value: parent node
     private HashMap<Integer, HashMap<String, ArrayList<RNode>>> _stageDirectionAssignHash; //key: stage, value: (key: direction, value: nodes to visit)
     private HashMap<RNode, ArrayList<Integer>> _nodeStagesHash; //key: level 0 node, value: all the stages this node impacts
-    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
+    protected HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
     private HashSet<RNode> _allNodes; //all nodes in all graphs
     
     protected HashMap<String, HashSet<String>> _OHexclusionHash; //key: parent node, value: all overhangs that have been seen in this step

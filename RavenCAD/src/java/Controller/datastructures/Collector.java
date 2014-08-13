@@ -85,7 +85,7 @@ public class Collector {
         return toReturn;
     }
 
-    public Part getExactPart(String name, String seq, ArrayList<String> composition, ArrayList<String> tags, boolean allowTransient) {
+     public Part getExactPart(String name, String seq, ArrayList<String> composition, ArrayList<String> tags, boolean allowTransient) {
 
         Part toReturn = null;
         HashSet<String> queryTags;

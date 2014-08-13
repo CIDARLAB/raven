@@ -17,7 +17,7 @@ public class RNode {
     public RNode() {
         _recommended = false;
         _discouraged = false;
-        _efficiency = 0;
+        _efficiency = 1;
         _successCnt = 0;
         _failureCnt = 0;
         _neighbors = new ArrayList<RNode>();
@@ -39,7 +39,7 @@ public class RNode {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
-        _efficiency = 0;
+        _efficiency = 1;
         _successCnt = successCnt;
         _failureCnt = failureCnt;
         _neighbors = new ArrayList<RNode>();

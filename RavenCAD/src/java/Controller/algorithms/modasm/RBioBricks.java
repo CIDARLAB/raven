@@ -169,7 +169,11 @@ public class RBioBricks extends RGeneral {
                 if (child.getLOverhang().isEmpty()) {
                     scars.add("_");
                 }
-                scars.add("BB");
+                if (child.getType().get(0).equals("gene") || child.getType().get(0).equals("reporter") ) {
+                    scars.add("BBm");
+                } else {
+                    scars.add("BB");
+                }
             }
 
             //Make recursive call

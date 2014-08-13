@@ -769,8 +769,14 @@ public class RGraph {
                     edgeLines = edgeLines + "\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
                     
                     //For MoClo and Golden Gate, destination vectors are made and they will show a lacZ PCR and destination vector as opposed to a PCRed vector
-                    if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
-                        pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), vecID, vecLO, vecRO, vecName);
+                    if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {                        
+                        if (method.equalsIgnoreCase("gatewaygibson") && vecL > 0) {
+                            vecComposition.clear();
+                            vecComposition.add("CmR-ccdB");
+                            pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), vecID, vecLO, vecRO, vecName);
+                        } else {
+                            pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), vecID, vecLO, vecRO, vecName);
+                        }
                     } else {
                         pigeonLine = generatePigeonCodeOld(null, null, null, null, vecID, vecLO, vecRO, vecName);
                     }
@@ -780,8 +786,14 @@ public class RGraph {
                         String NvecID = vecName + "|" + vecL;
                         edgeLines = edgeLines + "\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n";
                         
-                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate")) {
-                            pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), NvecID, null, null, null);
+                        if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
+                            if (method.equalsIgnoreCase("gatewaygibson") && vecL > 0) {
+                                vecComposition.clear();
+                                vecComposition.add("CmR-ccdB");
+                                pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), NvecID, null, null, null);
+                            } else {
+                                pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), NvecID, null, null, null);
+                            }
                         } else {
                             pigeonLine = generatePigeonCodeOld(null, null, null, null, NvecID, null, null, vecName);
                         }
@@ -1061,7 +1073,7 @@ public class RGraph {
                 } else if (type.equalsIgnoreCase("reporter") || type.equalsIgnoreCase("rep")) {
                     pigeonLine.append("c ").append(name).append(" 9" + "\n");
                 } else if (type.equalsIgnoreCase("lacZ") || type.equalsIgnoreCase("l")) {
-                    pigeonLine.append("c ").append(name).append(" 2" + "\n");
+                    pigeonLine.append("g ").append(name).append(" 2" + "\n");
                 } else if (type.equalsIgnoreCase("resistance") || type.equalsIgnoreCase("res")) {
                     pigeonLine.append("g ").append(name).append(" 2" + "\n");
                 } else if (type.equalsIgnoreCase("terminator") || type.equalsIgnoreCase("t")) {
