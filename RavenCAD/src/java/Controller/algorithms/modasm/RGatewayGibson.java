@@ -127,7 +127,7 @@ public class RGatewayGibson extends RGeneral {
                 stageAdjuster(optimalGraph, 1);
             }
             assignScars(optimalGraph.getRootNode(), optimalGraph.getRootNode().getNeighbors());
-            addAdaptor(optimalGraph, collector);
+            addAdaptor(optimalGraph, collector, optimalGraphs);
         }
         
         return optimalGraphs;
@@ -149,7 +149,7 @@ public class RGatewayGibson extends RGeneral {
                 if (child.getLOverhang().isEmpty()) {
                     scars.add("_");
                 } else if (child.getLOverhang().startsWith("attL") || child.getLOverhang().startsWith("attR")) {
-                    scars.add("attP" + child.getLOverhang().substring(4));
+                    scars.add("attB" + child.getLOverhang().substring(4));
                 } else {
                     scars.add(child.getLOverhang());
                 }
@@ -195,13 +195,14 @@ public class RGatewayGibson extends RGeneral {
     }
     
     //Add adapter for Gibson steps
-    private void addAdaptor (RGraph optimalGraph, Collector collector) {
+    private void addAdaptor (RGraph optimalGraph, Collector collector, ArrayList<RGraph> optimalGraphs) {
         
         //Adapt root node overhangs and root node vector overhangs
-        RNode rootNode = optimalGraph.getRootNode();
+        RNode rootNodeClone = optimalGraph.getRootNode().clone();
+        String rootNodeOldROverhang = rootNodeClone.getROverhang();
         
         RNode adaptor = new RNode();
-        adaptor.setLOverhang(rootNode.getROverhang());
+        adaptor.setLOverhang(rootNodeClone.getROverhang());
         adaptor.setROverhang("UNSX");
         
         ArrayList<String> direction = new ArrayList<String>();
@@ -219,15 +220,6 @@ public class RGatewayGibson extends RGeneral {
         ArrayList<String> adaptorScars = new ArrayList<String>();
         adaptorScars.add("UNS2");
         adaptor.setScars(adaptorScars);
-        
-        //Fix the root node
-        String rootNodeOldROverhang = rootNode.getROverhang();
-        rootNode.getComposition().add("insulator");
-        rootNode.getType().add("spacer");
-        rootNode.getDirection().add("+");
-        rootNode.getScars().add(rootNodeOldROverhang);
-        rootNode.getVector().setROverhang("UNSX");
-        rootNode.setROverhang("UNS2");
         
         //Make KanR part if it does not exist yet
         ArrayList<String> tags = new ArrayList<String>();
@@ -292,8 +284,32 @@ public class RGatewayGibson extends RGeneral {
             adaptor.setUUID(exactPart.getUUID());
         }
         
-        //Fix its target part
-        Part targetPart = collector.getPart(rootNode.getUUID(), true);
+        //Fix root node
+        ArrayList<String> comp = new ArrayList<String>();
+        comp.addAll(rootNodeClone.getComposition());
+        comp.add("insulator");
+        rootNodeClone.setComposition(comp);
+        
+        ArrayList<String> dir = new ArrayList<String>();
+        dir.addAll(rootNodeClone.getDirection());
+        dir.add("+");
+        rootNodeClone.setDirection(dir);
+        
+        ArrayList<String> type = new ArrayList<String>();
+        type.addAll(rootNodeClone.getType());
+        type.add("spacer");
+        rootNodeClone.setType(type);
+        
+        ArrayList<String> scr = new ArrayList<String>();
+        scr.addAll(rootNodeClone.getScars());
+        scr.add(rootNodeOldROverhang);
+        rootNodeClone.setScars(scr);
+        
+        rootNodeClone.getVector().setROverhang("UNSX");
+        rootNodeClone.setROverhang("UNS2");
+        
+        //Fix target part
+        Part targetPart = collector.getPart(rootNodeClone.getUUID(), true);
         ArrayList<Part> newComposition = new ArrayList<Part>();
         newComposition.addAll(targetPart.getComposition());
         newComposition.add(newSpacer);
@@ -318,10 +334,11 @@ public class RGatewayGibson extends RGeneral {
         newTargetPart.addSearchTag("Direction: " + newTargetPartDirections);
         newTargetPart.addSearchTag("Scars: " + newTargetPartScars);
         newTargetPart.saveDefault(collector);
-        rootNode.setUUID(newTargetPart.getUUID());
+        rootNodeClone.setUUID(newTargetPart.getUUID());
         
-        rootNode.addNeighbor(adaptor);
-        adaptor.addNeighbor(rootNode);
+        rootNodeClone.addNeighbor(adaptor);
+        adaptor.addNeighbor(rootNodeClone);
+        optimalGraph.setRootNode(rootNodeClone);
         
     }
     

@@ -272,6 +272,16 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("UNS10*", "ggccgaagagcacatggctgtctgtttttttttcgattaagtacc");
         overhangVariableSequenceHash.put("UNS11*", "ggaactgggcggctagcgtgtgtgtgttccataatcatgtccacc");
         
+        overhangVariableSequenceHash.put("attB4", "caactttgtatagaaaagttg");
+        overhangVariableSequenceHash.put("attB1", "caagtttgtacaaaaaagcag");
+        overhangVariableSequenceHash.put("attB2", "ccactttgtacaagaaagctg");
+        overhangVariableSequenceHash.put("attR1", "tcgggccccaaataatgattttattttgactgatagtgacctgttcgttgcaacaaattgatgagcaatgcttttttataatgccaactttgtacaaaaaagcaggctga");
+        overhangVariableSequenceHash.put("attR2", "tacccagctttcttgtacaaagttggcattataagaaagcattgcttatcaatttgttgcaacgaacaggtcactatcagtcaaaataaaatcattatttg");
+        overhangVariableSequenceHash.put("attR4", "caaataatgattttattttgactgatagtgacctgttcgttgcaacaaattgataagcaatgcttttttataatgccaactttgtatagaaaagttg");
+        overhangVariableSequenceHash.put("attL1", "caagtttgtacaaaaaagttgaacgagaaacgtaaaatgatataaatatcaatatattaaattagattttgcataaaaaacagactacataatactgtaaaacacaacatatgcagtcactatga");
+        overhangVariableSequenceHash.put("attL2", "caactttgtatagaaaagttgaacgagaaacgtaaaatgatataaatatcaatatattaaattagattttgcataaaaaacagactacataatactgtaaaacacaacatatccagtcactatgg");
+        overhangVariableSequenceHash.put("attL4", "catagtgactggatatgttgtgttttacagtattatgtagtctgttttttatgcaaaatctaatttaatatattgatatttatatcattttacgtttctcgttcagctttcttgtacaaagtggt");
+        
         return overhangVariableSequenceHash;
         
     }

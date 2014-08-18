@@ -5,6 +5,7 @@
 package Communication;
 
 import java.io.BufferedOutputStream;
+import java.nio.file.Files;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -310,11 +311,20 @@ public class RavenServlet extends HttpServlet {
                 String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
                 RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
                 new File(uploadFilePath).mkdir();
+                
+//                File.createTempFile(uploadFilePath, user, new File(uploadFilePath));
+//                new File(uploadFilePath);
+//                Files.createTempDirectory(uploadFilePath);
+//                new File.LazyInitialization (uploadFilePath);
+                
                 ArrayList<File> toLoad = new ArrayList();
                 for (FileItem item : items) {
                     File file;
                     if (!item.isFormField()) {
                         String fileName = item.getName();
+                        
+//                        File.createTempFile(uploadFilePath, fileName, new File(uploadFilePath));
+                        
                         if (fileName.equals("")) {
                             System.out.println("You forgot to choose a file.");
                         }
