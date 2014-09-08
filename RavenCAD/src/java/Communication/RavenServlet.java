@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -311,11 +312,20 @@ public class RavenServlet extends HttpServlet {
                 String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
                 RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
                 new File(uploadFilePath).mkdir();
-                
-//                File.createTempFile(uploadFilePath, user, new File(uploadFilePath));
-//                new File(uploadFilePath);
-//                Files.createTempDirectory(uploadFilePath);
-//                new File.LazyInitialization (uploadFilePath);
+//                try
+//                {
+//                    File temp = File.createTempFile("tempfile",".tmp");
+//                    System.out.println("Temp file : "+ temp.getAbsolutePath());
+//                    File source = new File(temp.getAbsolutePath());
+//                    File dest = new File(uploadFilePath+"anotherfile.tmp");
+//                    FileUtils.copyFile(source, dest);
+//                    
+//                
+//                }
+//                catch(Exception e)
+//                {
+//                    e.printStackTrace();
+//                }
                 
                 ArrayList<File> toLoad = new ArrayList();
                 for (FileItem item : items) {
