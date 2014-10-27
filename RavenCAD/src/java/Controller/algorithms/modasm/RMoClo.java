@@ -43,6 +43,16 @@ public class RMoClo extends RGeneral {
         //Put all parts into hash for mgp algorithm            
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps);
 
+        //Add single transcriptional units to the required hash
+        HashSet<String> starts = new HashSet<String>();
+        starts.add("promoter");
+        HashSet<String> ends = new HashSet<String>();
+        ends.add("terminator");
+        ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, starts, ends);
+        for (int i = 0; i < reqTUs.size(); i++) {
+            required.add(reqTUs.get(i).toString());
+        }
+        
         //Positional scoring of transcriptional units
 //        HashMap<Integer, HashMap<String, Double>> positionScores = new HashMap<Integer, HashMap<String, Double>>();
 //        if (modular) {

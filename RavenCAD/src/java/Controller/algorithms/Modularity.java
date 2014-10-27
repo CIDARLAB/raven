@@ -133,7 +133,7 @@ public class Modularity extends Partitioning {
     /*
      * Get all independent transcriptional units of a construct
      */
-    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<RNode> goalParts) {
+    protected ArrayList<ArrayList<String>> getSingleTranscriptionalUnits(ArrayList<RNode> goalParts, HashSet<String> starts, HashSet<String> ends) {
 
         ArrayList<ArrayList<String>> TUs = new ArrayList<ArrayList<String>>();
 
@@ -148,18 +148,19 @@ public class Modularity extends Partitioning {
             //Forward search for transcriptional units
             for (int j = 0; j < types.size(); j++) {
 
-                if (types.get(j).equalsIgnoreCase("promoter") && directions.get(j).equalsIgnoreCase("+")) {
+//                if (types.get(j).equalsIgnoreCase("promoter") && directions.get(j).equalsIgnoreCase("+")) {
+                if (starts.contains(types.get(j)) && directions.get(j).equalsIgnoreCase("+")) {
                     int start = j;
                     j++;
                     int end = j;
                     
                     //Keep scanning until a gene in the reverse orientation is found
-                    while (!((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("+"))) {
+                    while (!(ends.contains(types.get(j)) && directions.get(j).equalsIgnoreCase("+"))) {
                         j++;
                         end++;
                         
                         //If a promoter is left open-ended, do not require it
-                        if (j == types.size() - 1 && !((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("+"))) {
+                        if (j == types.size() - 1 && !((ends.contains(types.get(j))) && directions.get(j).equalsIgnoreCase("+"))) {
                             end = -1;
                             break;
                         }
@@ -179,18 +180,18 @@ public class Modularity extends Partitioning {
             //Reverse search for transcriptional units
             for (int j = types.size() - 1; j > -1; j--) {
 
-                if (types.get(j).equalsIgnoreCase("promoter") && directions.get(j).equalsIgnoreCase("-")) {
+                if (starts.contains(types.get(j)) && directions.get(j).equalsIgnoreCase("-")) {
                     int start = j;
                     j--;
                     int end = j;
                     
                     //Keep scanning until a gene in the reverse orientation is found
-                    while (!((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("-"))) {
+                    while (!(ends.contains(types.get(j)) && directions.get(j).equalsIgnoreCase("-"))) {
                         j--;
                         end--;
                         
                         //If a promoter is left open-ended, do not require it
-                        if (j == 0 && !((types.get(j).equalsIgnoreCase("gene") || types.get(j).equalsIgnoreCase("reporter")) && directions.get(j).equalsIgnoreCase("-"))) {
+                        if (j == 0 && !(ends.contains(types.get(j)) && directions.get(j).equalsIgnoreCase("-"))) {
                             end = -1;
                             break;
                         }

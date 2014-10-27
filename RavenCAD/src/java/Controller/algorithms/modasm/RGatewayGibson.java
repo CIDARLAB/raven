@@ -44,7 +44,12 @@ public class RGatewayGibson extends RGeneral {
         ArrayList<RNode> gpsNodes = ClothoReader.gpsToNodesClotho(gps);
 
         //Add single transcriptional units to the required hash
-        ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes);
+        HashSet<String> starts = new HashSet<String>();
+        starts.add("promoter");
+        HashSet<String> ends = new HashSet<String>();
+        ends.add("gene");
+        ends.add("reporter");
+        ArrayList<ArrayList<String>> reqTUs = getSingleTranscriptionalUnits(gpsNodes, starts, ends);
         for (int i = 0; i < reqTUs.size(); i++) {
             required.add(reqTUs.get(i).toString());
         }
