@@ -159,7 +159,13 @@ public class PuppeteerWriter {
                     compositeCount++;
                 }
             }
+            
+//            for (String stmt : toExecute) {
+//                System.out.println(stmt);
+//            }
+//            System.out.println(toExecute);
             for (String stmt : toExecute) {
+                System.out.println(stmt);
                 statement.executeUpdate(stmt);
 //                System.out.println(stmt);
             }
