@@ -311,21 +311,22 @@ public class RavenServlet extends HttpServlet {
                 List<FileItem> items = uploadHandler.parseRequest(request);
                 String uploadFilePath = this.getServletContext().getRealPath("/") + "/data/" + user + "/";
                 RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
-                new File(uploadFilePath).mkdir();
-//                try
-//                {
-//                    File temp = File.createTempFile("tempfile",".tmp");
-//                    System.out.println("Temp file : "+ temp.getAbsolutePath());
-//                    File source = new File(temp.getAbsolutePath());
-//                    File dest = new File(uploadFilePath+"anotherfile.tmp");
-//                    FileUtils.copyFile(source, dest);
-//                    
-//                
-//                }
-//                catch(Exception e)
-//                {
-//                    e.printStackTrace();
-//                }
+//                new File(uploadFilePath).mkdir();
+                
+                try
+                {
+                    File temp = File.createTempFile("tempfile",".tmp");
+                    System.out.println("Temp file : "+ temp.getAbsolutePath());
+                    File source = new File(temp.getAbsolutePath());
+                    File dest = new File(uploadFilePath+"anotherfile.tmp");
+                    FileUtils.copyFile(source, dest);
+                    
+                
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
                 
                 ArrayList<File> toLoad = new ArrayList();
                 for (FileItem item : items) {
