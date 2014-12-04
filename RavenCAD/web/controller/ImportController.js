@@ -362,85 +362,85 @@ $(document).ready(function() { //don't run javascript until page is loaded
 
 
     /********Clotho Functions and Variables********/
-    var _connection = new WebSocket('ws://localhost:8080/websocket');
-    var canSend = false;
-    var _requestCommand = {}; //key request id, value: callback function
-    var _requestID = 0;
-    var refreshClothoParts = function() {
-        send("query", '{"schema":"BasicPart"}', function(data) {
-            var newParts = {};
-            var newPartsArray = [];
-            $.each(data, function() {
-                if (newParts[this["name"]] === undefined) {
-                    newParts[this["name"]] = "added";
-                    newPartsArray.push(this);
-                }
-                if (_parts[this["name"]] === undefined) {
-                    _parts[this["name"]] = this;
-                    _partIds[this["name"]] = this["id"];
-                }
-            });
-//            alert(JSON.stringify(newPartsArray));
-            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
-                //import composite parts
-                send("query", '{"schema":"CompositePart"}', function(data) {
-                    var newParts = {};
-                    var newPartsArray = [];
-                    $.each(data, function() {
-                        if (newParts[this["name"]] === undefined) {
-                            newParts[this["name"]] = "added";
-                            newPartsArray.push(this);
-                        }
-                        if (_parts[this["name"]] === undefined) {
-                            _parts[this["name"]] = this;
-                            _partIds[this["name"]] = this["id"];
-                        }
-                    });
-                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
-                        refreshData();
-                    });
-                });
-            });
-        });
-
-    };
-
-    var send = function(channel, data, callback) {
-        if (canSend) {
-            var message = '{"channel":"' + channel + '", "data":' + data + ',"requestId":"' + _requestID + '"}';
-            _requestCommand[channel + _requestID] = callback;
-            _connection.send(message);
-            _requestID++;
-        } else {
-            _connection = new WebSocket('ws://localhost:8080/websocket');
-        }
-    };
-    _connection.onmessage = function(e) {
-        //parase message into JSON
-        var dataJSON = $.parseJSON(e.data);
-        //ignore say messages which have not requestId
-        var channel = dataJSON["channel"];
-        var requestId = dataJSON["requestId"];
-        if (requestId !== null) {
-            //if callback function exists, run it
-            var callback = _requestCommand[channel + requestId];
-            if (callback !== undefined) {
-                callback(dataJSON["data"]);
-                delete _requestCommand[channel + requestId];
-            }
-        }
-    };
-
-    _connection.onerror = function(e) {
-//        alert("F**K");
-    };
-
-    _connection.onclose = function() {
-//        alert('closing connection');
-    };
-    _connection.onopen = function(e) {
-        canSend = true;
-    };
+//    var _connection = new WebSocket('ws://localhost:8080/websocket');
+//    var canSend = false;
+//    var _requestCommand = {}; //key request id, value: callback function
+//    var _requestID = 0;
+//    var refreshClothoParts = function() {
+//        send("query", '{"schema":"BasicPart"}', function(data) {
+//            var newParts = {};
+//            var newPartsArray = [];
+//            $.each(data, function() {
+//                if (newParts[this["name"]] === undefined) {
+//                    newParts[this["name"]] = "added";
+//                    newPartsArray.push(this);
+//                }
+//                if (_parts[this["name"]] === undefined) {
+//                    _parts[this["name"]] = this;
+//                    _partIds[this["name"]] = this["id"];
+//                }
+//            });
+////            alert(JSON.stringify(newPartsArray));
+//            $.post("RavenServlet", {command: "importClotho", data: JSON.stringify(newPartsArray)}, function(response) {
+//                //import composite parts
+//                send("query", '{"schema":"CompositePart"}', function(data) {
+//                    var newParts = {};
+//                    var newPartsArray = [];
+//                    $.each(data, function() {
+//                        if (newParts[this["name"]] === undefined) {
+//                            newParts[this["name"]] = "added";
+//                            newPartsArray.push(this);
+//                        }
+//                        if (_parts[this["name"]] === undefined) {
+//                            _parts[this["name"]] = this;
+//                            _partIds[this["name"]] = this["id"];
+//                        }
+//                    });
+//                    $.post("RavenServlet", {command: "importClotho", "data": JSON.stringify(newPartsArray)}, function(response) {
+//                        refreshData();
+//                    });
+//                });
+//            });
+//        });
+//
+//    };
+//
+//    var send = function(channel, data, callback) {
+//        if (canSend) {
+//            var message = '{"channel":"' + channel + '", "data":' + data + ',"requestId":"' + _requestID + '"}';
+//            _requestCommand[channel + _requestID] = callback;
+//            _connection.send(message);
+//            _requestID++;
+//        } else {
+//            _connection = new WebSocket('ws://localhost:8080/websocket');
+//        }
+//    };
+//    _connection.onmessage = function(e) {
+//        //parase message into JSON
+//        var dataJSON = $.parseJSON(e.data);
+//        //ignore say messages which have not requestId
+//        var channel = dataJSON["channel"];
+//        var requestId = dataJSON["requestId"];
+//        if (requestId !== null) {
+//            //if callback function exists, run it
+//            var callback = _requestCommand[channel + requestId];
+//            if (callback !== undefined) {
+//                callback(dataJSON["data"]);
+//                delete _requestCommand[channel + requestId];
+//            }
+//        }
+//    };
+//
+//    _connection.onerror = function(e) {
+////        alert("F**K");
+//    };
+//
+//    _connection.onclose = function() {
+////        alert('closing connection');
+//    };
+//    _connection.onopen = function(e) {
+//        canSend = true;
+//    };
 
 
 
