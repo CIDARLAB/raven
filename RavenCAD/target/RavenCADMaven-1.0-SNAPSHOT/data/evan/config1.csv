@@ -1,0 +1,19 @@
+Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition
+x,B0015,,,,terminator,,,,B0015|+
+x,B0032,,,,rbs,,,,B0032|+
+x,B0034,,,,rbs,,,,B0034|+
+x,J23100,,,,promoter,,,,J23100|+
+x,E0030,,,,reporter,,,,E0030|+
+x,B0032,,EX,SP,plasmid,,,pSK1A2,B0032|EX|SP|+
+x,B0034,,EX,SP,plasmid,,,pSK1A2,B0034|EX|SP|+
+x,P_1_2_intermediate_3_evan_MonDec0816:49:54EST2014,,EX,SP,plasmid,,,pSK1A2,J23100|EX|SP|+, B0034|EX|SP|+
+x,E0030,,EX,SP,plasmid,,,pSK1A2,E0030|EX|SP|+
+x,P_1_2,,EX,SP,plasmid,,,pSK1A2,J23100|EX|SP|+, B0032|EX|SP|+, E0030|EX|SP|+, B0015|EX|SP|+
+x,P_2_2,,EX,SP,plasmid,,,pSK1A2,J23100|EX|SP|+, B0034|EX|SP|+, E0030|EX|SP|+, B0015|EX|SP|+
+x,B0015,,EX,SP,plasmid,,,pSK1A2,B0015|EX|SP|+
+x,P_1_2_intermediate_1_evan_MonDec0816:49:54EST2014,,EX,SP,plasmid,,,pSK1A2,J23100|EX|SP|+, B0032|EX|SP|+
+x,P_1_2_intermediate_2_evan_MonDec0816:49:54EST2014,,EX,SP,plasmid,,,pSK1A2,E0030|EX|SP|+, B0015|EX|SP|+
+x,J23100,,EX,SP,plasmid,,,pSK1A2,J23100|EX|SP|+
+x,pSK1A2,,EX,SP,vector,,-1,,
+####
+{"discouraged":"","recommended":"","required":"","forbidden":""}

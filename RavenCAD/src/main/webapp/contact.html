@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Raven</title>
+        <link rel="shortcut icon" href="images/raven_ico.ico">
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+    </head>
+    <body data-spy="scroll" data-target="#sidebar">
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner"> 
+                <div class="container">
+                    <a class="brand" href="index.html">Raven</a>
+                    <ul class="nav">
+                        <li><a href="import.html">Data</a></li>
+                        <li><a href="ravencad.html">Design</a></li>
+                        <li><a href="documentation.html">Documentation</a></li>
+                        <li class="active"><a href="contact.html">Contact</a></li>
+                    </ul>
+                    <div id="loginArea">
+                        <form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
+                            <input name="user" type="text" class="span2" placeholder="Login">
+                            <input name="password" type="password" class="span2" placeholder="Password">
+                            <input type="submit" value="Login" class="btn"/>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="page-header" style="margin-top:60px">
+                <h1><img style="width: 135px; height: 40px; margin-bottom:5px" src="images/raven.png"> <small>Let us know how we can make your experience better</small></h1>
+            </div>
+            <div class="row-fluid">
+                <div class="span2">
+                    <div id="sidebar">
+                        <ul  class=" well nav nav-list affix">
+                            <li class="active"><a href="#company">Organization</a></li>
+                            <li><a href="#support">Support</a></li>
+                            <li><a href="#creators">Development Team</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="span10">
+                    <div class="row-fluid">
+                        <div id="company">
+                            <h3>Organization</h3>
+                            <!--<hr/>-->
+                            <div class="hero-unit" align="center">
+                                <p>Raven is brought to you by CIDAR</p>
+                                <p>Please contact us if you're interested in having CIDAR build solutions for your research goals</p>
+                                <a href="http://cidarlab.org"><image src="images/CIDAR_1.png"/></a>
+                                <br/>
+                              <a class="btn btn-primary btn-large" style="margin-top:25px" href="mailto:ravencadhelp@gmail.com">Email Us</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="support" class="well">
+                        <h3>Support</h3>
+                        <!--<hr/>-->
+                        <p>
+                            Have additional questions or wish to provide feedback to the developers? Please post to the <a href="https://groups.google.com/forum/#!forum/raven-forum/new">Raven Forum</a>.
+                        </p>    
+                        <p>Our dedicated support team is composed of software developers that have contributed to Raven. 
+                            We will try to address your questions and concerns in under 24 hours.</p>
+                        <p>If you wish to contact the developers directly, send a message to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>
+                        <p>
+                            In your email, please follow these guidelines for email communication:
+                        </p>
+                        <ul>
+                            <li>Indicate your name and professional affiliation</li>
+                            <li>If you are interested in forming an commercial or research relationship with CIDAR, 
+                                please contact <a href="mailto:dougd@bu.edu">Professor Douglas Densmore</a> directly.</li>
+                            
+                        </ul>
+                        <p>We appreciate all forms of feedback.</p>
+                        <p>Thanks</p>
+                        <br/>
+                        <cite><small>Raven Development Team</small></cite>
+                    </div>
+                    <div id="creators" class="well">
+                        <h3>Development Team</h3>
+                        <!--<hr/>-->
+                        <div class="row-fluid">
+                            
+                            <div class="span4">
+                                <h5>Evan Appleton</h5>
+                                <img class="img-polaroid" style="width:200px;height:200px" src="images/evan.jpg">
+                                <address>
+                                    <strong>Evan Appleton</strong><br>
+                                    <a href="mailto:eapple@bu.edu">eapple@bu.edu</a><br/>
+                                    <em> M.S. 2012 Bioinformatics, Boston University<br/>
+                                        B.S. 2010 Biomedical Engineering, Boston University<br/>
+                                       <br/></em>
+                                </address>
+                                <p>
+                                    Evan is a PhD candidate in the CIDAR Lab who works on design automation tools for synthetic biology. 
+                                    Specifically, Evan works on software tools for verification, assembly and debugging of synthetic genetic constructs with focus on experimental design algorithms. 
+                                    His work, including this tool, is intended to increase the speed and scale of synthetic biology via design automation. 
+                                    Evan is currently the Co-President for the SynBERC Student and Post-doc Association.
+                                </p>
+                            </div>
+                            
+                            <div class ="span4">
+                                <h5>Jenhan Tao</h5>
+                                <img class="img-polaroid" style="width:200px;height:200px" src="images/jenhan.jpg">
+                                <address>
+                                    <strong>Jenhan Tao</strong><br>
+                                    <a href="mailto:jenhantao@gmail.com">jenhantao@gmail.com</a><br/>
+                                    <em>B.S. 2012 Bioengineering, UC Berkeley<br/><br/><br/><br/></em>
+                                </address>
+                                <p>
+                                    Jenhan is a software developer who has been working with the CIDAR lab since 2011.
+                                    He was involved in synthetic biology research at both UC Berkeley and Boson University while completing his undergraduate studies.
+                                    Jenhan will be starting as a Ph.D student in the Bioinformatics and Systems Biology program at UC San Diego in Fall, 2013.
+                                    As he continues his studies, Jenhan is interested in utilizing computational techniques to increase our capacity to understand biological complexity.
+                                </p>
+                            </div>
+                            
+                            <div class="span4">
+                                <h5>Douglas Densmore</h5>
+                                <img class="img-polaroid" style="width:200px;height:200px" src="images/doug.jpg">
+                                <address>
+                                    <strong>Douglas Densmore</strong><br>
+                                    <a href="mailto:eapple@bu.edu">dougd@bu.edu</a><br/>
+                                    <em>B.S.E. 2001 Computer Engineering, University of Michigan<br/>
+                                        M.S. 2004 Electrical Engineering, UC Berkeley<br/>
+                                        Ph.D. 2007 Electrical Engineering, UC Berkleley<br/>
+                                    </em>
+                                </address>
+                                <p>
+                                    Prof. Douglas Densmore is the Richard and Minda Reidy Family Career Development Assistant Professor at Boston University in the Department of Electrical and Computer Engineering. 
+                                    He received his Ph.D. in Electrical Engineering in 2007 from UC Berkeley. He was a postdoctoral fellow at SynBERC and JBEI from 2007 to 2010. 
+                                    His research centers on extracting design techniques from Electronic Design Automation and applying them to the design of synthetic biological systems. 
+                                    He is the recipient of the NSF CARRER Award, the 2012 ECE Award for Excellence in Teaching at Boston University, and a 2012-2014 Hariri Institute Junior Faculty Fellow.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--modal dialogs-->
+        <div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loginLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="loginLabel">Sign in</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please enter your user name and password to sign in.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
+            </div>
+        </div>
+
+        <!--scripts placed at the end to enhance page loading speed--> 
+        <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ 
+  ga('create', 'UA-57223580-2', 'auto');
+  ga('send', 'pageview');
+ 
+        </script>
+        
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
+        <script src="jsLibraries/bootstrap.min.js"></script> 
+        <script type="text/javascript" src ="controller/ContactController.js"></script> 
+        <footer>
+            <div class="container" align="center">
+                <p>Designed and built by <a href="contact.html">Evan Appleton</a> and <a href="contact.html">Jenhan Tao</a> at <a href="http://cidarlab.org">CIDAR</a></p>
+                <p><a href="license.html">LICENSE and DISCLAIMER</a></p>
+                <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-nd/3.0/88x31.png" /></a><br /><span>Raven</span> by <span>Evan Appleton, Jenhan Tao, and Douglas Densmore</span> is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US">Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License</a>
+            </div>
+        </footer>
+    </body>
+</html>

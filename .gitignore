@@ -37,3 +37,6 @@ RavenSampler/.DS_Store
 /RavenSampler/nbproject/private/
 /RavenSampler/build/
 /RavenSampler/dist/
+/RavenCADMaven/target/
+/RavenCADMaven/nbproject/
+/RavenCAD/nbproject/

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Raven</title>
+        <script src="controller/redirect.js"></script>
+        <link rel="shortcut icon" href="images/raven_ico.ico">
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+    </head>
+    <body>
+        <div class="navbar navbar-fixed-top" style ="margin-left:-14px">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="index.html">Raven</a>
+                    <ul class="nav">
+                        <li class="active"><a href="import.html">Data</a></li>
+                        <li><a href="ravencad.html">Design</a></li>
+                        <li><a href="documentation.html">Documentation</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                    <div id="loginArea"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!--  header area-->
+            <div class="page-header" style="margin-top:60px; margin-left:-7px">
+                <h1><img style="width: 135px; height: 40px; margin-bottom:5px" src="images/raven.png"> <small>Add, browse, and edit your parts and vectors</small></h1>
+            </div>
+            <div class="row-fluid">
+                <div class="span12">
+                    <div class="row-fluid">
+                        <div class="span7">
+                            <!--button area-->
+                            <div class="btn-toolbar">
+                                <button type="button" class="btn" data-toggle="collapse" data-target="#uploadArea"> Add More Data </button>
+                                <button id="designButton" data-toggle="tooltip" type="button" class="btn"> Design Assembly </button>
+<!--                                <button id="clotho3Import" data-toggle="tooltip" type="button" class="btn btn-success"> Import from Clotho</button>
+                                <button id="clotho3Export" data-toggle="tooltip" type="button" class="btn btn-primary"> Export to Clotho</button>-->
+                                <button id="resetButton" type="button" class="btn btn-danger">Reset Data</button>
+                            </div>
+                            <div id="uploadArea" class="collapse in" data-toggle="tooltip" title="You can drag and drop files here!">
+                                <div class="well" id="drop_zone_1">
+                                    <form id="file_upload" action="RavenServlet" method="POST" enctype="multipart/form-data">
+                                        <input id="file_1" type="file" name="file_1" multiple/>
+                                        <br>
+                                        <button id="uploadButton" data-toggle="collapse" data-target="#uploadArea">Upload</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row-fluid">
+                        <div id="errorArea" class="collapse in alert alert-error hidden">
+                            <button id="dismissButton" class="btn" data-toggle="collapse" data-target="#errorArea">Dismiss</button>
+                            <hr/>
+                            <div id="error"></div>
+                        </div>
+                    </div>
+                    <div id="dataArea" class="row-fluid">
+                        <div class="span8">
+                            <div class="tabbable">
+                                <ul id="dataTableHeader" class="nav nav-tabs">
+                                    <li class="active"><a class="tablink" href="#parts" data-toggle="tab">Parts</a></li>
+                                    <li><a class="tablink"  href="#vectors" data-toggle="tab">Vectors</a></li>
+                                    <li><a class="tablink"  href="#partsVectors" data-toggle="tab">Parts and Vectors</a></li>
+                                </ul>
+                                <div id="dataTableContent" class="tab-content">
+                                    <div class="tab-pane active" id="parts">
+                                        <div id="partTableArea">
+                                            <table id='partTable' class='table table-bordered table-hover' cellspacing="0px" width="100%">
+                                                <thead>
+                                                    <tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="vectors"> 
+                                        <div id="vectorTableArea">
+                                            <table id='vectorTable' class='table table-bordered table-hover' cellspacing="0px" width="100%">
+                                                <thead>
+                                                    <tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="partsVectors">
+                                        <div id="allTableArea">                                        
+                                            <table id='allTable' class='table table-bordered table-hover' cellspacing="0px" width="100%">
+                                                <thead>
+                                                    <tr><th>uuid</th><th>Name</th><th>Sequence</th><th>LO</th><th>RO</th><th>Type</th><th>Composition</th><th>Resistance</th><th>Level</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span4">
+                            <div id="editorArea" class="well hidden"> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--modal dialogs-->
+        <div id="uploadModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="uploadLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="uploadLabel">Upload some parts</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please upload some data. Visit the documentation page for an example input file.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
+            </div>
+        </div>
+
+        <!--scripts placed at the end to enhance page loading speed--> 
+        <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ 
+  ga('create', 'UA-57223580-2', 'auto');
+  ga('send', 'pageview');
+ 
+        </script>
+        
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
+        <script src="jsLibraries/bootstrap.min.js"></script> 
+        <script src="controller/ObjectIDGenerator.js"></script> 
+        <script type="text/javascript" src ="controller/ImportController.js"></script> 
+        <!--<script src="jsLibraries/jquery.fileupload.js"></script>--> 
+        <!--<script src="jsLibraries/jquery.fileupload-ui.js"></script>--> 
+        <script src="jsLibraries/jquery.dataTables.min.js"></script>
+        <footer>
+            <div class="container" align="center">
+                <p>Designed and built by <a href="contact.html">Evan Appleton</a> and <a href="contact.html">Jenhan Tao</a> at <a href="http://cidarlab.org">CIDAR</a></p>
+                <p><a href="license.html">LICENSE and DISCLAIMER</a></p>
+                <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-nd/3.0/88x31.png" /></a><br /><span>Raven</span> by <span>Evan Appleton, Jenhan Tao, and Douglas Densmore</span> is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US">Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License</a>
+            </div>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Raven</title>
+        <script src="controller/redirect.js"></script>
+        <link rel="shortcut icon" href="images/raven_ico.ico">
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+        <link href="css/override.css" rel="stylesheet" media="screen">
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
+        <script src="jsLibraries/jquery-ui.min.js"></script>
+        <script src="jsLibraries/bootstrap.min.js"></script>
+
+        <style>
+            select.fixedHeight {list-style-type: none;
+                                width: 20em;
+                                height: 20em;
+                                line-height: 2em;
+                                border: 1px solid #ccc;
+                                padding: 0;
+                                margin: 0;
+                                overflow: scroll;
+                                overflow-x: hidden;
+            }
+        </style>
+
+    </head>
+    <body data-spy="scroll" data-target="#sidebar">
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="index.html">Raven</a>
+                    <ul class="nav">
+                        <li><a class="losePartLink" href="import.html">Data</a></li>
+                        <li class="active losePartLink"><a href="ravencad.html">Design</a></li>
+                        <li><a class="losePartLink" href="documentation.html">Documentation</a></li>
+                        <li><a class="losePartLink" href="contact.html">Contact</a></li>
+                    </ul>
+                    <div id="loginArea"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="page-header" style="margin-top:60px">
+                <h1><img style="width: 135px; height: 40px; margin-bottom:5px" src="images/raven.png"> <small>Select the target constructs and parameters for your cloning experiment</small></h1>
+            </div>
+            <div class="row-fluid">
+                <div class="span2">
+                    <div id="sidebar">
+                        <ul class=" well nav nav-list affix">
+                            <li class="active"><a href="#method">Method</a></li>
+                            <li><a href="#target">Constructs</a></li>
+                            <!--<li><a href="#library">Library</a></li>-->
+                            <li><a href="#vector">Vectors</a></li>
+                            <li><a href="#primer">Primers</a></li>
+                            <li><a href="#intermediate">Intermediates</a></li>
+                            <li><a href="#run">Run</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="span10">
+                    <div id="designTabs" class="tabbable">
+                        <ul id="designTabHeader" class="nav nav-tabs">
+                            <li class="active"><a id="designTabHeader_0" href="#currentDesign" data-toggle="tab">Current Design</a></li>
+                        </ul>
+                        <div id="designTabContent" class="tab-content">
+                            <div id="currentDesign" class="tab-pane active">
+                                <div class="well" id="method">
+                                    <h3>Assembly Method</h3>
+                                    <!--<hr/>-->
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="Each assembly is calculated with a single assembly method. The cloning methods currently supported are shown here.">Select the assembly method you want to use</a></h4>
+                                    <div class="row-fluid">
+                                        <div class="span12">
+                                            <div class="tabbable tabs-left">
+                                                <ul id="methodTabHeader" class="nav nav-tabs nav-pills">
+                                                    <li class="active"><a href="#biobricksTab" data-toggle="tab"  id="biobricksTabHeader">BioBricks</a></li>
+                                                    <li><a href="#cpecTab" data-toggle="tab" id="cpecTabHeader">CPEC</a></li>
+                                                    <li><a href="#gibsonTab" data-toggle="tab" id="gibsonTabHeader">Gibson</a></li>
+                                                    <li><a href="#gatewaygibsonTab" data-toggle="tab" id="gatewaygibsonTabHeader">Gateway Gibson</a></li>
+                                                    <li><a href="#goldengateTab" data-toggle="tab" id="goldengateTabHeader">Golden Gate</a></li>
+                                                    <li><a href="#mocloTab" data-toggle="tab" id="mocloTabHeader">MoClo</a></li>
+                                                    <li><a href="#slicTab" data-toggle="tab" id="slicTabHeader">SLIC</a></li>
+                                                </ul>
+                                                <div id="methodTabs" class="tab-content">
+                                                    <div class="tab-pane active" id="biobricksTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Cloning Method</h5>
+                                                                <!--Description of BioBrick-->
+                                                                <p>
+                                                                    BioBricks is a digestion-ligation based binary assembly method.
+                                                                    The version of the method applied here <a href="http://openwetware.org/wiki/The_BioBricks_Foundation:RFC#BBF_RFC_10:_Draft_standard_for_BioBrick.E2.84.A2_biological_parts">(BBF RFC 10)</a> requires that all parts and vectors are preceded by EcoRI and XbaI (EX) sites, and followed by SpeI and PstI (SP) sites.
+                                                                    Digesting these restriction sites produces common sticky ends, which allow 2 BioBricks parts and their cloning vector to be assembled.                                                                    
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts are digested and gel extracted for each cloning step.
+                                                                </p>
+                                                                <!--<small>Shetty, R. P., Endy, D. & Knight, T. F. Engineering BioBrick vectors from BioBrick parts. Journal of Biological Engineering 2 (2008).</small>-->
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This number will not impact the calculation for this method.">Assembly Efficiency</a></h5>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="tab-pane" id="cpecTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Cloning Method</h5>
+                                                                <!--Description of CPEC-->
+                                                                <p>
+                                                                    CPEC (Circular Polymerase Extension Cloning) is a scarless multi-way assembly method that does not require digestion, ligation or homologous recombination.
+                                                                    Multiple double stranded DNA fragments with overlapping flanking regions are denatured and amplified using DNA polymerase.
+                                                                    The version of the method applied here adds NotI sites at the end of PCR fragments if intermediate clones are required. These fragments can then be extracted and used in the next cloning stage.
+                                                                    The version of the method applied here, if there are solutions that require more than one stage, intermediate vectors are designed with homology to regions flanking these intermediates for the next step.
+                                                                    In between that homology region, there is an inserted NotI site so that these intermediates may be cleaved and used in the next stage. These intermediate fragments are then extracted and used in the next cloning stage.
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested with NotI and gel extracted for the subsequent cloning stage.
+                                                                </p>
+                                                                <!--<small>Quan, J. & Tian, J. Circular Polymerase Extension Cloning of Complex Gene Libraries and Pathways. PLoS ONE 4, e6441 (2009).</small>-->
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point.">Assembly Efficiency</a></h5>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>5</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="tab-pane" id="gibsonTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Cloning Method</h5>
+                                                                <!--Description of Gibson-->
+                                                                <p>
+                                                                    Gibson is an isothermal, scarless multi-way assembly method that leverages homologous recombination. 
+                                                                    Gibson assembly relies on the combined activities of a T5 exonuclease, DNA polymerase, and a DNA ligase to assemble DNA molecules with overlapping flanking regions.
+                                                                    In the first part of the reaction, the 5' ends of each DNA fragment is chewed-back by the exonuclease, allowing homologous single-stranded regions to anneal.
+                                                                    The gaps on each DNA strand is then repaired with DNA polymerase and DNA ligase to leave a final clone.
+                                                                    The version of the method applied here, if there are solutions that require more than one stage, intermediate vectors are designed with homology to regions flanking these intermediates for the next step.
+                                                                    In between that homology region, there is an inserted NotI site so that these intermediates may be cleaved and used in the next stage. These intermediate fragments are then extracted and used in the next cloning stage.                
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested with NotI and gel extracted for the subsequent cloning stage.
+                                                                </p>
+                                                                <!--<small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>-->
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point.">Assembly Efficiency</a></h5>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>5</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="gatewaygibsonTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Cloning Method</h5>
+                                                                <!--Description of Gateway Gibson-->
+                                                                <p>
+                                                                    Gateway-Gibson is a hybrid method for building transcriptional units from promoter and gene libraries with Gateway assembly and assemble them hierarchically with Gibson assembly by cleaving intermediates with I-SceI and using them in Gibson reactions.                 
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that coded destination vector backbone pSK1A2 is is used for all Gibson steps and stages and that the coded destination vector backbone pSB1K3 is used for all Gateway steps.
+                                                                    It is also assumed that for both types of destination vectors that the appropriate L/R Gateway sites are cloned into the backbones independently with flanking BsaI sites compatible insert sequences.
+                                                                    Raven algorithms will force the construction of transcriptional units with Gateway for this method. These are identified with the "promoter" and "gene" keywords. All pieces in between a promoter and a gene will become an additional piece for the Gateway reaction.
+                                                                    Parts that fall outside of transcriptional units will be made into independent Gibson clones in the completed construct.
+                                                                </p>
+                                                                <p>
+                                                                    *** WARNING *** This assembly method is still undergoing testing! Do not use this method in practice at this time. The final version will be available shortly. Please contact the developers with questions.
+                                                                </p>
+                                                                <!--<small>Gibson, D. G. et al. Enzymatic assembly of DNA molecules up to several hundred kilobases. Nature Methods 6 (2009).</small>-->
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point.">Assembly Efficiency</a></h5>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>5</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>7</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>8</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="goldengateTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Cloning Method</h5>
+                                                                <!--Description of Golden Gate-->
+                                                                <p>
+                                                                    Golden Gate is a scarless multi-way assembly method that relies on Type IIs restriction enzymes.
+                                                                    The version of the method applied here uses a tiered cloning system, which alternates the use of restriction enzymes BbsI and BsaI in every other stage to cleave inserts from donor plasmids.
+                                                                    This version also adds SpeI sites at the end of LacZ PCR fragments used to make destination vectors.
+                                                                    Fusions sites are selected as a 4-bp combination of adjacent parts in a cloning reaction.
+                                                                    This method assumes the acquisition of the LacZ fragment necessary for blue-white screening and the vector pSK1A2.
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vectors pSB1A2 and pSB1K3 are used for alternating cloning stages and that the LacZ fragment necessary for blue-white screening is acquired and used to make destination vectors.
+                                                                </p>
+                                                                <!--<small>Engler, C., Kandzia, R. & Marillonnet, S. A One Pot, One Step, Precision Cloning Method with High Throughput Capability. PLoS ONE 3 (2008).</small>-->
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point.">Assembly Efficiency</a></h5>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>5</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="tab-pane" id="mocloTab">
+                                                        <div class="row-fluid">
+                                                            <div class="span6">
+                                                                <h5>Description of Cloning Method</h5>
+                                                                <!--Description of MoClo-->
+                                                                <p>
+                                                                    MoClo is a multi-way assembly method that uses common overhang junctions generated by type IIs restriction enzymes.
+                                                                    The version of the method applied here <a href="http://openwetware.org/wiki/The_BioBricks_Foundation:RFC#BBF_RFC_94:_The_Modular_Cloning_Assembly:_Standardized_Assembly_of_Bacterial_Transcriptional_Units_Using_Type_IIS_Restriction_Enzymes_BsaI_and_BpiI">(BBF RFC 94)</a> uses a tiered cloning system, which alternates the use of restriction enzymes BbsI and BsaI in every other stage to cleave inserts from donor plasmids.
+                                                                    This version also adds SpeI sites at the end of LacZ PCR fragments used to make destination vectors.
+                                                                    Although overhang junctions add a 4-bp assembly scar between parts, the use of common junctions can be used to maximize part reuse.
+                                                                    This method assumes the acquisition of the LacZ fragment necessary for blue-white screening and the vector  and pSB1K3.
+                                                                </p>
+                                                                <p>
+                                                                    ASSUMPTIONS: It is assumed that cloning vectors pSB1A2 and pSB1K3 are used for alternating cloning stages and that the LacZ fragment necessary for blue-white screening is acquired and used to make destination vectors.
+                                                                </p>
+                                                                <!--<small> Weber, E., Engler, C., Gruetzner, R., Werner, S. & Marillonet, S. A Modular Cloning System for Standardized Assembly of Multigene Constructs. PloS ONE 6 (2010).</small>-->
+                                                            </div>
+                                                            <div class="offset1 span5">
+                                                                <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point.">Assembly Efficiency</a></h5>
+                                                                <div>
+                                                                    <table class="table table-bordered table-condensed">
+                                                                        <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                        <tbody>
+                                                                            <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>5</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                            <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                                <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="slicTab">
+                                                        <div class="span6">
+                                                            <h5>Description of Cloning Method</h5>
+                                                            <!--Description of SLIC-->
+                                                            <p>
+                                                                SLIC (Sequence and Ligation Independent Cloning) is a scarless multi-way assembly methods that leverages in vitro homologous recombination and single-strand annealing.
+                                                                SLIC uses exonuclease to generate single stranded DNA overhangs in inserts and cloning vectors. SLIC effectively mimics in vivo homologous recombination.
+                                                                The version of the method applied here, if there are solutions that require more than one stage, intermediate vectors are designed with homology to regions flanking these intermediates for the next step.
+                                                                In between that homology region, there is an inserted NotI site so that these intermediates may be cleaved and used in the next stage. These intermediate fragments are then extracted and used in the next cloning stage.
+                                                            </p>
+                                                            <p>
+                                                                ASSUMPTIONS: It is assumed that cloning vector pSK1A2 is used for all steps and stages and that inserts for intermediate steps are digested with NotI and gel extracted for the subsequent cloning stage.
+                                                            </p>
+                                                            <!--<small>Li, M. Z. & Elledge, S. J. Harnessing homologous recombination in vitro to generate recombinant DNA via SLIC. Nature Methods 4, 251 - 256 (2007).</small>-->
+                                                        </div>
+                                                        <div class="offset1 span5">
+                                                            <h5><a class="tip" data-toggle="tooltip" title="" data-original-title="Cloning efficiency may be biased in terms of parts per reaction. This value has arbitrary units but will bias the solution. This is where the maximum number of parts per reaction is specified. Enter values using a decimal point.">Assembly Efficiency</a></h5>
+                                                            <div>
+                                                                <table class="table table-bordered table-condensed">
+                                                                    <thead><tr><th>Parts per Reaction</th><th>Efficiency</th></tr></thead>
+                                                                    <tbody>
+                                                                        <tr><td>2</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>3</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>4</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>5</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                        <tr><td>6</td><td><input class="input-mini" placeholder="1.0"/></td></tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <a class="btn addEfficiencyButton"><i class="icon-plus-sign"></i> efficiency value</a>
+                                                            <a class="btn minusEfficiencyButton"><i class="icon-minus-sign"></i> efficiency value</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="well" id="target">
+                                    <h3>Constructs</h3> 
+                                    <!--<hr/>-->
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="The plasmids you would like to construct in one assembly are selected here.">Select the plasmids you want to construct</a></h4>
+                                    <div class="row-fluid">
+                                        <div class="span4 text-center">
+                                            <h5>Available Plasmids to Construct</h5>
+                                            <div id="availableTargetPartListArea">
+                                                <select class="fixedHeight" multiple="multiple">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class ="span4 text-center">
+                                            <div class="btn-group btn-group-vertical" style="margin-top:100px;">
+                                                <button type="button" class="btn" id="targetSelectAllButton" style="width:100%">Select All</button>
+                                                <button type="button" class="btn" id="targetSelectButton" style="width:100%">Select</button>
+                                                <button type="button" class="btn" id="targetDeselectButton" style="width:100%">Deselect</button>
+                                                <button type="button" class="btn" id="targetDeselectAllButton" style="width:100%">Deselect All</button>
+                                            </div>
+                                        </div>
+                                        <div class="span4 text-center">
+                                            <h5>Selected Plasmids</h5>
+                                            <select id="targetPartList" multiple="multiple" class="fixedHeight">
+                                            </select>
+
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                </div>
+                                <div class="hidden well" id="library">
+                                    <h3>Library</h3>
+                                    <!--<hr/>-->
+                                    <h4>Select the parts you want to include in your library</h4>
+                                    <div class="tabbable">
+                                        <ul id="libraryTabHeader" class="nav nav-tabs">
+                                            <li class="active"><a href="#libraryPartArea" data-toggle="tab">Parts</a></li>
+                                            <li><a href="#libraryVectorArea" data-toggle="tab">Vectors</a></li>
+                                        </ul>
+                                        <div id="libraryTabContent" class="tab-content" style="overflow:visible">
+                                            <div class="tab-pane active" id="libraryPartArea">
+                                                <div class="row-fluid">
+                                                    <div class="span4 text-center">
+                                                        <h5>Available Library Parts</h5>
+                                                        <div id="availableLibraryPartListArea">
+                                                            <select id="availableLibraryPartList" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class ="span4 text-center">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="libraryPartSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="libraryPartSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="libraryPartDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="libraryPartDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4 text-center">
+                                                        <h5>Selected Library Parts</h5>
+                                                        <div id="libraryPartListArea">
+                                                            <select id="libraryPartList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="libraryVectorArea">
+                                                <div class="row-fluid">
+                                                    <div class="span4 text-center">
+                                                        <h5>Available Library Vectors</h5>
+                                                        <div id="availableLibraryVectorListArea">
+                                                            <select id="availableLibraryVectorList" class="fixedHeight" multiple="multiple">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4 text-center">
+                                                        <div class="btn-group btn-group-vertical" style="margin-top:100px">
+                                                            <button type="button" class="btn" id="libraryVectorSelectAllButton" style="width:100%">Select All</button>
+                                                            <button type="button" class="btn" id="libraryVectorSelectButton" style="width:100%">Select</button>
+                                                            <button type="button" class="btn" id="libraryVectorDeselectButton" style="width:100%">Deselect</button>
+                                                            <button type="button" class="btn" id="libraryVectorDeselectAllButton" style="width:100%">Deselect All</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="span4 text-center">
+                                                        <h5>Selected Library Vectors</h5>
+                                                        <div id="libraryVectorListArea">
+                                                            <select id="libraryVectorList" multiple="multiple" class="fixedHeight">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="well" id="vector">
+                                    <h3>Vectors</h3>
+                                    <!--<hr/>-->
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="A cloning vector must be specified for each cloning stage. If you don't specify one, default cloning vector assignments are made.">Specify vectors to be used for each cloning stage</a></h4>                                    
+                                    <table id ="vectorTable" class="table table-bordered table-condensed">
+                                        <thead><tr><th>Stage</th><th>Vector - Resistance</th></tr></thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                    <a class="btn addVectorStageButton"><i class="icon-plus-sign"></i> stage</a>
+                                    <a class="btn removeVectorStageButton"><i class="icon-minus-sign"></i> stage</a>
+                                </div>
+                                <div class="well" id="primer">
+                                    <h3>Primers</h3>
+                                    <!--<hr/>-->
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="Parameters for primer designs are entered here. Choose the oligo name prefix, desired homology region melting temperatures, desired homology length, minimal sequence homology length for PCR, minimum fragment size for a cloning reaction, and maximum primer length.">Specify your requirements for primers that will be designed for your assembly</a></h4>
+                                    <div class="row-fluid">
+                                        <div class="span6">
+                                            <table id="primerTable1" class="table table-condensed">
+                                                <tr><th>Oligo Name Prefix</th><td><input id="oligoNameRoot" placeholder="oligo"/></td></tr>
+                                                <tr><th>Target Homology Tm</th><td><input id="meltingTemperature" placeholder="50.0"/></td></tr>
+                                                <tr><th>Target Homology Length</th><td><input id="targetHomologyLength" placeholder="24"/></td></tr>
+                                                <tr><th>Minimum PCR Length</th><td><input id="minPCRLength" placeholder="24"/></td></tr>
+                                                <tr><th>Minimum Cloning Length</th><td><input id="minCloneLength" placeholder="250"/></td></tr>
+                                                <tr><th>Maximum Primer Length</th><td><input id="maxPrimerLength" placeholder="60"/></td></tr>
+                                            </table> 
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="well" id="intermediate">
+                                    <h3>Intermediates</h3>
+                                    <!--<hr/>-->
+                                    <h4><a class="tip" data-toggle="tooltip" title="" data-original-title="If assembly outcomes are undesired or ineffective, you can adjust which intermediates constructs may appear here. These values can also be auto-populated from the Raven upload file.">Force or bias, for or against certain cloning intermediates appearing in the plan</a></h4>
+                                    <div id="intermediatesArea">
+                                        <div class="row-fluid">
+                                            <div class="span6">
+                                                <input id="intermediatesTypeAhead" type="text" data-provide="typeahead" style="width:100%">
+                                            </div>
+                                            <div class="span6">
+                                                <div class="btn-group" style="width:100%">
+                                                    <button type="button" class="btn" id="requireButton" style ="width:25%">Require</button>
+                                                    <button type="button" class="btn" id="forbidButton" style ="width:25%">Forbid</button>
+                                                    <button type="button" class="btn" id="recommendButton" style ="width:25%">Recommend</button>
+                                                    <button type="button" class="btn" id="discourageButton" style ="width:25%">Discourage</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row-fluid">
+                                            <div id="currentIntermediate"></div>
+                                        </div>
+                                        <div class="row-fluid">
+                                            <div id="selectedIntermediates">
+                                                <div class="tabbable">
+                                                    <ul id="intermediateTabHeader" class="nav nav-tabs">
+                                                        <li class="active"><a href="#required" data-toggle="tab">Required</a></li>
+                                                        <li><a href="#forbidden" data-toggle="tab">Forbidden</a></li>
+                                                        <li><a href="#recommended" data-toggle="tab">Recommended</a></li>
+                                                        <li><a href="#discouraged" data-toggle="tab">Discouraged</a></li>
+                                                    </ul>
+                                                    <div id="intermediateTabContent" class="tab-content">
+                                                        <div class="tab-pane active" id="required">
+                                                            <ul class="unstyled" id="requiredList">
+                                                            </ul>
+                                                        </div>
+                                                        <div class="tab-pane" id="forbidden">                                           
+                                                            <ul class="unstyled" id="forbiddenList"></ul>
+                                                        </div>
+                                                        <div class="tab-pane" id="recommended">
+                                                            <ul class="unstyled" id="recommendedList"></ul>
+                                                        </div>
+                                                        <div class="tab-pane" id="discouraged">
+                                                            <ul class="unstyled" id="discouragedList"></ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> 
+                                            <hr/>
+                                        </div>
+                                    </div>
+                                    <div class="row-fluid">
+                                        <button type="button" class="btn btn-danger" id="resetIntermediatesButton">Reset Intermediates</button>
+                                    </div>
+                                </div>
+                                <div class="well" id="run"> 
+                                    <h3>Run</h3>
+                                    <!--<hr/>-->
+                                    <h4>Summary of your design parameters</h4>
+                                    <div class ="well" ><div id="designSummaryArea" style="height:500px; overflow:auto">A summary of your assembly plan will appear here</div></div>
+                                    <button id="runButton" type="button" class="btn btn-success">Design Assembly</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--modal dialogs-->
+        <div id="selectTargetModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="selectTargetLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="selectTargetLabel">No target parts</h4>
+            </div>
+            <div class="modal-body">
+                <p>No target parts were selected. Please select the target parts you want to assemble.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
+            </div>
+        </div>
+        <div id="waitModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="waitLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="waitLabel">Please wait</h4>
+            </div>
+            <div class="modal-body">
+                <p>Raven is still designing one of your assemblies. Please wait.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
+            </div>
+        </div>
+        <div id="navigateModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="navigateLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="navigateLabel">Save Designs?</h4>
+            </div>
+            <div class="modal-body">
+                <p>Navigating away from this page will cause you to lose unsaved parts and assembly designs. Do you want to save your parts?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="saveAllModalButton" class="btn btn-success" aria-hidden="true">Save all parts</button>
+                <button id="discardModalButton" class="btn btn-danger" aria-hidden="true">Discard parts</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            </div>
+        </div>
+        <div id="redesignModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="navigateLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h4 id="redesignLabel">Saved Parts to Library for Re-Design</h4>
+            </div>
+            <div class="modal-body">
+                <p>Successful parts and vectors from this assembly have been saved to the working library. 
+                    Successful compositions have been added as required intermediates and failed compositions have been added as forbidden intermediates.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-success" data-dismiss="modal" aria-hidden="true">OK</button>
+            </div>
+        </div>
+        
+        <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ 
+  ga('create', 'UA-57223580-2', 'auto');
+  ga('send', 'pageview');
+ 
+        </script>
+        <script type="text/javascript" src ="controller/RavencadController.js"></script> 
+
+        <script src="jsLibraries/jquery.dataTables.min.js"></script>
+
+        <script src="jsLibraries/jquery.elevatezoom.js"></script>
+        <footer>
+            <div class="container" align="center">
+                <p>Designed and built by <a href="contact.html">Evan Appleton</a> and <a href="contact.html">Jenhan Tao</a> at <a href="http://cidarlab.org">CIDAR</a></p>
+                <p><a href="license.html">LICENSE and DISCLAIMER</a></p>
+                <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-nd/3.0/88x31.png" /></a><br /><span>Raven</span> by <span>Evan Appleton, Jenhan Tao, and Douglas Densmore</span> is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/3.0/deed.en_US">Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License</a>
+            </div>
+        </footer>
+    </body>
+</html>
