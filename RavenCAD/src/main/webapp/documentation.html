@@ -17,12 +17,11 @@
                         <li class="active"><a href="documentation.html">Documentation</a></li>
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
-                    <div id="loginArea">
-                        <form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
-                            <input name="user" type="text" class="span2" placeholder="Login">
-                            <input name="password" type="password" class="span2" placeholder="Password">
-                            <input type="submit" value="Login" class="btn"/>
-                        </form>
+                    <div id="loginArea" class="navbar-form pull-right">
+                        <input id="login_username" type="text" class="span2" placeholder="Login">
+                        <input id="login_password" type="password" class="span2" placeholder="Password">
+                        <input id="btnLogin" type="submit" value="Login" class="btn"/>
+                        <div id="loginError"></div>
                     </div>
                 </div>
             </div>
@@ -517,9 +516,12 @@
  
         </script>
         
-        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
-        <script src="jsLibraries/bootstrap.min.js"></script> 
-        <script type="text/javascript" src ="controller/DocumentationController.js"></script> 
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="jsLibraries/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="jsLibraries/jquery.cookie.js"></script>
+        <script type="text/javascript" src="jsLibraries/bootstrap.min.js"></script> 
+        <script type="text/javascript" src ="controller/SessionController.js"></script>
+        
         <footer>
             <div class="container" align="center">
                 <p>Designed and built by <a href="contact.html">Evan Appleton</a> and <a href="contact.html">Jenhan Tao</a> at <a href="http://cidarlab.org">CIDAR</a></p>

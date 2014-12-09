@@ -1,0 +1,43 @@
+Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition
+x,C1,,,,gene,,,,C1|+
+x,R5,,,,RBS,,,,R5|+
+x,LacZ,,,,gene,,,,LacZ|+
+x,T1,,,,terminator,,,,T1|+
+x,P1,,0,1,plasmid,,,,P1|0|1|+
+x,R2,,1,2,plasmid,,,,R2|1|2|+
+x,R1,,1,2,plasmid,,,,R1|1|2|+
+x,R2,,,,RBS,,,,R2|+
+x,R3,,,,RBS,,,,R3|+
+x,R4,,,,RBS,,,,R4|+
+x,R3,,1,2,plasmid,,,,R3|1|2|+
+x,P1,,,,promoter,,,,P1|+
+x,R4,,1,2,plasmid,,,,R4|1|2|+
+x,R1,,,,RBS,,,,R1|+
+x,R5,,1,2,plasmid,,,,R5|1|2|+
+x,C1,,2,3,plasmid,,,,C1|2|3|+
+x,T1,,3,4,plasmid,,,,T1|3|4|+
+x,pSB1C3,,,,vector,chloramphenicol,,,
+x,pSB1K3,,,,vector,kanamycin,,,
+x,pSB1K3,,0,4,destination vector,kanamycin,,pSB1K3,LacZ
+x,PSM-1_intermediate_4_h_TueDec0918:47:25EST2014,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R3|EX|SP|+
+x,PSM-1_intermediate_1_h_TueDec0918:47:25EST2014,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R1|EX|SP|+
+x,PSM-2,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R2|EX|SP|+, C1|EX|SP|+, T1|EX|SP|+
+x,R1,,EX,SP,plasmid,,,pSK1A2,R1|EX|SP|+
+x,PSM-3,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R3|EX|SP|+, C1|EX|SP|+, T1|EX|SP|+
+x,PSM-5,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R5|EX|SP|+, C1|EX|SP|+, T1|EX|SP|+
+x,T1,,EX,SP,plasmid,,,pSK1A2,T1|EX|SP|+
+x,R4,,EX,SP,plasmid,,,pSK1A2,R4|EX|SP|+
+x,C1,,EX,SP,plasmid,,,pSK1A2,C1|EX|SP|+
+x,R5,,EX,SP,plasmid,,,pSK1A2,R5|EX|SP|+
+x,PSM-1_intermediate_2_h_TueDec0918:47:25EST2014,,EX,SP,plasmid,,,pSK1A2,C1|EX|SP|+, T1|EX|SP|+
+x,PSM-1_intermediate_6_h_TueDec0918:47:25EST2014,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R5|EX|SP|+
+x,PSM-4,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R4|EX|SP|+, C1|EX|SP|+, T1|EX|SP|+
+x,P1,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+
+x,PSM-1_intermediate_5_h_TueDec0918:47:25EST2014,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R4|EX|SP|+
+x,PSM-1_intermediate_3_h_TueDec0918:47:25EST2014,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R2|EX|SP|+
+x,R3,,EX,SP,plasmid,,,pSK1A2,R3|EX|SP|+
+x,R2,,EX,SP,plasmid,,,pSK1A2,R2|EX|SP|+
+x,PSM-1,,EX,SP,plasmid,,,pSK1A2,P1|EX|SP|+, R1|EX|SP|+, C1|EX|SP|+, T1|EX|SP|+
+x,pSK1A2,,EX,SP,vector,,-1,,
+####
+{"discouraged":"","recommended":"","required":"","forbidden":""}

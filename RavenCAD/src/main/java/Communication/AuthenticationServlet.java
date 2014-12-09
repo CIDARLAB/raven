@@ -1,72 +1,214 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package Communication;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import org.json.JSONException;
+
+import org.json.JSONObject;
 
 /**
  *
- * @author Admin
+ * @author Ernst Oberortner
  */
-public class AuthenticationServlet extends HttpServlet {
+public class AuthenticationServlet 
+	extends HttpServlet {
 
+	private static final long serialVersionUID = -2579220291590687064L;
+	
+	private static final String USER_DB_NAME = "RAVEN";
+	private static org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("AuthenticationServlet");
+	
+	// a reference to an instance 
+	// of the CIDAR authenticator
+	private Authenticator auth;
+	
+	@Override
+	public void init(ServletConfig config) 
+			throws ServletException {
+		
+	    super.init(config);
+	    
+	    this.auth = new Authenticator(USER_DB_NAME);
+	    
+	    // set a system property such that Simple Logger will include timestamp
+        System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
+        // set a system property such that Simple Logger will include timestamp in the given format
+        System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "dd-MM-yy HH:mm:ss");
+
+        // set minimum log level for SLF4J Simple Logger at warn
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
+        
+        LOGGER.warn("[AuthenticationServlet] loaded!");	    
+        
+//        initialize();
+//            Scanner sc = null;
+//            try {
+//                sc = new Scanner(new File("/Users/evanappleton/dfx_git/igem-datasheet/Datasheet_Generator/src/main/webapp/WEB-INF/restricted/password.txt"));
+//            } catch (FileNotFoundException ex) {
+//                Logger.getLogger(AuthenticationServlet.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//            String s = null;
+//            while (sc.hasNext()) {
+//                s = sc.nextLine();
+//                String user = s.split(",")[0];
+//                String passwd = s.split(",")[1];
+//
+//                try {
+//                    auth.register(user, passwd);
+//                } catch (AuthenticationException ae) {
+//                    assertNotEquals(ae.getMessage(), "The user exists already!");
+//                }
+//
+//            }
+//            sc.close();
+        
+	}
+	
     /**
-     * Processes requests for HTTP
-     * <code>POST</code> methods.
+     * Handles the HTTP
+     * <code>POST</code> method.
      *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processPostRequest(HttpServletRequest request, HttpServletResponse response)
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        initPasswordHash();
-        RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
+
+        JSONObject jsonResponse = new JSONObject();
+
         try {
-            String user = request.getParameter("user");
+
+            // get the username and password parameter values 
+            // from the request
+            String command = request.getParameter("command");
+            String username = request.getParameter("username");
             String password = request.getParameter("password");
-            if (passwordHash.containsKey(user) && password.equals(passwordHash.get(user))) {
-                String ipAddress = request.getHeader("X-FORWARDED-FOR");
-                if (ipAddress == null) {
-                    ipAddress = request.getRemoteAddr();
+
+            /*
+             * SIGNUP Request
+             */
+            if ("signup".equals(command)) {
+
+                // register the user
+                this.auth.register(username, password);
+
+                // we automatically login the user, 
+                // i.e. we do some session management 
+                this.login(request, response, username);
+
+                /*
+                 * LOGIN Request
+                 */
+            } else if ("login".equals(command)) {
+
+                // first, we check if the user exists and 
+                // if the passwords match up
+                boolean bLogin = this.auth.login(username, password);
+
+                if (bLogin) {
+
+                    request.getSession().invalidate();
+                    //Not sure what this next line does, but seems to work without it
+//                    request.changeSessionId();
+
+                    // login the user including session management
+                    this.login(request, response, username);
                 }
-                RavenLogger.logSessionIn(user, ipAddress);
-                Cookie authenticateCookie = new Cookie("authenticate", "authenticated");
-                Cookie userCookie = new Cookie("user", user);
-                authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
-                response.addCookie(authenticateCookie);
-                response.addCookie(userCookie);
-                response.sendRedirect("index.html");
-                out.println("authenticated");
+
+                /*
+                 *  LOGOUT Request
+                 */
+            } else if ("logout".equals(command)) {
+
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    // the session expires immediately
+                    session.setMaxInactiveInterval(1);
+                    // we remove the user information
+                    session.removeAttribute("user");
+                    // and invalidate the session
+                    session.invalidate();
+//                    response.sendRedirect("index.html");
+                }
+
+                /*
+                 * Invalid Request	
+                 */
             } else {
-                String ipAddress = request.getHeader("Remote_Addr");
-                if (ipAddress == null) {
-                    ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
-                }
-                if (ipAddress == null) {
-                    ipAddress = request.getRemoteAddr();
-                }
-                RavenLogger.logError(user, ipAddress, "Failed to log in");
-                Cookie authenticateCookie = new Cookie("authenticate", "failed");
-                authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
-                response.addCookie(authenticateCookie);
-                response.sendRedirect("login.html");
-                out.println("failed");
+                LOGGER.warn("Invalid login! user: " + username + ", password: " + password);
+                throw new AuthenticationException("Invalid Request!");
             }
-        } finally {
-            out.close();
+
+            jsonResponse.put("status", "good");
+
+        } catch (Exception e) {
+            try {
+                LOGGER.warn(e.getLocalizedMessage());
+
+                jsonResponse.put("status", "exception");
+                jsonResponse.put("result", e.getLocalizedMessage());
+
+//                response.sendRedirect("index.html");
+            } catch (JSONException ex) {
+                Logger.getLogger(AuthenticationServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+
+        /*
+         * write the response
+         */
+        PrintWriter out = response.getWriter();
+        response.setContentType("application/json");
+
+        out.write(jsonResponse.toString());
+
+        out.flush();
+        out.close();
+    }
+    
+    private void login(HttpServletRequest request, HttpServletResponse response, String user) {
+
+        /*-------------------------------
+         * VALID AUTHENTICATION 
+         *-------------------------------*/
+
+        // we create a session
+        HttpSession session = request.getSession(true);
+
+        // put the username into it
+        session.setAttribute("user", user);
+
+        // a session expires after 60 mins
+        session.setMaxInactiveInterval(60 * 60);
+
+        // also, we set two cookies
+        // - the first cookie indicates of the user is authenticated
+        // - the second cookie contains user information
+        Cookie authenticateCookie = new Cookie("raven", "authenticated");
+        Cookie userCookie = new Cookie("user", user);
+        authenticateCookie.setMaxAge(60 * 60); //cookie lasts for an hour
+
+        // add both cookies to the response
+        response.addCookie(authenticateCookie);
+        response.addCookie(userCookie);
     }
 
     /**
@@ -80,8 +222,9 @@ public class AuthenticationServlet extends HttpServlet {
      */
     protected void processGetRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         response.setContentType("text/html;charset=UTF-8");
-        response.sendRedirect("index.html");
+        response.sendRedirect("login.html");
         PrintWriter out = response.getWriter();
         try {
         } finally {
@@ -106,21 +249,6 @@ public class AuthenticationServlet extends HttpServlet {
     }
 
     /**
-     * Handles the HTTP
-     * <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processPostRequest(request, response);
-    }
-
-    /**
      * Returns a short description of the servlet.
      *
      * @return a String containing servlet description
@@ -128,39 +256,5 @@ public class AuthenticationServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Short description";
-    }// </editor-fold>
-
-    private void initPasswordHash() {
-        if (passwordHash == null) {
-            passwordHash = new HashMap();
-            String filePath = this.getServletContext().getRealPath("/") + "/WEB-INF/restricted/";
-            File[] filesInDirectory = new File(filePath).listFiles();
-            for (File currentFile : filesInDirectory) {
-                String path = currentFile.getAbsolutePath();
-                String fileExtension = path.substring(path.lastIndexOf(".") + 1, path.length()).toLowerCase();
-                if ("txt".equals(fileExtension)) {
-                    BufferedReader reader = null;
-                    try {
-                        reader = new BufferedReader(new FileReader(currentFile.getAbsolutePath()));
-                        String line = reader.readLine();
-                        while (line != null) {
-                            String[] tokens = line.split(",");
-                            passwordHash.put(tokens[0], tokens[1]);
-                            line = reader.readLine();
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    } finally {
-                        try {
-                            reader.close();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-
-                }
-            }
-        }
     }
-    HashMap<String, String> passwordHash;
 }

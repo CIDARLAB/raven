@@ -1,4 +1,5 @@
 Controller/datastructures/RNode.class
+Communication/UserInformation.class
 Controller/algorithms/RHomologyPrimerDesign.class
 Communication/PuppeteerWriter.class
 Controller/accessibility/ClothoWriter.class
@@ -13,6 +14,7 @@ Controller/datastructures/CartesianNode.class
 Controller/algorithms/Partitioning.class
 Controller/algorithms/nonmodasm/RCPEC.class
 Controller/algorithms/RGeneral.class
+Communication/Authenticator.class
 Communication/ImageDownloader.class
 Controller/datastructures/RVector.class
 Controller/datastructures/Part.class
@@ -23,6 +25,7 @@ Controller/algorithms/modasm/RBioBricks.class
 Controller/debugging/FailureSimulator.class
 Controller/algorithms/nonmodasm/RSLIC.class
 Controller/algorithms/modasm/RGatewayGibson.class
+Communication/AuthenticationException.class
 Controller/algorithms/modasm/RGoldenGate.class
 Controller/accessibility/ClothoReader.class
 Controller/debugging/Debugger.class

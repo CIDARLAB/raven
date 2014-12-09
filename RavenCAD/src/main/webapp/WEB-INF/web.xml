@@ -5,12 +5,13 @@
         <servlet-class>Communication.RavenServlet</servlet-class>
         <init-param>
             <param-name>dataDirectory</param-name>
-            <param-value></param-value>
+            <param-value/>
         </init-param>
     </servlet>
     <servlet>
         <servlet-name>AuthenticationServlet</servlet-name>
         <servlet-class>Communication.AuthenticationServlet</servlet-class>
+        <!--<load-on-startup>2</load-on-startup>-->
     </servlet>
     <servlet-mapping>
         <servlet-name>RavenServlet</servlet-name>

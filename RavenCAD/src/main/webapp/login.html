@@ -19,11 +19,11 @@
                         <li><a href="documentation.html">Documentation</a></li>
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
-                    <div id="loginArea"><form id="loginForm" class="navbar-form pull-right" action="AuthenticationServlet" method="POST">
-                            <input name="user" type="text" class="span2" placeholder="User Name">
-                            <input name="password" type="password" class="span2" placeholder="Password">
-                            <input type="submit" value="Login" class="btn"/>
-                        </form>
+                    <div id="loginArea" class="navbar-form pull-right">
+                        <input id="login_username" type="text" class="span2" placeholder="Login">
+                        <input id="login_password" type="password" class="span2" placeholder="Password">
+                        <input id="btnLogin" type="submit" value="Login" class="btn"/>
+                        <div id="loginError"></div>
                     </div>
                 </div>
             </div>
@@ -37,59 +37,47 @@
                 <div class="span2">
                     <div id="sidebar">
                         <ul  class=" well nav nav-list affix">
-                            <li class="active"><a href="#signIn">Sign In</a></li>
-                            <li><a href="#signUp">Sign Up</a></li>
+                            <li class="active"><a href="#signUp">Sign Up</a></li>
                             <li><a href="#recover">Recover Account</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="span10">
-                    <div id="signIn" class="well">
-                        <h3>Sign In</h3>
-                        <hr/>
-                        <div class="row-fluid">
-                            <div class="span6">
-                                <form style="width:50%" id="loginFormMain" action="AuthenticationServlet" method="POST">
-                                    <input type="text" name="user" class="input-block-level" placeholder="User Name">
-                                    <input type="password" name="password" class="input-block-level" placeholder="Password">
-                                    <label class="checkbox">
-                                        <input type="checkbox" value="remember-me">Remember this username</label>
-                                    <button class="btn btn-large btn-primary" type="submit">Sign in</button>
-                                </form>
-                            </div>
-                            <div class="span4">
-                                <p>Don't have an account?</p>
-                                <a href="#signUp"><small>Sign up now!</small></a> 
-                                <p>Forgot your password?</p>
-                                <a href="#recover"><small>Recover it here</small></a>                            
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div id="signUp" class="well">
                         <h3>Sign Up</h3>
-                        <hr/>
+                        
+                        <div class="row-fluid">
+                            <div class="span20">
+                                <div id="signupError"></div>
+                                <!-- SignUp -->                
+                                <div id="signupArea">					                
+                                    Username: <input type="text" id="signup_username" class="input-block-level" placeholder="User Name">
+                                    Password: <input type="password" id="signup_password" class="input-block-level" placeholder="Password">
+                                    <input id="btnSignUp" type="submit" value="Sign Up" class="btn btn-primary" style="margin-bottom:10px"/>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        
                         <p>
                             Raven is currently open to the public.
                             This version of Raven is the academic open-source version. If you desire tailored use and development for your company, please contact <a href= "http://latticeautomation.com">Lattice Automation</a>.
                         </p>
+                        
                         <p>
                             Please contact the Raven development team at 
-                            <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a> to request a login.
-                            In your email, please specify the following:</p>
-                        <ul>
-                            <li>Your name and your affiliation with a research institution or corporate entity.</li>
-                            <li>Your desired username and password. PLEASE DO NOT CHOOSE ANY PERSONALLY SENSITIVE PASSWORDS. If you do not specify this, one will be automatically assigned.</li>
-                        </ul> 
-                        Thanks,
+                            <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a> if you have problems with signing up for an account.
+                            You are welcome to select any username that is not yet taken and any password. PLEASE DO NOT CHOOSE ANY PERSONALLY SENSITIVE PASSWORDS.
+                        </p>
                         <br/>
-                        <cite><small>Raven Development Team</small></cite>
 
                     </div>
                     <div id="recover" class="well">
                         <h3>Recover Account</h3>
-                        <hr/>
+                        
                         <p>Please send a email to <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a> to request your account information.
-                            We will send you your information within one business day. An automated system is coming soon.
                         </p>
                         Thanks,
                         <br/>
@@ -99,32 +87,6 @@
             </div>
         </div>
 
-        <!--modal dialogs-->
-        <div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loginLabel" aria-hidden="true">
-            <div class="modal-header">
-                <h4 id="loginLabel">Sign in</h4>
-            </div>
-            <div class="modal-body">
-                <p>Please enter your user name and password to sign in.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
-            </div>
-        </div>
-
-        <div id="failModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="failLabel" aria-hidden="true">
-            <div class="modal-header">
-                <h4 id="failLabel">User name or password incorrect</h4>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-error">
-                    <p>Please try entering your user name and password again. For assistance recovering your account, contact the Raven support at <a href="mailto:ravencadhelp@gmail.com">ravencadhelp@gmail.com</a></p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Dismiss</button>
-            </div>
-        </div>
         <!--scripts placed at the end to enhance page loading speed--> 
         <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -137,71 +99,12 @@
  
         </script>
         
-        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
-        <script src="jsLibraries/bootstrap.min.js"></script>
-        <script>
-            function getCookie(c_name) {
-                var c_value = document.cookie;
-                var c_start = c_value.indexOf(" " + c_name + "=");
-                if (c_start === -1) {
-                    c_start = c_value.indexOf(c_name + "=");
-                }
-                if (c_start === -1) {
-                    c_value = null;
-                }
-                else {
-                    c_start = c_value.indexOf("=", c_start) + 1;
-                    var c_end = c_value.indexOf(";", c_start);
-                    if (c_end === -1) {
-                        c_end = c_value.length;
-                    }
-                    c_value = unescape(c_value.substring(c_start, c_end));
-                }
-                return c_value;
-            }
-
-            function deleteCookie(key) {
-                // Delete a cookie by setting the date of expiry to yesterday
-                date = new Date();
-                date.setDate(date.getDate() - 1);
-                document.cookie = escape(key) + '=;expires=' + date;
-            }
-
-            if (getCookie("authenticate") === "failed") {
-                $('#failModal').modal();
-                deleteCookie("authenticate");
-            }
-            $('#loginForm').submit(function(e) {
-                var self = this;
-                e.preventDefault();
-                if ($('#loginForm input[name="user"]').val() === "") {
-                    $('#loginModal').modal();
-                } else if ($('#loginForm input[name="password"]').val() === "") {
-                    $('#loginModal').modal();
-                } else {
-                    self.submit(function() {
-                        if (getCookie("authenticate") === "authenticated") {
-                            $.get("RavenServlet", {"command": "purge"});
-                        }
-                    });
-                }
-            });
-            $('#loginFormMain').submit(function(e) {
-                var self = this;
-                e.preventDefault();
-                if ($('#loginFormMain input[name="user"]').val() === "") {
-                    $('#loginModal').modal();
-                } else if ($('#loginFormMain input[name="password"]').val() === "") {
-                    $('#loginModal').modal();
-                } else {
-                    self.submit(function() {
-                        if (getCookie("authenticate") === "authenticated") {
-                            $.get("RavenServlet", {"command": "purge"});
-                        }
-                    });
-                }
-            });
-        </script>
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="jsLibraries/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="jsLibraries/jquery.cookie.js"></script>
+        <script type="text/javascript" src="jsLibraries/bootstrap.min.js"></script> 
+        <script type="text/javascript" src ="controller/SessionController.js"></script>
+        
         <footer>
             <div class="container" align="center">
                 <p>Designed and built by <a href="contact.html">Evan Appleton</a> and <a href="contact.html">Jenhan Tao</a> at <a href="http://cidarlab.org">CIDAR</a></p>

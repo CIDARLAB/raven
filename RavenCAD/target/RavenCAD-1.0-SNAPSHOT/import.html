@@ -2,7 +2,6 @@
 <html>
     <head>
         <title>Raven</title>
-        <script src="controller/redirect.js"></script>
         <link rel="shortcut icon" href="images/raven_ico.ico">
         <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
@@ -18,7 +17,12 @@
                         <li><a href="documentation.html">Documentation</a></li>
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
-                    <div id="loginArea"></div>
+                    <div id="loginArea" class="navbar-form pull-right">
+                        <input id="login_username" type="text" class="span2" placeholder="Login">
+                        <input id="login_password" type="password" class="span2" placeholder="Password">
+                        <input id="btnLogin" type="submit" value="Login" class="btn"/>
+                        <div id="loginError"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -137,13 +141,41 @@
  
         </script>
         
-        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script> 
-        <script src="jsLibraries/bootstrap.min.js"></script> 
+        <script>
+            function getCookie(c_name) {
+                var c_value = document.cookie;
+                var c_start = c_value.indexOf(" " + c_name + "=");
+                if (c_start === -1) {
+                    c_start = c_value.indexOf(c_name + "=");
+                }
+                if (c_start === -1) {
+                    c_value = null;
+                }
+                else {
+                    c_start = c_value.indexOf("=", c_start) + 1;
+                    var c_end = c_value.indexOf(";", c_start);
+                    if (c_end === -1) {
+                        c_end = c_value.length;
+                    }
+                    c_value = unescape(c_value.substring(c_start, c_end));
+                }
+                return c_value;
+            }
+        
+            if(getCookie("raven") !== "authenticated") {
+                window.location.replace("login.html");
+            }
+        </script>
+        
+        <script type="text/javascript" src="jsLibraries/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="jsLibraries/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="jsLibraries/jquery.cookie.js"></script>
+        <script type="text/javascript" src="jsLibraries/bootstrap.min.js"></script> 
+        <script type="text/javascript" src ="controller/SessionController.js"></script> 
         <script src="controller/ObjectIDGenerator.js"></script> 
-        <script type="text/javascript" src ="controller/ImportController.js"></script> 
-        <!--<script src="jsLibraries/jquery.fileupload.js"></script>--> 
-        <!--<script src="jsLibraries/jquery.fileupload-ui.js"></script>--> 
+        <script type="text/javascript" src ="controller/ImportController.js"></script>
         <script src="jsLibraries/jquery.dataTables.min.js"></script>
+        
         <footer>
             <div class="container" align="center">
                 <p>Designed and built by <a href="contact.html">Evan Appleton</a> and <a href="contact.html">Jenhan Tao</a> at <a href="http://cidarlab.org">CIDAR</a></p>
