@@ -5,8 +5,11 @@
  */
 package Communication;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +23,7 @@ import javax.servlet.http.HttpSession;
 import org.json.JSONException;
 
 import org.json.JSONObject;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  *
@@ -58,7 +62,7 @@ public class AuthenticationServlet
 //        initialize();
 //            Scanner sc = null;
 //            try {
-//                sc = new Scanner(new File("/Users/evanappleton/dfx_git/igem-datasheet/Datasheet_Generator/src/main/webapp/WEB-INF/restricted/password.txt"));
+//                sc = new Scanner(new File("/Users/evanappleton/dfx_git/raven/RavenCAD/src/main/webapp/WEB-INF/restricted/login.txt"));
 //            } catch (FileNotFoundException ex) {
 //                Logger.getLogger(AuthenticationServlet.class.getName()).log(Level.SEVERE, null, ex);
 //            }
@@ -76,7 +80,7 @@ public class AuthenticationServlet
 //
 //            }
 //            sc.close();
-        
+//        
 	}
 	
     /**
