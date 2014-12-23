@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Tue Dec 23 15:41:31 EST 2014:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-014a-78e2-1877-00000430a4f8 
-on database directory /Users/evanappleton/dfx_git/raven/RavenCAD/cidar with class loader sun.misc.Launcher$AppClassLoader@5f996bbd 
+Tue Dec 23 15:50:42 EST 2014:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-014a-78ea-8205-000004480090 
+on database directory /Users/evanappleton/dfx_git/raven/RavenCAD/cidar with class loader sun.misc.Launcher$AppClassLoader@51707653 
 Loaded from file:/Users/evanappleton/.m2/repository/org/apache/derby/derby/10.11.1.1/derby-10.11.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.7.0_25-b15
