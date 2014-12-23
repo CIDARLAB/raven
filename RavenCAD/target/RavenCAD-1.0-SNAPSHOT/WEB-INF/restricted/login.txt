@@ -21,7 +21,6 @@ hsiaut,raven12345
 KimdeMora,raven12345
 smanski,raven
 jcanderson,raven12345
-alecNielsen,raven12345
 alecnielsen,Tj859sjr
 monique,freitas
 braskemMP,bkpj11l
@@ -167,7 +166,7 @@ mgoodson,raven12345
 kyosei2,marukyou
 umbatoul,abc123
 aavector,tQpR8vBQKh**
-alan,pacheco
+alanP,pacheco
 katie,lewis
 yash,agarwal
 diego,cuerda
