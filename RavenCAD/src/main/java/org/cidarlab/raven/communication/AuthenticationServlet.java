@@ -31,7 +31,7 @@ public class AuthenticationServlet
 
 	private static final long serialVersionUID = -2579220291590687064L;
 	
-	private static final String USER_DB_NAME = "RAVENCAD";
+	private static final String USER_DB_NAME = "RAVEN";
 	private static org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("AuthenticationServlet");
 	
 	// a reference to an instance 
