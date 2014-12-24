@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<<<<<<< HEAD
-<testsuite failures="0" time="8.017" errors="0" skipped="0" tests="1" name="org.cidarlab.web.test.AuthenticationTest">
-=======
-<testsuite failures="0" time="5.512" errors="0" skipped="0" tests="1" name="org.cidarlab.web.test.AuthenticationTest">
->>>>>>> origin/master
+<testsuite failures="0" time="9.203" errors="0" skipped="0" tests="1" name="org.cidarlab.web.test.AuthenticationTest">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home/jre/lib"/>
@@ -65,9 +61,5 @@
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-<<<<<<< HEAD
-  <testcase time="0.369" classname="org.cidarlab.web.test.AuthenticationTest" name="testConvertFileToSecureAuthentication"/>
-=======
-  <testcase time="0.368" classname="org.cidarlab.web.test.AuthenticationTest" name="testConvertFileToSecureAuthentication"/>
->>>>>>> origin/master
+  <testcase time="0.375" classname="org.cidarlab.web.test.AuthenticationTest" name="testConvertFileToSecureAuthentication"/>
 </testsuite>
