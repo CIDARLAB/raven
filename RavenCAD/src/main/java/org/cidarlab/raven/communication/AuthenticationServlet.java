@@ -88,21 +88,21 @@ public class AuthenticationServlet
 
                 // if this is the initialization password
                 if ("initialize".equals(username) && "initialize".equals(password)) {
-                    Scanner sc = new Scanner(new File(this.getServletContext().getRealPath("/") + "/WEB-INF/restricted/login.txt"));
-                    String s;
-                    while (sc.hasNext()) {
-                        s = sc.nextLine();
-                        String user = s.split(",")[0];
-                        String passwd = s.split(",")[1];
+                    try (Scanner sc = new Scanner(new File(this.getServletContext().getRealPath("/") + "/WEB-INF/restricted/login.txt"))) {
+                        String s;
+                        while (sc.hasNext()) {
+                            s = sc.nextLine();
+                            String user = s.split(",")[0];
+                            String passwd = s.split(",")[1];
 
-                        try {
-                            auth.register(user, passwd, true);
-                        } catch (AuthenticationException ae) {
-                            assertNotEquals(ae.getMessage(), "The user exists already!");
+                            try {
+                                auth.register(user, passwd, true);
+                            } catch (AuthenticationException ae) {
+                                assertNotEquals(ae.getMessage(), "The user exists already!");
+                            }
+
                         }
-
                     }
-                    sc.close();
                 } else {
 
                     // register the user
