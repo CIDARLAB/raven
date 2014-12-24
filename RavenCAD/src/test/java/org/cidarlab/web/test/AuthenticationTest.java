@@ -40,7 +40,7 @@ public class AuthenticationTest {
     public void tearDown() {
     }
     
-    private static final String USER_DB_NAME = "RAVEN";
+    private static final String USER_DB_NAME = "RAVENCAD";
     private static Authenticator auth;
 
     @BeforeClass
