@@ -1,1 +1,3 @@
+org/cidarlab/raven/algorithms/test/CoreTests.class
 org/cidarlab/web/test/AuthenticationTest.class
+org/cidarlab/raven/algorithms/test/PrimerParameterTest.class

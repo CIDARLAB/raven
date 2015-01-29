@@ -1,0 +1,44 @@
+**********************************************
+Assembly Instructions for target part: OR gate-JBEI_-GFP
+**********************************************
+
+-> Assemble OR gate-JBEI_-GFP|pSK1A2_R|pSK1A2_L|[+,  +,  +,  +,  -,  -,  +,  +,  +] by digesting with NotI and performing a CPEC cloning reaction with: OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:56EST2015|pSK1A2_R|attP_Bxb1-|[+,  +,  +,  +], OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:56EST2015|B0015+|pSK1A2_L|[-,  -,  +,  +,  +], pSK1A2|P7_Promoter+|B0015+
+
+-> Assemble OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:56EST2015|pSK1A2_R|attP_Bxb1-|[+,  +,  +,  +] by digesting with NotI and performing a CPEC cloning reaction with: P7_Promoter_attB_TP901_attB_Bxb1_B0015|pSK1A2_R|attP_Bxb1-|[+,  +,  +,  +], pSK1A2|pSK1A2_R|attP_Bxb1-
+
+-> Assemble OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:56EST2015|B0015+|pSK1A2_L|[-,  -,  +,  +,  +] by digesting with NotI and performing a CPEC cloning reaction with: attP_Bxb1_attP_TP901_JBEI_RBS_Superfolder_gfp|B0015+|B0015+|[-,  -,  +,  +], B0015|Superfolder_gfp+|pSK1A2_L|[+], pSK1A2|B0015+|pSK1A2_L
+
+PCR B0015 part with oligos: oligo1 and oligo2 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): B0015|Superfolder_gfp+|pSK1A2_L|[+]
+Synthesize part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attP_Bxb1_attP_TP901_JBEI_RBS_Superfolder_gfp|B0015+|B0015+|[-,  -,  +,  +]
+Synthesize part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): P7_Promoter_attB_TP901_attB_Bxb1_B0015|pSK1A2_R|attP_Bxb1-|[+,  +,  +,  +]
+PCR pSK1A2 vector with oligos: oligo7 and oligo8 to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSK1A2|P7_Promoter+|B0015+
+PCR pSK1A2 vector with oligos: oligo9 and oligo10 to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSK1A2|B0015+|pSK1A2_L
+PCR pSK1A2 vector with oligos: oligo11 and oligo12 to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSK1A2|pSK1A2_R|attP_Bxb1-
+
+
+**********************************************
+OLIGOS
+>oligo1
+atggatgaactgtacaaatgatgaccaggcatcaaataaaacgaaagg
+>oligo2
+agcctgcagcggccgctactagtatataaacgcagaaaggcccacccg
+>oligo3
+SYNTHESIZE
+>oligo4
+SYNTHESIZE
+>oligo5
+SYNTHESIZE
+>oligo6
+SYNTHESIZE
+>oligo7
+cgggtgggcctttctgcgtttatagcggccgctactagtagcggccgctgcaggct
+>oligo8
+agtgtcaacaaaaattaggaattagcggccgcctctagaagcggccgcgaattcca
+>oligo9
+tggaattcgcggccgcttctagaggcggccgctactagtagcggccgctgcaggct
+>oligo10
+cctttcgttttatttgatgcctgggcggccgcctctagaagcggccgcgaattcca
+>oligo11
+gtggttgaccagacaaaccacgacgcggccgctactagtagcggccgctgcaggct
+>oligo12
+agcctgcagcggccgctactagtagcggccgcctctagaagcggccgcgaattcca

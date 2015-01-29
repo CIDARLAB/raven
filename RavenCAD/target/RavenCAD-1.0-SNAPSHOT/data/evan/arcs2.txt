@@ -1,0 +1,49 @@
+# AssemblyMethod: Gibson
+#  01292015@1826
+# org.cidarlab.raven.datastructures.Part@321c8cb2
+# part_40
+
+# OR gate-JBEI_-GFP -> pSK1A2
+part_40 -> vector_5
+# OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:29EST2015 -> pSK1A2
+part_42 -> vector_9
+# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:29EST2015
+part_40 -> part_42
+# OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:29EST2015 -> pSK1A2
+part_44 -> vector_10
+# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:29EST2015
+part_40 -> part_44
+# OR gate-JBEI_-GFP_intermediate_3_evan_ThuJan2918:26:29EST2015 -> JBEI_RBS_Superfolder_gfp
+part_46 -> part_37
+# OR gate-JBEI_-GFP_intermediate_3_evan_ThuJan2918:26:29EST2015 -> B0015
+part_46 -> part_39
+# OR gate-JBEI_-GFP_intermediate_3_evan_ThuJan2918:26:29EST2015 -> pSK1A2
+part_46 -> vector_11
+# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_3_evan_ThuJan2918:26:29EST2015
+part_40 -> part_46
+
+# Key
+# OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:29EST2015
+# part_42
+# (P7_Promoter, attB_TP901, attB_Bxb1)
+# OR gate-JBEI_-GFP
+# part_40
+# (P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)
+# OR gate-JBEI_-GFP_intermediate_3_evan_ThuJan2918:26:29EST2015
+# part_46
+# (JBEI_RBS, Superfolder_gfp, B0015)
+# OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:29EST2015
+# part_44
+# (B0015, attP_Bxb1, attP_TP901)
+# pSK1A2
+# vector_11
+# (SK1A)
+# vector_9
+# JBEI_RBS_Superfolder_gfp
+# part_37
+# (JBEI_RBS, Superfolder_gfp)
+# vector_10
+# B0015
+# part_39
+# (B0015)
+# vector_5

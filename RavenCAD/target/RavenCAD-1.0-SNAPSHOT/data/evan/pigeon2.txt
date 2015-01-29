@@ -1,0 +1,166 @@
+digraph{
+PIGEON_START
+"[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[]|pSK1A2_R|pSK1A2_L|pSK1A2"
+P P7_Promoter 4
+> attB_TP901 12
+> attB_Bxb1 12
+T B0015 6
+< attP_Bxb1 12
+< attP_TP901 12
+r JBEI_RBS 5
+c Superfolder_gfp 9
+T B0015 6
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|P7_Promoter+|2|B0015+"
+5 P7_Promoter+
+<5 B0015+
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|2"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[P7_Promoter, attB_TP901, attB_Bxb1]|[+, +, +]|[]|pSK1A2_R|B0015+|pSK1A2"
+5 pSK1A2_R
+P P7_Promoter 4
+> attB_TP901 12
+> attB_Bxb1 12
+<5 B0015+
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|pSK1A2_R|1|B0015+"
+5 pSK1A2_R
+<5 B0015+
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|1"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[B0015, attP_Bxb1, attP_TP901]|[+, -, -]|[]|attB_Bxb1+|JBEI_RBS+|pSK1A2"
+5 attB_Bxb1+
+T B0015 6
+< attP_Bxb1 12
+< attP_TP901 12
+<5 JBEI_RBS+
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|attB_Bxb1+|1|JBEI_RBS+"
+5 attB_Bxb1+
+<5 JBEI_RBS+
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|1"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +]|[]|attP_TP901-|pSK1A2_L|pSK1A2"
+5 attP_TP901-
+r JBEI_RBS 5
+c Superfolder_gfp 9
+T B0015 6
+<5 pSK1A2_L
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|attP_TP901-|1|pSK1A2_L"
+5 attP_TP901-
+<5 pSK1A2_L
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|1"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[P7_Promoter, attB_TP901, attB_Bxb1]|[+, +, +]|[]|pSK1A2_R|B0015+|null"
+5 pSK1A2_R
+P P7_Promoter 4
+> attB_TP901 12
+> attB_Bxb1 12
+<5 B0015+
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[B0015, attP_Bxb1, attP_TP901]|[+, -, -]|[]|attB_Bxb1+|JBEI_RBS+|null"
+5 attB_Bxb1+
+T B0015 6
+< attP_Bxb1 12
+< attP_TP901 12
+<5 JBEI_RBS+
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[JBEI_RBS, Superfolder_gfp]|[+, +]|[]|attP_TP901-|B0015+|null"
+5 attP_TP901-
+r JBEI_RBS 5
+c Superfolder_gfp 9
+<5 B0015+
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[B0015]|[+]|[]|Superfolder_gfp+|pSK1A2_L|null"
+5 Superfolder_gfp+
+T B0015 6
+<5 pSK1A2_L
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[B0015]|[+]|[]"
+T B0015 6
+# Arcs
+PIGEON_END
+
+"pSK1A2|P7_Promoter+|2|B0015+" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[]|pSK1A2_R|pSK1A2_L|pSK1A2"
+"pSK1A2|2" -> "pSK1A2|P7_Promoter+|2|B0015+"
+"pSK1A2|pSK1A2_R|1|B0015+" -> "[P7_Promoter, attB_TP901, attB_Bxb1]|[+, +, +]|[]|pSK1A2_R|B0015+|pSK1A2"
+"pSK1A2|1" -> "pSK1A2|pSK1A2_R|1|B0015+"
+"[P7_Promoter, attB_TP901, attB_Bxb1]|[+, +, +]|[]|pSK1A2_R|B0015+|pSK1A2" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[]|pSK1A2_R|pSK1A2_L|pSK1A2"
+"pSK1A2|attB_Bxb1+|1|JBEI_RBS+" -> "[B0015, attP_Bxb1, attP_TP901]|[+, -, -]|[]|attB_Bxb1+|JBEI_RBS+|pSK1A2"
+"pSK1A2|1" -> "pSK1A2|attB_Bxb1+|1|JBEI_RBS+"
+"[B0015, attP_Bxb1, attP_TP901]|[+, -, -]|[]|attB_Bxb1+|JBEI_RBS+|pSK1A2" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[]|pSK1A2_R|pSK1A2_L|pSK1A2"
+"pSK1A2|attP_TP901-|1|pSK1A2_L" -> "[JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +]|[]|attP_TP901-|pSK1A2_L|pSK1A2"
+"pSK1A2|1" -> "pSK1A2|attP_TP901-|1|pSK1A2_L"
+"[JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +]|[]|attP_TP901-|pSK1A2_L|pSK1A2" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[]|pSK1A2_R|pSK1A2_L|pSK1A2"
+"[P7_Promoter, attB_TP901, attB_Bxb1]|[+, +, +]|[]|pSK1A2_R|B0015+|null" -> "[P7_Promoter, attB_TP901, attB_Bxb1]|[+, +, +]|[]|pSK1A2_R|B0015+|pSK1A2"
+"[B0015, attP_Bxb1, attP_TP901]|[+, -, -]|[]|attB_Bxb1+|JBEI_RBS+|null" -> "[B0015, attP_Bxb1, attP_TP901]|[+, -, -]|[]|attB_Bxb1+|JBEI_RBS+|pSK1A2"
+"[JBEI_RBS, Superfolder_gfp]|[+, +]|[]|attP_TP901-|B0015+|null" -> "[JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +]|[]|attP_TP901-|pSK1A2_L|pSK1A2"
+"[B0015]|[+]|[]" -> "[B0015]|[+]|[]|Superfolder_gfp+|pSK1A2_L|null"
+"[B0015]|[+]|[]|Superfolder_gfp+|pSK1A2_L|null" -> "[JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +]|[]|attP_TP901-|pSK1A2_L|pSK1A2"
+
+}

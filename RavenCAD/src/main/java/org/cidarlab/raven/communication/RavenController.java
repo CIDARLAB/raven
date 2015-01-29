@@ -4,23 +4,11 @@
  */
 package org.cidarlab.raven.communication;
 
-import org.cidarlab.raven.algorithms.modasm.RMoClo;
-import org.cidarlab.raven.algorithms.modasm.RGatewayGibson;
-import org.cidarlab.raven.algorithms.modasm.RGoldenGate;
-import org.cidarlab.raven.algorithms.nonmodasm.RGibson;
-import org.cidarlab.raven.algorithms.nonmodasm.RCPEC;
-import org.cidarlab.raven.algorithms.nonmodasm.RSLIC;
-import org.cidarlab.raven.datastructures.RGraph;
-import org.cidarlab.raven.datastructures.Collector;
-import org.cidarlab.raven.datastructures.Part;
-import org.cidarlab.raven.datastructures.RNode;
-import org.cidarlab.raven.datastructures.Vector;
-import org.cidarlab.raven.datastructures.RestrictionEnzyme;
-import org.cidarlab.raven.accessibility.RInstructions;
-import org.cidarlab.raven.algorithms.modasm.RBioBricks;
-import org.cidarlab.raven.accessibility.ClothoWriter;
-import org.cidarlab.raven.accessibility.ClothoReader;
-import org.cidarlab.raven.algorithms.core.PrimerDesign;
+import org.cidarlab.raven.algorithms.core.*;
+import org.cidarlab.raven.algorithms.modasm.*;
+import org.cidarlab.raven.algorithms.nonmodasm.*;
+import org.cidarlab.raven.datastructures.*;
+import org.cidarlab.raven.accessibility.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -76,6 +64,7 @@ public class RavenController {
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st0Vec);
             }
 
             _stageVectors.put(0, st0Vec);
@@ -110,6 +99,7 @@ public class RavenController {
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st0Vec);
             }
 
             _stageVectors.put(0, st0Vec);
@@ -144,6 +134,7 @@ public class RavenController {
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st0Vec);
             }
 
             _stageVectors.put(0, st0Vec);
@@ -178,6 +169,7 @@ public class RavenController {
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st0Vec);
             }
 
             _stageVectors.put(0, st0Vec);
@@ -212,6 +204,7 @@ public class RavenController {
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st0Vec);
             }
 
             ArrayList<String> defaultTags1 = new ArrayList<String>();
@@ -225,6 +218,7 @@ public class RavenController {
                 for (String tag : defaultTags1) {
                     st1Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st1Vec);
             }
 
             _stageVectors.put(0, st1Vec);
@@ -261,6 +255,7 @@ public class RavenController {
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st0Vec);
             }
 
             ArrayList<String> defaultTags1 = new ArrayList<String>();
@@ -274,6 +269,7 @@ public class RavenController {
                 for (String tag : defaultTags1) {
                     st1Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st1Vec);
             }
 
             _stageVectors.put(0, st0Vec);
@@ -310,6 +306,7 @@ public class RavenController {
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st0Vec);
             }
 
             ArrayList<String> defaultTags1 = new ArrayList<String>();
@@ -323,6 +320,7 @@ public class RavenController {
                 for (String tag : defaultTags1) {
                     st1Vec.addSearchTag(tag);
                 }
+                _collector.addVector(st1Vec);
             }
 
             _stageVectors.put(0, st1Vec);
