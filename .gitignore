@@ -20,6 +20,7 @@ RavenSampler/.DS_Store
 # Build folders #
 /RavenCAD/build/
 /RavenCAD/dist/
+/RavenCAD/target/
 /OverhangSequenceSelector/nbproject/private/
 /OverhangSequenceSelector/build/
 /MocloCartesianGraphAssigner/nbproject/private/
