@@ -53,9 +53,8 @@ public class AuthenticationTest {
     public void testConvertFileToSecureAuthentication() throws Exception {
         initialize();
         String filepath = Authenticator.class.getClassLoader().getResource(".").getPath();
-                    filepath = filepath.substring(0, filepath.indexOf("/target/"));
-                    
-                    Scanner sc = new Scanner(new File(filepath + "/src/main/webapp/WEB-INF/restricted/login.txt"));
+        filepath = filepath.substring(0, filepath.indexOf("/target/"));
+        Scanner sc = new Scanner(new File(filepath + "/src/main/webapp/WEB-INF/restricted/login.txt"));
         String s;
         while (sc.hasNext()) {
             s = sc.nextLine();
