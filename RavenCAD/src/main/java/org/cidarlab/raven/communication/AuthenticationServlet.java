@@ -90,6 +90,7 @@ public class AuthenticationServlet
                 if ("initialize".equals(username) && "initialize".equals(password)) {
                     
                     String filepath = this.getServletContext().getRealPath("/");
+                    System.out.println("filepath: " + filepath);
                     filepath = filepath.substring(0, filepath.indexOf("/target/"));
                     
                     Scanner sc = new Scanner(new File(filepath + "/src/main/webapp/WEB-INF/restricted/login.txt"));
