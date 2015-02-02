@@ -89,7 +89,8 @@ public class AuthenticationServlet
                 // if this is the initialization password
                 if ("initialize".equals(username) && "initialize".equals(password)) {
                     
-                    String filepath = RavenController.class.getClassLoader().getResource(".").getPath();
+                    String filepath = this.getServletContext().getRealPath("/");
+//                    String filepath = AuthenticationServlet.class.getClassLoader().getResource(".").getPath();
                     filepath = filepath.substring(0, filepath.indexOf("/target/"));
                     
                     Scanner sc = new Scanner(new File(filepath + "/src/main/webapp/WEB-INF/restricted/login.txt"));
