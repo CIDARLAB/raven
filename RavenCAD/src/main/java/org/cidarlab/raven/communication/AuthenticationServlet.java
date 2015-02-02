@@ -88,7 +88,11 @@ public class AuthenticationServlet
 
                 // if this is the initialization password
                 if ("initialize".equals(username) && "initialize".equals(password)) {
-                    Scanner sc = new Scanner(new File("/Users/evanappleton/dfx_git/raven/RavenCAD/src/main/webapp/WEB-INF/restricted/login.txt"));
+                    
+                    String filepath = RavenController.class.getClassLoader().getResource(".").getPath();
+                    filepath = filepath.substring(0, filepath.indexOf("/target/"));
+                    
+                    Scanner sc = new Scanner(new File(filepath + "/src/main/webapp/WEB-INF/restricted/login.txt"));
                     String s;
                     while (sc.hasNext()) {
                         s = sc.nextLine();
