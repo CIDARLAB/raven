@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite failures="0" time="0.005" errors="0" skipped="0" tests="2" name="org.cidarlab.raven.algorithms.test.PrimerParameterTest">
+<testsuite failures="0" time="0.011" errors="0" skipped="0" tests="2" name="org.cidarlab.raven.algorithms.test.PrimerParameterTest">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home/jre/lib"/>
@@ -25,7 +25,6 @@
     <property name="line.separator" value="
 "/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="netbeans.deploy.debugmode" value="true"/>
     <property name="os.name" value="Mac OS X"/>
     <property name="classworlds.conf" value="/Applications/NetBeans/NetBeans 7.3.1.app/Contents/Resources/NetBeans/java/maven/bin/m2.conf"/>
     <property name="sun.jnu.encoding" value="US-ASCII"/>
@@ -45,7 +44,7 @@
     <property name="java.vm.specification.version" value="1.7"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home/jre"/>
-    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher -Dnetbeans.deploy.debugmode=true -Dnetbeans.deploy=true package"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher -Dnetbeans.deploy=true package"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
     <property name="user.language" value="en"/>
     <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
@@ -63,6 +62,6 @@
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase time="0" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="PCRLengthTest"/>
-  <testcase time="0" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="CloningLengthTest"/>
+  <testcase time="0.001" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="PCRLengthTest"/>
+  <testcase time="0.001" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="CloningLengthTest"/>
 </testsuite>
