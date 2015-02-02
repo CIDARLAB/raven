@@ -21,6 +21,7 @@ RavenSampler/.DS_Store
 /RavenCAD/build/
 /RavenCAD/dist/
 /RavenCAD/target/
+/RavenCAD/raven3/
 /OverhangSequenceSelector/nbproject/private/
 /OverhangSequenceSelector/build/
 /MocloCartesianGraphAssigner/nbproject/private/

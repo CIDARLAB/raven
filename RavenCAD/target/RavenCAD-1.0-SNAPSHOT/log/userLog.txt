@@ -1,3 +1,0 @@
-
-IN |evan time: Mon Feb 02 17:09:36 EST 2015 location: 0:0:0:0:0:0:0:1
-IN |alanP time: Mon Feb 02 17:10:07 EST 2015 location: 0:0:0:0:0:0:0:1

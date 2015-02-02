@@ -89,11 +89,11 @@ public class AuthenticationServlet
                 // if this is the initialization password
                 if ("initialize".equals(username) && "initialize".equals(password)) {
                     
-                    String filepath = this.getServletContext().getRealPath("/");
-                    System.out.println("filepath: " + filepath);
-                    filepath = filepath.substring(0, filepath.indexOf("/target/"));
+//                    String filepath = this.getServletContext().getRealPath("/");
+//                    System.out.println("filepath: " + filepath);
+//                    filepath = filepath.substring(0, filepath.indexOf("/target/"));
                     
-                    Scanner sc = new Scanner(new File(filepath + "/src/main/webapp/WEB-INF/restricted/login.txt"));
+                    Scanner sc = new Scanner(new File(this.getServletContext().getRealPath("/") + "/WEB-INF/restricted/login.txt"));
                     String s;
                     while (sc.hasNext()) {
                         s = sc.nextLine();
