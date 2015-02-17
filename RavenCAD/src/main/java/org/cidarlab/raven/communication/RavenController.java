@@ -1129,6 +1129,26 @@ public class RavenController {
                             vector = vec;
                         }
                     }
+                    
+                    //This is a patch for the vector counting problem on data upload
+                    if (vector == null) {
+                        Vector newVector = Vector.generateVector(vectorName, vectors.get(0).getSeq());
+                        newVector.addSearchTag("LO: " + leftOverhang);
+                        newVector.addSearchTag("RO: " + rightOverhang);
+                        if (!tokens[7].isEmpty()) {
+                            newVector.addSearchTag("Level: " + tokens[7].trim());
+                        } else {
+                            newVector.addSearchTag("Level: -1");
+                        }
+                        newVector.addSearchTag("Type: destination vector");
+                        newVector.addSearchTag("Resistance: " + vectors.get(0).getResistance());
+                        newVector.addSearchTag("Vector: " + vectorName);
+
+                        _vectorLibrary.add(newVector);
+                        newVector.saveDefault(_collector);
+                        newVector.setTransientStatus(true);
+                        vector = newVector;
+                    }
                 }
 
                 //Get scar sequences

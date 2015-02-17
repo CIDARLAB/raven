@@ -280,6 +280,7 @@ public class RGraph {
      * Get graph statistics *
      */
     public static void getGraphStats(ArrayList<RGraph> allGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashSet<String> recommended, HashSet<String> discouraged, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+        
         //don't count library parts and vectors 
         HashSet<String> seenPartKeys = getExistingPartKeys(partLib);
         HashSet<String> seenVectorKeys = getExistingVectorKeys(vectorLib);
