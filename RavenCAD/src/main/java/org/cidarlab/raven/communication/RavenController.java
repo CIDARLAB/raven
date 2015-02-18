@@ -45,293 +45,127 @@ public class RavenController {
         _databaseConfig.add("cidar");
     }
 
-    public ArrayList<RGraph> runBioBricks() throws Exception {
-        if (_goalParts == null) {
-            return null;
-        }
-
-        //If stageVectors are empty, fill with defaults
-        if (_stageVectors.get(0) == null) {
-
-            ArrayList<String> defaultTags0 = new ArrayList<String>();
-            defaultTags0.add("LO: ");
-            defaultTags0.add("RO: ");
-            defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: ampicilin");
-            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
-            if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
-                for (String tag : defaultTags0) {
-                    st0Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st0Vec);
-            }
-
-            _stageVectors.put(0, st0Vec);
-        }
+    /**
+     * Run SRS algorithm for BioBricks *
+     */
+    public ArrayList<RGraph> runBioBricks(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Collector collector) throws Exception {
 
         //Run algorithm for BioBricks assembly
-        _assemblyGraphs.clear();
         RBioBricks biobricks = new RBioBricks();
-        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _stageVectors, null);
+        ArrayList<RGraph> optimalGraphs = biobricks.bioBricksClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, stageVectors, null);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for Gibson *
      */
-    public ArrayList<RGraph> runGibson(Integer minCloneLength) throws Exception {
-        if (_goalParts == null) {
-            return null;
-        }
-
-        //If stageVectors are empty, fill with defaults
-        if (_stageVectors.get(0) == null) {
-
-            ArrayList<String> defaultTags0 = new ArrayList<String>();
-            defaultTags0.add("LO: ");
-            defaultTags0.add("RO: ");
-            defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: ampicilin");
-            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
-            if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
-                for (String tag : defaultTags0) {
-                    st0Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st0Vec);
-            }
-
-            _stageVectors.put(0, st0Vec);
-        }
+    public ArrayList<RGraph> runGibson(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Integer minCloneLength,  Collector collector) throws Exception {
 
         //Run algorithm for Gibson assembly
-        _assemblyGraphs.clear();
         RGibson gibson = new RGibson();
-        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength, _collector);
+        ArrayList<RGraph> optimalGraphs = gibson.gibsonClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiencies, stageVectors, null, minCloneLength, collector);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for CPEC *
      */
-    public ArrayList<RGraph> runCPEC(Integer minCloneLength) throws Exception {
-        if (_goalParts == null) {
-            return null;
-        }
-
-        //If stageVectors are empty, fill with defaults
-        if (_stageVectors.get(0) == null) {
-
-            ArrayList<String> defaultTags0 = new ArrayList<String>();
-            defaultTags0.add("LO: ");
-            defaultTags0.add("RO: ");
-            defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: ampicilin");
-            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
-            if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
-                for (String tag : defaultTags0) {
-                    st0Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st0Vec);
-            }
-
-            _stageVectors.put(0, st0Vec);
-        }
+    public ArrayList<RGraph> runCPEC(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Integer minCloneLength,  Collector collector) throws Exception {
 
         //Run algorithm for CPEC assembly
-        _assemblyGraphs.clear();
         RCPEC cpec = new RCPEC();
-        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength, _collector);
+        ArrayList<RGraph> optimalGraphs = cpec.cpecClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiencies, stageVectors, null, minCloneLength, collector);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for SLIC *
      */
-    public ArrayList<RGraph> runSLIC(Integer minCloneLength) throws Exception {
-        if (_goalParts == null) {
-            return null;
-        }
-
-        //If stageVectors are empty, fill with defaults
-        if (_stageVectors.get(0) == null) {
-
-            ArrayList<String> defaultTags0 = new ArrayList<String>();
-            defaultTags0.add("LO: ");
-            defaultTags0.add("RO: ");
-            defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: ampicilin");
-            Vector st0Vec = _collector.getExactVector("pSK1A2", _pSK1A2, defaultTags0, false);
-            if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSK1A2", _pSK1A2);
-                for (String tag : defaultTags0) {
-                    st0Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st0Vec);
-            }
-
-            _stageVectors.put(0, st0Vec);
-        }
+    public ArrayList<RGraph> runSLIC(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Integer minCloneLength,  Collector collector) throws Exception {
 
         //Run algorithm for SLIC assembly
-        _assemblyGraphs.clear();
         RSLIC slic = new RSLIC();
-        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(_goalParts, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null, minCloneLength, _collector);
+        ArrayList<RGraph> optimalGraphs = slic.slicClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiencies, stageVectors, null, minCloneLength, collector);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for MoClo *
      */
-    public ArrayList<RGraph> runMoClo() throws Exception {
-        if (_goalParts == null) {
-            return null;
-        }
-
-        //If stageVectors are empty, fill with defaults
-        if (_stageVectors.get(0) == null) {
-
-            ArrayList<String> defaultTags0 = new ArrayList<String>();
-            defaultTags0.add("LO: ");
-            defaultTags0.add("RO: ");
-            defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: kanamycin");
-            Vector st0Vec = _collector.getExactVector("pSB1K3", _pSB1K3, defaultTags0, false);
-            if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
-                for (String tag : defaultTags0) {
-                    st0Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st0Vec);
-            }
-
-            ArrayList<String> defaultTags1 = new ArrayList<String>();
-            defaultTags1.add("LO: ");
-            defaultTags1.add("RO: ");
-            defaultTags1.add("Type: vector");
-            defaultTags1.add("Resistance: ampicilin");
-            Vector st1Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags1, false);
-            if (st1Vec == null) {
-                st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
-                for (String tag : defaultTags1) {
-                    st1Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st1Vec);
-            }
-
-            _stageVectors.put(0, st1Vec);
-            _stageVectors.put(1, st0Vec);
-        }
+    public ArrayList<RGraph> runMoClo(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs, Collector collector) throws Exception {
 
         //Run algorithm for MoClo assembly
-        _assemblyGraphs.clear();
         RMoClo moclo = new RMoClo();
 //        moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null, _libraryOHHash);
+        ArrayList<RGraph> optimalGraphs = moclo.mocloClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiencies, stageVectors, null, libraryOHs);
         return optimalGraphs;
     }
     
     /**
      * Run SRS algorithm for Gateway-Gibson *
      */
-    public ArrayList<RGraph> runGatewayGibson() throws Exception {
-        if (_goalParts == null) {
-            return null;
-        }
-
-        //If stageVectors are empty, fill with defaults
-        if (_stageVectors.get(0) == null) {
-
-            ArrayList<String> defaultTags0 = new ArrayList<String>();
-            defaultTags0.add("LO: ");
-            defaultTags0.add("RO: ");
-            defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: kanamycin");
-            Vector st0Vec = _collector.getExactVector("pSB1K3", _pSB1K3, defaultTags0, false);
-            if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
-                for (String tag : defaultTags0) {
-                    st0Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st0Vec);
-            }
-
-            ArrayList<String> defaultTags1 = new ArrayList<String>();
-            defaultTags1.add("LO: ");
-            defaultTags1.add("RO: ");
-            defaultTags1.add("Type: vector");
-            defaultTags1.add("Resistance: ampicilin");
-            Vector st1Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags1, false);
-            if (st1Vec == null) {
-                st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
-                for (String tag : defaultTags1) {
-                    st1Vec.addSearchTag(tag);
-                }
-                _collector.addVector(st1Vec);
-            }
-
-            _stageVectors.put(0, st0Vec);
-            _stageVectors.put(1, st1Vec);
-        }
+    public ArrayList<RGraph> runGatewayGibson(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs, Collector collector) throws Exception {
 
         //Run algorithm for MoClo assembly
-        _assemblyGraphs.clear();
         RGatewayGibson gwgib = new RGatewayGibson();
 //        gwgib.setForcedOverhangs(_collector, _forcedOverhangHash);
-        ArrayList<RGraph> optimalGraphs = gwgib.gatewayGibsonWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, false, _efficiency, _stageVectors, null, _libraryOHHash, _collector);
+        ArrayList<RGraph> optimalGraphs = gwgib.gatewayGibsonWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiencies, stageVectors, null, libraryOHs, collector);
         return optimalGraphs;
     }
 
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    public ArrayList<RGraph> runGoldenGate() throws Exception {
-        if (_goalParts == null) {
-            return null;
-        }
+    public ArrayList<RGraph> runGoldenGate(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Collector collector) throws Exception {
 
+        //Run algorithm for Golden Gate assembly
+        RGoldenGate gg = new RGoldenGate();
+        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, efficiencies, stageVectors, null);
+        return optimalGraphs;
+    }
+    
+    /*
+     * Check stage vectors for assembly method, add stage vectors if there aren't any
+     */
+    public HashMap<Integer, Vector> checkStageVectors(HashMap<Integer, Vector> stageVectors, Collector collector, String method) {
+        
         //If stageVectors are empty, fill with defaults
-        if (_stageVectors.get(0) == null) {
+        if (stageVectors.get(0) == null) {
 
             ArrayList<String> defaultTags0 = new ArrayList<String>();
             defaultTags0.add("LO: ");
             defaultTags0.add("RO: ");
             defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: kanamycin");
-            Vector st0Vec = _collector.getExactVector("pSB1K3", _pSB1K3, defaultTags0, false);
+            defaultTags0.add("Resistance: ampicilin");
+            Vector st0Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags0, false);
             if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSB1K3", _pSB1K3);
+                st0Vec = Vector.generateVector("pSB1A2", _pSB1A2);
                 for (String tag : defaultTags0) {
                     st0Vec.addSearchTag(tag);
                 }
-                _collector.addVector(st0Vec);
+                collector.addVector(st0Vec);
             }
+            stageVectors.put(0, st0Vec); 
+            
+            if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
 
-            ArrayList<String> defaultTags1 = new ArrayList<String>();
-            defaultTags1.add("LO: ");
-            defaultTags1.add("RO: ");
-            defaultTags1.add("Type: vector");
-            defaultTags1.add("Resistance: ampicilin");
-            Vector st1Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags1, false);
-            if (st1Vec == null) {
-                st1Vec = Vector.generateVector("pSB1A2", _pSB1A2);
-                for (String tag : defaultTags1) {
-                    st1Vec.addSearchTag(tag);
+                ArrayList<String> defaultTags1 = new ArrayList<String>();
+                defaultTags1.add("LO: ");
+                defaultTags1.add("RO: ");
+                defaultTags1.add("Type: vector");
+                defaultTags1.add("Resistance: kanamycin");
+                Vector st1Vec = collector.getExactVector("pSB1K3", _pSB1K3, defaultTags1, false);
+                if (st1Vec == null) {
+                    st1Vec = Vector.generateVector("pSB1K3", _pSB1K3);
+                    for (String tag : defaultTags1) {
+                        st1Vec.addSearchTag(tag);
+                    }
+                    collector.addVector(st1Vec);
                 }
-                _collector.addVector(st1Vec);
-            }
-
-            _stageVectors.put(0, st1Vec);
-            _stageVectors.put(1, st0Vec);
+                stageVectors.put(1, st1Vec);
+            }       
         }
-
-        //Run algorithm for Golden Gate assembly
-        _assemblyGraphs.clear();
-        RGoldenGate gg = new RGoldenGate();
-        ArrayList<RGraph> optimalGraphs = gg.goldenGateClothoWrapper(_goalParts, _vectorLibrary, _required, _recommended, _forbidden, _discouraged, _partLibrary, _efficiency, _stageVectors, null);
-        return optimalGraphs;
+        return stageVectors;
     }
 
     //returns json array containing all objects in parts list; generates parts list file
@@ -585,14 +419,9 @@ public class RavenController {
     public void clearData() throws Exception {
         _collector.purge();
         _goalParts = new HashSet<Part>();//key: target part, value: vector
-        _efficiency = new HashMap<Integer, Double>();
-        _required = new HashSet<String>();
-        _recommended = new HashSet<String>();
-        _discouraged = new HashSet<String>();
-        _forbidden = new HashSet<String>();
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
-        _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+//        _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
         _libraryOHHash = new HashMap<String, String>();
         _partLibrary = new ArrayList<Part>();
         _vectorLibrary = new ArrayList<Vector>();
@@ -832,9 +661,9 @@ public class RavenController {
         _partLibrary = new ArrayList<Part>();
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
-        if (_forcedOverhangHash == null) {
-            _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
-        }
+//        if (_forcedOverhangHash == null) {
+//            _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+//        }
         if (_libraryOHHash == null) {
             _libraryOHHash = new HashMap<String, String>();
         }
@@ -1345,17 +1174,12 @@ public class RavenController {
     }
 
     //Using parameters from the client, run the algorithm
-    public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiencyHash, ArrayList<String> primerParameters, HashMap<String, String> stageVectors) throws Exception {
+    public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiency, ArrayList<String> primerParameters, HashMap<String, String> stageVectorsString) throws Exception {
         _goalParts = new HashSet<Part>();
-        _required = required;
-        _recommended = recommended;
-        _forbidden = forbidden;
-        _discouraged = discouraged;
-        _stageVectors = new HashMap<Integer, Vector>();
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
-        _efficiency = efficiencyHash;
         _valid = false;
+        HashMap<Integer, Vector> stageVectors = new HashMap<Integer, Vector>();
         method = method.trim();
         
         //Initiate minimum cloning length
@@ -1373,45 +1197,46 @@ public class RavenController {
         }
 
         //Set up stage vector hash
-        Set<String> keySet = stageVectors.keySet();
+        Set<String> keySet = stageVectorsString.keySet();
         for (String strStage : keySet) {
 
             Integer stage = Integer.parseInt(strStage);
-            Vector vector = _collector.getVector(stageVectors.get(strStage), false);
-            _stageVectors.put(stage, vector);
+            Vector vector = _collector.getVector(stageVectorsString.get(strStage), false);
+            stageVectors.put(stage, vector);
         }
 
         Statistics.start();
         boolean overhangValid = false;
+        stageVectors = checkStageVectors(stageVectors, _collector, method);
         if (method.equalsIgnoreCase("biobricks")) {
-            _assemblyGraphs = runBioBricks();
+            _assemblyGraphs = runBioBricks(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, stageVectors, null, _collector);
             overhangValid = RBioBricks.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("cpec")) {
-            _assemblyGraphs = runCPEC(minCloneLength);
+            _assemblyGraphs = runCPEC(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, minCloneLength, _collector);
             overhangValid = RCPEC.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("gibson")) {
-            _assemblyGraphs = runGibson(minCloneLength);
+            _assemblyGraphs = runGibson(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, minCloneLength, _collector);
             overhangValid = RGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("goldengate")) {
-            _assemblyGraphs = runGoldenGate();
+            _assemblyGraphs = runGoldenGate(_goalParts, _vectorLibrary, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, _collector);
             overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("gatewaygibson")) {
-            _assemblyGraphs = runGatewayGibson();
+            _assemblyGraphs = runGatewayGibson(_goalParts, _vectorLibrary, required, recommended, forbidden, discouraged, _partLibrary, false, efficiency, stageVectors, null, _libraryOHHash, _collector);
             overhangValid = RGatewayGibson.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("moclo")) {
-            _assemblyGraphs = runMoClo();
+            _assemblyGraphs = runMoClo(_goalParts, _vectorLibrary, required, recommended, forbidden, discouraged, _partLibrary, false, efficiency, stageVectors, null, _libraryOHHash, _collector);
             overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
         } else if (method.equalsIgnoreCase("slic")) {
-            _assemblyGraphs = runSLIC(minCloneLength);
+            _assemblyGraphs = runSLIC(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, minCloneLength, _collector);
             overhangValid = RSLIC.validateOverhangs(_assemblyGraphs);
         }
-        boolean valid = validateReqForb(_assemblyGraphs, _required, _forbidden);
+        boolean valid = validateReqForb(_assemblyGraphs, required, forbidden);
         _valid = valid && overhangValid;
         
         Statistics.stop();
         ClothoWriter writer = new ClothoWriter();
         ArrayList<String> graphTextFiles = new ArrayList();
-        ArrayList<String> arcTextFiles = new ArrayList<String>();
+        ArrayList<String> arcTextFiles = new ArrayList();
         ArrayList<RNode> targetRootNodes = new ArrayList();
         HashSet<String> targetRootNodeKeys = new HashSet();
 
@@ -1427,11 +1252,11 @@ public class RavenController {
         //Merge graphs and make new clotho parts where appropriate
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
         for (RGraph result : _assemblyGraphs) {
-            writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, _stageVectors, method, _user);
+            writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, stageVectors, method, _user);
         }
 
         //Get graph stats
-        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, _recommended, _discouraged, 0.0, 0.0, 0.0, 0.0);
+        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, recommended, discouraged, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method);       
 
         //Generate Instructions
@@ -1600,21 +1425,17 @@ public class RavenController {
                 + "\",\"valid\":\"" + _statistics.isValid() + "\"}";
         return new JSONObject(statString);
     }
+    
     //FIELDS
     private HashSet<Part> _goalParts = new HashSet<Part>();//key: target part, value: composition
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
-    private HashMap<Integer, Double> _efficiency = new HashMap<Integer, Double>();
-    private HashSet<String> _required = new HashSet<String>();
-    private HashSet<String> _recommended = new HashSet<String>();
-    private HashSet<String> _discouraged = new HashSet<String>();
-    private HashSet<String> _forbidden = new HashSet<String>();
     private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();
-    private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
+//    private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
     private HashMap<String, String> _libraryOHHash = new HashMap<String, String>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
-    private HashMap<Integer, Vector> _stageVectors = new HashMap<Integer, Vector>();
+    
     private String _instructions = "";
     protected Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
     private String _path;
@@ -1626,5 +1447,5 @@ public class RavenController {
     private ArrayList<RestrictionEnzyme> _restrictionEnzymes = RestrictionEnzyme.getBBGGMoCloEnzymes();
     private String _pSB1K3 = "tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgagtcccgtcaagtcagcgtaatgctctgccagtgttacaaccaattaaccaattctgattagaaaaactcatcgagcatcaaatgaaactgcaatttattcatatcaggattatcaataccatatttttgaaaaagccgtttctgtaatgaaggagaaaactcaccgaggcagttccataggatggcaagatcctggtatcggtctgcgattccgactcgtccaacatcaatacaacctattaatttcccctcgtcaaaaataaggttatcaagtgagaaatcaccatgagtgacgactgaatccggtgagaatggcaaaagcttatgcatttctttccagacttgttcaacaggccagccattacgctcgtcatcaaaatcactcgcatcaaccaaaccgttattcattcgtgattgcgcctgagcgagacgaaatacgcgatcgctgttaaaaggacaattacaaacaggaatcgaatgcaaccggcgcaggaacactgccagcgcatcaacaatattttcacctgaatcaggatattcttctaatacctggaatgctgttttcccggggatcgcagtggtgagtaaccatgcatcatcaggagtacggataaaatgcttgatggtcggaagaggcataaattccgtcagccagtttagtctgaccatctcatctgtaacatcattggcaacgctacctttgccatgtttcagaaacaactctggcgcatcgggcttcccatacaatcgatagattgtcgcacctgattgcccgacattatcgcgagcccatttatacccatataaatcagcatccatgttggaatttaatcgcggcctggagcaagacgtttcccgttgaatatggctcataacaccccttgtattactgtttatgtaagcagacagttttattgttcatgatgatatatttttatcttgtgcaatgtaacatcagagattttgagacacaacgtggctttgttgaataaatcgaacttttgctgagttgaaggatcagctcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
     private String _pSB1A2 = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
-    private String _pSK1A2 = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
+//    private String _pSK1A2 = "tactagtagcggccgctgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccataggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaaggacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagttaccaatgcttaatcagtgaggcacctatctcagcgatctgtctatttcgttcatccatagttgcctgactccccgtcgtgtagataactacgatacgggagggcttaccatctggccccagtgctgcaatgataccgcgagacccacgctcaccggctccagatttatcagcaataaaccagccagccggaagggccgagcgcagaagtggtcctgcaactttatccgcctccatccagtctattaattgttgccgggaagctagagtaagtagttcgccagttaatagtttgcgcaacgttgttgccattgctacaggcatcgtggtgtcacgctcgtcgtttggtatggcttcattcagctccggttcccaacgatcaaggcgagttacatgatcccccatgttgtgcaaaaaagcggttagctccttcggtcctccgatcgttgtcagaagtaagttggccgcagtgttatcactcatggttatggcagcactgcataattctcttactgtcatgccatccgtaagatgcttttctgtgactggtgagtactcaaccaagtcattctgagaatagtgtatgcggcgaccgagttgctcttgcccggcgtcaatacgggataataccgcgccacatagcagaactttaaaagtgctcatcattggaaaacgttcttcggggcgaaaactctcaaggatcttaccgctgttgagatccagttcgatgtaacccactcgtgcacccaactgatcttcagcatcttttactttcaccagcgtttctgggtgagcaaaaacaggaaggcaaaatgccgcaaaaaagggaataagggcgacacggaaatgttgaatactcatactcttcctttttcaatattattgaagcatttatcagggttattgtctcatgagcggatacatatttgaatgtatttagaaaaataaacaaataggggttccgcgcacatttccccgaaaagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagag";
 }

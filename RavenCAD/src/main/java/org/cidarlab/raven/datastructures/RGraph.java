@@ -488,8 +488,6 @@ public class RGraph {
         return keys;
     }
 
-
-
     /**
      * ************************************************************************
      *
@@ -497,6 +495,7 @@ public class RGraph {
      *
      *************************************************************************
      */
+    
     /**
      * Get all the edges of an SDSGraph in Post Order *
      */
@@ -689,14 +688,14 @@ public class RGraph {
                     if (vecName == null) {
                         vecName = "";
                     }
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, "", "", vecName);
+                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, "", "", vecName);
                     weyekinText.append(pigeonLine);
                 } else {
-                    pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
+                    pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
                     weyekinText.append(pigeonLine);
                 }
             } else {
-                pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
+                pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeID, lOverhang, rOverhang, vecName);
                 weyekinText.append(pigeonLine);
             }
 
@@ -713,14 +712,14 @@ public class RGraph {
                     if (nodeID.endsWith("null")) {
                         if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
                             edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                            pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                            pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
                             weyekinText.append(pigeonLine.toString());
                         } else {
                             basicPlasmid = true;
                         }
                     } else {
                         edgeLines = edgeLines + "\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"" + "\n";
-                        pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
+                        pigeonLine = generatePigeonCode(composition, type, direction, scars, nodeIDB, lOverhang, rOverhang, null);
                         weyekinText.append(pigeonLine.toString());
                     }
 
@@ -741,14 +740,14 @@ public class RGraph {
                                 
                                 String NnodeID = spComp + "|" + spDir + "|" + scars;
                                 edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
-                                pigeonLine = generatePigeonCodeOld(spComp, spType, spDir, scars, NnodeID, null, null, null);
+                                pigeonLine = generatePigeonCode(spComp, spType, spDir, scars, NnodeID, null, null, null);
                                 weyekinText.append(pigeonLine.toString());
                             }
                             
                         } else {
                             String NnodeID = composition + "|" + direction + "|" + scars;
                             edgeLines = edgeLines + "\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"" + "\n";
-                            pigeonLine = generatePigeonCodeOld(composition, type, direction, scars, NnodeID, null, null, null);
+                            pigeonLine = generatePigeonCode(composition, type, direction, scars, NnodeID, null, null, null);
                             weyekinText.append(pigeonLine.toString());
                         }
                     }
@@ -774,12 +773,12 @@ public class RGraph {
                         if (method.equalsIgnoreCase("gatewaygibson") && vecL > 0) {
                             vecComposition.clear();
                             vecComposition.add("CmR-ccdB");
-                            pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), vecID, vecLO, vecRO, vecName);
+                            pigeonLine = generatePigeonCode(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), vecID, vecLO, vecRO, vecName);
                         } else {
-                            pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), vecID, vecLO, vecRO, vecName);
+                            pigeonLine = generatePigeonCode(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), vecID, vecLO, vecRO, vecName);
                         }
                     } else {
-                        pigeonLine = generatePigeonCodeOld(null, null, null, null, vecID, vecLO, vecRO, vecName);
+                        pigeonLine = generatePigeonCode(null, null, null, null, vecID, vecLO, vecRO, vecName);
                     }
                     weyekinText.append(pigeonLine.toString());
 
@@ -791,12 +790,12 @@ public class RGraph {
                             if (method.equalsIgnoreCase("gatewaygibson") && vecL > 0) {
                                 vecComposition.clear();
                                 vecComposition.add("CmR-ccdB");
-                                pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), NvecID, null, null, null);
+                                pigeonLine = generatePigeonCode(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), NvecID, null, null, null);
                             } else {
-                                pigeonLine = generatePigeonCodeOld(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), NvecID, null, null, null);
+                                pigeonLine = generatePigeonCode(vecComposition, vecTypes, vecDirection, new ArrayList<String>(), NvecID, null, null, null);
                             }
                         } else {
-                            pigeonLine = generatePigeonCodeOld(null, null, null, null, NvecID, null, null, vecName);
+                            pigeonLine = generatePigeonCode(null, null, null, null, NvecID, null, null, vecName);
                         }
                         weyekinText.append(pigeonLine.toString());
                     }
@@ -837,7 +836,9 @@ public class RGraph {
         return weyekinText.toString();
     }
 
-    //returns a json string that can be parsed by the client
+    /*
+     * D3 graph generation code
+     */
     public static JSONObject generateD3Graph(ArrayList<RGraph> graphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib) throws Exception {
         HashMap<String, String> imageURLs = new HashMap();
         HashSet<String> edgeSet = new HashSet();
@@ -869,7 +870,7 @@ public class RGraph {
                 String lOverhang = current.getLOverhang();
                 String rOverhang = current.getROverhang();
                 String nodeID = composition + "|" + direction + "|" + scars + "|" + lOverhang + "|" + rOverhang + "|" + vecName;
-                imageURLs.put(nodeID, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, vecName));
+                imageURLs.put(nodeID, generatePigeonCodePost(composition, type, direction, scars, lOverhang, rOverhang, vecName));
 
                 //Add PCR edges for level 0 nodes
                 if (current.getStage() == 0) {
@@ -880,7 +881,7 @@ public class RGraph {
                     //If the original node had no vector, 'null' was added to the string and this must be corrected and no redundant edges should be added
                     if (!nodeIDB.equals(nodeID.substring(0, nodeID.length() - 5))) {
                         edgeSet.add("\"" + nodeIDB + "\"" + " -> " + "\"" + nodeID + "\"");
-                        imageURLs.put(nodeIDB, generatePigeonCode(composition, type, direction, scars, lOverhang, rOverhang, null));
+                        imageURLs.put(nodeIDB, generatePigeonCodePost(composition, type, direction, scars, lOverhang, rOverhang, null));
 
                     } else {
                         basicNode = true;
@@ -892,7 +893,7 @@ public class RGraph {
                         }
                         String NnodeID = composition + "|" + direction + "|" + scars;
                         edgeSet.add("\"" + NnodeID + "\"" + " -> " + "\"" + nodeIDB + "\"");
-                        imageURLs.put(NnodeID, generatePigeonCode(composition, type, direction, scars, null, null, null));
+                        imageURLs.put(NnodeID, generatePigeonCodePost(composition, type, direction, scars, null, null, null));
                     }
                 }
 
@@ -903,12 +904,12 @@ public class RGraph {
                     int vecL = vector.getLevel();
                     String vecID = vecName + "|" + vecLO + "|" + vecL + "|" + vecRO;
                     edgeSet.add("\"" + vecID + "\"" + " -> " + "\"" + nodeID + "\"");
-                    imageURLs.put(vecID, generatePigeonCode(null, null, null, null, vecLO, vecRO, vecName));
+                    imageURLs.put(vecID, generatePigeonCodePost(null, null, null, null, vecLO, vecRO, vecName));
 
                     if (!startVectorsLOlevelRO.contains(vecID)) {
                         String NvecID = vecName + "|" + vecL;
                         edgeSet.add("\"" + NvecID + "\"" + " -> " + "\"" + vecID + "\"" + "\n");
-                        imageURLs.put(NvecID, generatePigeonCode(null, null, null, null, null, null, vecName));
+                        imageURLs.put(NvecID, generatePigeonCodePost(null, null, null, null, null, null, vecName));
                     }
                 }
 
@@ -948,7 +949,10 @@ public class RGraph {
 
     }
 
-    private static String generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
+    /*
+     * Generates Pigeon code, returns URL of posted image
+     */
+    private static String generatePigeonCodePost(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
         
@@ -1031,11 +1035,10 @@ public class RGraph {
         return WeyekinPoster.getmPigeonURI().toString();
     }
 
-    /**
-     * Pigeon code generation *
+    /*
+     * Pigeon code generation 
      */
-    @Deprecated
-    public static String generatePigeonCodeOld(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
+    public static String generatePigeonCode(ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, String compLORO, String LO, String RO, String vecName) {
 
         StringBuilder pigeonLine = new StringBuilder();
         pigeonLine.append("PIGEON_START\n");
@@ -1499,6 +1502,7 @@ public class RGraph {
     public void setEstCost(Double estCost) {
         _estCost = estCost;
     }
+    
     //FIELDS
     private ArrayList<RGraph> _subGraphs;
     private RNode _rootNode;

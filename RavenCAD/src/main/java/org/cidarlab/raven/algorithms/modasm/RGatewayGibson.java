@@ -137,7 +137,7 @@ public class RGatewayGibson extends RGeneral {
                 stageAdjuster(optimalGraph, 1);
             }
             assignScars(optimalGraph.getRootNode(), optimalGraph.getRootNode().getNeighbors());
-            addAdaptor(optimalGraph, collector, optimalGraphs);
+            addAdaptor(optimalGraph, collector, stageVectors);
         }
         
         return optimalGraphs;
@@ -205,7 +205,7 @@ public class RGatewayGibson extends RGeneral {
     }
     
     //Add adapter for Gibson steps
-    private void addAdaptor (RGraph optimalGraph, Collector collector, ArrayList<RGraph> optimalGraphs) {
+    private void addAdaptor (RGraph optimalGraph, Collector collector, HashMap<Integer, Vector> stageVectors) {
         
         //Adapt root node overhangs and root node vector overhangs
         RNode rootNodeClone = optimalGraph.getRootNode().clone();
@@ -239,6 +239,9 @@ public class RGatewayGibson extends RGeneral {
         tags.add("Direction: " + adaptor.getDirection());
         tags.add("Scars: " + adaptor.getScars());
         String adaptorSeq = _insulator + PrimerDesign.getGatewayGibsonOHseqs().get("UNS2") + _kanR;
+        
+        RVector newVector = new RVector(adaptor.getLOverhang(), "UNSX", 0, stageVectors.get(0).getName(), null);
+        adaptor.setVector(newVector);
         
         Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), adaptorSeq, adaptorComp, tags, true);
         
@@ -366,8 +369,7 @@ public class RGatewayGibson extends RGeneral {
                 RVector vec = ClothoReader.vectorImportClotho(stageVectors.get(stage));
                 stageRVectors.put(stage, vec);
             }
-            RVector levelVector = stageRVectors.get((parent.getStage()) % stageRVectors.size());
-            
+            RVector levelVector = stageRVectors.get((parent.getStage()) % stageRVectors.size());          
             
             //Assign gateway overhangs and vectors to Gateway parts
             int count = 5;

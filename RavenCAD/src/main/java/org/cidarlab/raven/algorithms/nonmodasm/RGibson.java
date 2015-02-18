@@ -114,7 +114,7 @@ public class RGibson extends RGeneral {
                 }
             
             //Edge case where all parts are too small for a gibson clone, i.e. all are merged
-            } else {
+            } else if (l0Nodes.size() == 1) {
                 RNode l0Node = l0Nodes.get(0);
                 if (l0Node.getSpecialSeq() != null) {
                     l0Node.setLeftSeq(collector.getAllVectorsWithName(root.getVector().getName(), true).get(0).getSeq());

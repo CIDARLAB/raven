@@ -1,4 +1,5 @@
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/algorithms/nonmodasm/RGibson.java
+/Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/javaapi/Raven.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/accessibility/ClothoReader.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/accessibility/ClothoWriter.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/communication/RavenLogger.java
@@ -7,6 +8,7 @@
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/algorithms/modasm/RGoldenGate.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/communication/AuthenticationServlet.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/algorithms/core/RHomologyPrimerDesign.java
+/Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/javaapi/FileUtil.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/algorithms/modasm/RBioBricks.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/communication/RavenServlet.java
 /Users/evanappleton/dfx_git/raven/RavenCAD/src/main/java/org/cidarlab/raven/datastructures/Collector.java
