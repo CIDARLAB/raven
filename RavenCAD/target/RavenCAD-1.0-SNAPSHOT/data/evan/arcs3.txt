@@ -1,41 +1,30 @@
-# AssemblyMethod: CPEC
-#  01292015@1826
-# org.cidarlab.raven.datastructures.Part@a466e8f
-# part_54
+# AssemblyMethod: GoldenGate
+#  02182015@1957
+# org.cidarlab.raven.datastructures.Part@ff3781d
+# part_113
+# org.cidarlab.raven.datastructures.Part@3952c019
+# part_115
+# org.cidarlab.raven.datastructures.Part@67c1c6b5
+# part_117
 
-# OR gate-JBEI_-GFP -> pSK1A2
-part_54 -> vector_5
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:56EST2015 -> pSK1A2
-part_56 -> vector_6
-# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:56EST2015
-part_54 -> part_56
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:56EST2015 -> attP_Bxb1_attP_TP901_JBEI_RBS_Superfolder_gfp
-part_58 -> part_51
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:56EST2015 -> B0015
-part_58 -> part_53
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:56EST2015 -> pSK1A2
-part_58 -> vector_7
-# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:56EST2015
-part_54 -> part_58
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:43EST2015 -> pSB1A2
+part_113 -> vector_26
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:43EST2015 -> pSB1A2
+part_115 -> vector_27
+# OR gate-JBEI_-GFP -> pSB1A2
+part_117 -> vector_26
 
 # Key
-# attP_Bxb1_attP_TP901_JBEI_RBS_Superfolder_gfp
-# part_51
-# (attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp)
-# OR gate-JBEI_-GFP
-# part_54
-# (P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)
-# B0015
-# part_53
-# (B0015)
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuJan2918:26:56EST2015
-# part_56
+# pSB1A2
+# vector_26
+# (SB1A)
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:43EST2015
+# part_113
 # (P7_Promoter, attB_TP901, attB_Bxb1, B0015)
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuJan2918:26:56EST2015
-# part_58
+# vector_27
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:43EST2015
+# part_115
 # (attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)
-# pSK1A2
-# vector_7
-# (SK1A)
-# vector_6
-# vector_5
+# OR gate-JBEI_-GFP
+# part_117
+# (P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)

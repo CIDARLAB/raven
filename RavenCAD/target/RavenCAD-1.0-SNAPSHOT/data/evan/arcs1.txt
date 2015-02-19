@@ -1,74 +1,76 @@
-# AssemblyMethod: GatewayGibson
-#  02182015@1345
-# org.cidarlab.raven.datastructures.Part@6e02f998
-# part_42
+# AssemblyMethod: GoldenGate
+#  02182015@1956
+# org.cidarlab.raven.datastructures.Part@27efa514
+# part_83
 
-# OR gate-JBEI_-GFP_GatewayGibson -> pSB1K3
-part_42 -> vector_7
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> P7_Promoter
-part_44 -> part_26
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> attB_TP901
-part_44 -> part_28
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> attB_Bxb1
-part_44 -> part_30
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> B0015
-part_44 -> part_32
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> attP_Bxb1
-part_44 -> part_34
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> attP_TP901
-part_44 -> part_36
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> JBEI_RBS
-part_44 -> part_38
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> Superfolder_gfp
-part_44 -> part_40
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015 -> pSB1K3
-part_44 -> vector_8
-# OR gate-JBEI_-GFP_GatewayGibson -> OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015
-part_42 -> part_44
-# B0015 -> pSB1K3
-part_46 -> vector_9
-# OR gate-JBEI_-GFP_GatewayGibson -> B0015
-part_42 -> part_46
-# OR gate-JBEI_-GFP_GatewayGibson -> adaptor_UNS3_UNSX
-part_42 -> part_24
+# OR gate-JBEI_-GFP -> pSB1A2
+part_83 -> vector_13
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:14EST2015 -> P7_Promoter
+part_85 -> part_65
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:14EST2015 -> attB_TP901
+part_85 -> part_67
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:14EST2015 -> attB_Bxb1
+part_85 -> part_69
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:14EST2015 -> B0015
+part_85 -> part_71
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:14EST2015 -> pSB1K3
+part_85 -> vector_14
+# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:14EST2015
+part_83 -> part_85
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015 -> attP_Bxb1
+part_87 -> part_73
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015 -> attP_TP901
+part_87 -> part_75
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015 -> JBEI_RBS
+part_87 -> part_77
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015 -> Superfolder_gfp
+part_87 -> part_79
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015 -> B0015
+part_87 -> part_81
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015 -> pSB1K3
+part_87 -> vector_15
+# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015
+part_83 -> part_87
 
 # Key
-# attB_TP901
-# part_28
-# (attB_TP901)
-# JBEI_RBS
-# part_38
-# (JBEI_RBS)
-# P7_Promoter
-# part_26
-# (P7_Promoter)
-# attP_Bxb1
-# part_34
-# (attP_Bxb1)
-# adaptor_UNS3_UNSX
-# part_24
-# (insulator, kanR)
-# OR gate-JBEI_-GFP_GatewayGibson
-# part_42
-# (P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015, insulator)
-# attP_TP901
-# part_36
-# (attP_TP901)
-# Superfolder_gfp
-# part_40
-# (Superfolder_gfp)
-# attB_Bxb1
-# part_30
-# (attB_Bxb1)
-# B0015
-# part_46
-# (B0015)
-# part_32
-# OR gate-JBEI_-GFP_GatewayGibson_intermediate_1_evan_WedFeb1813:45:47EST2015
-# part_44
-# (P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp)
 # pSB1K3
-# vector_9
+# vector_15
 # (SB1K)
-# vector_8
-# vector_7
+# B0015
+# part_71
+# (B0015)
+# OR gate-JBEI_-GFP
+# part_83
+# (P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)
+# part_81
+# pSB1A2
+# vector_13
+# (SB1A)
+# JBEI_RBS
+# part_77
+# (JBEI_RBS)
+# attB_Bxb1
+# part_69
+# (attB_Bxb1)
+# vector_14
+# OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:14EST2015
+# part_87
+# (attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)
+# Superfolder_gfp
+# part_79
+# (Superfolder_gfp)
+# OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:14EST2015
+# part_85
+# (P7_Promoter, attB_TP901, attB_Bxb1, B0015)
+# attB_TP901
+# part_67
+# (attB_TP901)
+# attP_Bxb1
+# part_73
+# (attP_Bxb1)
+# P7_Promoter
+# part_65
+# (P7_Promoter)
+# attP_TP901
+# part_75
+# (attP_TP901)

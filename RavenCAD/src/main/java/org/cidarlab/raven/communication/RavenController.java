@@ -44,11 +44,16 @@ public class RavenController {
         _databaseConfig.add("cidar.rwdu");
         _databaseConfig.add("cidar");
     }
+    
+    public RavenController() {
+        _path = "raven";
+        _user = "raven";
+    }
 
     /**
      * Run SRS algorithm for BioBricks *
      */
-    public ArrayList<RGraph> runBioBricks(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Collector collector) throws Exception {
+    public ArrayList<RGraph> runBioBricks(HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs) throws Exception {
 
         //Run algorithm for BioBricks assembly
         RBioBricks biobricks = new RBioBricks();
@@ -116,7 +121,7 @@ public class RavenController {
     /**
      * Run SRS algorithm for Golden Gate *
      */
-    public ArrayList<RGraph> runGoldenGate(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, Collector collector) throws Exception {
+    public ArrayList<RGraph> runGoldenGate(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs) throws Exception {
 
         //Run algorithm for Golden Gate assembly
         RGoldenGate gg = new RGoldenGate();
@@ -418,7 +423,6 @@ public class RavenController {
     //reset collector, all field variales, deletes all files in user's directory
     public void clearData() throws Exception {
         _collector.purge();
-        _goalParts = new HashSet<Part>();//key: target part, value: vector
         _statistics = new Statistics();
         _assemblyGraphs = new ArrayList<RGraph>();
 //        _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
@@ -1125,7 +1129,7 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    private void getSolutionStats(String method) throws Exception {
+    private void getSolutionStats(String method, HashSet<Part> gps) throws Exception {
 
         int steps = 0;
         int stages = 0;
@@ -1163,7 +1167,7 @@ public class RavenController {
         _statistics.setStages(stages);
         _statistics.setSteps(steps);
         _statistics.setSharing(shr);
-        _statistics.setGoalParts(_goalParts.size());
+        _statistics.setGoalParts(gps.size());
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(rxn);
         _statistics.setValid(_valid);
@@ -1173,13 +1177,36 @@ public class RavenController {
         System.out.println("Steps: " + steps + " Stages: " + stages + " Shared: " + shr + " PCRs: " + rxn + " Time: " + Statistics.getTime() + " valid: " + _valid);
     }
 
-    //Using parameters from the client, run the algorithm
-    public JSONObject run(String designCount, String method, String[] targetIDs, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, String[] partLibraryIDs, String[] vectorLibraryIDs, HashMap<Integer, Double> efficiency, ArrayList<String> primerParameters, HashMap<String, String> stageVectorsString) throws Exception {
-        _goalParts = new HashSet<Part>();
-        _statistics = new Statistics();
-        _assemblyGraphs = new ArrayList<RGraph>();
-        _valid = false;
+    //Get parts from part IDs
+    public HashSet<Part> IDsToParts(String[] targetIDs) {
+        
+        HashSet<Part> parts = new HashSet();
+        for (int i = 0; i < targetIDs.length; i++) {
+            Part current = _collector.getPart(targetIDs[i], false);
+            parts.add(current);
+        }
+        return parts;
+    }
+    
+    //Get parts from part IDs
+    public HashMap<Integer, Vector> IDsToStageVectors(HashMap<String, String> stageVectorsString) {
+        
+        //Set up stage vector hash
         HashMap<Integer, Vector> stageVectors = new HashMap<Integer, Vector>();
+        Set<String> keySet = stageVectorsString.keySet();
+        for (String strStage : keySet) {
+
+            Integer stage = Integer.parseInt(strStage);
+            Vector vector = _collector.getVector(stageVectorsString.get(strStage), false);
+            stageVectors.put(stage, vector);
+        }
+        return stageVectors;
+    }
+    
+    //Run only a specific method with full parameters defined
+    public ArrayList<RGraph> runMethod (String method, HashSet<Part> gps, ArrayList<Part> partLibrary, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiency, ArrayList<String> primerParameters, HashMap<Integer, Vector> stageVectors, HashMap<String, String> libraryOHHash, Collector collector) throws Exception {
+        
+        ArrayList<RGraph> assemblyGraphs = new ArrayList();
         method = method.trim();
         
         //Initiate minimum cloning length
@@ -1189,58 +1216,70 @@ public class RavenController {
         } catch (Exception e) {
             minCloneLength = 250;
         }
-
-        //Get target parts
-        for (int i = 0; i < targetIDs.length; i++) {
-            Part current = _collector.getPart(targetIDs[i], false);
-            _goalParts.add(current);
-        }
-
-        //Set up stage vector hash
-        Set<String> keySet = stageVectorsString.keySet();
-        for (String strStage : keySet) {
-
-            Integer stage = Integer.parseInt(strStage);
-            Vector vector = _collector.getVector(stageVectorsString.get(strStage), false);
-            stageVectors.put(stage, vector);
-        }
-
-        Statistics.start();
-        boolean overhangValid = false;
-        stageVectors = checkStageVectors(stageVectors, _collector, method);
-        if (method.equalsIgnoreCase("biobricks")) {
-            _assemblyGraphs = runBioBricks(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, stageVectors, null, _collector);
-            overhangValid = RBioBricks.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("cpec")) {
-            _assemblyGraphs = runCPEC(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, minCloneLength, _collector);
-            overhangValid = RCPEC.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("gibson")) {
-            _assemblyGraphs = runGibson(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, minCloneLength, _collector);
-            overhangValid = RGibson.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("goldengate")) {
-            _assemblyGraphs = runGoldenGate(_goalParts, _vectorLibrary, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, _collector);
-            overhangValid = RGoldenGate.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("gatewaygibson")) {
-            _assemblyGraphs = runGatewayGibson(_goalParts, _vectorLibrary, required, recommended, forbidden, discouraged, _partLibrary, false, efficiency, stageVectors, null, _libraryOHHash, _collector);
-            overhangValid = RGatewayGibson.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("moclo")) {
-            _assemblyGraphs = runMoClo(_goalParts, _vectorLibrary, required, recommended, forbidden, discouraged, _partLibrary, false, efficiency, stageVectors, null, _libraryOHHash, _collector);
-            overhangValid = RMoClo.validateOverhangs(_assemblyGraphs);
-        } else if (method.equalsIgnoreCase("slic")) {
-            _assemblyGraphs = runSLIC(_goalParts, required, recommended, forbidden, discouraged, _partLibrary, efficiency, stageVectors, null, minCloneLength, _collector);
-            overhangValid = RSLIC.validateOverhangs(_assemblyGraphs);
-        }
-        boolean valid = validateReqForb(_assemblyGraphs, required, forbidden);
-        _valid = valid && overhangValid;
         
+        boolean overhangValid = false;
+        stageVectors = checkStageVectors(stageVectors, collector, method);
+        
+        if (method.equalsIgnoreCase("biobricks")) {
+            RBioBricks biobricks = new RBioBricks();
+            assemblyGraphs = biobricks.bioBricksClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, stageVectors, null);
+            overhangValid = RBioBricks.validateOverhangs(assemblyGraphs);
+        
+        } else if (method.equalsIgnoreCase("cpec")) {
+            RCPEC cpec = new RCPEC();
+            assemblyGraphs = cpec.cpecClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
+            overhangValid = RCPEC.validateOverhangs(assemblyGraphs);
+        
+        } else if (method.equalsIgnoreCase("gibson")) {
+            RGibson gibson = new RGibson();
+            assemblyGraphs = gibson.gibsonClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
+            overhangValid = RGibson.validateOverhangs(assemblyGraphs);
+        
+        } else if (method.equalsIgnoreCase("goldengate")) {          
+            RGoldenGate gg = new RGoldenGate();
+            assemblyGraphs = gg.goldenGateClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null);
+            overhangValid = RGoldenGate.validateOverhangs(assemblyGraphs);
+        
+        } else if (method.equalsIgnoreCase("gatewaygibson")) {
+            RGatewayGibson gwgib = new RGatewayGibson();
+//            gwgib.setForcedOverhangs(_collector, _forcedOverhangHash);
+            assemblyGraphs = gwgib.gatewayGibsonWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiency, stageVectors, null, libraryOHHash, collector);
+            overhangValid = RGatewayGibson.validateOverhangs(assemblyGraphs);
+        
+        } else if (method.equalsIgnoreCase("moclo")) {
+            RMoClo moclo = new RMoClo();
+//            moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
+            assemblyGraphs = moclo.mocloClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiency, stageVectors, null, libraryOHHash);
+            overhangValid = RMoClo.validateOverhangs(assemblyGraphs);
+        
+        } else if (method.equalsIgnoreCase("slic")) {
+            RSLIC slic = new RSLIC();
+            assemblyGraphs = slic.slicClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
+            overhangValid = RSLIC.validateOverhangs(assemblyGraphs);
+        }
+        
+        boolean valid = validateReqForb(assemblyGraphs, required, forbidden);
+        boolean allValid = valid && overhangValid;
+        _valid = allValid;
+        if (allValid == false) {
+            throw new Exception();
+        }
+        
+        return assemblyGraphs;
+    }
+    
+    //Using parameters from the client, run the algorithm
+    //Gets solution graph, 
+    public JSONObject run(String designCount, String method, HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiency, ArrayList<String> primerParameters, HashMap<Integer, Vector> stageVectors) throws Exception {
+        
+        _statistics = new Statistics();
+        Statistics.start();        
+        _assemblyGraphs = runMethod(method, gps, _partLibrary, _vectorLibrary, required, recommended, forbidden, discouraged, efficiency, primerParameters, stageVectors, _libraryOHHash, _collector);        
         Statistics.stop();
-        ClothoWriter writer = new ClothoWriter();
-        ArrayList<String> graphTextFiles = new ArrayList();
-        ArrayList<String> arcTextFiles = new ArrayList();
-        ArrayList<RNode> targetRootNodes = new ArrayList();
-        HashSet<String> targetRootNodeKeys = new HashSet();
 
         //Get target root node list for instructions and picture generation
+        ArrayList<RNode> targetRootNodes = new ArrayList();
+        HashSet<String> targetRootNodeKeys = new HashSet();
         for (RGraph result : _assemblyGraphs) {
             if (!targetRootNodeKeys.contains(result.getRootNode().getNodeKey("+")) || !targetRootNodeKeys.contains(result.getRootNode().getNodeKey("-"))) {
                 targetRootNodes.add(result.getRootNode());
@@ -1251,30 +1290,27 @@ public class RavenController {
         
         //Merge graphs and make new clotho parts where appropriate
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
+        ClothoWriter writer = new ClothoWriter();
         for (RGraph result : _assemblyGraphs) {
             writer.nodesToClothoPartsVectors(_collector, result, _libraryPartsVectors, stageVectors, method, _user);
         }
 
         //Get graph stats
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, recommended, discouraged, 0.0, 0.0, 0.0, 0.0);
-        getSolutionStats(method);       
+        getSolutionStats(method, gps);       
 
         //Generate Instructions
         _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, primerParameters, true, method);
-        if (_instructions == null) {
-            _instructions = "Assembly instructions for RavenCAD are coming soon! Please stay tuned.";
-        }
 
         //Generate graph and arc files
+        ArrayList<String> graphTextFiles = new ArrayList();
+        ArrayList<String> arcTextFiles = new ArrayList();
         for (RGraph result : _assemblyGraphs) {
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
             graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method));
         }
         
-        System.out.println("GRAPH AND ARCS FILES CREATED");
-//        JSONObject d3Graph = new JSONObject();
-//        JSONObject d3Graph = RGraph.generateD3Graph(_assemblyGraphs, _partLibrary, _vectorLibrary);
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);       
         String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
         File file = new File(_path + _user + "/instructions" + designCount + ".txt");
@@ -1302,11 +1338,9 @@ public class RavenController {
         WeyekinPoster.postMyVision();
         String imageURL = "";
         imageURL = WeyekinPoster.getmGraphVizURI().toString();
-//        String imageURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2Du60RHLtNV9OG-ww7HG3srhWq3VDa3RXmA4pB0SyorO8dTrBUg";
         JSONObject toReturn = new JSONObject();
         toReturn.put("images", imageURL);
         return toReturn;
-//        return d3Graph;
     }
 
     //traverse the graph and return a boolean indicating whether or not hte graph is valid in terms of composition
@@ -1427,7 +1461,6 @@ public class RavenController {
     }
     
     //FIELDS
-    private HashSet<Part> _goalParts = new HashSet<Part>();//key: target part, value: composition
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
     private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();

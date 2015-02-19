@@ -117,6 +117,13 @@ public class AuthenticationServlet
                 // we automatically login the user, 
                 // i.e. we do some session management 
                 this.login(request, response, username);
+                
+                RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
+                String ipAddress = request.getHeader("X-FORWARDED-FOR");
+                if (ipAddress == null) {
+                    ipAddress = request.getRemoteAddr();
+                }
+                RavenLogger.logSessionIn(username, ipAddress);
 
                 /*
                  * LOGIN Request
@@ -149,7 +156,15 @@ public class AuthenticationServlet
                  */
             } else if ("logout".equals(command)) {
 
-                HttpSession session = request.getSession(false);
+                HttpSession session = request.getSession(false);                
+                
+                RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
+                String ipAddress = request.getHeader("X-FORWARDED-FOR");
+                if (ipAddress == null) {
+                    ipAddress = request.getRemoteAddr();
+                }
+                RavenLogger.logSessionOut(username, ipAddress);
+
                 if (session != null) {
                     // the session expires immediately
                     session.setMaxInactiveInterval(1);

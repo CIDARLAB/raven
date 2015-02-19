@@ -544,6 +544,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             summary = summary + '<div class="alert alert-danger"><strong>Nothing</strong>. Try selecting some target parts</div>';
         }
         var tabMethod = _method.toLowerCase().replace(/\s+/g, '');
+//        var tabMethod = _method;
         summary = summary + '<p>You will be using the <strong>' + _method + '</strong> assembly method</p>';
         summary = summary + '<p>You will be using the following efficiency table for your assembly</p>' + $('#' + tabMethod + 'Tab table').parent().html();
         efficiencyArray = [];
@@ -1165,7 +1166,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
         changeImage(tabNumber);
     });
     function interpretParams(params) {
-        _method = params["method"];
+        if (params["method"]) {
+            _method = params["method"];
+        }
         //populate required
         var required = params["required"].split(";");
         $.each(required, function(index, value) {
@@ -1193,35 +1196,42 @@ $(document).ready(function() { //don't run javascript until page is loaded
         //populate target parts
         //could be annoying for users - don't do for now
 
-        //populate library parts
-        var partIDs = params["partLibrary"].split(",");
-        var vectorIDs = params["vectorLibrary"].split(",");
-        var writeSQL = false;
-        $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
+        //populate library parts        
+        if (params["partLibrary"]) {
+            var partIDs = params["partLibrary"].split(",");
+            var vectorIDs = params["vectorLibrary"].split(",");
+            var writeSQL = false;
+            $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
 
-        });
-
+            });
+        }
+        
         //switch to correct method
-        $.each($('#methodTabHeader li'), function() {
-            $(this).removeClass('active');
-        });
-        $('#' + params["method"] + 'TabHeader').parent().addClass('active')
-        $.each($('#methodTabs div'), function() {
-            $(this).removeClass('active');
-        });
-        $('#' + params["method"] + 'Tab').addClass('active')
+//        $.each($('#methodTabHeader li'), function() {
+//            $(this).removeClass('active');
+//        });
+//        $('#' + params["method"] + 'TabHeader').parent().addClass('active')
+//        $.each($('#methodTabs div'), function() {
+//            $(this).removeClass('active');
+//        });
+//        $('#' + params["method"] + 'Tab').addClass('active')
         //populate primer parameters
-        $('input#oligoNameRoot').val(params["primer"]["oligoNameRoot"]);
-        $('input#meltingTemperature').val(params["primer"]["meltingTemperature"]);
-        $('input#targetLength').val(params["primer"]["targetLength"]);
+        
+        if (params["primer"]) {
+            $('input#oligoNameRoot').val(params["primer"]["oligoNameRoot"]);
+            $('input#meltingTemperature').val(params["primer"]["meltingTemperature"]);
+            $('input#targetLength').val(params["primer"]["targetLength"]);
+        }
 
         //populate efficiency
         var table = $('#' + params["method"] + 'Tab table');
         table.children("tbody").html("");
-        var efficiencies = params["efficiency"].split(",");
-        $.each(efficiencies, function(index, value) {
-            table.children("tbody").append('<tr><td>' + (index + 2) + '</td><td><input class="input-mini" placeholder="' + value + '"></td><tr>')
-        });
+        if (params["efficiency"]) {
+            var efficiencies = params["efficiency"].split(",");
+            $.each(efficiencies, function(index, value) {
+                table.children("tbody").append('<tr><td>' + (index + 2) + '</td><td><input class="input-mini" placeholder="' + value + '"></td><tr>')
+            });
+        }
         updateSummary();
     }
 

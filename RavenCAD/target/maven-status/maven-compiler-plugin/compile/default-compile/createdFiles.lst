@@ -26,7 +26,6 @@ org/cidarlab/raven/datastructures/RestrictionEnzyme.class
 org/cidarlab/raven/communication/PuppeteerWriter.class
 org/cidarlab/raven/datastructures/CartesianNode.class
 org/cidarlab/raven/accessibility/RInstructions.class
-org/cidarlab/raven/javaapi/Raven$AssemblyMethod.class
 org/cidarlab/raven/javaapi/Raven.class
 org/cidarlab/raven/datastructures/RGraph.class
 org/cidarlab/raven/communication/RavenLogger.class

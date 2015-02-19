@@ -27,6 +27,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.cidarlab.raven.datastructures.Part;
+import org.cidarlab.raven.datastructures.Vector;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -50,7 +52,7 @@ public class RavenServlet extends HttpServlet {
             RavenLogger.setPath(this.getServletContext().getRealPath("/") + "/log/");
             out = response.getWriter();
             String command = request.getParameter("command");
-//            user = getUser(request).toLowerCase();
+            
             user = getUser(request);
             RavenController controller = _controllerHash.get(user);
             if (controller == null) {
@@ -126,8 +128,8 @@ public class RavenServlet extends HttpServlet {
                 paramsConfig.put("discouraged", request.getParameter("discouraged"));
 
                 String[] targetIDs = request.getParameter("targets").split(",");
-                String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
-                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
+//                String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
+//                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
                 String[] recArray = request.getParameter("recommended").split(";");
                 String[] reqArray = request.getParameter("required").split(";");
                 String[] forbiddenArray = request.getParameter("forbidden").split(";");
@@ -205,7 +207,9 @@ public class RavenServlet extends HttpServlet {
                 }
 
                 String designCount = request.getParameter("designCount");
-                JSONObject graphData = controller.run(designCount, method, targetIDs, required, recommended, forbidden, discouraged, partLibraryIDs, vectorLibraryIDs, efficiencyHash, primerParameters, stageVectorHash);
+                HashSet<Part> targetParts = controller.IDsToParts(targetIDs);
+                HashMap<Integer, Vector> stageVectors = controller.IDsToStageVectors(stageVectorHash);
+                JSONObject graphData = controller.run(designCount, method, targetParts, required, recommended, forbidden, discouraged, efficiencyHash, primerParameters, stageVectors);
                 JSONArray partsList = controller.generatePartsList(designCount, paramsConfig.toString(), method);
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();
