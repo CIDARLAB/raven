@@ -1,50 +1,127 @@
 **********************************************
-Assembly Instructions for target part: OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:43EST2015
-**********************************************
-
--> Assemble OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:43EST2015|pSB1A2_R|pSB1A2_L|[+,  +,  +,  +] by performing a GoldenGate cloning reaction with: OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:43EST2015|pSB1A2_R|pSB1A2_L|[+,  +,  +,  +], pSB1A2|P7_Promoter|B0015
-
-PCR OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:43EST2015 part with oligos: oligo1 and oligo2 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): OR gate-JBEI_-GFP_intermediate_1_evan_WedFeb1819:56:43EST2015|pSB1A2_R|pSB1A2_L|[+,  +,  +,  +]
-PCR lacZ part with oligos: oligo3 and oligo4 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|P7_Promoter|B0015
-
-**********************************************
-Assembly Instructions for target part: OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:43EST2015
-**********************************************
-
--> Assemble OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:43EST2015|pSB1A2_R|pSB1A2_L|[-,  -,  +,  +,  +] by performing a GoldenGate cloning reaction with: OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:43EST2015|pSB1A2_R|pSB1A2_L|[-,  -,  +,  +,  +], pSB1A2|attP_Bxb1|B0015
-
-PCR OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:43EST2015 part with oligos: oligo5 and oligo6 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): OR gate-JBEI_-GFP_intermediate_2_evan_WedFeb1819:56:43EST2015|pSB1A2_R|pSB1A2_L|[-,  -,  +,  +,  +]
-PCR lacZ part with oligos: oligo7 and oligo8 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|attP_Bxb1|B0015
-
-**********************************************
 Assembly Instructions for target part: OR gate-JBEI_-GFP
 **********************************************
 
--> Assemble OR gate-JBEI_-GFP|pSB1A2_R|pSB1A2_L|[+,  +,  +,  +,  -,  -,  +,  +,  +] by performing a GoldenGate cloning reaction with: OR gate-JBEI_-GFP|pSB1A2_R|pSB1A2_L|[+,  +,  +,  +,  -,  -,  +,  +,  +], pSB1A2|P7_Promoter|B0015
+-> Assemble OR gate-JBEI_-GFP|4|5|[+,  +,  +,  +,  -,  -,  +,  +,  +] by performing a MoClo cloning reaction with: OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:45:09EST2015|4|6*|[+,  +,  +,  +,  -], OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:45:09EST2015|6*|5|[-,  +,  +,  +], pSB1A2|4|5
 
-PCR OR gate-JBEI_-GFP part with oligos: oligo9 and oligo10 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): OR gate-JBEI_-GFP|pSB1A2_R|pSB1A2_L|[+,  +,  +,  +,  -,  -,  +,  +,  +]
-PCR lacZ part with oligos: oligo3 and oligo4 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|P7_Promoter|B0015
+-> Assemble OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:45:09EST2015|4|6*|[+,  +,  +,  +,  -] by performing a MoClo cloning reaction with: P7_Promoter|4|0|[+], attB_TP901|0|1|[+], attB_Bxb1|1|2|[+], B0015|2|3|[+], attP_Bxb1|3|6*|[-], pSB1K3|4|6*
+
+-> Assemble OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:45:09EST2015|6*|5|[-,  +,  +,  +] by performing a MoClo cloning reaction with: attP_TP901|6*|0|[-], JBEI_RBS|0|1|[+], Superfolder_gfp|1|2|[+], B0015|2|5|[+], pSB1K3|6*|5
+
+-> Assemble P7_Promoter|4|0|[+] by performing a MoClo cloning reaction with: P7_Promoter|4|0|[+], pSB1A2|4|0
+
+-> Assemble attB_TP901|0|1|[+] by performing a MoClo cloning reaction with: attB_TP901|0|1|[+], pSB1A2|0|1
+
+-> Assemble attB_Bxb1|1|2|[+] by performing a MoClo cloning reaction with: attB_Bxb1|1|2|[+], pSB1A2|1|2
+
+-> Assemble B0015|2|3|[+] by performing a MoClo cloning reaction with: B0015|2|3|[+], pSB1A2|2|3
+
+-> Assemble attP_Bxb1|3|6*|[-] by performing a MoClo cloning reaction with: attP_Bxb1|3|6*|[-], pSB1A2|3|6*
+
+-> Assemble attP_TP901|6*|0|[-] by performing a MoClo cloning reaction with: attP_TP901|6*|0|[-], pSB1A2|6*|0
+
+-> Assemble JBEI_RBS|0|1|[+] by performing a MoClo cloning reaction with: JBEI_RBS|0|1|[+], pSB1A2|0|1
+
+-> Assemble Superfolder_gfp|1|2|[+] by performing a MoClo cloning reaction with: Superfolder_gfp|1|2|[+], pSB1A2|1|2
+
+-> Assemble B0015|2|5|[+] by performing a MoClo cloning reaction with: B0015|2|5|[+], pSB1A2|2|5
+
+PCR B0015 part with oligos: oligo1 and oligo2 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): B0015|2|5|[+]
+PCR Superfolder_gfp part with oligos: oligo3 and oligo4 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): Superfolder_gfp|1|2|[+]
+PCR attP_TP901 part with oligos: oligo5 and oligo6 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attP_TP901|6*|0|[-]
+PCR attB_TP901 part with oligos: oligo7 and oligo8 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attB_TP901|0|1|[+]
+PCR JBEI_RBS part with oligos: oligo9 and oligo10 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): JBEI_RBS|0|1|[+]
+PCR B0015 part with oligos: oligo11 and oligo12 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): B0015|2|3|[+]
+PCR attB_Bxb1 part with oligos: oligo13 and oligo14 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attB_Bxb1|1|2|[+]
+PCR P7_Promoter part with oligos: oligo15 and oligo16 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): P7_Promoter|4|0|[+]
+PCR attP_Bxb1 part with oligos: oligo17 and oligo18 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attP_Bxb1|3|6*|[-]
+PCR lacZ part with oligos: oligo19 and oligo20 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|2|3
+PCR lacZ part with oligos: oligo21 and oligo22 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|0|1
+PCR lacZ part with oligos: oligo23 and oligo24 and clone into vector: pSB1K3 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1K3|4|6*
+PCR lacZ part with oligos: oligo25 and oligo26 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|2|5
+PCR lacZ part with oligos: oligo27 and oligo28 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|6*|0
+PCR lacZ part with oligos: oligo29 and oligo30 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|4|5
+PCR lacZ part with oligos: oligo31 and oligo32 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|1|2
+PCR lacZ part with oligos: oligo33 and oligo34 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|3|6*
+PCR lacZ part with oligos: oligo35 and oligo36 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|4|0
+PCR lacZ part with oligos: oligo37 and oligo38 and clone into vector: pSB1K3 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1K3|6*|5
 
 
 **********************************************
 OLIGOS
 >oligo1
-atgaagacgtAGTAtaattcctaatttttgttgacact
+atgaagacgtAATGccaggcatcaaataaaacgaaagg
 >oligo2
-acgaagacctTATAtataaacgcagaaaggcccacccg
+acgaagacctAGCGtataaacgcagaaaggcccacccg
 >oligo3
-actagtgggtctcaAGTAatgtcttctgcaccatatgcggtgtgaaatac
+atgaagacgtTACTatgcgtaaaggcgaagagctgttc
 >oligo4
-actagtaggtctctTATAacgtcttccccgcgcgttggccgattcattaa
+acgaagacctCATTtcatcatttgtacagttcatccat
 >oligo5
-atgaagacgtAGGTgtcggggtttgtaccgtacaccac
+atgaagacgtGGCAaaaggagtttttttagttacctta
 >oligo6
-acgaagacctTATAtataaacgcagaaaggcccacccg
+acgaagacctCTCCgcgagtttttatttcgtttatttc
 >oligo7
-actagtgggtctcaAGGTatgtcttctgcaccatatgcggtgtgaaatac
+atgaagacgtGGAGatgccacaccaattaacatctcaa
 >oligo8
-actagtaggtctctTATAacgtcttccccgcgcgttggccgattcattaa
+acgaagacctAGTAgcaaaaaaagcaaaaagcatttac
 >oligo9
-atgaagacgtAGTAtaattcctaatttttgttgacact
+atgaagacgtGGAGgaattcaaaagatcttttaagaag
 >oligo10
-acgaagacctTATAtataaacgcagaaaggcccacccg
+acgaagacctAGTAatgtatatctccttcttaaaagat
+>oligo11
+atgaagacgtAATGccaggcatcaaataaaacgaaagg
+>oligo12
+acgaagacctACCTtataaacgcagaaaggcccacccg
+>oligo13
+atgaagacgtTACTtcggccggcttgtcgacgacggcg
+>oligo14
+acgaagacctCATTgcccggatgatcctgacgacggag
+>oligo15
+atgaagacgtGCTTtaattcctaatttttgttgacact
+>oligo16
+acgaagacctCTCCttttctctatcactgatagggagt
+>oligo17
+atgaagacgtAGGTgtcggggtttgtaccgtacaccac
+>oligo18
+acgaagacctTGCCgtcgtggtttgtctggtcaaccac
+>oligo19
+actagtgggtctcaAATGatgtcttctgcaccatatgcggtgtgaaatac
+>oligo20
+actagtaggtctctACCTacgtcttccccgcgcgttggccgattcattaa
+>oligo21
+actagtgggtctcaGGAGatgtcttctgcaccatatgcggtgtgaaatac
+>oligo22
+actagtaggtctctAGTAacgtcttccccgcgcgttggccgattcattaa
+>oligo23
+actagtggaagacatGCTTagagacctgcaccatatgcggtgtgaaatac
+>oligo24
+actagtagaagacatTGCCagagacccccgcgcgttggccgattcattaa
+>oligo25
+actagtgggtctcaAATGatgtcttctgcaccatatgcggtgtgaaatac
+>oligo26
+actagtaggtctctAGCGacgtcttccccgcgcgttggccgattcattaa
+>oligo27
+actagtgggtctcaGGCAatgtcttctgcaccatatgcggtgtgaaatac
+>oligo28
+actagtaggtctctCTCCacgtcttccccgcgcgttggccgattcattaa
+>oligo29
+actagtgggtctcaGCTTatgtcttctgcaccatatgcggtgtgaaatac
+>oligo30
+actagtaggtctctAGCGacgtcttccccgcgcgttggccgattcattaa
+>oligo31
+actagtgggtctcaTACTatgtcttctgcaccatatgcggtgtgaaatac
+>oligo32
+actagtaggtctctCATTacgtcttccccgcgcgttggccgattcattaa
+>oligo33
+actagtgggtctcaAGGTatgtcttctgcaccatatgcggtgtgaaatac
+>oligo34
+actagtaggtctctTGCCacgtcttccccgcgcgttggccgattcattaa
+>oligo35
+actagtgggtctcaGCTTatgtcttctgcaccatatgcggtgtgaaatac
+>oligo36
+actagtaggtctctCTCCacgtcttccccgcgcgttggccgattcattaa
+>oligo37
+actagtggaagacatGGCAagagacctgcaccatatgcggtgtgaaatac
+>oligo38
+actagtagaagacatAGCGagagacccccgcgcgttggccgattcattaa

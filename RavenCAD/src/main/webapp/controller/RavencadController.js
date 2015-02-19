@@ -1207,20 +1207,26 @@ $(document).ready(function() { //don't run javascript until page is loaded
         }
         
         //switch to correct method
-//        $.each($('#methodTabHeader li'), function() {
-//            $(this).removeClass('active');
-//        });
-//        $('#' + params["method"] + 'TabHeader').parent().addClass('active')
-//        $.each($('#methodTabs div'), function() {
-//            $(this).removeClass('active');
-//        });
-//        $('#' + params["method"] + 'Tab').addClass('active')
-        //populate primer parameters
+        if (params["method"]) {
+            $.each($('#methodTabHeader li'), function() {
+                $(this).removeClass('active');
+            });
+            $('#' + params["method"] + 'TabHeader').parent().addClass('active')
+            $.each($('#methodTabs div'), function() {
+                $(this).removeClass('active');
+            });
+            $('#' + params["method"] + 'Tab').addClass('active')
+        }
         
+        //populate primer parameters        
         if (params["primer"]) {
             $('input#oligoNameRoot').val(params["primer"]["oligoNameRoot"]);
             $('input#meltingTemperature').val(params["primer"]["meltingTemperature"]);
             $('input#targetLength').val(params["primer"]["targetLength"]);
+        }
+        
+        if (params["efficiency"]) {
+            var test = [];
         }
 
         //populate efficiency

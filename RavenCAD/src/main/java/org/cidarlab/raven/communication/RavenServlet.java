@@ -108,19 +108,8 @@ public class RavenServlet extends HttpServlet {
                     controller._collector.removeVector(partIDs[i]);
                 }
             } else if (command.equals("run")) {
-                response.setContentType("application/json");
-                JSONObject params = new JSONObject();
-                params.put("targets", request.getParameter("targets"));
-                params.put("partLibrary", request.getParameter("partLibrary"));
-                params.put("vectorLibrary", request.getParameter("vectorLibrary"));
-                params.put("recommended", request.getParameter("recommended"));
-                params.put("required", request.getParameter("required"));
-                params.put("forbidden", request.getParameter("forbidden"));
-                params.put("discouraged", request.getParameter("discouraged"));
-                params.put("efficiency", request.getParameter("efficiency"));
-                params.put("primer", request.getParameter("primer"));
-                params.put("method", request.getParameter("method"));
                 
+                response.setContentType("application/json");
                 JSONObject paramsConfig = new JSONObject();
                 paramsConfig.put("recommended", request.getParameter("recommended"));
                 paramsConfig.put("required", request.getParameter("required"));
@@ -128,89 +117,34 @@ public class RavenServlet extends HttpServlet {
                 paramsConfig.put("discouraged", request.getParameter("discouraged"));
 
                 String[] targetIDs = request.getParameter("targets").split(",");
-//                String[] partLibraryIDs = request.getParameter("partLibrary").split(",");
-//                String[] vectorLibraryIDs = request.getParameter("vectorLibrary").split(",");
-                String[] recArray = request.getParameter("recommended").split(";");
-                String[] reqArray = request.getParameter("required").split(";");
-                String[] forbiddenArray = request.getParameter("forbidden").split(";");
-                String[] discouragedArray = request.getParameter("discouraged").split(";");
-                String[] efficiencyArray = request.getParameter("efficiency").split(",");
-
                 JSONObject primerParam = new JSONObject(request.getParameter("primer"));
-                String method = request.getParameter("method");
-                HashSet<String> required = new HashSet();
-                HashSet<String> recommended = new HashSet();
-                HashSet<String> forbidden = new HashSet();
-                HashSet<String> discouraged = new HashSet();
-                HashMap<Integer, Double> efficiencyHash = new HashMap();
 
-                //[oligoNameRoot, forwardPrefix, reversePrefix, forwardCutSite, reverseCutSite, forwardCutDistance, reverseCutDistance,meltingTemperature, targetLength)
-                ArrayList<String> primerParameters = new ArrayList();
-                primerParameters.add(primerParam.getString("oligoNameRoot"));
-                primerParameters.add(primerParam.getString("meltingTemperature"));
-                primerParameters.add(primerParam.getString("targetHomologyLength"));
-                primerParameters.add(primerParam.getString("minPCRLength"));
-                primerParameters.add(primerParam.getString("minCloneLength"));
-                primerParameters.add(primerParam.getString("maxPrimerLength"));
+                //Form primer parameters
+                JSONObject parameters = new JSONObject();
+                parameters.put("oligoNameRoot",primerParam.getString("oligoNameRoot"));
+                parameters.put("meltingTemperature",primerParam.getString("meltingTemperature"));
+                parameters.put("targetHomologyLength",primerParam.getString("targetHomologyLength"));
+                parameters.put("minPCRLength",primerParam.getString("minPCRLength"));
+                parameters.put("minCloneLength",primerParam.getString("minCloneLength"));
+                parameters.put("maxPrimerLength",primerParam.getString("maxPrimerLength"));
+                parameters.put("recommended", request.getParameter("recommended"));
+                parameters.put("required", request.getParameter("required"));
+                parameters.put("forbidden", request.getParameter("forbidden"));
+                parameters.put("discouraged", request.getParameter("discouraged"));
+                parameters.put("efficiency", request.getParameter("efficiency"));
+                parameters.put("method", request.getParameter("method"));
 
                 String[] stageVectorArray = request.getParameter("stageVectors").split(","); 
                 HashMap<String,String> stageVectorHash = new HashMap<String, String>(); //key - stage as string, value - vector uuid
                 for(int i=0 ;i<stageVectorArray.length;i++) {
                     stageVectorHash.put(String.valueOf(i), stageVectorArray[i]);
-                }
-                
-                if (recArray.length > 0) {
-                    for (int i = 0; i < recArray.length; i++) {
-                        if (recArray[i].length() > 0) {
-                            String rcA = recArray[i];
-                            rcA = rcA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                            recommended.add(rcA);
-                        }
-                    }
-                }
-
-                if (reqArray.length > 0) {
-                    for (int i = 0; i < reqArray.length; i++) {
-                        if (reqArray[i].length() > 0) {
-                            String rqA = reqArray[i];
-                            rqA = rqA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                            required.add(rqA);
-                        }
-                    }
-                }
-
-                if (forbiddenArray.length > 0) {
-                    for (int i = 0; i < forbiddenArray.length; i++) {
-                        if (forbiddenArray[i].length() > 0) {
-                            String fA = forbiddenArray[i];
-                            fA = fA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                            forbidden.add(fA);
-                        }
-                    }
-                }
-
-                if (discouragedArray.length > 0) {
-                    for (int i = 0; i < discouragedArray.length; i++) {
-                        if (discouragedArray[i].length() > 0) {
-                            String dA = discouragedArray[i];
-                            dA = dA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                            discouraged.add(dA);
-                        }
-                    }
-                }
-
-                //generate efficiency hash
-                if (efficiencyArray.length > 0) {
-                    for (int i = 0; i < efficiencyArray.length; i++) {
-                        efficiencyHash.put(i + 2, Double.parseDouble(efficiencyArray[i]));
-                    }
-                }
+                }                
 
                 String designCount = request.getParameter("designCount");
                 HashSet<Part> targetParts = controller.IDsToParts(targetIDs);
                 HashMap<Integer, Vector> stageVectors = controller.IDsToStageVectors(stageVectorHash);
-                JSONObject graphData = controller.run(designCount, method, targetParts, required, recommended, forbidden, discouraged, efficiencyHash, primerParameters, stageVectors);
-                JSONArray partsList = controller.generatePartsList(designCount, paramsConfig.toString(), method);
+                JSONObject graphData = controller.run(designCount, targetParts, parameters, stageVectors);
+                JSONArray partsList = controller.generatePartsList(designCount, paramsConfig.toString(), request.getParameter("method"));
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();
                 System.out.println("Stats: " + statString);

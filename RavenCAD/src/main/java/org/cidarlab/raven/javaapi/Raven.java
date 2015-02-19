@@ -11,6 +11,7 @@ import org.cidarlab.raven.communication.RavenController;
 import org.cidarlab.raven.datastructures.Part;
 import org.cidarlab.raven.datastructures.RGraph;
 import org.cidarlab.raven.datastructures.Vector;
+import org.json.JSONObject;
 
 /**
  *
@@ -24,7 +25,7 @@ public class Raven {
     
     //Upload a file, calculate assembly for all parts in a file that are not in the library
     //This will also automatically apply parameters at the bottom of the file for required, forbidden, recommended and discouraged
-    public ArrayList<RGraph> assembleAllInFile (ArrayList<File> ravenFiles, String method) {
+    public ArrayList<RGraph> assembleFile (ArrayList<File> ravenFiles, JSONObject parameters) {
         
         RavenController raven = new RavenController();
         raven.loadUploadedFiles(ravenFiles);
@@ -33,7 +34,7 @@ public class Raven {
         return null;
     }
     
-    public ArrayList<RGraph> assemble (HashSet<Part> targetParts, HashSet<Part> partsLib, HashSet<Vector> vectorLib, String method) {
+    public ArrayList<RGraph> assemble (HashSet<Part> targetParts, HashSet<Part> partsLib, HashSet<Vector> vectorLib, JSONObject parameters) {
         return null;
     }
 }

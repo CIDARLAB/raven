@@ -1124,17 +1124,85 @@ public class RavenController {
         return stageVectors;
     }
     
+    //Make libraryOH map
+    public HashMap<String, String> makeLibraryOHHash(HashSet<Part> partsLib) {
+        
+        HashMap<String,String> libraryOH = new HashMap();
+        for (Part p : partsLib) {
+            libraryOH.put(p.getUUID(), p.getLeftOverhang() + "|" + p.getRightOverhang());
+        }
+        return libraryOH;
+    }
+    
     //Run only a specific method with full parameters defined
-    public ArrayList<RGraph> runMethod (String method, HashSet<Part> gps, ArrayList<Part> partLibrary, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiency, ArrayList<String> primerParameters, HashMap<Integer, Vector> stageVectors, HashMap<String, String> libraryOHHash, Collector collector) throws Exception {
+    public ArrayList<RGraph> solve (HashSet<Part> gps, ArrayList<Part> partLibrary, ArrayList<Vector> vectorLibrary, JSONObject parameters, HashMap<Integer, Vector> stageVectors, HashMap<String, String> libraryOHHash, Collector collector) throws Exception {
         
         ArrayList<RGraph> assemblyGraphs = new ArrayList();
-        method = method.trim();
+        
+        String[] recArray = parameters.get("recommended").toString().split(";");
+        String[] reqArray = parameters.get("required").toString().split(";");
+        String[] forbiddenArray = parameters.get("forbidden").toString().split(";");
+        String[] discouragedArray = parameters.get("discouraged").toString().split(";");
+        String[] efficiencyArray = parameters.get("efficiency").toString().split(",");
+        String method = parameters.get("method").toString().trim();
+        HashSet<String> required = new HashSet();
+        HashSet<String> recommended = new HashSet();
+        HashSet<String> forbidden = new HashSet();
+        HashSet<String> discouraged = new HashSet();
+        HashMap<Integer, Double> efficiency = new HashMap();
+                
+        if (recArray.length > 0) {
+            for (int i = 0; i < recArray.length; i++) {
+                if (recArray[i].length() > 0) {
+                    String rcA = recArray[i];
+                    rcA = rcA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                    recommended.add(rcA);
+                }
+            }
+        }
+
+        if (reqArray.length > 0) {
+            for (int i = 0; i < reqArray.length; i++) {
+                if (reqArray[i].length() > 0) {
+                    String rqA = reqArray[i];
+                    rqA = rqA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                    required.add(rqA);
+                }
+            }
+        }
+
+        if (forbiddenArray.length > 0) {
+            for (int i = 0; i < forbiddenArray.length; i++) {
+                if (forbiddenArray[i].length() > 0) {
+                    String fA = forbiddenArray[i];
+                    fA = fA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                    forbidden.add(fA);
+                }
+            }
+        }
+
+        if (discouragedArray.length > 0) {
+            for (int i = 0; i < discouragedArray.length; i++) {
+                if (discouragedArray[i].length() > 0) {
+                    String dA = discouragedArray[i];
+                    dA = dA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                    discouraged.add(dA);
+                }
+            }
+        }
+
+        //generate efficiency hash
+        if (efficiencyArray.length > 0) {
+            for (int i = 0; i < efficiencyArray.length; i++) {
+                efficiency.put(i + 2, Double.parseDouble(efficiencyArray[i]));
+            }
+        }
         
         //Initiate minimum cloning length
         int minCloneLength;
-        try {
-            minCloneLength = Integer.valueOf(primerParameters.get(4));
-        } catch (Exception e) {
+        if (parameters.has("minCloneLength")) {
+            minCloneLength = Integer.valueOf(parameters.get("minCloneLength").toString());
+        } else {
             minCloneLength = 250;
         }
         
@@ -1191,11 +1259,12 @@ public class RavenController {
     
     //Using parameters from the client, run the algorithm
     //Gets solution graph, 
-    public JSONObject run(String designCount, String method, HashSet<Part> gps, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, HashMap<Integer, Double> efficiency, ArrayList<String> primerParameters, HashMap<Integer, Vector> stageVectors) throws Exception {
+    public JSONObject run(String designCount, HashSet<Part> gps, JSONObject parameters, HashMap<Integer, Vector> stageVectors) throws Exception {
         
+        String method = parameters.get("method").toString().trim();
         _statistics = new Statistics();
         Statistics.start();        
-        _assemblyGraphs = runMethod(method, gps, _partLibrary, _vectorLibrary, required, recommended, forbidden, discouraged, efficiency, primerParameters, stageVectors, _libraryOHHash, _collector);        
+        _assemblyGraphs = solve(gps, _partLibrary, _vectorLibrary, parameters, stageVectors, _libraryOHHash, _collector);        
         Statistics.stop();
 
         //Get target root node list for instructions and picture generation
@@ -1217,11 +1286,11 @@ public class RavenController {
         }
 
         //Get graph stats
-        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, recommended, discouraged, 0.0, 0.0, 0.0, 0.0);
+        RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, parameters, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method, gps);       
 
         //Generate Instructions
-        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, primerParameters, true, method);
+        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
 
         //Generate graph and arc files
         ArrayList<String> graphTextFiles = new ArrayList();

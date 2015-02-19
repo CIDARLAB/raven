@@ -279,7 +279,33 @@ public class RGraph {
     /**
      * Get graph statistics *
      */
-    public static void getGraphStats(ArrayList<RGraph> allGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, HashSet<String> recommended, HashSet<String> discouraged, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+    public static void getGraphStats(ArrayList<RGraph> allGraphs, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, JSONObject parameters, Double stepCost, Double stepTime, Double pcrCost, Double pcrTime) {
+        
+        //Get recommended and discouraged
+        String[] recArray = parameters.get("recommended").toString().split(";");
+        String[] discouragedArray = parameters.get("discouraged").toString().split(";");
+        HashSet<String> recommended = new HashSet();
+        HashSet<String> discouraged = new HashSet();
+        
+        if (recArray.length > 0) {
+            for (int i = 0; i < recArray.length; i++) {
+                if (recArray[i].length() > 0) {
+                    String rcA = recArray[i];
+                    rcA = rcA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                    recommended.add(rcA);
+                }
+            }
+        }
+        
+        if (discouragedArray.length > 0) {
+            for (int i = 0; i < discouragedArray.length; i++) {
+                if (discouragedArray[i].length() > 0) {
+                    String dA = discouragedArray[i];
+                    dA = dA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                    discouraged.add(dA);
+                }
+            }
+        }
         
         //don't count library parts and vectors 
         HashSet<String> seenPartKeys = getExistingPartKeys(partLib);

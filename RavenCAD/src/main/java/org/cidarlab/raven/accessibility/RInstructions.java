@@ -17,6 +17,7 @@ import org.cidarlab.raven.datastructures.Vector;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.json.JSONObject;
 
 /**
  *
@@ -24,7 +25,7 @@ import java.util.HashSet;
  */
 public class RInstructions {
 
-    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, ArrayList<String> primerParameters, boolean designPrimers, String method) {
+    public static String generateInstructions(ArrayList<RNode> roots, Collector coll, ArrayList<Part> partLib, ArrayList<Vector> vectorLib, JSONObject primerParameters, boolean designPrimers, String method) {
 
         int oligoCount = 1;
         String instructions = "";
@@ -35,13 +36,13 @@ public class RInstructions {
         int minPCRLength;
         int maxPrimerLength;
 
-        try {
-            oligoNameRoot = primerParameters.get(0);
-            meltingTemp = Double.valueOf(primerParameters.get(1));
-            targetHomologyLength = Integer.valueOf(primerParameters.get(2));
-            minPCRLength = Integer.valueOf(primerParameters.get(3));
-            maxPrimerLength = Integer.valueOf(primerParameters.get(5));
-        } catch (Exception e) {
+        if (primerParameters.has("targetHomologyLength") && primerParameters.has("oligoNameRoot") && primerParameters.has("meltingTemperature") && primerParameters.has("minPCRLength") && primerParameters.has("maxPrimerLength")) {        
+            oligoNameRoot = primerParameters.get("oligoNameRoot").toString();
+            meltingTemp = Double.valueOf(primerParameters.get("meltingTemperature").toString());
+            targetHomologyLength = Integer.valueOf(primerParameters.get("targetHomologyLength").toString());
+            minPCRLength = Integer.valueOf(primerParameters.get("minPCRLength").toString());
+            maxPrimerLength = Integer.valueOf(primerParameters.get("maxPrimerLength").toString());
+        } else {
             oligoNameRoot = "oligo";
             meltingTemp = 55.0;
             targetHomologyLength = 24;
