@@ -30,24 +30,30 @@ public class RInstructions {
         int oligoCount = 1;
         String instructions = "";
         designPrimers = true;
-        String oligoNameRoot;
-        Double meltingTemp;
-        int targetHomologyLength;
-        int minPCRLength;
-        int maxPrimerLength;
+        String oligoNameRoot = "oligo";
+        double meltingTemp = 55.0;
+        int targetHomologyLength = 24;
+        int minPCRLength = 24;
+        int maxPrimerLength = 60;
 
-        if (primerParameters.has("targetHomologyLength") && primerParameters.has("oligoNameRoot") && primerParameters.has("meltingTemperature") && primerParameters.has("minPCRLength") && primerParameters.has("maxPrimerLength")) {        
+        if (primerParameters.has("oligoNameRoot")) {
             oligoNameRoot = primerParameters.get("oligoNameRoot").toString();
+        }
+        
+        if (primerParameters.has("meltingTemperature")) {
             meltingTemp = Double.valueOf(primerParameters.get("meltingTemperature").toString());
+        }
+        
+        if (primerParameters.has("targetHomologyLength")) {
             targetHomologyLength = Integer.valueOf(primerParameters.get("targetHomologyLength").toString());
+        }
+        
+        if (primerParameters.has("minPCRLength")) {    
             minPCRLength = Integer.valueOf(primerParameters.get("minPCRLength").toString());
+        }
+        
+        if (primerParameters.has("maxPrimerLength")) {
             maxPrimerLength = Integer.valueOf(primerParameters.get("maxPrimerLength").toString());
-        } else {
-            oligoNameRoot = "oligo";
-            meltingTemp = 55.0;
-            targetHomologyLength = 24;
-            minPCRLength = 24;
-            maxPrimerLength = 60;
         }
 
         ArrayList<String> oligoNames = new ArrayList<String>();

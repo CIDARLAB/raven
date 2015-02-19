@@ -56,7 +56,7 @@ public class RavenController {
     public HashMap<Integer, Vector> checkStageVectors(HashMap<Integer, Vector> stageVectors, Collector collector, String method) {
         
         //If stageVectors are empty, fill with defaults
-        if (stageVectors.get(0) == null) {
+        if (stageVectors.get(0) == null || stageVectors == null) {
 
             ArrayList<String> defaultTags0 = new ArrayList<String>();
             defaultTags0.add("LO: ");
@@ -582,16 +582,22 @@ public class RavenController {
      */
     private void parseRavenFile(File input) throws Exception {
         
-        _vectorLibrary = new ArrayList<Vector>();
-        _partLibrary = new ArrayList<Part>();
+        if (_vectorLibrary == null) {
+            _vectorLibrary = new ArrayList();
+        }
+        if (_partLibrary == null) {
+            _partLibrary = new ArrayList();
+        }
+        if (_libraryOHHash == null) {
+            _libraryOHHash = new HashMap();
+        }
+        
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
 //        if (_forcedOverhangHash == null) {
 //            _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
 //        }
-        if (_libraryOHHash == null) {
-            _libraryOHHash = new HashMap<String, String>();
-        }
+        
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
         String line = reader.readLine();
         line = reader.readLine(); //skip first line
@@ -1138,63 +1144,88 @@ public class RavenController {
     public ArrayList<RGraph> solve (HashSet<Part> gps, ArrayList<Part> partLibrary, ArrayList<Vector> vectorLibrary, JSONObject parameters, HashMap<Integer, Vector> stageVectors, HashMap<String, String> libraryOHHash, Collector collector) throws Exception {
         
         ArrayList<RGraph> assemblyGraphs = new ArrayList();
-        
-        String[] recArray = parameters.get("recommended").toString().split(";");
-        String[] reqArray = parameters.get("required").toString().split(";");
-        String[] forbiddenArray = parameters.get("forbidden").toString().split(";");
-        String[] discouragedArray = parameters.get("discouraged").toString().split(";");
-        String[] efficiencyArray = parameters.get("efficiency").toString().split(",");
-        String method = parameters.get("method").toString().trim();
         HashSet<String> required = new HashSet();
         HashSet<String> recommended = new HashSet();
         HashSet<String> forbidden = new HashSet();
         HashSet<String> discouraged = new HashSet();
+        
+        String method = parameters.get("method").toString().trim();
+        
+        if (parameters.has("recommended")) {
+            String[] recArray = parameters.get("recommended").toString().split(";");
+            if (recArray.length > 0) {
+                for (int i = 0; i < recArray.length; i++) {
+                    if (recArray[i].length() > 0) {
+                        String rcA = recArray[i];
+                        rcA = rcA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                        recommended.add(rcA);
+                    }
+                }
+            }
+        }
+
+        if (parameters.has("required")) {
+            String[] reqArray = parameters.get("required").toString().split(";");
+            if (reqArray.length > 0) {
+                for (int i = 0; i < reqArray.length; i++) {
+                    if (reqArray[i].length() > 0) {
+                        String rqA = reqArray[i];
+                        rqA = rqA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                        required.add(rqA);
+                    }
+                }
+            }
+        }
+
+        if (parameters.has("forbidden")) {
+            String[] forbiddenArray = parameters.get("forbidden").toString().split(";");
+            if (forbiddenArray.length > 0) {
+                for (int i = 0; i < forbiddenArray.length; i++) {
+                    if (forbiddenArray[i].length() > 0) {
+                        String fA = forbiddenArray[i];
+                        fA = fA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                        forbidden.add(fA);
+                    }
+                }
+            }
+        }
+
+        if (parameters.has("discouraged")) {
+            String[] discouragedArray = parameters.get("discouraged").toString().split(";");
+            if (discouragedArray.length > 0) {
+                for (int i = 0; i < discouragedArray.length; i++) {
+                    if (discouragedArray[i].length() > 0) {
+                        String dA = discouragedArray[i];
+                        dA = dA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
+                        discouraged.add(dA);
+                    }
+                }
+            }
+        }
+
+        //Generate efficiency hash and make default has if empty
         HashMap<Integer, Double> efficiency = new HashMap();
-                
-        if (recArray.length > 0) {
-            for (int i = 0; i < recArray.length; i++) {
-                if (recArray[i].length() > 0) {
-                    String rcA = recArray[i];
-                    rcA = rcA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                    recommended.add(rcA);
+        if (parameters.has("efficiency")) {
+            String[] efficiencyArray = parameters.get("efficiency").toString().split(",");
+
+            if (efficiencyArray.length > 0) {
+                for (int i = 0; i < efficiencyArray.length; i++) {
+                    efficiency.put(i + 2, Double.parseDouble(efficiencyArray[i]));
                 }
             }
-        }
-
-        if (reqArray.length > 0) {
-            for (int i = 0; i < reqArray.length; i++) {
-                if (reqArray[i].length() > 0) {
-                    String rqA = reqArray[i];
-                    rqA = rqA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                    required.add(rqA);
+        } else {
+            if (method.equalsIgnoreCase("gatewaygibson")) {
+                for (int i = 0; i < 7; i++) {
+                    efficiency.put(i + 2, Double.parseDouble("1.0"));
                 }
-            }
-        }
-
-        if (forbiddenArray.length > 0) {
-            for (int i = 0; i < forbiddenArray.length; i++) {
-                if (forbiddenArray[i].length() > 0) {
-                    String fA = forbiddenArray[i];
-                    fA = fA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                    forbidden.add(fA);
+            } else if (method.equalsIgnoreCase("biobricks")) {
+                for (int i = 0; i < 1; i++) {
+                    efficiency.put(i + 2, Double.parseDouble("1.0"));
                 }
-            }
-        }
-
-        if (discouragedArray.length > 0) {
-            for (int i = 0; i < discouragedArray.length; i++) {
-                if (discouragedArray[i].length() > 0) {
-                    String dA = discouragedArray[i];
-                    dA = dA.replaceAll("\\|[^|]\\|[^|]\\|", "|||");
-                    discouraged.add(dA);
+            } else {
+                for (int i = 0; i < 5; i++) {
+                    efficiency.put(i + 2, Double.parseDouble("1.0"));
                 }
-            }
-        }
-
-        //generate efficiency hash
-        if (efficiencyArray.length > 0) {
-            for (int i = 0; i < efficiencyArray.length; i++) {
-                efficiency.put(i + 2, Double.parseDouble(efficiencyArray[i]));
             }
         }
         
@@ -1207,7 +1238,8 @@ public class RavenController {
         }
         
         boolean overhangValid = false;
-        stageVectors = checkStageVectors(stageVectors, collector, method);
+        
+        stageVectors = checkStageVectors(stageVectors, collector, method);        
         
         if (method.equalsIgnoreCase("biobricks")) {
             RBioBricks biobricks = new RBioBricks();
@@ -1259,9 +1291,14 @@ public class RavenController {
     
     //Using parameters from the client, run the algorithm
     //Gets solution graph, 
-    public JSONObject run(String designCount, HashSet<Part> gps, JSONObject parameters, HashMap<Integer, Vector> stageVectors) throws Exception {
+    public JSONObject run(String designCount, JSONObject parameters, HashSet<Part> gps, HashMap<Integer, Vector> stageVectors) throws Exception {
         
-        String method = parameters.get("method").toString().trim();
+        //Check to make sure there is a method and efficieny, otherwise default to Gibson
+        String method = "gibson";
+        if (parameters.has("method")) {
+            method = parameters.get("method").toString().trim();
+        }
+        
         _statistics = new Statistics();
         Statistics.start();        
         _assemblyGraphs = solve(gps, _partLibrary, _vectorLibrary, parameters, stageVectors, _libraryOHHash, _collector);        
@@ -1450,6 +1487,15 @@ public class RavenController {
         return new JSONObject(statString);
     }
     
+    //Get parameters
+    public String getParameters() {
+        return _preloadedParams;
+    }
+    
+    public Collector getCollector() {
+        return _collector;
+    }
+    
     //FIELDS
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
     private Statistics _statistics = new Statistics();
@@ -1460,7 +1506,7 @@ public class RavenController {
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();
     
     private String _instructions = "";
-    protected Collector _collector = new Collector(); //key:user, value: collector assocaited with that user
+    protected Collector _collector = new Collector();
     private String _path;
     private String _user;
     private String _error = "";

@@ -143,7 +143,7 @@ public class RavenServlet extends HttpServlet {
                 String designCount = request.getParameter("designCount");
                 HashSet<Part> targetParts = controller.IDsToParts(targetIDs);
                 HashMap<Integer, Vector> stageVectors = controller.IDsToStageVectors(stageVectorHash);
-                JSONObject graphData = controller.run(designCount, targetParts, parameters, stageVectors);
+                JSONObject graphData = controller.run(designCount, parameters, targetParts, stageVectors);
                 JSONArray partsList = controller.generatePartsList(designCount, paramsConfig.toString(), request.getParameter("method"));
                 String instructions = controller.getInstructions();
                 JSONObject statString = controller.generateStats();

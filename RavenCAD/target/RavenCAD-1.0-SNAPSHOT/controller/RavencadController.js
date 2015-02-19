@@ -1168,7 +1168,20 @@ $(document).ready(function() { //don't run javascript until page is loaded
     function interpretParams(params) {
         if (params["method"]) {
             _method = params["method"];
-        }
+            if (params["efficiency"]) {
+                
+                //populate efficiency
+                var table = $('#' + params["method"] + 'Tab table');
+                table.children("tbody").html(""); 
+                var efficiencies = params["efficiency"].split(",");
+                $.each(efficiencies, function(index, value) {
+                    table.children("tbody").append('<tr><td>' + (index + 2) + '</td><td><input class="input-mini" placeholder="' + value + '"></td><tr>')
+                });
+            }
+        } else {
+            _method = "biobricks"
+        } 
+        
         //populate required
         var required = params["required"].split(";");
         $.each(required, function(index, value) {
@@ -1214,6 +1227,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
                 $(this).removeClass('active');
             });
             $('#' + params["method"] + 'Tab').addClass('active')
+        } else {
+            $('#' + params["method"] + 'TabHeader').parent().addClass('active')
+            $('#' + params["method"] + 'Tab').addClass('active')
         }
         
         //populate primer parameters        
@@ -1224,17 +1240,7 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('input#minPCRLength').val(params["primer"]["minPCRLength"]);
             $('input#minCloneLength').val(params["primer"]["minCloneLength"]);
             $('input#maxPrimerLength').val(params["primer"]["maxPrimerLength"]);
-        }
-
-        //populate efficiency
-        var table = $('#' + params["method"] + 'Tab table');
-        table.children("tbody").html("");
-        if (params["efficiency"]) {
-            var efficiencies = params["efficiency"].split(",");
-            $.each(efficiencies, function(index, value) {
-                table.children("tbody").append('<tr><td>' + (index + 2) + '</td><td><input class="input-mini" placeholder="' + value + '"></td><tr>')
-            });
-        }
+        } 
         updateSummary();
     }
 
