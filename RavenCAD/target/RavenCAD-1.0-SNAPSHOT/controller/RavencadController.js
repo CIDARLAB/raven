@@ -1193,18 +1193,16 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $("#intermediatesTypeAhead").val(value);
             $("button#discourageButton").click();
         });
-        //populate target parts
-        //could be annoying for users - don't do for now
 
         //populate library parts        
-        if (params["partLibrary"]) {
-            var partIDs = params["partLibrary"].split(",");
-            var vectorIDs = params["vectorLibrary"].split(",");
-            var writeSQL = false;
-            $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
-
-            });
-        }
+//        if (params["partLibrary"]) {
+//            var partIDs = params["partLibrary"].split(",");
+//            var vectorIDs = params["vectorLibrary"].split(",");
+//            var writeSQL = false;
+//            $.get('RavenServlet', {"command": "save", "partIDs": "" + partIDs, "vectorIDs": "" + vectorIDs, "writeSQL": "" + writeSQL}, function(result) {
+//
+//            });
+//        }
         
         //switch to correct method
         if (params["method"]) {
@@ -1223,10 +1221,9 @@ $(document).ready(function() { //don't run javascript until page is loaded
             $('input#oligoNameRoot').val(params["primer"]["oligoNameRoot"]);
             $('input#meltingTemperature').val(params["primer"]["meltingTemperature"]);
             $('input#targetLength').val(params["primer"]["targetLength"]);
-        }
-        
-        if (params["efficiency"]) {
-            var test = [];
+            $('input#minPCRLength').val(params["primer"]["minPCRLength"]);
+            $('input#minCloneLength').val(params["primer"]["minCloneLength"]);
+            $('input#maxPrimerLength').val(params["primer"]["maxPrimerLength"]);
         }
 
         //populate efficiency
