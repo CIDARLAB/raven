@@ -123,7 +123,7 @@ public class AuthenticationServlet
                 if (ipAddress == null) {
                     ipAddress = request.getRemoteAddr();
                 }
-                RavenLogger.logSessionIn(username, ipAddress);
+                RavenLogger.logSignUp(username, ipAddress);
 
                 /*
                  * LOGIN Request

@@ -598,9 +598,6 @@ public class RavenController {
         
         ArrayList<String> badLines = new ArrayList();
         ArrayList<String[]> compositePartTokens = new ArrayList<String[]>();
-//        if (_forcedOverhangHash == null) {
-//            _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
-//        }
         
         BufferedReader reader = new BufferedReader(new FileReader(input.getAbsolutePath()));
         String line = reader.readLine();
@@ -778,7 +775,7 @@ public class RavenController {
                     String scar = "_";
                     String basicPartName = partNameTokens[0];
 
-                    //Check for forced overhangs and direction
+                    //Scar upload
                     if (partNameTokens.length > 1) {
                         if (partNameTokens.length == 2) {
                             if ("+".equals(partNameTokens[1]) || "-".equals(partNameTokens[1])) {
@@ -836,15 +833,6 @@ public class RavenController {
                             }
                         }
                     }
-
-                    //Forced overhangs
-//                    if (_forcedOverhangHash.get(compositePartName) != null) {
-//                        _forcedOverhangHash.get(compositePartName).add(bpForcedLeft + "|" + bpForcedRight);
-//                    } else {
-//                        ArrayList<String> toAdd = new ArrayList();
-//                        toAdd.add(bpForcedLeft + "|" + bpForcedRight);
-//                        _forcedOverhangHash.put(compositePartName, toAdd);
-//                    }
                     directions.add(bpDirection);
 
                     //Forming the composite part composition
@@ -1537,7 +1525,6 @@ public class RavenController {
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
     private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();
-//    private HashMap<String, ArrayList<String>> _forcedOverhangHash = new HashMap<String, ArrayList<String>>();
     private HashMap<String, String> _libraryOHHash = new HashMap<String, String>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();

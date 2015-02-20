@@ -44,6 +44,19 @@ public class RavenLogger {
             e.printStackTrace();
         }
     }
+    
+    public static void logSignUp(String user, String address) {
+        try {
+            File file = new File(_path + "userLog.txt");
+            FileWriter fw = new FileWriter(file, true);
+            BufferedWriter out = new BufferedWriter(fw);
+            Date date = new Date();
+            out.write("\nSIGNUP|" + user + " time: " + date.toString() + " location: " + address);
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void logError(String user, String address, String error) {
         try {
