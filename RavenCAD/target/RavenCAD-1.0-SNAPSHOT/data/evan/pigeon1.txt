@@ -1,498 +1,652 @@
 digraph{
 PIGEON_START
-"[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[0, 1, 2, 4, 3*, 0, 1, 2]|3|5|pSB1A2"
-5 3
-P P7_Promoter 4
-= 0 14
-> attB_TP901 12
-= 1 14
-> attB_Bxb1 12
-= 2 14
-T B0015 6
-= 4 14
-< attP_Bxb1 12
-= 3* 14
-< attP_TP901 12
-= 0 14
-r JBEI_RBS 5
-= 1 14
-c Superfolder_gfp 9
-= 2 14
-T B0015 6
-<5 5
-v pSB1A2
+"[P1, R1, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R1 5
+= BBm 14
+c C1 1
+= BB 14
+T T1 6
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|3|2|5"
-5 3
-g lacZ 2
-<5 5
-v pSB1A2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|2"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[P7_Promoter, attB_TP901, attB_Bxb1, B0015]|[+, +, +, +]|[0, 1, 2]|3|4|pSB1K3"
-5 3
-P P7_Promoter 4
-= 0 14
-> attB_TP901 12
-= 1 14
-> attB_Bxb1 12
-= 2 14
-T B0015 6
-<5 4
-v pSB1K3
+"[P1, R1]|[+, +]|[BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R1 5
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1K3|3|1|4"
-5 3
-g lacZ 2
-<5 4
-v pSB1K3
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1K3|1"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3"
-5 4
-< attP_Bxb1 12
-= 3* 14
-< attP_TP901 12
-= 0 14
-r JBEI_RBS 5
-= 1 14
-c Superfolder_gfp 9
-= 2 14
-T B0015 6
-<5 5
-v pSB1K3
+"[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2"
+5 EX
+c C1 1
+= BB 14
+T T1 6
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1K3|4|1|5"
-5 4
-g lacZ 2
-<5 5
-v pSB1K3
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1K3|1"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[P7_Promoter]|[+]|[]|3|0|pSB1A2"
-5 3
-P P7_Promoter 4
-<5 0
-v pSB1A2
+"[P1]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[P7_Promoter]|[+]|[]|3|0"
-5 3
-P P7_Promoter 4
-<5 0
+"[P1]|[+]|[]|EX|SP"
+5 EX
+P P1 4
+<5 SP
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[P7_Promoter]|[+]|[]"
-P P7_Promoter 4
+"[P1]|[+]|[]"
+P P1 4
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|3|0|0"
-5 3
-g lacZ 2
-<5 0
-v pSB1A2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attB_TP901]|[+]|[]|0|1|pSB1A2"
-5 0
-> attB_TP901 12
-<5 1
-v pSB1A2
+"[R1]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+r R1 5
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attB_TP901]|[+]|[]|0|1"
-5 0
-> attB_TP901 12
-<5 1
+"[R1]|[+]|[]|EX|SP"
+5 EX
+r R1 5
+<5 SP
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attB_TP901]|[+]|[]"
-> attB_TP901 12
+"[R1]|[+]|[]"
+r R1 5
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0|0|1"
-5 0
-g lacZ 2
-<5 1
-v pSB1A2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attB_Bxb1]|[+]|[]|1|2|pSB1A2"
-5 1
-> attB_Bxb1 12
-<5 2
-v pSB1A2
+"[C1]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+c C1 1
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attB_Bxb1]|[+]|[]|1|2"
-5 1
-> attB_Bxb1 12
-<5 2
+"[C1]|[+]|[]|EX|SP"
+5 EX
+c C1 1
+<5 SP
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attB_Bxb1]|[+]|[]"
-> attB_Bxb1 12
+"[C1]|[+]|[]"
+c C1 1
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|1|0|2"
-5 1
-g lacZ 2
-<5 2
-v pSB1A2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[B0015]|[+]|[]|2|4|pSB1A2"
-5 2
-T B0015 6
-<5 4
-v pSB1A2
+"[T1]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+T T1 6
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[B0015]|[+]|[]|2|4"
-5 2
-T B0015 6
-<5 4
+"[T1]|[+]|[]|EX|SP"
+5 EX
+T T1 6
+<5 SP
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[B0015]|[+]|[]"
-T B0015 6
+"[T1]|[+]|[]"
+T T1 6
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|2|0|4"
-5 2
-g lacZ 2
-<5 4
-v pSB1A2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attP_Bxb1]|[-]|[]|4|3*|pSB1A2"
-5 4
-< attP_Bxb1 12
-<5 3*
-v pSB1A2
+"[P1, R2, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R2 5
+= BBm 14
+c C1 1
+= BB 14
+T T1 6
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attP_Bxb1]|[-]|[]|4|3*"
-5 4
-< attP_Bxb1 12
-<5 3*
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attP_Bxb1]|[-]|[]"
-< attP_Bxb1 12
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|4|0|3*"
-5 4
-g lacZ 2
-<5 3*
-v pSB1A2
+"[P1, R3, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R3 5
+= BBm 14
+c C1 1
+= BB 14
+T T1 6
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attP_TP901]|[-]|[]|3*|0|pSB1A2"
-5 3*
-< attP_TP901 12
-<5 0
-v pSB1A2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attP_TP901]|[-]|[]|3*|0"
-5 3*
-< attP_TP901 12
-<5 0
+"[P1, R4, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R4 5
+= BBm 14
+c C1 1
+= BB 14
+T T1 6
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[attP_TP901]|[-]|[]"
-< attP_TP901 12
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|3*|0|0"
-5 3*
-g lacZ 2
-<5 0
-v pSB1A2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"[P1, R5, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R5 5
+= BBm 14
+c C1 1
+= BB 14
+T T1 6
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[JBEI_RBS]|[+]|[]|0|1|pSB1A2"
-5 0
-r JBEI_RBS 5
-<5 1
-v pSB1A2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[JBEI_RBS]|[+]|[]|0|1"
-5 0
-r JBEI_RBS 5
-<5 1
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[JBEI_RBS]|[+]|[]"
-r JBEI_RBS 5
+"[P1, R2]|[+, +]|[BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R2 5
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0|0|1"
-5 0
-g lacZ 2
-<5 1
-v pSB1A2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[Superfolder_gfp]|[+]|[]|1|2|pSB1A2"
-5 1
-c Superfolder_gfp 9
-<5 2
-v pSB1A2
+"[P1, R3]|[+, +]|[BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R3 5
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[Superfolder_gfp]|[+]|[]|1|2"
-5 1
-c Superfolder_gfp 9
-<5 2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[Superfolder_gfp]|[+]|[]"
-c Superfolder_gfp 9
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|1|0|2"
-5 1
-g lacZ 2
-<5 2
-v pSB1A2
+"[P1, R4]|[+, +]|[BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R4 5
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[B0015]|[+]|[]|2|5|pSB1A2"
-5 2
-T B0015 6
-<5 5
-v pSB1A2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[B0015]|[+]|[]|2|5"
-5 2
-T B0015 6
-<5 5
+"[P1, R5]|[+, +]|[BB]|EX|SP|pSK1A2"
+5 EX
+P P1 4
+= BB 14
+r R5 5
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"[B0015]|[+]|[]"
-T B0015 6
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|2|0|5"
-5 2
-g lacZ 2
-<5 5
-v pSB1A2
+"pSK1A2|-1"
+v pSK1A2
 # Arcs
 PIGEON_END
 
 PIGEON_START
-"pSB1A2|0"
-g lacZ 2
+"[R2]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+r R2 5
+<5 SP
+v pSK1A2
 # Arcs
 PIGEON_END
 
-"pSB1A2|3|2|5" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[0, 1, 2, 4, 3*, 0, 1, 2]|3|5|pSB1A2"
-"pSB1A2|2" -> "pSB1A2|3|2|5"
-"pSB1K3|3|1|4" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015]|[+, +, +, +]|[0, 1, 2]|3|4|pSB1K3"
-"pSB1K3|1" -> "pSB1K3|3|1|4"
-"[P7_Promoter, attB_TP901, attB_Bxb1, B0015]|[+, +, +, +]|[0, 1, 2]|3|4|pSB1K3" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[0, 1, 2, 4, 3*, 0, 1, 2]|3|5|pSB1A2"
-"pSB1K3|4|1|5" -> "[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3"
-"pSB1K3|1" -> "pSB1K3|4|1|5"
-"[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[+, +, +, +, -, -, +, +, +]|[0, 1, 2, 4, 3*, 0, 1, 2]|3|5|pSB1A2"
-"[P7_Promoter]|[+]|[]|3|0" -> "[P7_Promoter]|[+]|[]|3|0|pSB1A2"
-"[P7_Promoter]|[+]|[]" -> "[P7_Promoter]|[+]|[]|3|0"
-"pSB1A2|3|0|0" -> "[P7_Promoter]|[+]|[]|3|0|pSB1A2"
-"pSB1A2|0" -> "pSB1A2|3|0|0"
-"[P7_Promoter]|[+]|[]|3|0|pSB1A2" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015]|[+, +, +, +]|[0, 1, 2]|3|4|pSB1K3"
-"[attB_TP901]|[+]|[]|0|1" -> "[attB_TP901]|[+]|[]|0|1|pSB1A2"
-"[attB_TP901]|[+]|[]" -> "[attB_TP901]|[+]|[]|0|1"
-"pSB1A2|0|0|1" -> "[attB_TP901]|[+]|[]|0|1|pSB1A2"
-"pSB1A2|0" -> "pSB1A2|0|0|1"
-"[attB_TP901]|[+]|[]|0|1|pSB1A2" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015]|[+, +, +, +]|[0, 1, 2]|3|4|pSB1K3"
-"[attB_Bxb1]|[+]|[]|1|2" -> "[attB_Bxb1]|[+]|[]|1|2|pSB1A2"
-"[attB_Bxb1]|[+]|[]" -> "[attB_Bxb1]|[+]|[]|1|2"
-"pSB1A2|1|0|2" -> "[attB_Bxb1]|[+]|[]|1|2|pSB1A2"
-"pSB1A2|0" -> "pSB1A2|1|0|2"
-"[attB_Bxb1]|[+]|[]|1|2|pSB1A2" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015]|[+, +, +, +]|[0, 1, 2]|3|4|pSB1K3"
-"[B0015]|[+]|[]|2|4" -> "[B0015]|[+]|[]|2|4|pSB1A2"
-"[B0015]|[+]|[]" -> "[B0015]|[+]|[]|2|4"
-"pSB1A2|2|0|4" -> "[B0015]|[+]|[]|2|4|pSB1A2"
-"pSB1A2|0" -> "pSB1A2|2|0|4"
-"[B0015]|[+]|[]|2|4|pSB1A2" -> "[P7_Promoter, attB_TP901, attB_Bxb1, B0015]|[+, +, +, +]|[0, 1, 2]|3|4|pSB1K3"
-"[attP_Bxb1]|[-]|[]|4|3*" -> "[attP_Bxb1]|[-]|[]|4|3*|pSB1A2"
-"[attP_Bxb1]|[-]|[]" -> "[attP_Bxb1]|[-]|[]|4|3*"
-"pSB1A2|4|0|3*" -> "[attP_Bxb1]|[-]|[]|4|3*|pSB1A2"
-"pSB1A2|0" -> "pSB1A2|4|0|3*"
-"[attP_Bxb1]|[-]|[]|4|3*|pSB1A2" -> "[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3"
-"[attP_TP901]|[-]|[]|3*|0" -> "[attP_TP901]|[-]|[]|3*|0|pSB1A2"
-"[attP_TP901]|[-]|[]" -> "[attP_TP901]|[-]|[]|3*|0"
-"pSB1A2|3*|0|0" -> "[attP_TP901]|[-]|[]|3*|0|pSB1A2"
-"pSB1A2|0" -> "pSB1A2|3*|0|0"
-"[attP_TP901]|[-]|[]|3*|0|pSB1A2" -> "[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3"
-"[JBEI_RBS]|[+]|[]|0|1" -> "[JBEI_RBS]|[+]|[]|0|1|pSB1A2"
-"[JBEI_RBS]|[+]|[]" -> "[JBEI_RBS]|[+]|[]|0|1"
-"pSB1A2|0|0|1" -> "[JBEI_RBS]|[+]|[]|0|1|pSB1A2"
-"[JBEI_RBS]|[+]|[]|0|1|pSB1A2" -> "[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3"
-"[Superfolder_gfp]|[+]|[]|1|2" -> "[Superfolder_gfp]|[+]|[]|1|2|pSB1A2"
-"[Superfolder_gfp]|[+]|[]" -> "[Superfolder_gfp]|[+]|[]|1|2"
-"pSB1A2|1|0|2" -> "[Superfolder_gfp]|[+]|[]|1|2|pSB1A2"
-"[Superfolder_gfp]|[+]|[]|1|2|pSB1A2" -> "[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3"
-"[B0015]|[+]|[]|2|5" -> "[B0015]|[+]|[]|2|5|pSB1A2"
-"[B0015]|[+]|[]" -> "[B0015]|[+]|[]|2|5"
-"pSB1A2|2|0|5" -> "[B0015]|[+]|[]|2|5|pSB1A2"
-"pSB1A2|0" -> "pSB1A2|2|0|5"
-"[B0015]|[+]|[]|2|5|pSB1A2" -> "[attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015]|[-, -, +, +, +]|[3*, 0, 1, 2]|4|5|pSB1K3"
+PIGEON_START
+"[R2]|[+]|[]|EX|SP"
+5 EX
+r R2 5
+<5 SP
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R2]|[+]|[]"
+r R2 5
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|-1"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R3]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+r R3 5
+<5 SP
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R3]|[+]|[]|EX|SP"
+5 EX
+r R3 5
+<5 SP
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R3]|[+]|[]"
+r R3 5
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|-1"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R4]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+r R4 5
+<5 SP
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R4]|[+]|[]|EX|SP"
+5 EX
+r R4 5
+<5 SP
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R4]|[+]|[]"
+r R4 5
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|-1"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R5]|[+]|[]|EX|SP|pSK1A2"
+5 EX
+r R5 5
+<5 SP
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R5]|[+]|[]|EX|SP"
+5 EX
+r R5 5
+<5 SP
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"[R5]|[+]|[]"
+r R5 5
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|EX|-1|SP"
+5 EX
+<5 SP
+v pSK1A2
+# Arcs
+PIGEON_END
+
+PIGEON_START
+"pSK1A2|-1"
+v pSK1A2
+# Arcs
+PIGEON_END
+
+"pSK1A2|EX|-1|SP" -> "[P1, R1, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|-1" -> "pSK1A2|EX|-1|SP"
+"pSK1A2|EX|-1|SP" -> "[P1, R1]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1, R1]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R1, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R1, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R2, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R3, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R4, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R5, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"[P1]|[+]|[]|EX|SP" -> "[P1]|[+]|[]|EX|SP|pSK1A2"
+"[P1]|[+]|[]" -> "[P1]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[P1]|[+]|[]|EX|SP|pSK1A2"
+"[P1]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R1]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R2]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R3]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R4]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R5]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[R1]|[+]|[]|EX|SP" -> "[R1]|[+]|[]|EX|SP|pSK1A2"
+"[R1]|[+]|[]" -> "[R1]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[R1]|[+]|[]|EX|SP|pSK1A2"
+"[R1]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R1]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[C1]|[+]|[]|EX|SP" -> "[C1]|[+]|[]|EX|SP|pSK1A2"
+"[C1]|[+]|[]" -> "[C1]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[C1]|[+]|[]|EX|SP|pSK1A2"
+"[C1]|[+]|[]|EX|SP|pSK1A2" -> "[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[T1]|[+]|[]|EX|SP" -> "[T1]|[+]|[]|EX|SP|pSK1A2"
+"[T1]|[+]|[]" -> "[T1]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[T1]|[+]|[]|EX|SP|pSK1A2"
+"[T1]|[+]|[]|EX|SP|pSK1A2" -> "[C1, T1]|[+, +]|[BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R2, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R3, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R4, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R5, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R2]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1, R2]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R2, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R3]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1, R3]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R3, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R4]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1, R4]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R4, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"pSK1A2|EX|-1|SP" -> "[P1, R5]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[P1, R5]|[+, +]|[BB]|EX|SP|pSK1A2" -> "[P1, R5, C1, T1]|[+, +, +, +]|[BB, BBm, BB]|EX|SP|pSK1A2"
+"[R2]|[+]|[]|EX|SP" -> "[R2]|[+]|[]|EX|SP|pSK1A2"
+"[R2]|[+]|[]" -> "[R2]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[R2]|[+]|[]|EX|SP|pSK1A2"
+"[R2]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R2]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[R3]|[+]|[]|EX|SP" -> "[R3]|[+]|[]|EX|SP|pSK1A2"
+"[R3]|[+]|[]" -> "[R3]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[R3]|[+]|[]|EX|SP|pSK1A2"
+"[R3]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R3]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[R4]|[+]|[]|EX|SP" -> "[R4]|[+]|[]|EX|SP|pSK1A2"
+"[R4]|[+]|[]" -> "[R4]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[R4]|[+]|[]|EX|SP|pSK1A2"
+"[R4]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R4]|[+, +]|[BB]|EX|SP|pSK1A2"
+"[R5]|[+]|[]|EX|SP" -> "[R5]|[+]|[]|EX|SP|pSK1A2"
+"[R5]|[+]|[]" -> "[R5]|[+]|[]|EX|SP"
+"pSK1A2|EX|-1|SP" -> "[R5]|[+]|[]|EX|SP|pSK1A2"
+"[R5]|[+]|[]|EX|SP|pSK1A2" -> "[P1, R5]|[+, +]|[BB]|EX|SP|pSK1A2"
 
 }

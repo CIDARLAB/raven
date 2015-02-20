@@ -40,13 +40,19 @@ public class Raven {
             }
         }
         
-        //If there are no parameters specified
+        //Assembly parameters
         if (parameters == null) {
             String parametersString = raven.getParameters();
             if (parametersString == null) {
                 parameters = new JSONObject();
             } else {
                 parameters = new JSONObject(parametersString);
+            }
+        } else {
+            String parametersString = raven.getParameters();
+            if (parametersString != null) {
+                JSONObject newParameters = new JSONObject(parametersString);
+                parameters = mergeParameters(parameters, newParameters);
             }
         }
         
@@ -79,5 +85,60 @@ public class Raven {
         ArrayList<RGraph> assemblyGraphs = raven.getAssemblyGraphs();
         
         return assemblyGraphs;
+    }
+    
+    //Merge parameters from multiple input files
+    public JSONObject mergeParameters (JSONObject existing, JSONObject merge) {
+        
+        for (Object objKey : merge.keySet()) {
+            String key = objKey.toString();
+            
+            //Replace primer parameters
+            if (key.equalsIgnoreCase("meltingTemperature") || key.equalsIgnoreCase("targetHomologyLength") || key.equalsIgnoreCase("minPCRLength") || key.equalsIgnoreCase("minCloneLength") || key.equalsIgnoreCase("maxPrimerLength") || key.equalsIgnoreCase("oligoNameRoot")) {
+                existing.put(key, merge.get(key));
+            
+            //Replace assembly method
+            } else if (key.equalsIgnoreCase("method")) {
+                if (existing.has("method")) {
+                    existing.remove("method");
+                    existing.put(key, merge.get(key));
+                }
+                if (merge.has("efficiency")) {
+                    existing.remove("efficiency");
+                    if (existing.has("efficiency")) {
+                        existing.put("efficiency", merge.get("efficiency"));
+                    }
+                }
+
+            //Merge required, recommended, discouraged, forbidden
+            } else if (key.equalsIgnoreCase("required") || key.equalsIgnoreCase("recommended") || key.equalsIgnoreCase("discouraged") || key.equalsIgnoreCase("forbidden")) {
+                
+                //Get existing inermediates
+                Object get = existing.get(key);
+                String existingVal = get.toString();
+                String[] tokens = existingVal.split(";");
+                HashSet<String> intermediateSet = new HashSet();
+                for (String token : tokens) {
+                    intermediateSet.add(token);
+                }
+                
+                //Get merged intermediates
+                Object get2 = merge.get(key);
+                String existingVal2 = get2.toString();
+                String[] tokens2 = existingVal2.split(";");
+                for (String token : tokens2) {
+                    intermediateSet.add(token);
+                }
+                
+                String finalSet = "";
+                for (String intermediate : intermediateSet) {
+                    finalSet = finalSet + intermediate + ";";
+                }
+                finalSet = finalSet.substring(0, finalSet.length()-2);
+                existing.put(key, finalSet);
+            }
+        }
+        
+        return existing;
     }
 }

@@ -1,76 +1,133 @@
-# AssemblyMethod: MoClo
-#  02192015@1243
-# org.cidarlab.raven.datastructures.Part@404c4846
-# part_38
+# AssemblyMethod: BioBricks
+#  02202015@1319
+# org.cidarlab.raven.datastructures.Part@187401f6
+# part_56
 
-# OR gate-JBEI_-GFP -> pSB1A2
-part_38 -> vector_12
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:43:56EST2015 -> P7_Promoter
-part_40 -> part_20
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:43:56EST2015 -> attB_TP901
-part_40 -> part_22
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:43:56EST2015 -> attB_Bxb1
-part_40 -> part_24
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:43:56EST2015 -> B0015
-part_40 -> part_26
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:43:56EST2015 -> pSB1K3
-part_40 -> vector_13
-# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:43:56EST2015
-part_38 -> part_40
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015 -> attP_Bxb1
-part_42 -> part_28
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015 -> attP_TP901
-part_42 -> part_30
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015 -> JBEI_RBS
-part_42 -> part_32
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015 -> Superfolder_gfp
-part_42 -> part_34
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015 -> B0015
-part_42 -> part_36
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015 -> pSB1K3
-part_42 -> vector_14
-# OR gate-JBEI_-GFP -> OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015
-part_38 -> part_42
+# PSM-1 -> pSK1A2
+part_56 -> vector_9
+# PSM-1 -> PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015
+part_56 -> part_60
+# PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015 -> C1
+part_60 -> part_44
+# PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015 -> T1
+part_60 -> part_46
+# PSM-1_intermediate_4_evan_FriFeb2013:19:56EST2015 -> P1
+part_72 -> part_40
+# PSM-1_intermediate_4_evan_FriFeb2013:19:56EST2015 -> R3
+part_72 -> part_50
+# PSM-1_intermediate_4_evan_FriFeb2013:19:56EST2015 -> pSK1A2
+part_72 -> vector_9
+# PSM-3 -> PSM-1_intermediate_4_evan_FriFeb2013:19:56EST2015
+part_64 -> part_72
+# PSM-3 -> pSK1A2
+part_64 -> vector_9
+# PSM-3 -> PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015
+part_64 -> part_60
+# PSM-1_intermediate_5_evan_FriFeb2013:19:56EST2015 -> P1
+part_74 -> part_40
+# PSM-1_intermediate_5_evan_FriFeb2013:19:56EST2015 -> R4
+part_74 -> part_52
+# PSM-1_intermediate_5_evan_FriFeb2013:19:56EST2015 -> pSK1A2
+part_74 -> vector_9
+# PSM-4 -> PSM-1_intermediate_5_evan_FriFeb2013:19:56EST2015
+part_66 -> part_74
+# PSM-4 -> pSK1A2
+part_66 -> vector_9
+# PSM-4 -> PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015
+part_66 -> part_60
+# PSM-1_intermediate_6_evan_FriFeb2013:19:56EST2015 -> P1
+part_76 -> part_40
+# PSM-1_intermediate_6_evan_FriFeb2013:19:56EST2015 -> R5
+part_76 -> part_54
+# PSM-1_intermediate_6_evan_FriFeb2013:19:56EST2015 -> pSK1A2
+part_76 -> vector_9
+# PSM-5 -> PSM-1_intermediate_6_evan_FriFeb2013:19:56EST2015
+part_68 -> part_76
+# PSM-5 -> pSK1A2
+part_68 -> vector_9
+# PSM-5 -> PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015
+part_68 -> part_60
+# PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015 -> pSK1A2
+part_60 -> vector_9
+# PSM-2 -> PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015
+part_62 -> part_60
+# PSM-2 -> pSK1A2
+part_62 -> vector_9
+# PSM-2 -> PSM-1_intermediate_3_evan_FriFeb2013:19:56EST2015
+part_62 -> part_70
+# PSM-1_intermediate_3_evan_FriFeb2013:19:56EST2015 -> R2
+part_70 -> part_48
+# PSM-1_intermediate_3_evan_FriFeb2013:19:56EST2015 -> pSK1A2
+part_70 -> vector_9
+# PSM-1_intermediate_3_evan_FriFeb2013:19:56EST2015 -> P1
+part_70 -> part_40
+# PSM-1_intermediate_1_evan_FriFeb2013:19:56EST2015 -> P1
+part_58 -> part_40
+# PSM-1_intermediate_1_evan_FriFeb2013:19:56EST2015 -> R1
+part_58 -> part_42
+# PSM-1_intermediate_1_evan_FriFeb2013:19:56EST2015 -> pSK1A2
+part_58 -> vector_9
+# PSM-1 -> PSM-1_intermediate_1_evan_FriFeb2013:19:56EST2015
+part_56 -> part_58
 
 # Key
-# Superfolder_gfp
-# part_34
-# (Superfolder_gfp)
-# OR gate-JBEI_-GFP_intermediate_2_evan_ThuFeb1912:43:56EST2015
+# R2
+# part_48
+# (R2)
+# PSM-1_intermediate_2_evan_FriFeb2013:19:56EST2015
+# part_60
+# (C1, T1)
+# R4
+# part_52
+# (R4)
+# R1
 # part_42
-# (attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)
-# attB_Bxb1
-# part_24
-# (attB_Bxb1)
-# B0015
-# part_36
-# (B0015)
-# attB_TP901
-# part_22
-# (attB_TP901)
-# OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:43:56EST2015
+# (R1)
+# PSM-1_intermediate_3_evan_FriFeb2013:19:56EST2015
+# part_70
+# (P1, R2)
+# R5
+# part_54
+# (R5)
+# PSM-1_intermediate_4_evan_FriFeb2013:19:56EST2015
+# part_72
+# (P1, R3)
+# P1
 # part_40
-# (P7_Promoter, attB_TP901, attB_Bxb1, B0015)
-# attP_TP901
-# part_30
-# (attP_TP901)
-# P7_Promoter
-# part_20
-# (P7_Promoter)
-# JBEI_RBS
-# part_32
-# (JBEI_RBS)
-# pSB1K3
-# vector_13
-# (SB1K)
-# vector_14
-# pSB1A2
-# vector_12
-# (SB1A)
-# attP_Bxb1
-# part_28
-# (attP_Bxb1)
-# OR gate-JBEI_-GFP
-# part_38
-# (P7_Promoter, attB_TP901, attB_Bxb1, B0015, attP_Bxb1, attP_TP901, JBEI_RBS, Superfolder_gfp, B0015)
-# part_26
+# (P1)
+# PSM-1
+# part_56
+# (P1, R1, C1, T1)
+# T1
+# part_46
+# (T1)
+# PSM-1_intermediate_1_evan_FriFeb2013:19:56EST2015
+# part_58
+# (P1, R1)
+# C1
+# part_44
+# (C1)
+# PSM-5
+# part_68
+# (P1, R5, C1, T1)
+# pSK1A2
+# vector_9
+# (SK1A)
+# PSM-4
+# part_66
+# (P1, R4, C1, T1)
+# PSM-3
+# part_64
+# (P1, R3, C1, T1)
+# PSM-1_intermediate_5_evan_FriFeb2013:19:56EST2015
+# part_74
+# (P1, R4)
+# PSM-2
+# part_62
+# (P1, R2, C1, T1)
+# R3
+# part_50
+# (R3)
+# PSM-1_intermediate_6_evan_FriFeb2013:19:56EST2015
+# part_76
+# (P1, R5)

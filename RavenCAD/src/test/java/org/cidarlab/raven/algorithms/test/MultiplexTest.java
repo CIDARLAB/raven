@@ -44,7 +44,7 @@ public class MultiplexTest {
         return filepath;
     }
     
-    @Test
+//    @Test
     public void multiplexORGateTest() throws Exception {
         String filePath = getFilepath() + "/src/main/resources/RavenTestFiles/endy_OR_gate_multiplex.csv";
         File toLoad = new File(filePath);
