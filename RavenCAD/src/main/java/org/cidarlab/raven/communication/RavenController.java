@@ -773,8 +773,8 @@ public class RavenController {
                     String bpForcedRight = " ";
                     String bpDirection = "+";
                     String scar = "_";
-                    String basicPartName = partNameTokens[0];
-
+                    String basicPartName = partNameTokens[0];                    
+                    
                     //Scar upload
                     if (partNameTokens.length > 1) {
                         if (partNameTokens.length == 2) {
@@ -809,30 +809,68 @@ public class RavenController {
                     if (tokens.length == 10) {
                         if (i == 9) {
 
-                            Part basic = null;
-                            ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
-                            for (Part aPart : allPartsWithName) {
-                                if (!aPart.getType().equals("plasmid") && bpDirection.equals(aPart.getDirections().get(0))) {
-                                    basic = aPart;
+                            //Multiplexed parts
+                            if (basicPartName.contains("?")) {
+                                
+                                String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
+                                String sequence = "";
+                                Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
+                                newBasicPart.addSearchTag("Type: " + type);
+                                newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
+                                newBasicPart.addSearchTag("LO: " + leftOverhang);
+                                newBasicPart.addSearchTag("RO: " + rightOverhang);
+                                newBasicPart.addSearchTag("Scars: []");
+                                
+                                newBasicPart.saveDefault(_collector);
+                                newBasicPart.setTransientStatus(false);
+                                
+                            } else {
+
+                                Part basic = null;
+                                ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
+                                for (Part aPart : allPartsWithName) {
+                                    if (!aPart.getType().equals("plasmid") && bpDirection.equals(aPart.getDirections().get(0))) {
+                                        basic = aPart;
+                                    }
+                                }
+
+                                //Assumed that a basic part already exists, so this possible null pointer is on purpose
+                                String sequence = basic.getSeq().replaceAll(" ", "");
+                                String type = basic.getType();
+                                Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
+                                newBasicPart.addSearchTag("Type: " + type);
+                                newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
+                                newBasicPart.addSearchTag("LO: " + leftOverhang);
+                                newBasicPart.addSearchTag("RO: " + rightOverhang);
+                                newBasicPart.addSearchTag("Scars: []");
+
+                                //Library logic
+                                if (!tokens[0].trim().isEmpty()) {
+                                    _partLibrary.add(newBasicPart);
+                                    newBasicPart.saveDefault(_collector);
+                                    newBasicPart.setTransientStatus(false);
                                 }
                             }
-                            String sequence = basic.getSeq().replaceAll(" ","");
-                            String type = basic.getType();
+                        }
+                    } else {
+                        
+                        //Multiplexed parts
+                        if (basicPartName.contains("?")) {
+
+                            String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
+                            String sequence = "";
                             Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
                             newBasicPart.addSearchTag("Type: " + type);
                             newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
-                            newBasicPart.addSearchTag("LO: " + leftOverhang);
-                            newBasicPart.addSearchTag("RO: " + rightOverhang);
+                            newBasicPart.addSearchTag("LO: ");
+                            newBasicPart.addSearchTag("RO: ");
                             newBasicPart.addSearchTag("Scars: []");
 
-                            //Library logic
-                            if (!tokens[0].trim().isEmpty()) {
-                                _partLibrary.add(newBasicPart);
-                                newBasicPart.saveDefault(_collector);
-                                newBasicPart.setTransientStatus(false);
-                            }
+                            newBasicPart.saveDefault(_collector);
+                            newBasicPart.setTransientStatus(false);
                         }
                     }
+                    
                     directions.add(bpDirection);
 
                     //Forming the composite part composition
