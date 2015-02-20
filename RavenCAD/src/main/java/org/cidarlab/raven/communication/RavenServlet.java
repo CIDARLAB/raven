@@ -164,11 +164,13 @@ public class RavenServlet extends HttpServlet {
             } else if (command.equals("save")) {
                 String[] partIDs = request.getParameter("partIDs").split(",");
                 String[] vectorIDs = request.getParameter("vectorIDs").split(",");
+                HashSet<Part> parts = controller.IDsToParts(partIDs);
+                HashSet<Vector> vectors = controller.IDsToVectors(vectorIDs);
                 boolean writeSQL = Boolean.parseBoolean(request.getParameter("writeSQL"));
 //                Boolean writeSQL= true;
                 response.setContentType("text/html;charset=UTF-8");
                 String responseString = "failed save data";
-                responseString = controller.save(partIDs, vectorIDs, writeSQL);
+                responseString = controller.save(parts, vectors, writeSQL);
                 out.write(responseString);
 
             } else if (command.equals("mail")) {

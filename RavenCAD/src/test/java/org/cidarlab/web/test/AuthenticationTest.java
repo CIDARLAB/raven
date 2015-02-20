@@ -49,7 +49,7 @@ public class AuthenticationTest {
         
     }
     
-    @Test
+//    @Test
     public void testConvertFileToSecureAuthentication() throws Exception {
         initialize();
         String filepath = Authenticator.class.getClassLoader().getResource(".").getPath();

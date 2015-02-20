@@ -54,9 +54,13 @@ public class RavenController {
      * Check stage vectors for assembly method, add stage vectors if there aren't any
      */
     public HashMap<Integer, Vector> checkStageVectors(HashMap<Integer, Vector> stageVectors, Collector collector, String method) {
+//        
+//        //If stageVectors are empty, fill with defaults
+//        if (stageVectors == null) {
+//            stageVectors = new HashMap();
+//        }
         
-        //If stageVectors are empty, fill with defaults
-        if (stageVectors.get(0) == null || stageVectors == null) {
+        if (stageVectors.get(0) == null) {
 
             ArrayList<String> defaultTags0 = new ArrayList<String>();
             defaultTags0.add("LO: ");
@@ -985,55 +989,45 @@ public class RavenController {
     //given an array of part and vector uuids, save each of them and set their transient status to false
     //saved parts and vectors are typically associated with a new design on the client
     //writeSQL indicates whether or not parts will be saved in an sql database; url hardcoded for puppeteer team testing
-    public String save(String[] partIDs, String[] vectorIDs, boolean writeSQL) {
+    public String save(HashSet<Part> parts, HashSet<Vector> vectors, boolean writeSQL) {
         ArrayList<Part> toSaveParts = new ArrayList();
         ArrayList<Vector> toSaveVectors = new ArrayList();
-        if (partIDs.length > 0) {
-            for (int i = 0; i < partIDs.length; i++) {
-                Part p = _collector.getPart(partIDs[i], true);
-                if (p != null) {
 
-                    if (p.isTransient()) {
-                        
-                        ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(p.getName(), true);
-                        for (Part partWithName : allPartsWithName) {
-                            if (p.getLeftOverhang().equalsIgnoreCase(partWithName.getLeftOverhang()) && p.getRightOverhang().equalsIgnoreCase(partWithName.getRightOverhang()) && p.getStringComposition().equals(partWithName.getStringComposition()) && p.getScars().equals(partWithName.getScars()) && p.getDirections().equals(partWithName.getDirections()) && !partWithName.getType().equalsIgnoreCase("plasmid")) {
-                                if (p != partWithName) {
-                                    partWithName.setTransientStatus(false);
-                                    _partLibrary.add(partWithName);
-                                }
+        for (Part p : parts) {
+            if (p != null) {
+
+                if (p.isTransient()) {
+
+                    ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(p.getName(), true);
+                    for (Part partWithName : allPartsWithName) {
+                        if (p.getLeftOverhang().equalsIgnoreCase(partWithName.getLeftOverhang()) && p.getRightOverhang().equalsIgnoreCase(partWithName.getRightOverhang()) && p.getStringComposition().equals(partWithName.getStringComposition()) && p.getScars().equals(partWithName.getScars()) && p.getDirections().equals(partWithName.getDirections()) && !partWithName.getType().equalsIgnoreCase("plasmid")) {
+                            if (p != partWithName) {
+                                partWithName.setTransientStatus(false);
+                                _partLibrary.add(partWithName);
                             }
                         }
-
-                        p.setTransientStatus(false);
-                        _libraryOHHash.put(p.getUUID(), p.getLeftOverhang() + "|" + p.getRightOverhang());
-                        _partLibrary.add(p);
-                        
-                        //Extra logic to determine part-vector pairs... probably not perfect logic here, but works some times... hack
-                        if (vectorIDs.length > 0) {
-                            for (int k = 0; k < vectorIDs.length; k++) {
-                                Vector v = _collector.getVector(vectorIDs[k], true);
-                                if (v != null) {
-                                   if (p.getLeftOverhang().equals(v.getLeftOverhang()) && p.getRightOverhang().equals(v.getRightOverhang())) {
-                                       _libraryPartsVectors.put(p, v);
-                                   } 
-                                }
-                            }
-                        }
-                        
-                        toSaveParts.add(p);
                     }
+
+                    p.setTransientStatus(false);
+                    _libraryOHHash.put(p.getUUID(), p.getLeftOverhang() + "|" + p.getRightOverhang());
+                    _partLibrary.add(p);
+
+                    for (Vector v : vectors) {
+                        if (v != null) {
+                            if (p.getLeftOverhang().equals(v.getLeftOverhang()) && p.getRightOverhang().equals(v.getRightOverhang())) {
+                                _libraryPartsVectors.put(p, v);
+                            }
+                        }
+                    }
+                    toSaveParts.add(p);
                 }
             }
         }
-        if (vectorIDs.length > 0) {
-            for (int i = 0; i < vectorIDs.length; i++) {
-                Vector v = _collector.getVector(vectorIDs[i], true);
-                if (v != null) {
-                    v.setTransientStatus(false);
-                    _vectorLibrary.add(v);
-                    toSaveVectors.add(v);
-                }
+        for (Vector v : vectors) {
+            if (v != null) {
+                v.setTransientStatus(false);
+                _vectorLibrary.add(v);
+                toSaveVectors.add(v);
             }
         }
         if (writeSQL) {
@@ -1041,7 +1035,6 @@ public class RavenController {
             PuppeteerWriter.saveVectors(toSaveVectors, _databaseConfig);
         }
         return "saved data";
-
     }
 
     //returns "loaded" or "not loaded" depending on whether there are objects in the collector
@@ -1105,14 +1098,25 @@ public class RavenController {
     }
 
     //Get parts from part IDs
-    public HashSet<Part> IDsToParts(String[] targetIDs) {
+    public HashSet<Part> IDsToParts(String[] partIDs) {
         
         HashSet<Part> parts = new HashSet();
-        for (int i = 0; i < targetIDs.length; i++) {
-            Part current = _collector.getPart(targetIDs[i], false);
+        for (String ID : partIDs) {
+            Part current = _collector.getPart(ID, true);
             parts.add(current);
         }
         return parts;
+    }
+    
+    //Get vectors from part IDs
+    public HashSet<Vector> IDsToVectors(String[] vectorIDs) {
+        
+        HashSet<Vector> vectors = new HashSet();
+        for (String ID : vectorIDs) {
+            Vector current = _collector.getVector(ID, true);
+            vectors.add(current);
+        }
+        return vectors;
     }
     
     //Get parts from part IDs
@@ -1149,7 +1153,10 @@ public class RavenController {
         HashSet<String> forbidden = new HashSet();
         HashSet<String> discouraged = new HashSet();
         
-        String method = parameters.get("method").toString().trim();
+        String method = "gibson";
+        if (parameters.has("method")) {
+            method = parameters.get("method").toString().trim();
+        }
         
         if (parameters.has("recommended")) {
             String[] recArray = parameters.get("recommended").toString().split(";");
@@ -1299,6 +1306,12 @@ public class RavenController {
             method = parameters.get("method").toString().trim();
         }
         
+        //If stageVectors are empty, intialize
+        if (stageVectors == null) {
+            stageVectors = new HashMap();
+        }
+        
+        //Solve the assembly
         _statistics = new Statistics();
         Statistics.start();        
         _assemblyGraphs = solve(gps, _partLibrary, _vectorLibrary, parameters, stageVectors, _libraryOHHash, _collector);        
@@ -1326,47 +1339,50 @@ public class RavenController {
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, parameters, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method, gps);       
 
-        //Generate Instructions
-        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
-
-        //Generate graph and arc files
-        ArrayList<String> graphTextFiles = new ArrayList();
-        ArrayList<String> arcTextFiles = new ArrayList();
-        for (RGraph result : _assemblyGraphs) {
-            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-            arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-            graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method));
-        }
-        
-        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);       
-        String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
-        File file = new File(_path + _user + "/instructions" + designCount + ".txt");
-        FileWriter fw = new FileWriter(file);
-        BufferedWriter out = new BufferedWriter(fw);
-        out.write(_instructions);
-        out.close();
-
-        //write graph text file
-        file = new File(_path + _user + "/pigeon" + designCount + ".txt");
-        fw = new FileWriter(file);
-        out = new BufferedWriter(fw);
-        out.write(mergedGraphText);
-        out.close();
-
-        //write arcs text file
-        file = new File(_path + _user + "/arcs" + designCount + ".txt");
-        fw = new FileWriter(file);
-        out = new BufferedWriter(fw);
-        out.write(mergedArcText);
-        out.close();
-
-        //post request to graphviz
-        WeyekinPoster.setDotText(mergedGraphText);
-        WeyekinPoster.postMyVision();
-        String imageURL = "";
-        imageURL = WeyekinPoster.getmGraphVizURI().toString();
+        //Create export files if a design number is specified
         JSONObject toReturn = new JSONObject();
-        toReturn.put("images", imageURL);
+        if (designCount != null) {
+
+            //Generate graph and arc files
+            ArrayList<String> graphTextFiles = new ArrayList();
+            ArrayList<String> arcTextFiles = new ArrayList();
+            for (RGraph result : _assemblyGraphs) {
+                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method));
+            }
+            String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+            String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
+
+            //Instruction file
+            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
+            File file = new File(_path + _user + "/instructions" + designCount + ".txt");
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter out = new BufferedWriter(fw);
+            out.write(_instructions);
+            out.close();
+
+            //Pigeon text file
+            file = new File(_path + _user + "/pigeon" + designCount + ".txt");
+            fw = new FileWriter(file);
+            out = new BufferedWriter(fw);
+            out.write(mergedGraphText);
+            out.close();
+
+            //Puppeteer file
+            file = new File(_path + _user + "/arcs" + designCount + ".txt");
+            fw = new FileWriter(file);
+            out = new BufferedWriter(fw);
+            out.write(mergedArcText);
+            out.close();
+
+            //Post request to graphviz
+            WeyekinPoster.setDotText(mergedGraphText);
+            WeyekinPoster.postMyVision();
+            String imageURL = "";
+            imageURL = WeyekinPoster.getmGraphVizURI().toString();
+            toReturn.put("images", imageURL);
+        }
         return toReturn;
     }
 
@@ -1492,8 +1508,29 @@ public class RavenController {
         return _preloadedParams;
     }
     
+    //Get collector
     public Collector getCollector() {
         return _collector;
+    }
+    
+    //Get assembly graphs
+    public ArrayList<RGraph> getAssemblyGraphs() {
+        return _assemblyGraphs;
+    }
+    
+    //Get assembly stats
+    public Statistics getStatistics() {
+        return _statistics;
+    }
+    
+    //Add part to library
+    public void addToPartLibrary(Part p) {
+        _partLibrary.add(p);
+    }
+    
+    //Add part to library
+    public void addToVectorLibrary(Vector v) {
+        _vectorLibrary.add(v);
     }
     
     //FIELDS
