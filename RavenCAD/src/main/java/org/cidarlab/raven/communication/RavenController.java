@@ -821,6 +821,7 @@ public class RavenController {
                                 newBasicPart.addSearchTag("RO: " + rightOverhang);
                                 newBasicPart.addSearchTag("Scars: []");
                                 
+                                _partLibrary.add(newBasicPart);
                                 newBasicPart.saveDefault(_collector);
                                 newBasicPart.setTransientStatus(false);
                                 
@@ -866,6 +867,7 @@ public class RavenController {
                             newBasicPart.addSearchTag("RO: ");
                             newBasicPart.addSearchTag("Scars: []");
 
+                            _partLibrary.add(newBasicPart);
                             newBasicPart.saveDefault(_collector);
                             newBasicPart.setTransientStatus(false);
                         }
