@@ -59,13 +59,6 @@ public class RBioBricks extends RGeneral {
             stageRVectors.put(stage, vec);
         }
         
-        //If the stageVector hash is empty, make a new default vector
-        if (stageRVectors.size() == 1) {
-            if (stageRVectors.get(1) == null) {
-                stageRVectors.put(0, new RVector("EX", "SP", -1, "pSK1A2", null));
-            }
-        }
-        
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
 

@@ -642,7 +642,7 @@ public class RavenController {
                     badLines.add(line);
                 }
 
-                //Vectors - read and generate new vector
+            //Vectors - read and generate new vector
             } else if (type.equalsIgnoreCase("vector")) {
 
                 try {
@@ -706,13 +706,13 @@ public class RavenController {
                     badLines.add(line);
                 }
 
-                //If there is no type field, the row is malformed
+            //If there is no type field, the row is malformed
             } else if (type.isEmpty()) {
 
                 //poorly formed line
                 badLines.add(line);
 
-                //Basic part - read and generate new part
+            //Basic part - read and generate new part
             } else {
 
                 try {
@@ -752,7 +752,7 @@ public class RavenController {
 
         reader.close();
 
-        //Create the composite parts
+        //Create the composite parts and plasmids
         for (String[] tokens : compositePartTokens) {
             try {
                 ArrayList<Part> composition = new ArrayList<Part>();
@@ -1020,11 +1020,20 @@ public class RavenController {
     public String save(HashSet<Part> parts, HashSet<Vector> vectors, boolean writeSQL) {
         ArrayList<Part> toSaveParts = new ArrayList();
         ArrayList<Vector> toSaveVectors = new ArrayList();
+        boolean multiplexed = false;
 
+        //Save parts
         for (Part p : parts) {
             if (p != null) {
 
-                if (p.isTransient()) {
+                //Extra check to make sure multiplex parts are not saved
+                for (String bp : p.getStringComposition()) {
+                    if (bp.contains("?")) {
+                        multiplexed = true;
+                    }
+                }
+                
+                if (p.isTransient() && !multiplexed) {
 
                     ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(p.getName(), true);
                     for (Part partWithName : allPartsWithName) {
@@ -1051,6 +1060,8 @@ public class RavenController {
                 }
             }
         }
+        
+        //Save vectors
         for (Vector v : vectors) {
             if (v != null) {
                 v.setTransientStatus(false);
@@ -1058,6 +1069,8 @@ public class RavenController {
                 toSaveVectors.add(v);
             }
         }
+        
+        //Save to Puppeteer DB
         if (writeSQL) {
             PuppeteerWriter.saveParts(toSaveParts, _databaseConfig);
             PuppeteerWriter.saveVectors(toSaveVectors, _databaseConfig);
@@ -1172,6 +1185,72 @@ public class RavenController {
         return libraryOH;
     }
     
+    //Traverse a graph and look for multiplex basic nodes
+    public void addMultiplexParts (ArrayList<RGraph> graphs, Collector coll) {
+        
+        //Traverse each graph
+        for (RGraph graph : graphs) {
+            ArrayList<RNode> queue = new ArrayList<RNode>();
+            HashSet<RNode> seenNodes = new HashSet<RNode>();
+            RNode root = graph.getRootNode();
+            queue.add(root);
+            
+            while (!queue.isEmpty()) {
+                RNode current = queue.get(0);
+                queue.remove(0);
+                seenNodes.add(current);
+
+                //Extra multiplex nodes only apply to basic parts
+                if (current.getUUID() != null) {
+                    Part p = coll.getPart(current.getUUID(), false);
+                    if (p.isBasic()) {
+                        String type = p.getType();
+                        if (p.getType().contains("_multiplex")) {
+                            
+                            //Cycle through all parts of this type in the collector and make new nodes with each part's UUID
+                            
+                            ArrayList<Part> allParts = coll.getAllParts(false);
+                            type = type.substring(0, type.length()-10);
+                            for (Part lP : allParts) {
+                                
+                                //Find only basic parts with no overhangs and the same direction
+                                if (lP.getType().equals(type) && lP.getDirections().equals(p.getDirections())) {
+                                    if (lP.getLeftOverhang().isEmpty() && lP.getRightOverhang().isEmpty()) {
+                                    
+                                    //Make a new node, fix neighbors, set its UUID
+                                        RNode clone = current.clone(false);
+                                        for (RNode neighbor : current.getNeighbors()) {
+                                            neighbor.removeNeighbor(current);
+                                            neighbor.addNeighbor(clone);
+                                            clone.addNeighbor(neighbor);
+                                        }
+                                        clone.setUUID(lP.getUUID());
+                                        clone.setName(lP.getName());
+                                        ArrayList<String> pComp = new ArrayList();
+                                        pComp.add(lP.getName());
+                                        clone.setComposition(pComp);
+                                        ArrayList<String> pType = new ArrayList();
+                                        pType.add(type);
+                                        clone.setType(pType);
+                                    }
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+                
+                //Add unseen neighbors to traversal
+                ArrayList<RNode> neighbors = current.getNeighbors();
+                for (RNode neighbor : neighbors) {
+                    if (!seenNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+    }
+    
     //Run only a specific method with full parameters defined
     public ArrayList<RGraph> solve (HashSet<Part> gps, ArrayList<Part> partLibrary, ArrayList<Vector> vectorLibrary, JSONObject parameters, HashMap<Integer, Vector> stageVectors, HashMap<String, String> libraryOHHash, Collector collector) throws Exception {
         
@@ -1276,43 +1355,51 @@ public class RavenController {
         
         stageVectors = checkStageVectors(stageVectors, collector, method);        
         
+        //Run BioBricks
         if (method.equalsIgnoreCase("biobricks")) {
             RBioBricks biobricks = new RBioBricks();
             assemblyGraphs = biobricks.bioBricksClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, stageVectors, null);
             overhangValid = RBioBricks.validateOverhangs(assemblyGraphs);
         
+        //Run CPEC    
         } else if (method.equalsIgnoreCase("cpec")) {
             RCPEC cpec = new RCPEC();
             assemblyGraphs = cpec.cpecClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
             overhangValid = RCPEC.validateOverhangs(assemblyGraphs);
         
+        //Run Gibson    
         } else if (method.equalsIgnoreCase("gibson")) {
             RGibson gibson = new RGibson();
             assemblyGraphs = gibson.gibsonClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
             overhangValid = RGibson.validateOverhangs(assemblyGraphs);
         
+        //Run GoldenGate    
         } else if (method.equalsIgnoreCase("goldengate")) {          
             RGoldenGate gg = new RGoldenGate();
             assemblyGraphs = gg.goldenGateClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null);
             overhangValid = RGoldenGate.validateOverhangs(assemblyGraphs);
         
+        //Run GatewayGibson    
         } else if (method.equalsIgnoreCase("gatewaygibson")) {
             RGatewayGibson gwgib = new RGatewayGibson();
-//            gwgib.setForcedOverhangs(_collector, _forcedOverhangHash);
             assemblyGraphs = gwgib.gatewayGibsonWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiency, stageVectors, null, libraryOHHash, collector);
             overhangValid = RGatewayGibson.validateOverhangs(assemblyGraphs);
         
+        //Run MoClo     
         } else if (method.equalsIgnoreCase("moclo")) {
             RMoClo moclo = new RMoClo();
-//            moclo.setForcedOverhangs(_collector, _forcedOverhangHash);
             assemblyGraphs = moclo.mocloClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiency, stageVectors, null, libraryOHHash);
             overhangValid = RMoClo.validateOverhangs(assemblyGraphs);
         
+        //Run SLIC    
         } else if (method.equalsIgnoreCase("slic")) {
             RSLIC slic = new RSLIC();
             assemblyGraphs = slic.slicClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
             overhangValid = RSLIC.validateOverhangs(assemblyGraphs);
         }
+        
+        //Add extra nodes for multiplexing
+        addMultiplexParts(assemblyGraphs, collector);
         
         boolean valid = validateReqForb(assemblyGraphs, required, forbidden);
         boolean allValid = valid && overhangValid;

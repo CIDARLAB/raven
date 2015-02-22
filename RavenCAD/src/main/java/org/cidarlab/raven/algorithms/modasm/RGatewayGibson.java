@@ -208,7 +208,7 @@ public class RGatewayGibson extends RGeneral {
     private void addAdaptor (RGraph optimalGraph, Collector collector, HashMap<Integer, Vector> stageVectors) {
         
         //Adapt root node overhangs and root node vector overhangs
-        RNode rootNodeClone = optimalGraph.getRootNode().clone();
+        RNode rootNodeClone = optimalGraph.getRootNode().clone(true);
         String rootNodeOldROverhang = rootNodeClone.getROverhang();
         
         RNode adaptor = new RNode();
