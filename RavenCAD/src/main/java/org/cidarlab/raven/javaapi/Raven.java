@@ -87,6 +87,26 @@ public class Raven {
         return assemblyGraphs;
     }
     
+    //This will run Raven for a given library, set of targets and design parameters and return the instruction file
+    public String assemblyInstructions (HashSet<Part> targetParts, HashSet<Part> partsLib, HashSet<Vector> vectorLib, HashMap<Integer, Vector> stageVectors, JSONObject parameters) throws Exception {
+        
+        //Add library to Raven collector and save parts to library
+        RavenController raven = new RavenController();
+        for (Part p : partsLib) {
+            p.saveDefault(raven.getCollector());
+            raven.addToPartLibrary(p);
+        }
+        for (Vector v : vectorLib) {
+            v.saveDefault(raven.getCollector());
+            raven.addToVectorLibrary(v);
+        }
+        
+        raven.run("1", parameters, targetParts, stageVectors);
+        String instructions = raven.getInstructions();
+        
+        return instructions;
+    }
+    
     //Merge parameters from multiple input files
     public JSONObject mergeParameters (JSONObject existing, JSONObject merge) {
         
