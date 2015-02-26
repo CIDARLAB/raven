@@ -449,8 +449,7 @@ public class RGraph {
                 comp.add(name);
             }
 
-            ArrayList<String> searchTags = aPart.getSearchTags();
-            RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0, null);
+            RNode node = new RNode(false, false, comp, aPart.getDirections(), null, aPart.getScars(), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0, null);
             keys.add(node.getNodeKey("+"));
             keys.add(node.getNodeKey("-"));
         }
@@ -506,8 +505,7 @@ public class RGraph {
                 comp.add(name);
             }
 
-            ArrayList<String> searchTags = part.getSearchTags();
-            RNode node = new RNode(false, false, comp, ClothoReader.parseTags(searchTags, "Direction:"), null, ClothoReader.parseTags(searchTags, "Scars:"), part.getLeftOverhang(), part.getRightOverhang(), 0, 0, null);
+            RNode node = new RNode(false, false, comp, part.getDirections(), null, part.getScars(), part.getLeftOverhang(), part.getRightOverhang(), 0, 0, null);
             String nodeKey = node.getNodeKey("+");
             String revNodeKey = node.getNodeKey("-");
 

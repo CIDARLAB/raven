@@ -108,11 +108,11 @@ public class ClothoWriter {
 
                     //If there's overhangs, add search tags
                     Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO, scarSeqs);                    
-                    newPlasmid.addSearchTag("Type: plasmid");
+                    newPlasmid.setType("plasmid");
                     newPlasmid = newPlasmid.saveDefault(coll);
                     
                     Part newComposite = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO, scarSeqs);
-                    newComposite.addSearchTag("Type: composite");
+                    newComposite.setType("composite");
                     newComposite.saveDefault(coll);
                     
                     currentNode.setName(partName);
@@ -122,25 +122,19 @@ public class ClothoWriter {
 
                     //If a part with this composition and overhangs does not exist, a new part is needed
                     String seq = "";
-                    ArrayList<String> tags = new ArrayList<String>();
-                    tags.add("LO: " + currentNode.getLOverhang());
-                    tags.add("RO: " + currentNode.getROverhang());
-                    tags.add("Type: plasmid");
-                    tags.add("Direction: " + currentNode.getDirection());
-                    tags.add("Scars: " + currentNode.getScars());
                     ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(currentNode.getName(), true);
                     if (!allPartsWithName.isEmpty()) {
                         seq = allPartsWithName.get(0).getSeq();
                         if (currentNode.getDirection().size() == 1) {
-                            if (currentNode.getDirection().get(0).equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+                            if (currentNode.getDirection().get(0).equals("-") && allPartsWithName.get(0).getDirections().get(0).equals("+")) {
                                 seq = PrimerDesign.reverseComplement(seq);
-                            } else if (currentNode.getDirection().get(0).equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+                            } else if (currentNode.getDirection().get(0).equals("+") && allPartsWithName.get(0).getDirections().get(0).equals("-")) {
                                 seq = PrimerDesign.reverseComplement(seq);
                             }
                         }
                     }
                     
-                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), tags, false);
+                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), currentNode.getLOverhang(), currentNode.getROverhang(), "plasmid", currentNode.getDirection(), currentNode.getScars(), false);
                     
                     if (currentPart == null) {
 
@@ -186,24 +180,18 @@ public class ClothoWriter {
                                 bpComposition = currentPart.getComposition();
                             }
                             
-                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition);
+                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), new ArrayList(), "", "", "");
                             
                             //Make a new part
-                            Part newBasic = Part.generateBasic(name, currentSeq, bpComposition);
-                            newBasic.addSearchTag("LO: " + LO);
-                            newBasic.addSearchTag("RO: " + RO);
-                            newBasic.addSearchTag("Direction: " + currentNode.getDirection().toString());
-                            newBasic.addSearchTag("Scars: []");
                             
                             //Special types for merged parts 
+                            String type = currentNode.getType().toString();
                             if (currentNode.getSpecialSeq() != null) {
-                                newBasic.addSearchTag("Type: " + currentNode.getType());
                             } else {
-                                String type = currentNode.getType().toString();
                                 type = type.substring(1, type.length() - 1);
-                                newBasic.addSearchTag("Type: " + type);
                             }
                             
+                            Part newBasic = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), currentNode.getDirection(), LO, RO, type);
                             newBasic.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
@@ -259,12 +247,9 @@ public class ClothoWriter {
                                     cRO = "SP";
                                 }
 
-                                cSearchTags.add("RO: " + cRO);
-                                cSearchTags.add("LO: " + cLO);
-                                cSearchTags.add("Type: " + cType);
-                                cSearchTags.add("Direction: [" + cDir + "]");
-                                cSearchTags.add("Scars: []");
-                                Part exactPart = coll.getExactPart(cName, cSeq, bpComp, cSearchTags, true);
+                                ArrayList<String> cDirs = new ArrayList();
+                                cDirs.add(cDir);
+                                Part exactPart = coll.getExactPart(cName, cSeq, bpComp, cLO, cRO, cType, cDirs, new ArrayList(), true);
                                 
                                 //Try to find the inverted version if this part does not exist
                                 if (exactPart == null) {
@@ -288,13 +273,10 @@ public class ClothoWriter {
                                         invertedcDir = "+";
                                     }
                                     String rcSeq = PrimerDesign.reverseComplement(cSeq);
-                                    cSearchTags.clear();
-                                    cSearchTags.add("LO: " + invertedcRO);
-                                    cSearchTags.add("RO: " + invertedcLO);
-                                    cSearchTags.add("Type: " + cType);
-                                    cSearchTags.add("Direction: [" + invertedcDir + "]");
-                                    cSearchTags.add("Scars: []");
-                                    exactPart = coll.getExactPart(cName, rcSeq, bpComp, cSearchTags, true);
+                                    
+                                    ArrayList<String> invcDirs = new ArrayList();
+                                    invcDirs.add(invertedcDir);
+                                    exactPart = coll.getExactPart(cName, rcSeq, bpComp, invertedcRO, invertedcLO, cType, invcDirs, new ArrayList(), true);
                                 }
 
                                 //In the edge case where the overhangs of a re-used composite part is changed
@@ -305,21 +287,16 @@ public class ClothoWriter {
                                     cSearchTags.add("LO: ");
                                     cSearchTags.add("Direction: [" + cDir + "]" );
                                     cSearchTags.add("Scars: []");
-                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, cSearchTags, true);
+                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, "", "", cType, cDirs, new ArrayList(), true);
                                 }
                                 
                                 newComposition.add(exactPart);
                             }
 
-                            newPlasmid = Part.generateComposite(newComposition, scarSeqs, currentPart.getName());
+                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, null, null, null, null, null);
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
-                            Part newComposite = Part.generateComposite(newComposition, scarSeqs, currentPart.getName());
-                            newComposite.addSearchTag("LO: " + LO);
-                            newComposite.addSearchTag("RO: " + RO);
-                            newComposite.addSearchTag("Direction: " + currentNode.getDirection().toString());
-                            newComposite.addSearchTag("Scars: " + currentNode.getScars().toString());
-                            newComposite.addSearchTag("Type: composite");
+                            Part newComposite = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), currentNode.getDirection(), LO, RO, "composite");
                             newComposite.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
@@ -330,11 +307,11 @@ public class ClothoWriter {
                             }
                         }
 
-                        newPlasmid.addSearchTag("LO: " + LO);
-                        newPlasmid.addSearchTag("RO: " + RO);
-                        newPlasmid.addSearchTag("Direction: " + currentNode.getDirection().toString());
-                        newPlasmid.addSearchTag("Scars: " + currentNode.getScars().toString());
-                        newPlasmid.addSearchTag("Type: plasmid");
+                        newPlasmid.setLeftOverhang(LO);
+                        newPlasmid.setRightOverhang(RO);
+                        newPlasmid.setDirections(currentNode.getDirection());
+                        newPlasmid.setScars(currentNode.getScars());
+                        newPlasmid.setType("plasmid");
                         
                         if ((method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate")) || method.equalsIgnoreCase("gatewaygibson") || currentNode.getStage() > 0) {                          
 
@@ -461,9 +438,9 @@ public class ClothoWriter {
             
             //Correct for direction
             String cDir = direction.get(i);
-            if (cDir.equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+            if (cDir.equals("-") && allPartsWithName.get(0).getDirections().get(0).equals("+")) {
                 cSeq = PrimerDesign.reverseComplement(cSeq);
-            } else if (cDir.equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+            } else if (cDir.equals("+") && allPartsWithName.get(0).getDirections().get(0).equals("-")) {
                 cSeq = PrimerDesign.reverseComplement(cSeq);
             }
 
@@ -504,13 +481,9 @@ public class ClothoWriter {
                 cRO = "SP";
             }
 
-            cSearchTags.add("RO: " + cRO);
-            cSearchTags.add("LO: " + cLO);
-            cSearchTags.add("Type: " + cType);
-            cSearchTags.add("Direction: [" + cDir + "]");
-            cSearchTags.add("Scars: []");
-
-            Part exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
+            ArrayList<String> cDirs = new ArrayList();
+            cDirs.add(cDir);
+            Part exactPart = coll.getExactPart(cName, cSeq, thisComp, cRO, cLO, cType, cDirs, new ArrayList(), true);
             
             //Try to find the inverted version if this part does not exist
             if (exactPart == null) {
@@ -533,34 +506,21 @@ public class ClothoWriter {
                 } else {
                     invertedcDir = "+";
                 }
-                cSearchTags.clear();
-                cSearchTags.add("LO: " + invertedcRO);
-                cSearchTags.add("RO: " + invertedcLO);
-                cSearchTags.add("Type: " + cType);
-                cSearchTags.add("Direction: [" + invertedcDir + "]");
-                cSearchTags.add("Scars: []");
-                exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
+                
+                ArrayList<String> invcDirs = new ArrayList();
+                invcDirs.add(invertedcDir);
+                exactPart = coll.getExactPart(cName, cSeq, thisComp, invertedcRO, invertedcLO, cType, invcDirs, new ArrayList(), true);
             }    
             
             //In homologous recombinations, the overhangs are the neighbor, select the blank part
             if (exactPart == null) {
-                cSearchTags.clear();
-                cSearchTags.add("Type: " + cType);
-                cSearchTags.add("RO: ");
-                cSearchTags.add("LO: ");
-                cSearchTags.add("Direction: [" + cDir + "]");
-                cSearchTags.add("Scars: []");
-                exactPart = coll.getExactPart(cName, cSeq, thisComp, cSearchTags, true);
+                exactPart = coll.getExactPart(cName, cSeq, thisComp, "", "", cType, cDirs, new ArrayList(), true);
             }
             
             newComposition.add(exactPart);
         }
 
-        Part newPart = Part.generateComposite(newComposition, scarSeqs, name);
-        newPart.addSearchTag("LO: " + LO);
-        newPart.addSearchTag("RO: " + RO);
-        newPart.addSearchTag("Direction: " + direction);
-        newPart.addSearchTag("Scars: " + scars);
+        Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, direction, LO, RO, "");
         return newPart;
     }
 
@@ -582,35 +542,24 @@ public class ClothoWriter {
                 return vector;
             }
         }
-
-        Vector newVector = Vector.generateVector(name, sequence);
-
-        if (!LO.isEmpty()) {
-            newVector.addSearchTag("LO: " + LO);
-        }
-        if (!RO.isEmpty()) {
-            newVector.addSearchTag("RO: " + RO);
-        }
-        if (!resistance.isEmpty()) {
-            newVector.addSearchTag("Resistance: " + resistance);
-        }
-        if (level > -1) {
-            newVector.addSearchTag("Level: " + level);
-        }
         
         //If making a destination vector
+        String composition = "";
+        String type = "";
+        String vector = "";
         if (method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("gatewaygibson")) {
             if (method.equalsIgnoreCase("gatewaygibson") && level > 0) {
-                newVector.addSearchTag("Composition: CmR-ccdB|" + LO + "|" + RO + "|+");
+                composition = "CmR-ccdB|" + LO + "|" + RO + "|+";
             } else {
-                newVector.addSearchTag("Composition: lacZ|" + LO + "|" + RO + "|+");
+                composition = "lacZ|" + LO + "|" + RO + "|+";
             }
-            newVector.addSearchTag("Type: destination vector");
-            newVector.addSearchTag("Vector: " + name);
+            type = "destination vector";
+            vector = name;
         } else {
-            newVector.addSearchTag("Type: vector");
+            type = "vector";
         }
 
+        Vector newVector = Vector.generateVector(name, sequence, LO, RO, type, vector, composition, resistance, level);
         return newVector;
     }
 

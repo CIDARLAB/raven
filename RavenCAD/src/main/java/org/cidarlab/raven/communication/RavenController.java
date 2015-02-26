@@ -67,12 +67,9 @@ public class RavenController {
             defaultTags0.add("RO: ");
             defaultTags0.add("Type: vector");
             defaultTags0.add("Resistance: ampicilin");
-            Vector st0Vec = _collector.getExactVector("pSB1A2", _pSB1A2, defaultTags0, false);
+            Vector st0Vec = _collector.getExactVector("pSB1A2", _pSB1A2, false, "", "", "vector", "", "", "ampicilin", -1);
             if (st0Vec == null) {
-                st0Vec = Vector.generateVector("pSB1A2", _pSB1A2);
-                for (String tag : defaultTags0) {
-                    st0Vec.addSearchTag(tag);
-                }
+                st0Vec = Vector.generateVector("pSB1A2", _pSB1A2, "", "", "vector", "", "", "ampicilin", -1);
                 collector.addVector(st0Vec);
             }
             stageVectors.put(0, st0Vec); 
@@ -84,12 +81,9 @@ public class RavenController {
                 defaultTags1.add("RO: ");
                 defaultTags1.add("Type: vector");
                 defaultTags1.add("Resistance: kanamycin");
-                Vector st1Vec = collector.getExactVector("pSB1K3", _pSB1K3, defaultTags1, false);
+                Vector st1Vec = collector.getExactVector("pSB1K3", _pSB1K3, false, "", "", "vector", "", "", "kanamycin", -1);
                 if (st1Vec == null) {
-                    st1Vec = Vector.generateVector("pSB1K3", _pSB1K3);
-                    for (String tag : defaultTags1) {
-                        st1Vec.addSearchTag(tag);
-                    }
+                    st1Vec = Vector.generateVector("pSB1K3", _pSB1K3, "", "", "vector", "", "", "kanamycin", -1);
                     collector.addVector(st1Vec);
                 }
                 stageVectors.put(1, st1Vec);
@@ -375,11 +369,10 @@ public class RavenController {
                 ArrayList<Part> composition = p.getComposition();
                 ArrayList<String> compositions = new ArrayList<String>();
                 String bpDir = new String();
-                String bpLO = new String();
-                String bpRO = new String();
+                String bpLO = p.getLeftOverhang();
+                String bpRO = p.getRightOverhang();
                 String type = p.getType();
-                ArrayList<String> tags = p.getSearchTags();
-                ArrayList<String> direction = ClothoReader.parseTags(tags, "Direction:");
+                ArrayList<String> direction = p.getDirections();
 
                 //Displaying plasmids in data upload tab
                 if (composition.size() > 1) {
@@ -390,17 +383,7 @@ public class RavenController {
                             bpDir = direction.get(i);
                         }
 
-                        ArrayList<String> searchTags = part.getSearchTags();
                         String aPartComp;
-
-                        //Look at all of the search tags
-                        for (String tag : searchTags) {
-                            if (tag.startsWith("LO:")) {
-                                bpLO = tag.substring(4);
-                            } else if (tag.startsWith("RO:")) {
-                                bpRO = tag.substring(4);
-                            }
-                        }
 
                         if (!bpDir.isEmpty()) {
                             if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
@@ -427,17 +410,7 @@ public class RavenController {
                         bpDir = direction.get(0);
                     }
 
-                    ArrayList<String> searchTags = part.getSearchTags();
                     String aPartComp;
-
-                    //Look at all of the search tags
-                    for (String tag : searchTags) {
-                        if (tag.startsWith("LO:")) {
-                            bpLO = tag.substring(4);
-                        } else if (tag.startsWith("RO:")) {
-                            bpRO = tag.substring(4);
-                        }
-                    }
 
                     if (!bpDir.isEmpty()) {
                         if (!bpLO.isEmpty() || !bpRO.isEmpty()) {
@@ -655,11 +628,7 @@ public class RavenController {
                         resistance = tokens[6].toLowerCase().trim();
                     }
 
-                    Vector newVector = Vector.generateVector(name, sequence);
-                    newVector.addSearchTag("LO: " + leftOverhang);
-                    newVector.addSearchTag("RO: " + rightOverhang);
-                    newVector.addSearchTag("Type: " + type);
-                    newVector.addSearchTag("Resistance: " + resistance);
+                    Vector newVector = Vector.generateVector(name, sequence, leftOverhang, rightOverhang, type, "", "", resistance, -1);
 
                     _vectorLibrary.add(newVector);
                     newVector.saveDefault(_collector);
@@ -688,14 +657,7 @@ public class RavenController {
                             level = -1;
                         }
 
-                        Vector newVector = Vector.generateVector(name, sequence);
-                        newVector.addSearchTag("LO: " + leftOverhang);
-                        newVector.addSearchTag("RO: " + rightOverhang);
-                        newVector.addSearchTag("Level: " + level);
-                        newVector.addSearchTag("Type: " + type);
-                        newVector.addSearchTag("Resistance: " + resistance);
-                        newVector.addSearchTag("Vector: " + name);
-                        newVector.addSearchTag("Composition: " + composition);
+                        Vector newVector = Vector.generateVector(name, sequence, leftOverhang, rightOverhang, type, name, composition, resistance, level);
 
                         _vectorLibrary.add(newVector);
                         newVector.saveDefault(_collector);
@@ -718,20 +680,13 @@ public class RavenController {
                 try {
                     String name = tokens[1].trim();
                     String sequence = tokens[2].trim().replaceAll(" ","");
-
-                    Part newBasicPart = Part.generateBasic(name, sequence, null);
-                    newBasicPart.addSearchTag("LO: ");
-                    newBasicPart.addSearchTag("RO: ");
-                    newBasicPart.addSearchTag("Type: " + type);
-                    newBasicPart.addSearchTag("Direction: [+]");
-                    newBasicPart.addSearchTag("Scars: []");
+                    ArrayList<String> directions = new ArrayList();
+                    directions.add("+");
+                    ArrayList<String> rDirections = new ArrayList();
+                    rDirections.add("-");
                     
-                    Part newReverseBasicPart = Part.generateBasic(name, PrimerDesign.reverseComplement(sequence), null);
-                    newReverseBasicPart.addSearchTag("LO: ");
-                    newReverseBasicPart.addSearchTag("RO: ");
-                    newReverseBasicPart.addSearchTag("Type: " + type);
-                    newReverseBasicPart.addSearchTag("Direction: [-]");
-                    newReverseBasicPart.addSearchTag("Scars: []");
+                    Part newBasicPart = Part.generateBasic(name, sequence, null, new ArrayList(), directions, "", "", type);                    
+                    Part newReverseBasicPart = Part.generateBasic(name, PrimerDesign.reverseComplement(sequence), null, new ArrayList(), rDirections, "", "", type);
 
                     //Library logic
                     newBasicPart = newBasicPart.saveDefault(_collector);
@@ -755,15 +710,15 @@ public class RavenController {
         //Create the composite parts and plasmids
         for (String[] tokens : compositePartTokens) {
             try {
-                ArrayList<Part> composition = new ArrayList<Part>();
+                ArrayList<Part> composition = new ArrayList();
 
                 //For all of the basic parts in the composite part composition
                 String name = tokens[1].trim();
                 String leftOverhang = tokens[3].trim();
                 String rightOverhang = tokens[4].trim();
                 String vectorName = tokens[8].trim();
-                ArrayList<String> directions = new ArrayList<String>();
-                ArrayList<String> scars = new ArrayList<String>();
+                ArrayList<String> directions = new ArrayList();
+                ArrayList<String> scars = new ArrayList();
 
                 //Parse composition tokens
                 for (int i = 9; i < tokens.length; i++) {
@@ -804,6 +759,8 @@ public class RavenController {
                             }
                         }
                     }
+                    ArrayList<String> bpDirections = new ArrayList();
+                    bpDirections.add(bpDirection);
 
                     //Basic part plasmids - add as new basic parts with overhang for re-use
                     if (tokens.length == 10) {
@@ -812,14 +769,8 @@ public class RavenController {
                             //Multiplexed parts
                             if (basicPartName.contains("?")) {
                                 
-                                String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
-                                String sequence = "";
-                                Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
-                                newBasicPart.addSearchTag("Type: " + type);
-                                newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
-                                newBasicPart.addSearchTag("LO: " + leftOverhang);
-                                newBasicPart.addSearchTag("RO: " + rightOverhang);
-                                newBasicPart.addSearchTag("Scars: []");
+                                String type = basicPartName.replaceAll("\\?", "") + "_multiplex";                                
+                                Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, leftOverhang, rightOverhang, type);
                                 
                                 _partLibrary.add(newBasicPart);
                                 newBasicPart.saveDefault(_collector);
@@ -830,7 +781,7 @@ public class RavenController {
                                 Part basic = null;
                                 ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
                                 for (Part aPart : allPartsWithName) {
-                                    if (!aPart.getType().equals("plasmid") && bpDirection.equals(aPart.getDirections().get(0))) {
+                                    if (!aPart.getType().equals("plasmid") && bpDirections.equals(aPart.getDirections())) {
                                         basic = aPart;
                                     }
                                 }
@@ -838,12 +789,7 @@ public class RavenController {
                                 //Assumed that a basic part already exists, so this possible null pointer is on purpose
                                 String sequence = basic.getSeq().replaceAll(" ", "");
                                 String type = basic.getType();
-                                Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
-                                newBasicPart.addSearchTag("Type: " + type);
-                                newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
-                                newBasicPart.addSearchTag("LO: " + leftOverhang);
-                                newBasicPart.addSearchTag("RO: " + rightOverhang);
-                                newBasicPart.addSearchTag("Scars: []");
+                                Part newBasicPart = Part.generateBasic(basicPartName, sequence, null, new ArrayList(), bpDirections, leftOverhang, rightOverhang, type);
 
                                 //Library logic
                                 if (!tokens[0].trim().isEmpty()) {
@@ -859,13 +805,7 @@ public class RavenController {
                         if (basicPartName.contains("?")) {
 
                             String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
-                            String sequence = "";
-                            Part newBasicPart = Part.generateBasic(basicPartName, sequence, null);
-                            newBasicPart.addSearchTag("Type: " + type);
-                            newBasicPart.addSearchTag("Direction: [" + bpDirection + "]");
-                            newBasicPart.addSearchTag("LO: ");
-                            newBasicPart.addSearchTag("RO: ");
-                            newBasicPart.addSearchTag("Scars: []");
+                            Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, "", "", type);
 
                             _partLibrary.add(newBasicPart);
                             newBasicPart.saveDefault(_collector);
@@ -883,7 +823,7 @@ public class RavenController {
                     for (Part partWithName : allPartsWithName) {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
-                        if (LO.isEmpty() && RO.isEmpty() && bpDirection.equals(partWithName.getDirections().get(0))) {
+                        if (LO.isEmpty() && RO.isEmpty() && bpDirections.equals(partWithName.getDirections())) {
                             if (!partWithName.getType().equals("plasmid")) {
                                 bp = partWithName;
                             }
@@ -894,7 +834,7 @@ public class RavenController {
                     for (Part partWithName : allPartsWithName) {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
-                        if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight) && bpDirection.equals(partWithName.getDirections().get(0))) {
+                        if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight) && bpDirections.equals(partWithName.getDirections())) {
                             if (!partWithName.getType().equals("plasmid")) {
                                 bp = partWithName;
                             }
@@ -922,20 +862,15 @@ public class RavenController {
                         }
                     }
                     
-                    //This is a patch for the vector counting problem on data upload
+                    //This is a patch for the vector counting problem on data upload - God this parsing code and data management blows asshole
                     if (vector == null) {
-                        Vector newVector = Vector.generateVector(vectorName, vectors.get(0).getSeq());
-                        newVector.addSearchTag("LO: " + leftOverhang);
-                        newVector.addSearchTag("RO: " + rightOverhang);
+                        int level = -1;
                         if (!tokens[7].isEmpty()) {
-                            newVector.addSearchTag("Level: " + tokens[7].trim());
-                        } else {
-                            newVector.addSearchTag("Level: -1");
+                            level = Integer.valueOf(tokens[7].trim());
                         }
-                        newVector.addSearchTag("Type: destination vector");
-                        newVector.addSearchTag("Resistance: " + vectors.get(0).getResistance());
-                        newVector.addSearchTag("Vector: " + vectorName);
-
+                        
+                        Vector newVector = Vector.generateVector(vectorName, vectors.get(0).getSeq(), leftOverhang, rightOverhang, "destination vector", vectorName, "", vectors.get(0).getResistance(), level);
+                        
                         _vectorLibrary.add(newVector);
                         newVector.saveDefault(_collector);
                         newVector.setTransientStatus(true);
@@ -962,15 +897,10 @@ public class RavenController {
                 //Library logic - make new plasmids whether or not they are in the library
                 Part newPlasmid;
                 if (composition.size() > 1) {
-                    newPlasmid = Part.generateComposite(composition, scarSeqs, name);
+                    newPlasmid = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, "plasmid");
                 } else {
-                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition);
+                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition, scars, directions, leftOverhang, rightOverhang, "plasmid");
                 }
-                newPlasmid.addSearchTag("Direction: " + directions);
-                newPlasmid.addSearchTag("LO: " + leftOverhang);
-                newPlasmid.addSearchTag("RO: " + rightOverhang);
-                newPlasmid.addSearchTag("Type: plasmid");
-                newPlasmid.addSearchTag("Scars: " + scars);
                 newPlasmid = newPlasmid.saveDefault(_collector);
                 newPlasmid.setTransientStatus(false);
                 _libraryOHHash.put(newPlasmid.getUUID(), leftOverhang + "|" + rightOverhang);
@@ -980,12 +910,7 @@ public class RavenController {
                     _libraryPartsVectors.put(newPlasmid, vector);
 
                     if (composition.size() > 1) {
-                        Part newComposite = Part.generateComposite(composition, scarSeqs, name);
-                        newComposite.addSearchTag("Direction: " + directions);
-                        newComposite.addSearchTag("LO: " + leftOverhang);
-                        newComposite.addSearchTag("RO: " + rightOverhang);
-                        newComposite.addSearchTag("Type: composite");
-                        newComposite.addSearchTag("Scars: " + scars);
+                        Part newComposite = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, "composite");
                         newComposite = newComposite.saveDefault(_collector);
                         newComposite.setTransientStatus(false);
                         _partLibrary.add(newComposite);
@@ -1564,45 +1489,45 @@ public class RavenController {
         return _instructions;
     }
 
-    public String importClotho(JSONArray toImport) {
-        String toReturn = "";
-        try {
-            for (int i = 0; i < toImport.length(); i++) {
-                JSONObject currentPart = toImport.getJSONObject(i);
-                if (currentPart.getString("schema").equals("BasicPart")) {
-                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"), null);
-                    String type = "gene";
-                    if (currentPart.has("type")) {
-                        type = currentPart.getString("type");
-                    }
-                    newBasicPart.addSearchTag("Type: " + type);
-                    newBasicPart.setUuid(currentPart.getString("id"));
-                    newBasicPart = newBasicPart.saveDefault(_collector);
-                    newBasicPart.setTransientStatus(false);
-                } else if (currentPart.getString("schema").equals("CompositePart")) {
-                    JSONArray compositionArray = currentPart.getJSONArray("composition");
-                    ArrayList<Part> composition = new ArrayList();
-                    ArrayList<String> direction = new ArrayList();
-                    for (int j = 0; j < compositionArray.length(); j++) {
-                        composition.add(_collector.getPart(compositionArray.getString(j), false));
-                        direction.add("+");
-                    }
-                    Part newComposite = Part.generateComposite(composition, null, currentPart.getString("name"));
-                    newComposite.setUuid(currentPart.getString("id"));
-                    newComposite.addSearchTag("Type: composite");
-                    newComposite.addSearchTag("Direction: " + direction);
-                    newComposite = newComposite.saveDefault(_collector);
-                    newComposite.setTransientStatus(false);
-                }
-
-            }
-        } catch (JSONException ex) {
-            Logger.getLogger(RavenController.class.getName()).log(Level.SEVERE, null, ex);
-            return "bad";
-        }
-
-        return "good";
-    }
+//    public String importClotho(JSONArray toImport) {
+//        String toReturn = "";
+//        try {
+//            for (int i = 0; i < toImport.length(); i++) {
+//                JSONObject currentPart = toImport.getJSONObject(i);
+//                if (currentPart.getString("schema").equals("BasicPart")) {
+//                    Part newBasicPart = Part.generateBasic(currentPart.getString("name"), currentPart.getJSONObject("sequence").getString("sequence"), null, new ArrayList(), new ArrayList(), "", "", "");
+//                    String type = "gene";
+//                    if (currentPart.has("type")) {
+//                        type = currentPart.getString("type");
+//                    }
+//                    newBasicPart.addSearchTag("Type: " + type);
+//                    newBasicPart.setUuid(currentPart.getString("id"));
+//                    newBasicPart = newBasicPart.saveDefault(_collector);
+//                    newBasicPart.setTransientStatus(false);
+//                } else if (currentPart.getString("schema").equals("CompositePart")) {
+//                    JSONArray compositionArray = currentPart.getJSONArray("composition");
+//                    ArrayList<Part> composition = new ArrayList();
+//                    ArrayList<String> direction = new ArrayList();
+//                    for (int j = 0; j < compositionArray.length(); j++) {
+//                        composition.add(_collector.getPart(compositionArray.getString(j), false));
+//                        direction.add("+");
+//                    }
+//                    Part newComposite = Part.generateComposite(currentPart.getString("name"), composition, null, null, null, null, null, null);
+//                    newComposite.setUuid(currentPart.getString("id"));
+//                    newComposite.addSearchTag("Type: composite");
+//                    newComposite.addSearchTag("Direction: " + direction);
+//                    newComposite = newComposite.saveDefault(_collector);
+//                    newComposite.setTransientStatus(false);
+//                }
+//
+//            }
+//        } catch (JSONException ex) {
+//            Logger.getLogger(RavenController.class.getName()).log(Level.SEVERE, null, ex);
+//            return "bad";
+//        }
+//
+//        return "good";
+//    }
 
     public JSONObject generateStats() throws Exception {
         String statString = "{\"goalParts\":\"" + _statistics.getGoalParts()

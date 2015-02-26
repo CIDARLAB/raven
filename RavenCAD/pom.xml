@@ -5,7 +5,7 @@
     <groupId>Raven</groupId>
     <artifactId>RavenCAD</artifactId>
     <version>1.2-SNAPSHOT</version>
-    <!--<packaging>war</packaging>-->
+    <packaging>war</packaging>
 
     <name>RavenCAD</name>
 
@@ -16,6 +16,13 @@
     
     <dependencies>
         <!-- persistence -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.12.4</version>
+            <type>jar</type>
+        </dependency>
+        
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>javax.persistence</artifactId>

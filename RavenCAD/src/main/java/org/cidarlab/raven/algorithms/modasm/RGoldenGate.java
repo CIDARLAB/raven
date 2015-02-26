@@ -181,12 +181,7 @@ public class RGoldenGate extends RGeneral {
         if (node == root) {
             
             String seq = "";
-            ArrayList<String> tags = new ArrayList<String>();
             String type = "";
-            tags.add("LO: " + node.getLOverhang());
-            tags.add("RO: " + node.getROverhang());
-            tags.add("Direction: " + node.getDirection());
-            tags.add("Scars: " + node.getScars());
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
             if (!allPartsWithName.isEmpty()) {
                 seq = allPartsWithName.get(0).getSeq();
@@ -197,8 +192,7 @@ public class RGoldenGate extends RGeneral {
                     }
                 }
             }
-            tags.add("Type: " + type);
-            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
+            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getDirection(), node.getScars(), true);
             currentSeq = currentPart.getSeq();            
             Vector vector = coll.getVector(node.getVector().getUUID(), true);
             rSeq = vector.getSeq();
@@ -207,19 +201,14 @@ public class RGoldenGate extends RGeneral {
         } else {
 
             String seq = "";
-            ArrayList<String> tags = new ArrayList<String>();
             String type = "";
-            tags.add("LO: " + node.getLOverhang());
-            tags.add("RO: " + node.getROverhang());
-            tags.add("Direction: " + node.getDirection());
-            tags.add("Scars: " + node.getScars());
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
             if (!allPartsWithName.isEmpty()) {
                 seq = allPartsWithName.get(0).getSeq();
                 if (node.getDirection().size() == 1) {
-                    if (node.getDirection().get(0).equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+                    if (node.getDirection().get(0).equals("-") && allPartsWithName.get(0).getDirections().get(0).equals("+")) {
                         seq = PrimerDesign.reverseComplement(seq);
-                    } else if (node.getDirection().get(0).equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+                    } else if (node.getDirection().get(0).equals("+") && allPartsWithName.get(0).getDirections().get(0).equals("-")) {
                         seq = PrimerDesign.reverseComplement(seq);
                     }
                 }
@@ -230,8 +219,8 @@ public class RGoldenGate extends RGeneral {
                     }
                 }
             }
-            tags.add("Type: " + type);
-            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
+            
+            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getDirection(), node.getScars(), true);
             currentSeq = currentPart.getSeq();
 
             if (currentPart.isBasic()) {
