@@ -14,7 +14,7 @@ import lombok.Setter;
  */
 public class Part {
 
-    public static Part generateComposite(String name, ArrayList<Part> newComposition, ArrayList<String> scarSeqs, ArrayList<String> scars, ArrayList<String> directions, String LO, String RO, String type) {
+    public static Part generateComposite(String name, ArrayList<Part> newComposition, ArrayList<String> scarSeqs, ArrayList<String> scars, ArrayList<String> directions, String LO, String RO, ArrayList<String> type) {
         Part newComposite = new Part();
         String sequence = "";
         
@@ -62,7 +62,7 @@ public class Part {
         this.uuid = "part_" + String.valueOf(UUID);
     }
 
-    public static Part generateBasic(String name, String sequence, ArrayList<Part> composition, ArrayList<String> scars, ArrayList<String> directions, String leftOverhang, String rightOverhang, String type) {
+    public static Part generateBasic(String name, String sequence, ArrayList<Part> composition, ArrayList<String> scars, ArrayList<String> directions, String leftOverhang, String rightOverhang, ArrayList<String> type) {
         Part newBasic = new Part();
         newBasic.name = name;
         newBasic.sequence = sequence;
@@ -154,7 +154,7 @@ public class Part {
     //Type
     @Getter
     @Setter
-    private String type;
+    private ArrayList<String> type;
     
     //Scars
     @Getter

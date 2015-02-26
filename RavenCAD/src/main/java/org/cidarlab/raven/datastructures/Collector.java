@@ -84,7 +84,7 @@ public class Collector {
         return toReturn;
     }
 
-     public Part getExactPart(String name, String seq, ArrayList<String> composition, String leftOverhang, String rightOverhang, String type, ArrayList<String> scars, ArrayList<String> directions, boolean allowTransient) {
+     public Part getExactPart(String name, String seq, ArrayList<String> composition, String leftOverhang, String rightOverhang, ArrayList<String> type, ArrayList<String> scars, ArrayList<String> directions, boolean allowTransient) {
 
         Part toReturn = null;
         ArrayList<Part> allPartsWithName = this.getAllPartsWithName(name, allowTransient);

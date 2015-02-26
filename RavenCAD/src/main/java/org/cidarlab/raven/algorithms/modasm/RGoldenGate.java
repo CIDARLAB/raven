@@ -181,13 +181,13 @@ public class RGoldenGate extends RGeneral {
         if (node == root) {
             
             String seq = "";
-            String type = "";
+            ArrayList<String> type = new ArrayList();
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
             if (!allPartsWithName.isEmpty()) {
                 seq = allPartsWithName.get(0).getSeq();
                 for (int i = 0; i < allPartsWithName.size(); i++) {
                     type = allPartsWithName.get(i).getType();
-                    if (!type.equalsIgnoreCase("plasmid")) {
+                    if (!type.contains("plasmid")) {
                         break;
                     }
                 }
@@ -201,7 +201,7 @@ public class RGoldenGate extends RGeneral {
         } else {
 
             String seq = "";
-            String type = "";
+            ArrayList<String> type = new ArrayList();
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
             if (!allPartsWithName.isEmpty()) {
                 seq = allPartsWithName.get(0).getSeq();
@@ -214,7 +214,7 @@ public class RGoldenGate extends RGeneral {
                 }
                 for (int i = 0; i < allPartsWithName.size(); i++) {
                     type = allPartsWithName.get(i).getType();
-                    if (!type.equalsIgnoreCase("plasmid")) {
+                    if (!type.contains("plasmid")) {
                         break;
                     }
                 }

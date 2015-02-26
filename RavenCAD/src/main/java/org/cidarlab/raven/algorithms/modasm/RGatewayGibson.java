@@ -237,9 +237,11 @@ public class RGatewayGibson extends RGeneral {
         RVector newVector = new RVector(adaptor.getLOverhang(), "UNSX", 0, stageVectors.get(0).getName(), null);
         adaptor.setVector(newVector);
         
-        Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), adaptorSeq, adaptorComp, adaptor.getLOverhang(), "UNSX", adaptor.getType().toString(), adaptor.getDirection(), adaptor.getScars(), true);
+        Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), adaptorSeq, adaptorComp, adaptor.getLOverhang(), "UNSX", adaptor.getType(), adaptor.getDirection(), adaptor.getScars(), true);
         
-        Part newSpacer = Part.generateBasic("insulator", _insulator, null, new ArrayList(), new ArrayList(), adaptor.getLOverhang(), "UNS2", "spacer");
+        ArrayList<String> spacer = new ArrayList();
+        spacer.add("spacer");
+        Part newSpacer = Part.generateBasic("insulator", _insulator, null, new ArrayList(), new ArrayList(), adaptor.getLOverhang(), "UNS2", spacer);
         newSpacer.getDirections().add("+");
         newSpacer = newSpacer.saveDefault(collector);
 
@@ -256,10 +258,13 @@ public class RGatewayGibson extends RGeneral {
             
             ArrayList<String> dirs = new ArrayList();
             dirs.add("+");
-            Part exactKanR = collector.getExactPart("kanR", _kanR, kanRComp, "UNS2", "UNSX", "resistance", dirs, new ArrayList(), true);
+            ArrayList<String> types = new ArrayList();
+            types.add("resistance");
+            
+            Part exactKanR = collector.getExactPart("kanR", _kanR, kanRComp, "UNS2", "UNSX", types, dirs, new ArrayList(), true);
             
             if (exactKanR == null) {
-                Part newKanR = Part.generateBasic("kanR", _kanR, null, new ArrayList(), new ArrayList(), "UNS2", "UNSX", "resistance");
+                Part newKanR = Part.generateBasic("kanR", _kanR, null, new ArrayList(), new ArrayList(), "UNS2", "UNSX", types);
                 newKanR.getDirections().add("+");
                 newKanR = newKanR.saveDefault(collector);
                 exactKanR = newKanR;
@@ -271,7 +276,7 @@ public class RGatewayGibson extends RGeneral {
             composition.add(newSpacer);
             composition.add(exactKanR);
             
-            Part newBasicPart = Part.generateComposite("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), composition, scarSeqs, adaptor.getScars(), adaptor.getDirection(), adaptor.getLOverhang(), "UNSX", adaptor.getType().toString());
+            Part newBasicPart = Part.generateComposite("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), composition, scarSeqs, adaptor.getScars(), adaptor.getDirection(), adaptor.getLOverhang(), "UNSX", adaptor.getType());
             newBasicPart = newBasicPart.saveDefault(collector);
             
             adaptor.setUUID(newBasicPart.getUUID());
@@ -323,7 +328,9 @@ public class RGatewayGibson extends RGeneral {
             scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get(newTargetPartScars.get(i)));
         }
         
-        Part newTargetPart = Part.generateComposite(targetPart.getName() + "_GatewayGibson", newComposition, scarSeqs, newTargetPartScars, newTargetPartDirections, "", "", "plasmid");
+        ArrayList<String> plasmid = new ArrayList();
+        plasmid.add("plasmid");
+        Part newTargetPart = Part.generateComposite(targetPart.getName() + "_GatewayGibson", newComposition, scarSeqs, newTargetPartScars, newTargetPartDirections, "", "", plasmid);
         newTargetPart.saveDefault(collector);
         rootNodeClone.setUUID(newTargetPart.getUUID());
         

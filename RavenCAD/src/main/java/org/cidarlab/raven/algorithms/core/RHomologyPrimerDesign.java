@@ -31,7 +31,7 @@ public class RHomologyPrimerDesign {
         boolean missingRightSequence = false;
         
         String seq = "";
-        String type = "";
+        ArrayList<String> type = new ArrayList();
         ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
         if (!allPartsWithName.isEmpty()) {
             seq = allPartsWithName.get(0).getSeq();
@@ -44,7 +44,7 @@ public class RHomologyPrimerDesign {
             }
             for (int i = 0; i < allPartsWithName.size(); i++) {
                 type = allPartsWithName.get(i).getType();
-                if (!type.equalsIgnoreCase("plasmid") && !type.equalsIgnoreCase("multitype")){
+                if (!type.contains("plasmid") && !type.contains("multitype")){
                     break;
                 }
             }

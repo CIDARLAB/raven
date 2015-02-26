@@ -38,7 +38,7 @@ public class ClothoReader {
         //If there is an input Clotho part library, make a new node with only type and composition from library
         if (partLibrary != null) {
             for (Part libraryPart : partLibrary) {
-                if (!libraryPart.getType().equalsIgnoreCase("plasmid")) {
+                if (!libraryPart.getType().contains("plasmid")) {
 
                     //Check if basic part or not and assign composition 
                     ArrayList<Part> libPartComposition = new ArrayList<Part>();
@@ -57,7 +57,7 @@ public class ClothoReader {
                     //Get basic part types
                     for (Part libPartComponent : libPartComposition) {                        
                         composition.add(libPartComponent.getName());
-                        type.addAll(stringToList(libPartComponent.getType()));
+                        type.addAll(libPartComponent.getType());
                     }
 
                     //Initialize new graph for library part
@@ -127,7 +127,7 @@ public class ClothoReader {
                     direction.add("+");
                 }
                 
-                type.addAll(stringToList(basicParts.get(j).getType()));
+                type.addAll(basicParts.get(j).getType());
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm

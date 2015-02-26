@@ -19,10 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -54,19 +51,9 @@ public class RavenController {
      * Check stage vectors for assembly method, add stage vectors if there aren't any
      */
     public HashMap<Integer, Vector> checkStageVectors(HashMap<Integer, Vector> stageVectors, Collector collector, String method) {
-//        
-//        //If stageVectors are empty, fill with defaults
-//        if (stageVectors == null) {
-//            stageVectors = new HashMap();
-//        }
         
         if (stageVectors.get(0) == null) {
 
-            ArrayList<String> defaultTags0 = new ArrayList<String>();
-            defaultTags0.add("LO: ");
-            defaultTags0.add("RO: ");
-            defaultTags0.add("Type: vector");
-            defaultTags0.add("Resistance: ampicilin");
             Vector st0Vec = _collector.getExactVector("pSB1A2", _pSB1A2, false, "", "", "vector", "", "", "ampicilin", -1);
             if (st0Vec == null) {
                 st0Vec = Vector.generateVector("pSB1A2", _pSB1A2, "", "", "vector", "", "", "ampicilin", -1);
@@ -76,11 +63,6 @@ public class RavenController {
             
             if (method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("goldengate") || method.equalsIgnoreCase("gatewaygibson")) {
 
-                ArrayList<String> defaultTags1 = new ArrayList<String>();
-                defaultTags1.add("LO: ");
-                defaultTags1.add("RO: ");
-                defaultTags1.add("Type: vector");
-                defaultTags1.add("Resistance: kanamycin");
                 Vector st1Vec = collector.getExactVector("pSB1K3", _pSB1K3, false, "", "", "vector", "", "", "kanamycin", -1);
                 if (st1Vec == null) {
                     st1Vec = Vector.generateVector("pSB1K3", _pSB1K3, "", "", "vector", "", "", "kanamycin", -1);
@@ -107,10 +89,10 @@ public class RavenController {
         //Remove anything that is not a basic part without overhangs or a plasmid in the library
         ArrayList<Part> toRemove = new ArrayList<Part>();
         for (Part libPart : existingLibraryParts) {
-            if (!"plasmid".equals(libPart.getType())) {
+            if (!(libPart.getType()).contains("plasmid")) {
                 if (!libPart.getLeftOverhang().isEmpty() || !libPart.getRightOverhang().isEmpty()) {
                     toRemove.add(libPart);
-                } else if ("composite".equals(libPart.getType())) {
+                } else if ((libPart.getType()).contains("composite")) {
                     toRemove.add(libPart);
                 }
             } else {
@@ -220,7 +202,7 @@ public class RavenController {
 
             String RO = p.getRightOverhang();
             String LO = p.getLeftOverhang();
-            String type = p.getType();
+            ArrayList<String> type = p.getType();
             ArrayList<String> direction = p.getDirections();
             String composition = "";
             String vectorName = "";
@@ -229,8 +211,9 @@ public class RavenController {
                 
                 //Edge case for merged parts
                 String bpDirection;
-                if (type.startsWith("[") && type.endsWith("]")) {
-                    type = "multitype";
+                if (type.size() > 1) {
+                    type.clear();
+                    type.add("multitype");
                     bpDirection = "+";
                 } else {
                     bpDirection = direction.get(0).trim();
@@ -249,7 +232,9 @@ public class RavenController {
                 partsListBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
                 configBufferedWriter.write("\nx," + p.getName() + "," + p.getSeq() + "," + LO + "," + RO + "," + type + ",,," + vectorName + "," + composition);
             } else {
-                type = "plasmid";
+                
+                type.clear();
+                type.add("plasmid");
                 Vector v = partVectorHash.get(p);
                 if (v != null) {
                     vectorName = v.getName();
@@ -371,7 +356,7 @@ public class RavenController {
                 String bpDir = new String();
                 String bpLO = p.getLeftOverhang();
                 String bpRO = p.getRightOverhang();
-                String type = p.getType();
+                ArrayList<String> type = p.getType();
                 ArrayList<String> direction = p.getDirections();
 
                 //Displaying plasmids in data upload tab
@@ -597,6 +582,8 @@ public class RavenController {
             }
 
             String type = tokens[5].trim();
+            ArrayList<String> typeL = new ArrayList();
+            typeL.add(type);
 
             //Composite parts - read, but do not generate
             if (type.equalsIgnoreCase("plasmid")) {
@@ -685,8 +672,8 @@ public class RavenController {
                     ArrayList<String> rDirections = new ArrayList();
                     rDirections.add("-");
                     
-                    Part newBasicPart = Part.generateBasic(name, sequence, null, new ArrayList(), directions, "", "", type);                    
-                    Part newReverseBasicPart = Part.generateBasic(name, PrimerDesign.reverseComplement(sequence), null, new ArrayList(), rDirections, "", "", type);
+                    Part newBasicPart = Part.generateBasic(name, sequence, null, new ArrayList(), directions, "", "", typeL);                    
+                    Part newReverseBasicPart = Part.generateBasic(name, PrimerDesign.reverseComplement(sequence), null, new ArrayList(), rDirections, "", "", typeL);
 
                     //Library logic
                     newBasicPart = newBasicPart.saveDefault(_collector);
@@ -769,8 +756,10 @@ public class RavenController {
                             //Multiplexed parts
                             if (basicPartName.contains("?")) {
                                 
-                                String type = basicPartName.replaceAll("\\?", "") + "_multiplex";                                
-                                Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, leftOverhang, rightOverhang, type);
+                                String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
+                                ArrayList<String> typeL = new ArrayList();
+                                typeL.add(type);
+                                Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, leftOverhang, rightOverhang, typeL);
                                 
                                 _partLibrary.add(newBasicPart);
                                 newBasicPart.saveDefault(_collector);
@@ -781,14 +770,14 @@ public class RavenController {
                                 Part basic = null;
                                 ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
                                 for (Part aPart : allPartsWithName) {
-                                    if (!aPart.getType().equals("plasmid") && bpDirections.equals(aPart.getDirections())) {
+                                    if (!aPart.getType().contains("plasmid") && bpDirections.equals(aPart.getDirections())) {
                                         basic = aPart;
                                     }
                                 }
 
                                 //Assumed that a basic part already exists, so this possible null pointer is on purpose
                                 String sequence = basic.getSeq().replaceAll(" ", "");
-                                String type = basic.getType();
+                                ArrayList<String> type = basic.getType();
                                 Part newBasicPart = Part.generateBasic(basicPartName, sequence, null, new ArrayList(), bpDirections, leftOverhang, rightOverhang, type);
 
                                 //Library logic
@@ -805,7 +794,9 @@ public class RavenController {
                         if (basicPartName.contains("?")) {
 
                             String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
-                            Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, "", "", type);
+                            ArrayList<String> typeL = new ArrayList();
+                            typeL.add(type);
+                            Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, "", "", typeL);
 
                             _partLibrary.add(newBasicPart);
                             newBasicPart.saveDefault(_collector);
@@ -824,7 +815,7 @@ public class RavenController {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
                         if (LO.isEmpty() && RO.isEmpty() && bpDirections.equals(partWithName.getDirections())) {
-                            if (!partWithName.getType().equals("plasmid")) {
+                            if (!partWithName.getType().contains("plasmid")) {
                                 bp = partWithName;
                             }
                         }
@@ -835,7 +826,7 @@ public class RavenController {
                         String LO = partWithName.getLeftOverhang();
                         String RO = partWithName.getRightOverhang();
                         if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight) && bpDirections.equals(partWithName.getDirections())) {
-                            if (!partWithName.getType().equals("plasmid")) {
+                            if (!partWithName.getType().contains("plasmid")) {
                                 bp = partWithName;
                             }
                         }
@@ -845,7 +836,7 @@ public class RavenController {
                     
                     //Add scar to scar set and fix if this is a gene or reporter with biobricks
                     if (i > 9) {
-                        if (scar.equals("BB") && (bp.getType().equalsIgnoreCase("gene") || bp.getType().equalsIgnoreCase("reporter"))) {
+                        if (scar.equals("BB") && (bp.getType().get(0).equalsIgnoreCase("gene") || bp.getType().get(0).equalsIgnoreCase("reporter"))) {
                             scar = "BBm";
                         }
                         scars.add(scar);
@@ -896,10 +887,12 @@ public class RavenController {
                 
                 //Library logic - make new plasmids whether or not they are in the library
                 Part newPlasmid;
+                ArrayList<String> typeP = new ArrayList();
+                typeP.add("plasmid");
                 if (composition.size() > 1) {
-                    newPlasmid = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, "plasmid");
+                    newPlasmid = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, typeP);
                 } else {
-                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition, scars, directions, leftOverhang, rightOverhang, "plasmid");
+                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition, scars, directions, leftOverhang, rightOverhang, typeP);
                 }
                 newPlasmid = newPlasmid.saveDefault(_collector);
                 newPlasmid.setTransientStatus(false);
@@ -910,7 +903,9 @@ public class RavenController {
                     _libraryPartsVectors.put(newPlasmid, vector);
 
                     if (composition.size() > 1) {
-                        Part newComposite = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, "composite");
+                        ArrayList<String> typeC = new ArrayList();
+                        typeC.add("composite");
+                        Part newComposite = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, typeC);
                         newComposite = newComposite.saveDefault(_collector);
                         newComposite.setTransientStatus(false);
                         _partLibrary.add(newComposite);
@@ -962,7 +957,7 @@ public class RavenController {
 
                     ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(p.getName(), true);
                     for (Part partWithName : allPartsWithName) {
-                        if (p.getLeftOverhang().equalsIgnoreCase(partWithName.getLeftOverhang()) && p.getRightOverhang().equalsIgnoreCase(partWithName.getRightOverhang()) && p.getStringComposition().equals(partWithName.getStringComposition()) && p.getScars().equals(partWithName.getScars()) && p.getDirections().equals(partWithName.getDirections()) && !partWithName.getType().equalsIgnoreCase("plasmid")) {
+                        if (p.getLeftOverhang().equalsIgnoreCase(partWithName.getLeftOverhang()) && p.getRightOverhang().equalsIgnoreCase(partWithName.getRightOverhang()) && p.getStringComposition().equals(partWithName.getStringComposition()) && p.getScars().equals(partWithName.getScars()) && p.getDirections().equals(partWithName.getDirections()) && !partWithName.getType().contains("plasmid")) {
                             if (p != partWithName) {
                                 partWithName.setTransientStatus(false);
                                 _partLibrary.add(partWithName);
@@ -1129,7 +1124,7 @@ public class RavenController {
                 if (current.getUUID() != null) {
                     Part p = coll.getPart(current.getUUID(), false);
                     if (p.isBasic()) {
-                        String type = p.getType();
+                        String type = p.getType().get(0);
                         if (p.getType().contains("_multiplex")) {
                             
                             //Cycle through all parts of this type in the collector and make new nodes with each part's UUID
@@ -1139,7 +1134,7 @@ public class RavenController {
                             for (Part lP : allParts) {
                                 
                                 //Find only basic parts with no overhangs and the same direction
-                                if (lP.getType().equals(type) && lP.getDirections().equals(p.getDirections())) {
+                                if (lP.getType().contains(type) && lP.getDirections().equals(p.getDirections())) {
                                     if (lP.getLeftOverhang().isEmpty() && lP.getRightOverhang().isEmpty()) {
                                     
                                     //Make a new node, fix neighbors, set its UUID
