@@ -237,7 +237,7 @@ public class RGatewayGibson extends RGeneral {
         RVector newVector = new RVector(adaptor.getLOverhang(), "UNSX", 0, stageVectors.get(0).getName(), null);
         adaptor.setVector(newVector);
         
-        Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), adaptorSeq, adaptorComp, adaptor.getLOverhang(), "UNSX", adaptor.getType(), adaptor.getDirection(), adaptor.getScars(), true);
+        Part exactPart = collector.getExactPart("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), adaptorSeq, adaptorComp, adaptor.getLOverhang(), "UNSX", adaptor.getType(), adaptor.getScars(), adaptor.getDirection(), true);
         
         ArrayList<String> spacer = new ArrayList();
         spacer.add("spacer");
@@ -261,7 +261,7 @@ public class RGatewayGibson extends RGeneral {
             ArrayList<String> types = new ArrayList();
             types.add("resistance");
             
-            Part exactKanR = collector.getExactPart("kanR", _kanR, kanRComp, "UNS2", "UNSX", types, dirs, new ArrayList(), true);
+            Part exactKanR = collector.getExactPart("kanR", _kanR, kanRComp, "UNS2", "UNSX", types, new ArrayList(), dirs, true);
             
             if (exactKanR == null) {
                 Part newKanR = Part.generateBasic("kanR", _kanR, null, new ArrayList(), new ArrayList(), "UNS2", "UNSX", types);

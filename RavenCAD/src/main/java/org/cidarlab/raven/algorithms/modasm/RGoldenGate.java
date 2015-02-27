@@ -192,7 +192,7 @@ public class RGoldenGate extends RGeneral {
                     }
                 }
             }
-            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getDirection(), node.getScars(), true);
+            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getScars(), node.getDirection(), true);
             currentSeq = currentPart.getSeq();            
             Vector vector = coll.getVector(node.getVector().getUUID(), true);
             rSeq = vector.getSeq();
@@ -220,7 +220,7 @@ public class RGoldenGate extends RGeneral {
                 }
             }
             
-            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getDirection(), node.getScars(), true);
+            Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getScars(), node.getDirection(), true);
             currentSeq = currentPart.getSeq();
 
             if (currentPart.isBasic()) {

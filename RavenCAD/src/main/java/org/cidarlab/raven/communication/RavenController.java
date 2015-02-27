@@ -666,7 +666,7 @@ public class RavenController {
 
                 try {
                     String name = tokens[1].trim();
-                    String sequence = tokens[2].trim().replaceAll(" ","");
+                    String sequence = tokens[2].trim().replaceAll(" ","").replaceAll("\n", "");
                     ArrayList<String> directions = new ArrayList();
                     directions.add("+");
                     ArrayList<String> rDirections = new ArrayList();

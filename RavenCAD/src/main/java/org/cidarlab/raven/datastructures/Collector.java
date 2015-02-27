@@ -104,7 +104,7 @@ public class Collector {
 
     //returns the part you added or an existing part that matches exactly
     public Part addPart(Part aPart) {
-        Part existingPart = this.getExactPart(aPart.getName(), aPart.getSeq(), aPart.getStringComposition(), aPart.getLeftOverhang(), aPart.getRightOverhang(), aPart.getType(), aPart.getDirections(), aPart.getScars(), false);
+        Part existingPart = this.getExactPart(aPart.getName(), aPart.getSeq(), aPart.getStringComposition(), aPart.getLeftOverhang(), aPart.getRightOverhang(), aPart.getType(), aPart.getScars(), aPart.getDirections(), false);
         if (existingPart != null) {
             return existingPart;
         }

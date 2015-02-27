@@ -106,7 +106,6 @@ public class ClothoWriter {
                         partName = partName.substring(0, 255);
                     }
 
-                    //If there's overhangs, add search tags
                     Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO, scarSeqs);                    
                     newPlasmid.getType().add("plasmid");
                     newPlasmid = newPlasmid.saveDefault(coll);
@@ -136,7 +135,7 @@ public class ClothoWriter {
                     
                     ArrayList<String> type = new ArrayList();
                     type.add("plasmid");
-                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), currentNode.getLOverhang(), currentNode.getROverhang(), type, currentNode.getDirection(), currentNode.getScars(), false);
+                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), currentNode.getLOverhang(), currentNode.getROverhang(), type, currentNode.getScars(), currentNode.getDirection(), false);
                     
                     if (currentPart == null) {
 
@@ -252,7 +251,7 @@ public class ClothoWriter {
                                 cDirs.add(cDir);
                                 ArrayList<String> cTypes = new ArrayList();
                                 cTypes.add(cType);
-                                Part exactPart = coll.getExactPart(cName, cSeq, bpComp, cLO, cRO, cTypes, cDirs, new ArrayList(), true);
+                                Part exactPart = coll.getExactPart(cName, cSeq, bpComp, cLO, cRO, cTypes, new ArrayList(), cDirs, true);
                                 
                                 //Try to find the inverted version if this part does not exist
                                 if (exactPart == null) {
@@ -280,18 +279,18 @@ public class ClothoWriter {
                                     ArrayList<String> invcDirs = new ArrayList();
                                     invcDirs.add(invertedcDir);
                                     
-                                    exactPart = coll.getExactPart(cName, rcSeq, bpComp, invertedcRO, invertedcLO, cTypes, invcDirs, new ArrayList(), true);
+                                    exactPart = coll.getExactPart(cName, rcSeq, bpComp, invertedcRO, invertedcLO, cTypes, new ArrayList(), invcDirs, true);
                                 }
 
                                 //In the edge case where the overhangs of a re-used composite part is changed
                                 if (exactPart == null) {
-                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, "", "", cTypes, cDirs, new ArrayList(), true);
+                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, "", "", cTypes, new ArrayList(), cDirs, true);
                                 }
                                 
                                 newComposition.add(exactPart);
                             }
 
-                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, null, null, null, null, null);
+                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, new ArrayList(), new ArrayList(), "", "", new ArrayList());
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
                             ArrayList<String> typeC = new ArrayList();
@@ -436,7 +435,7 @@ public class ClothoWriter {
             
             String cName = composition.get(i);
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, false);
-            String cSeq = allPartsWithName.get(0).getSeq();
+            String cSeq = allPartsWithName.get(0).getSeq().replaceAll(" ", "");
             
             //Correct for direction
             String cDir = direction.get(i);
@@ -446,7 +445,6 @@ public class ClothoWriter {
                 cSeq = PrimerDesign.reverseComplement(cSeq);
             }
 
-            String cType = allPartsWithName.get(0).getType().get(0);
             ArrayList<String> thisComp = new ArrayList<String>();
             thisComp.add(cName);
             String cLO;
@@ -485,7 +483,7 @@ public class ClothoWriter {
 
             ArrayList<String> cDirs = new ArrayList();
             cDirs.add(cDir);
-            Part exactPart = coll.getExactPart(cName, cSeq, thisComp, cRO, cLO, allPartsWithName.get(0).getType(), cDirs, new ArrayList(), true);
+            Part exactPart = coll.getExactPart(cName, cSeq, thisComp, cLO, cRO, allPartsWithName.get(0).getType(), new ArrayList(), cDirs, true);
             
             //Try to find the inverted version if this part does not exist
             if (exactPart == null) {
@@ -511,12 +509,12 @@ public class ClothoWriter {
                 
                 ArrayList<String> invcDirs = new ArrayList();
                 invcDirs.add(invertedcDir);
-                exactPart = coll.getExactPart(cName, cSeq, thisComp, invertedcRO, invertedcLO, allPartsWithName.get(0).getType(), invcDirs, new ArrayList(), true);
+                exactPart = coll.getExactPart(cName, cSeq, thisComp, invertedcRO, invertedcLO, allPartsWithName.get(0).getType(), new ArrayList(), invcDirs,  true);
             }    
             
             //In homologous recombinations, the overhangs are the neighbor, select the blank part
             if (exactPart == null) {
-                exactPart = coll.getExactPart(cName, cSeq, thisComp, "", "", allPartsWithName.get(0).getType(), cDirs, new ArrayList(), true);
+                exactPart = coll.getExactPart(cName, cSeq, thisComp, "", "", allPartsWithName.get(0).getType(), new ArrayList(), cDirs, true);
             }
             
             newComposition.add(exactPart);

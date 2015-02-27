@@ -87,7 +87,7 @@ public class CoreTest {
         }
     }
     
-//    @Test
+    @Test
     public void benchmarkSetTest() throws Exception {
         String filePath = getFilepath() + "/src/main/resources/RavenTestFiles/master_8_papers_d_p_l.csv";
         File toLoad = new File(filePath);
@@ -134,4 +134,9 @@ public class CoreTest {
             raven.assembleFile(ravenFiles, parameters, false);
         }
     }
+//    
+//    public static void main (String[] args) throws Exception {
+//        CoreTest coreTest = new CoreTest();
+//        coreTest.benchmarkSetTest();
+//    }
 }

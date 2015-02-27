@@ -51,7 +51,7 @@ public class RHomologyPrimerDesign {
             
         }
         
-        Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getDirection(), node.getScars(), true);
+        Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getScars(), node.getDirection(), true);
 
         Part leftNeighbor;
         Part rightNeighbor;
