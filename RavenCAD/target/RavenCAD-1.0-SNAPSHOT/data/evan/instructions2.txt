@@ -2,119 +2,88 @@
 Assembly Instructions for target part: OR gate-JBEI_-GFP
 **********************************************
 
--> Assemble OR gate-JBEI_-GFP|4|5|[+,  +,  +,  +,  -,  -,  +,  +,  +] by performing a MoClo cloning reaction with: OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:44:35EST2015|4|6*|[+,  +,  +,  +,  -], attP_TP901|6*|0|[-], JBEI_RBS|0|1|[+], Superfolder_gfp|1|2|[+], B0015|2|5|[+], pSB1A2|4|5
+-> Assemble OR gate-JBEI_-GFP|EX|SP|[+,  +,  +,  +,  -,  -,  +,  +,  +] by performing a BioBricks cloning reaction with: OR gate-JBEI_-GFP_intermediate_1_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +,  +,  +], OR gate-JBEI_-GFP_intermediate_2_evan_SatFeb2118:04:54EST2015|EX|SP|[-,  -,  +,  +,  +], pSB1A2|EX|SP
 
--> Assemble OR gate-JBEI_-GFP_intermediate_1_evan_ThuFeb1912:44:35EST2015|4|6*|[+,  +,  +,  +,  -] by performing a MoClo cloning reaction with: P7_Promoter|4|0|[+], attB_TP901|0|1|[+], attB_Bxb1|1|2|[+], B0015|2|3|[+], attP_Bxb1|3|6*|[-], pSB1K3|4|6*
+-> Assemble OR gate-JBEI_-GFP_intermediate_1_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +,  +,  +] by performing a BioBricks cloning reaction with: OR gate-JBEI_-GFP_intermediate_3_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +], OR gate-JBEI_-GFP_intermediate_4_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +], pSB1A2|EX|SP
 
--> Assemble attP_TP901|6*|0|[-] by performing a MoClo cloning reaction with: attP_TP901|6*|0|[-], pSB1A2|6*|0
+-> Assemble OR gate-JBEI_-GFP_intermediate_2_evan_SatFeb2118:04:54EST2015|EX|SP|[-,  -,  +,  +,  +] by performing a BioBricks cloning reaction with: OR gate-JBEI_-GFP_intermediate_5_evan_SatFeb2118:04:54EST2015|EX|SP|[-,  -], OR gate-JBEI_-GFP_intermediate_6_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +,  +], pSB1A2|EX|SP
 
--> Assemble JBEI_RBS|0|1|[+] by performing a MoClo cloning reaction with: JBEI_RBS|0|1|[+], pSB1A2|0|1
+-> Assemble OR gate-JBEI_-GFP_intermediate_3_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +] by performing a BioBricks cloning reaction with: P7_Promoter|EX|SP|[+], attB_TP901|EX|SP|[+], pSB1A2|EX|SP
 
--> Assemble Superfolder_gfp|1|2|[+] by performing a MoClo cloning reaction with: Superfolder_gfp|1|2|[+], pSB1A2|1|2
+-> Assemble OR gate-JBEI_-GFP_intermediate_4_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +] by performing a BioBricks cloning reaction with: attB_Bxb1|EX|SP|[+], B0015|EX|SP|[+], pSB1A2|EX|SP
 
--> Assemble B0015|2|5|[+] by performing a MoClo cloning reaction with: B0015|2|5|[+], pSB1A2|2|5
+-> Assemble OR gate-JBEI_-GFP_intermediate_5_evan_SatFeb2118:04:54EST2015|EX|SP|[-,  -] by performing a BioBricks cloning reaction with: attP_Bxb1|EX|SP|[-], attP_TP901|EX|SP|[-], pSB1A2|EX|SP
 
--> Assemble P7_Promoter|4|0|[+] by performing a MoClo cloning reaction with: P7_Promoter|4|0|[+], pSB1A2|4|0
+-> Assemble OR gate-JBEI_-GFP_intermediate_6_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +,  +] by performing a BioBricks cloning reaction with: OR gate-JBEI_-GFP_intermediate_7_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +], JBEI_RBS|EX|SP|[+], JBEI_RBS|EX|SP|[+], pSB1A2|EX|SP
 
--> Assemble attB_TP901|0|1|[+] by performing a MoClo cloning reaction with: attB_TP901|0|1|[+], pSB1A2|0|1
+-> Assemble P7_Promoter|EX|SP|[+] by performing a BioBricks cloning reaction with: P7_Promoter|EX|SP|[+], pSB1A2|EX|SP
 
--> Assemble attB_Bxb1|1|2|[+] by performing a MoClo cloning reaction with: attB_Bxb1|1|2|[+], pSB1A2|1|2
+-> Assemble attB_TP901|EX|SP|[+] by performing a BioBricks cloning reaction with: attB_TP901|EX|SP|[+], pSB1A2|EX|SP
 
--> Assemble B0015|2|3|[+] by performing a MoClo cloning reaction with: B0015|2|3|[+], pSB1A2|2|3
+-> Assemble attB_Bxb1|EX|SP|[+] by performing a BioBricks cloning reaction with: attB_Bxb1|EX|SP|[+], pSB1A2|EX|SP
 
--> Assemble attP_Bxb1|3|6*|[-] by performing a MoClo cloning reaction with: attP_Bxb1|3|6*|[-], pSB1A2|3|6*
+-> Assemble B0015|EX|SP|[+] by performing a BioBricks cloning reaction with: B0015|EX|SP|[+], pSB1A2|EX|SP
 
-PCR P7_Promoter part with oligos: oligo1 and oligo2 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): P7_Promoter|4|0|[+]
-PCR B0015 part with oligos: oligo3 and oligo4 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): B0015|2|5|[+]
-PCR B0015 part with oligos: oligo5 and oligo6 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): B0015|2|3|[+]
-PCR attB_Bxb1 part with oligos: oligo7 and oligo8 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attB_Bxb1|1|2|[+]
-PCR attP_Bxb1 part with oligos: oligo9 and oligo10 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attP_Bxb1|3|6*|[-]
-PCR Superfolder_gfp part with oligos: oligo11 and oligo12 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): Superfolder_gfp|1|2|[+]
-PCR attB_TP901 part with oligos: oligo13 and oligo14 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attB_TP901|0|1|[+]
-PCR JBEI_RBS part with oligos: oligo15 and oligo16 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): JBEI_RBS|0|1|[+]
-PCR attP_TP901 part with oligos: oligo17 and oligo18 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attP_TP901|6*|0|[-]
-PCR lacZ part with oligos: oligo19 and oligo20 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|2|5
-PCR lacZ part with oligos: oligo21 and oligo22 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|2|3
-PCR lacZ part with oligos: oligo23 and oligo24 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|4|0
-PCR lacZ part with oligos: oligo25 and oligo26 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|1|2
-PCR lacZ part with oligos: oligo27 and oligo28 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|3|6*
-PCR lacZ part with oligos: oligo29 and oligo30 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|6*|0
-PCR lacZ part with oligos: oligo31 and oligo32 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|4|5
-PCR lacZ part with oligos: oligo33 and oligo34 and clone into vector: pSB1A2 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|0|1
-PCR lacZ part with oligos: oligo35 and oligo36 and clone into vector: pSB1K3 with SpeI to get destination vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1K3|4|6*
+-> Assemble attP_Bxb1|EX|SP|[-] by performing a BioBricks cloning reaction with: attP_Bxb1|EX|SP|[-], pSB1A2|EX|SP
+
+-> Assemble attP_TP901|EX|SP|[-] by performing a BioBricks cloning reaction with: attP_TP901|EX|SP|[-], pSB1A2|EX|SP
+
+-> Assemble OR gate-JBEI_-GFP_intermediate_7_evan_SatFeb2118:04:54EST2015|EX|SP|[+,  +] by performing a BioBricks cloning reaction with: Superfolder_gfp|EX|SP|[+], B0015|EX|SP|[+], pSB1A2|EX|SP
+
+-> Assemble JBEI_RBS|EX|SP|[+] by performing a BioBricks cloning reaction with: JBEI_RBS|EX|SP|[+], pSB1A2|EX|SP
+
+-> Assemble JBEI_RBS|EX|SP|[+] by performing a BioBricks cloning reaction with: JBEI_RBS|EX|SP|[+], pSB1A2|EX|SP
+
+-> Assemble Superfolder_gfp|EX|SP|[+] by performing a BioBricks cloning reaction with: Superfolder_gfp|EX|SP|[+], pSB1A2|EX|SP
+
+-> Assemble B0015|EX|SP|[+] by performing a BioBricks cloning reaction with: B0015|EX|SP|[+], pSB1A2|EX|SP
+
+PCR Superfolder_gfp part with oligos: oligo1 and oligo2 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): Superfolder_gfp|EX|SP|[+]
+PCR attB_Bxb1 part with oligos: oligo3 and oligo4 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attB_Bxb1|EX|SP|[+]
+PCR attB_TP901 part with oligos: oligo5 and oligo6 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attB_TP901|EX|SP|[+]
+PCR attP_TP901 part with oligos: oligo7 and oligo8 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attP_TP901|EX|SP|[-]
+PCR JBEI_RBS part with oligos: oligo9 and oligo10 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): JBEI_RBS|EX|SP|[+]
+PCR P7_Promoter part with oligos: oligo11 and oligo12 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): P7_Promoter|EX|SP|[+]
+PCR attP_Bxb1 part with oligos: oligo13 and oligo14 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): attP_Bxb1|EX|SP|[-]
+PCR B0015 part with oligos: oligo15 and oligo16 to get part (NAME | LEFT OVERHANG | RIGHT OVERHANG | ORIENTATION): B0015|EX|SP|[+]
+PCR pSB1A2 vector with oligos: oligo17 and oligo18 to get vector (NAME | LEFT OVERHANG | RIGHT OVERHANG): pSB1A2|EX|SP
 
 
 **********************************************
 OLIGOS
 >oligo1
-atgaagacgtGCTTtaattcctaatttttgttgacact
+gaattcgcggccgcttctagatgcgtaaaggcgaagagctgttc
 >oligo2
-acgaagacctCTCCttttctctatcactgatagggagt
+ctgcagcggccgctactagtatcatcatttgtacagttcatccat
 >oligo3
-atgaagacgtAATGccaggcatcaaataaaacgaaagg
+gaattcgcggccgcttctagagtcggccggcttgtcgacgacggcg
 >oligo4
-acgaagacctAGCGtataaacgcagaaaggcccacccg
+ctgcagcggccgctactagtagcccggatgatcctgacgacggag
 >oligo5
-atgaagacgtAATGccaggcatcaaataaaacgaaagg
+gaattcgcggccgcttctagagatgccacaccaattaacatctcaa
 >oligo6
-acgaagacctACCTtataaacgcagaaaggcccacccg
+ctgcagcggccgctactagtagcaaaaaaagcaaaaagcatttac
 >oligo7
-atgaagacgtTACTtcggccggcttgtcgacgacggcg
+gaattcgcggccgcttctagagaaaggagtttttttagttacctta
 >oligo8
-acgaagacctCATTgcccggatgatcctgacgacggag
+ctgcagcggccgctactagtagcgagtttttatttcgtttatttc
 >oligo9
-atgaagacgtAGGTgtcggggtttgtaccgtacaccac
+gaattcgcggccgcttctagaggaattcaaaagatcttttaagaag
 >oligo10
-acgaagacctTGCCgtcgtggtttgtctggtcaaccac
+ctgcagcggccgctactagtaatgtatatctccttcttaaaagat
 >oligo11
-atgaagacgtTACTatgcgtaaaggcgaagagctgttc
+gaattcgcggccgcttctagagtaattcctaatttttgttgacact
 >oligo12
-acgaagacctCATTtcatcatttgtacagttcatccat
+ctgcagcggccgctactagtattttctctatcactgatagggagt
 >oligo13
-atgaagacgtGGAGatgccacaccaattaacatctcaa
+gaattcgcggccgcttctagaggtcggggtttgtaccgtacaccac
 >oligo14
-acgaagacctAGTAgcaaaaaaagcaaaaagcatttac
+ctgcagcggccgctactagtagtcgtggtttgtctggtcaaccac
 >oligo15
-atgaagacgtGGAGgaattcaaaagatcttttaagaag
+gaattcgcggccgcttctagagccaggcatcaaataaaacgaaagg
 >oligo16
-acgaagacctAGTAatgtatatctccttcttaaaagat
+ctgcagcggccgctactagtatataaacgcagaaaggcccacccg
 >oligo17
-atgaagacgtGGCAaaaggagtttttttagttacctta
+gaattcgcggccgcttctagagtactagtagcggccgctgcaggct
 >oligo18
-acgaagacctCTCCgcgagtttttatttcgtttatttc
->oligo19
-actagtgggtctcaAATGatgtcttctgcaccatatgcggtgtgaaatac
->oligo20
-actagtaggtctctAGCGacgtcttccccgcgcgttggccgattcattaa
->oligo21
-actagtgggtctcaAATGatgtcttctgcaccatatgcggtgtgaaatac
->oligo22
-actagtaggtctctACCTacgtcttccccgcgcgttggccgattcattaa
->oligo23
-actagtgggtctcaGCTTatgtcttctgcaccatatgcggtgtgaaatac
->oligo24
-actagtaggtctctCTCCacgtcttccccgcgcgttggccgattcattaa
->oligo25
-actagtgggtctcaTACTatgtcttctgcaccatatgcggtgtgaaatac
->oligo26
-actagtaggtctctCATTacgtcttccccgcgcgttggccgattcattaa
->oligo27
-actagtgggtctcaAGGTatgtcttctgcaccatatgcggtgtgaaatac
->oligo28
-actagtaggtctctTGCCacgtcttccccgcgcgttggccgattcattaa
->oligo29
-actagtgggtctcaGGCAatgtcttctgcaccatatgcggtgtgaaatac
->oligo30
-actagtaggtctctCTCCacgtcttccccgcgcgttggccgattcattaa
->oligo31
-actagtgggtctcaGCTTatgtcttctgcaccatatgcggtgtgaaatac
->oligo32
-actagtaggtctctAGCGacgtcttccccgcgcgttggccgattcattaa
->oligo33
-actagtgggtctcaGGAGatgtcttctgcaccatatgcggtgtgaaatac
->oligo34
-actagtaggtctctAGTAacgtcttccccgcgcgttggccgattcattaa
->oligo35
-actagtggaagacatGCTTagagacctgcaccatatgcggtgtgaaatac
->oligo36
-actagtagaagacatTGCCagagacccccgcgcgttggccgattcattaa
+ctgcagcggccgctactagtactctagaagcggccgcgaattcca

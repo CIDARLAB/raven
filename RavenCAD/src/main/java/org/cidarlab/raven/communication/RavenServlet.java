@@ -233,7 +233,8 @@ public class RavenServlet extends HttpServlet {
                     response.setContentType("application/json");
                     String data = request.getParameter("data");
                     JSONArray devices = new JSONArray(data);
-                    String toReturn = controller.importClotho(devices);
+//                    String toReturn = controller.importClotho(devices);
+                    String toReturn = "";
                     writer.write("{\"result\":\"" + toReturn + "\",\"status\":\"" + toReturn + "\"}");
                 }
 

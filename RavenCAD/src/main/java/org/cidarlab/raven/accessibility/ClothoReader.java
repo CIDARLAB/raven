@@ -4,7 +4,6 @@
  */
 package org.cidarlab.raven.accessibility;
 
-import static org.cidarlab.raven.accessibility.ClothoReader.parseTags;
 import org.cidarlab.raven.datastructures.Part;
 import org.cidarlab.raven.datastructures.RGraph;
 import org.cidarlab.raven.datastructures.RNode;
@@ -39,7 +38,7 @@ public class ClothoReader {
         //If there is an input Clotho part library, make a new node with only type and composition from library
         if (partLibrary != null) {
             for (Part libraryPart : partLibrary) {
-                if (!libraryPart.getType().equalsIgnoreCase("plasmid")) {
+                if (!libraryPart.getType().contains("plasmid")) {
 
                     //Check if basic part or not and assign composition 
                     ArrayList<Part> libPartComposition = new ArrayList<Part>();
@@ -52,15 +51,13 @@ public class ClothoReader {
                     //For all of this library part's components make new basic graph
                     ArrayList<String> type = new ArrayList<String>();
                     ArrayList<String> composition = new ArrayList<String>();
-                    ArrayList<String> tags = libraryPart.getSearchTags();
-                    ArrayList<String> direction = parseTags(tags, "Direction:");
-                    ArrayList<String> scars = parseTags(tags, "Scars:");
+                    ArrayList<String> direction = libraryPart.getDirections();
+                    ArrayList<String> scars = libraryPart.getScars();
 
                     //Get basic part types
-                    for (Part libPartComponent : libPartComposition) {
-                        ArrayList<String> sTags = libPartComponent.getSearchTags();
+                    for (Part libPartComponent : libPartComposition) {                        
                         composition.add(libPartComponent.getName());
-                        type.addAll(parseTags(sTags, "Type: "));
+                        type.addAll(libPartComponent.getType());
                     }
 
                     //Initialize new graph for library part
@@ -100,36 +97,10 @@ public class ClothoReader {
         //Provided there is an input vector library
         RVector rVector = null;
         if (vector != null) {
-            
-            String name = vector.getName();
-            String LO = new String();
-            String RO = new String();
-            String resistance = new String();
-            int level = -1;
-            
-            //If there's search tags, find overhangs
-            if (vector.getSearchTags() != null) {
-                ArrayList<String> sTags = vector.getSearchTags();
-
-                for (int i = 0; i < sTags.size(); i++) {
-                    if (sTags.get(i).startsWith("LO:")) {
-                        LO = sTags.get(i).substring(4);
-                    } else if (sTags.get(i).startsWith("RO:")) {
-                        RO = sTags.get(i).substring(4);
-                    } else if (sTags.get(i).startsWith("Level:")) {
-                        String aLevel = sTags.get(i).substring(7);
-                        level = Integer.parseInt(aLevel);
-                    } else if (sTags.get(i).startsWith("Resistance:")) {
-                        resistance = sTags.get(i).substring(12);
-                    }
-                }
-            }
 
             //Initialize a new vector
-            rVector = new RVector(LO, RO, level, name, vector.getUUID());
-            rVector.setStringResistance(resistance);
-            rVector.setName(name);
-            rVector.setUUID(vector.getUUID());
+            rVector = new RVector(vector.getLeftOverhang(), vector.getRightOverhang(), vector.getLevel(), vector.getName(), vector.getUUID());
+            rVector.setResistance(vector.getResistance());
         }
         return rVector;
     }
@@ -142,22 +113,21 @@ public class ClothoReader {
             
             //Get goal part's composition and type (part description type)
             ArrayList<Part> basicParts = ClothoWriter.getComposition(goalPart);
-            ArrayList<String> searchTags = goalPart.getSearchTags();
             ArrayList<String> composition = new ArrayList<String>();
             ArrayList<String> type = new ArrayList<String>();
-            ArrayList<String> direction = parseTags(searchTags, "Direction:");
-            ArrayList<String> scars = parseTags(searchTags, "Scars:");
+            ArrayList<String> direction = goalPart.getDirections();
+            ArrayList<String> scars = goalPart.getScars();
 
             //Get basic part types
             for (int j = 0; j < basicParts.size(); j++) {
-                composition.add(basicParts.get(j).getName());
-                ArrayList<String> sTags = basicParts.get(j).getSearchTags();
+                composition.add(basicParts.get(j).getName());                
                 
                 //If there was no direction found, all basic parts assumed to be forward
                 if (direction.isEmpty()) {
                     direction.add("+");
                 }
-                type.addAll(parseTags(sTags, "Type:"));
+                
+                type.addAll(basicParts.get(j).getType());
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
@@ -185,39 +155,26 @@ public class ClothoReader {
     }
 
     /** Parse Clotho search tags from a string into an ArrayList **/
-    public static ArrayList<String> parseTags(ArrayList<String> tags, String header) {
+    public static ArrayList<String> stringToList(String in) {
         
         ArrayList<String> list = new ArrayList<String>();
-        if (tags == null) {
-            tags = new ArrayList<String>();
-        }
-        
-        for (String ST : tags) {
-            if (ST.startsWith(header)) {
-                
-                //Split any arraylist-like search tag
-                if (ST.charAt(ST.length() - 1) == ']') {
-                    String splitTag = ST.substring(ST.indexOf("[")+1, ST.length() - 1);
-                    String[] tokens = splitTag.split(",");
-                    ArrayList<String> trimmedTokens = new ArrayList<String>();
 
-                    //Trim tokens to add to final list
-                    for (String token : tokens) {
-                        String trimmedToken = token.trim();
-                        if (!token.equals("")) {
-                            trimmedTokens.add(trimmedToken);
-                        }
-                    }
-                    list.addAll(trimmedTokens);
-                    
-                } else {
-                    String[] tokens1 = ST.split(":");
-                    String splitTag = tokens1[1];
-                    splitTag = splitTag.trim();
-                    list.add(splitTag);
+        //Split any arraylist-like search tag
+        if (in.charAt(in.length() - 1) == ']') {
+            String splitTag = in.substring(in.indexOf("[") + 1, in.length() - 1);
+            String[] tokens = splitTag.split(",");
+            ArrayList<String> trimmedTokens = new ArrayList<String>();
+
+            //Trim tokens to add to final list
+            for (String token : tokens) {
+                String trimmedToken = token.trim();
+                if (!token.equals("")) {
+                    trimmedTokens.add(trimmedToken);
                 }
             }
-        }                
+            list.addAll(trimmedTokens);
+
+        }
         return list;
     }
     
@@ -237,9 +194,8 @@ public class ClothoReader {
             ArrayList<String> revComp = (ArrayList<String>) comp.clone();
             Collections.reverse(revComp);
 
-            ArrayList<String> searchTags = aPart.getSearchTags();
-            ArrayList<String> dir = ClothoReader.parseTags(searchTags, "Direction:");
-            ArrayList<String> scars = ClothoReader.parseTags(searchTags, "Scars:");
+            ArrayList<String> dir = aPart.getDirections();
+            ArrayList<String> scars = aPart.getScars();
 
             ArrayList<String> revDir = (ArrayList<String>) dir.clone();
             Collections.reverse(revDir);

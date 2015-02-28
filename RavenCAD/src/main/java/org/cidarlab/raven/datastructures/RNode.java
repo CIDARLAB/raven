@@ -56,8 +56,8 @@ public class RNode {
     }
     
     /** Clone nodes of a graph by traversing and copying nodes **/
-    @Override
-    public RNode clone() {
+//    @Override
+    public RNode clone(boolean cloneNeighbors) {
         
         RNode clone = new RNode();
         clone._recommended = this._recommended;
@@ -75,8 +75,11 @@ public class RNode {
         clone._efficiency = this._efficiency;
         clone._successCnt = this._successCnt;
         clone._failureCnt = this._failureCnt;
-        ArrayList<RNode> neighbors = this._neighbors;
-        cloneHelper(clone, this, neighbors);
+        
+        if (cloneNeighbors) {
+            ArrayList<RNode> neighbors = this._neighbors;
+            cloneHelper(clone, this, neighbors);
+        }
         
         return clone;
     }
@@ -124,7 +127,7 @@ public class RNode {
     public RNode mergeNodes(RNode smallNode, RNode parent, String thisSeq) {
         
         //Make new merged node
-        RNode mergedNode = this.clone();
+        RNode mergedNode = this.clone(true);
         mergedNode._lOverhang = smallNode._lOverhang;
         mergedNode._name = smallNode._name + "_" + this._name;
         

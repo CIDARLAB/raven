@@ -31,32 +31,27 @@ public class RHomologyPrimerDesign {
         boolean missingRightSequence = false;
         
         String seq = "";
-        ArrayList<String> tags = new ArrayList<String>();
-        String type = "";
-        tags.add("LO: " + node.getLOverhang());
-        tags.add("RO: " + node.getROverhang());
-        tags.add("Direction: " + node.getDirection());
-        tags.add("Scars: " + node.getScars());
+        ArrayList<String> type = new ArrayList();
         ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(node.getName(), true);
         if (!allPartsWithName.isEmpty()) {
             seq = allPartsWithName.get(0).getSeq();
             if (node.getDirection().size() == 1) {
-                if (node.getDirection().get(0).equals("-") && allPartsWithName.get(0).getSearchTags().contains("Direction: [+]")) {
+                if (node.getDirection().get(0).equals("-") && allPartsWithName.get(0).getDirections().get(0).equals("+")) {
                     seq = PrimerDesign.reverseComplement(seq);
-                } else if (node.getDirection().get(0).equals("+") && allPartsWithName.get(0).getSearchTags().contains("Direction: [-]")) {
+                } else if (node.getDirection().get(0).equals("+") && allPartsWithName.get(0).getDirections().get(0).equals("-")) {
                     seq = PrimerDesign.reverseComplement(seq);
                 }
             }
             for (int i = 0; i < allPartsWithName.size(); i++) {
                 type = allPartsWithName.get(i).getType();
-                if (!type.equalsIgnoreCase("plasmid") && !type.equalsIgnoreCase("multitype")){
+                if (!type.contains("plasmid") && !type.contains("multitype")){
                     break;
                 }
             }
             
         }
-        tags.add("Type: " + type);
-        Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), tags, true);
+        
+        Part currentPart = coll.getExactPart(node.getName(), seq, node.getComposition(), node.getLOverhang(), node.getROverhang(), type, node.getScars(), node.getDirection(), true);
 
         Part leftNeighbor;
         Part rightNeighbor;

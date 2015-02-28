@@ -5,7 +5,8 @@
 package org.cidarlab.raven.datastructures;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
@@ -13,7 +14,7 @@ import java.util.Arrays;
  */
 public class Part {
 
-    public static Part generateComposite(ArrayList<Part> newComposition, ArrayList<String> scarSeqs, String name) {
+    public static Part generateComposite(String name, ArrayList<Part> newComposition, ArrayList<String> scarSeqs, ArrayList<String> scars, ArrayList<String> directions, String LO, String RO, ArrayList<String> type) {
         Part newComposite = new Part();
         String sequence = "";
         
@@ -47,7 +48,12 @@ public class Part {
         newComposite.name = name;
         newComposite.uuid = "part_" + String.valueOf(UUID);
         newComposite.isComposite = true;
-        newComposite._transient = true;
+        newComposite._transient = true;        
+        newComposite.directions = directions;
+        newComposite.scars = scars;
+        newComposite.type = type;
+        newComposite.leftOverhang = LO;
+        newComposite.rightOverhang = RO;
         return newComposite;
     }
 
@@ -56,7 +62,7 @@ public class Part {
         this.uuid = "part_" + String.valueOf(UUID);
     }
 
-    public static Part generateBasic(String name, String sequence, ArrayList<Part> composition) {
+    public static Part generateBasic(String name, String sequence, ArrayList<Part> composition, ArrayList<String> scars, ArrayList<String> directions, String leftOverhang, String rightOverhang, ArrayList<String> type) {
         Part newBasic = new Part();
         newBasic.name = name;
         newBasic.sequence = sequence;
@@ -67,6 +73,12 @@ public class Part {
         } else {
             newBasic.composition.addAll(composition);
         }
+        newBasic.directions = directions;
+        newBasic.scars = scars;
+        newBasic.type = type;
+        newBasic.leftOverhang = leftOverhang;
+        newBasic.rightOverhang = rightOverhang;
+        
         newBasic._transient = true;
         return newBasic;
     }
@@ -81,18 +93,6 @@ public class Part {
 
     public boolean isComposite() {
         return this.isComposite;
-    }
-
-    public ArrayList<String> getSearchTags() {
-        return this.searchTags;
-    }
-
-    public void setSearchTags(ArrayList<String> searchTags) {
-        this.searchTags = searchTags;
-    }
-
-    public void addSearchTag(String string) {
-        this.searchTags.add(string);
     }
 
     public String getSeq() {
@@ -125,36 +125,6 @@ public class Part {
         return toReturn;
     }
 
-    public String getLeftOverhang() {
-        String toReturn = "";
-        for (String tag : this.searchTags) {
-            if (tag.startsWith("LO:")) {
-                toReturn = tag.substring(4);
-            }
-        }
-        return toReturn;
-    }
-
-    public String getRightOverhang() {
-        String toReturn = "";
-        for (String tag : this.searchTags) {
-            if (tag.startsWith("RO:")) {
-                toReturn = tag.substring(4);
-            }
-        }
-        return toReturn;
-    }
-
-    public String getType() {
-        String toReturn = "";
-        for (String tag : this.searchTags) {
-            if (tag.startsWith("Type:")) {
-                toReturn = tag.substring(6);
-            }
-        }
-        return toReturn;
-    }
-
     public Boolean isTransient() {
         return _transient;
     }
@@ -170,26 +140,31 @@ public class Part {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
-
-    public ArrayList<String> getDirections() {
-        ArrayList<String> toReturn = new ArrayList();
-        for (String tag : this.searchTags) {
-            if (tag.startsWith("Direction:")) {
-                toReturn = new ArrayList(Arrays.asList(tag.substring(12, tag.length() - 1).split(",")));
-            }
-        }
-        return toReturn;
-    }
     
-    public ArrayList<String> getScars() {
-        ArrayList<String> toReturn = new ArrayList();
-        for (String tag : this.searchTags) {
-            if (tag.startsWith("Scars:")) {
-                toReturn = new ArrayList(Arrays.asList(tag.substring(8, tag.length() - 1).split(",")));
-            }
-        }
-        return toReturn;
-    }
+    //Left overhang
+    @Getter
+    @Setter
+    private String leftOverhang;
+    
+    //Right overhang
+    @Getter
+    @Setter
+    private String rightOverhang;
+    
+    //Type
+    @Getter
+    @Setter
+    private ArrayList<String> type;
+    
+    //Scars
+    @Getter
+    @Setter
+    private ArrayList<String> scars;
+    
+    //Directions
+    @Getter
+    @Setter
+    private ArrayList<String> directions;
     
     //Fields
     private ArrayList<Part> composition;
@@ -197,7 +172,6 @@ public class Part {
     private String sequence;
     private Boolean isComposite = false;
     private String uuid;
-    private ArrayList<String> searchTags = new ArrayList();
     private boolean _transient = true;
     private static int UUID = 0;
 }

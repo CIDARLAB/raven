@@ -471,7 +471,7 @@ public class RGeneral extends Modularity {
         
         //Clone all the nodes from graphs being combined and then add to new root node
         for (int j = 0; j < graphs.size(); j++) {
-            RNode toAdd = graphs.get(j).getRootNode().clone();
+            RNode toAdd = graphs.get(j).getRootNode().clone(true);
             toAdd.addNeighbor(newRoot);
             newRoot.addNeighbor(toAdd);
         }

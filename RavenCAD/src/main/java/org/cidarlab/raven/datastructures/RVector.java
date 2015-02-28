@@ -113,7 +113,7 @@ public class RVector {
         _lOverhang = overhang;
     }
 
-    public void setStringResistance(String s) {
+    public void setResistance(String s) {
         _resistance = s;
     }
 

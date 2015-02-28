@@ -134,4 +134,9 @@ public class CoreTest {
             raven.assembleFile(ravenFiles, parameters, false);
         }
     }
+//    
+//    public static void main (String[] args) throws Exception {
+//        CoreTest coreTest = new CoreTest();
+//        coreTest.benchmarkSetTest();
+//    }
 }

@@ -2,7 +2,6 @@ org/cidarlab/raven/communication/RavenServlet.class
 org/cidarlab/raven/accessibility/ClothoWriter.class
 org/cidarlab/raven/algorithms/modasm/RGatewayGibson.class
 org/cidarlab/raven/communication/WeyekinPoster.class
-org/cidarlab/raven/communication/ImageDownloader.class
 org/cidarlab/raven/communication/AuthenticationServlet.class
 org/cidarlab/raven/algorithms/nonmodasm/RGibson.class
 org/cidarlab/raven/debugging/Debugger.class
