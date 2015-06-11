@@ -978,6 +978,8 @@ public class Modularity extends Partitioning {
         HashMap<String, HashSet<String>> partCompRHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all part right overhangs associated with that composition
         _invertedOverhangs = new HashSet<String>(); //inverted (*) overhangs from second pass   
         
+        HashSet<String> multiplexTypes = new HashSet<>();
+        
         //For each of the graphs in the solution set, create a hash of overhangs (left and right) seen for each level 0 node's composition
         for (RGraph graph : graphs) {
             
@@ -1020,6 +1022,11 @@ public class Modularity extends Partitioning {
                 } else {
                     _invertedOverhangs.add(RO);
                 }
+                
+                //If this part is a multiplex part, record part types so that library parts may be mapped properly
+                if (l0Node.getComposition().get(0).endsWith("?")) {
+                    multiplexTypes.add(l0Node.getType().get(0).substring(0, l0Node.getType().get(0).indexOf("_multiplex")));
+                }                
             }
         }
         
@@ -1030,6 +1037,16 @@ public class Modularity extends Partitioning {
             _partKeys.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
             String composition = libraryPart.getStringComposition().toString();
 
+            //Correction for multiplexing
+            if (!multiplexTypes.isEmpty()) {
+                for (String aMType : multiplexTypes) {
+                    if (libraryPart.getType().get(0).equalsIgnoreCase(aMType)) {
+                        composition = "[" + aMType + "?]";
+                        _partKeys.add(composition + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+                    }
+                }
+            }
+            
             //Only add MoClo overhangs
             if (libraryPart.getLeftOverhang().matches("[*]?\\d+")) {
 
