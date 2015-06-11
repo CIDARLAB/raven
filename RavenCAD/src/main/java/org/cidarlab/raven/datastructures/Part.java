@@ -119,9 +119,9 @@ public class Part {
     //returns this part, or an exact match
     public Part saveDefault(Collector col) {
         Part toReturn = col.addPart(this);
-        if (!this.equals(toReturn)) {
-            UUID--;
-        }
+//        if (!this.equals(toReturn)) {
+//            UUID--;
+//        }
         return toReturn;
     }
 

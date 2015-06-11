@@ -40,19 +40,19 @@ public class RInstructions {
             oligoNameRoot = primerParameters.get("oligoNameRoot").toString();
         }
         
-        if (primerParameters.has("meltingTemperature")) {
+        if (primerParameters.has("meltingTemperature") && !primerParameters.get("meltingTemperature").toString().equals("null")) {
             meltingTemp = Double.valueOf(primerParameters.get("meltingTemperature").toString());
         }
         
-        if (primerParameters.has("targetHomologyLength")) {
+        if (primerParameters.has("targetHomologyLength") && !primerParameters.get("targetHomologyLength").toString().equals("null")) {
             targetHomologyLength = Integer.valueOf(primerParameters.get("targetHomologyLength").toString());
         }
         
-        if (primerParameters.has("minPCRLength")) {    
+        if (primerParameters.has("minPCRLength") && !primerParameters.get("minPCRLength").toString().equals("null")) {    
             minPCRLength = Integer.valueOf(primerParameters.get("minPCRLength").toString());
         }
         
-        if (primerParameters.has("maxPrimerLength")) {
+        if (primerParameters.has("maxPrimerLength") && !primerParameters.get("maxPrimerLength").toString().equals("null")) {
             maxPrimerLength = Integer.valueOf(primerParameters.get("maxPrimerLength").toString());
         }
 

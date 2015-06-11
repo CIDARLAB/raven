@@ -219,6 +219,8 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("18", "atcg");
         overhangVariableSequenceHash.put("19", "cagt");
         overhangVariableSequenceHash.put("20", "gcaa");
+        overhangVariableSequenceHash.put("21", "cggc");
+        overhangVariableSequenceHash.put("22", "aaga");
         overhangVariableSequenceHash.put("0*", "ctcc");
         overhangVariableSequenceHash.put("1*", "agta");
         overhangVariableSequenceHash.put("2*", "catt");
@@ -240,6 +242,8 @@ public class PrimerDesign {
         overhangVariableSequenceHash.put("18*", "cgat");
         overhangVariableSequenceHash.put("19*", "actg");
         overhangVariableSequenceHash.put("20*", "ttgc");
+        overhangVariableSequenceHash.put("21*", "gccg");
+        overhangVariableSequenceHash.put("22*", "tctt");
         return overhangVariableSequenceHash;
     }
     

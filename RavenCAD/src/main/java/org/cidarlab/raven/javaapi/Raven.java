@@ -56,7 +56,7 @@ public class Raven {
             }
         }
         
-        raven.run(null, parameters, gps, null);
+        raven.run(null, parameters, gps, null, false);
         if (save) {
             raven.save(new HashSet(raven.getCollector().getAllParts(true)), new HashSet(raven.getCollector().getAllVectors(true)), false);
         }
@@ -81,7 +81,7 @@ public class Raven {
             raven.addToVectorLibrary(v);
         }
         
-        raven.run(null, parameters, targetParts, stageVectors);
+        raven.run(null, parameters, targetParts, stageVectors, false);
         ArrayList<RGraph> assemblyGraphs = raven.getAssemblyGraphs();
         
         return assemblyGraphs;
@@ -93,15 +93,19 @@ public class Raven {
         //Add library to Raven collector and save parts to library
         RavenController raven = new RavenController();
         for (Part p : partsLib) {
-            p.saveDefault(raven.getCollector());
+            p = p.saveDefault(raven.getCollector());
             raven.addToPartLibrary(p);
         }
         for (Vector v : vectorLib) {
-            v.saveDefault(raven.getCollector());
+            v = v.saveDefault(raven.getCollector());
             raven.addToVectorLibrary(v);
         }
+        for (Part t : targetParts) {
+            t = t.saveDefault(raven.getCollector());
+        }
         
-        raven.run("1", parameters, targetParts, stageVectors);
+        raven.setPartVectorPairs(partVectorPairs);
+        raven.run(null, parameters, targetParts, stageVectors, false);
         String instructions = raven.getInstructions();
         
         return instructions;

@@ -1123,6 +1123,9 @@ public class RavenController {
                 //Extra multiplex nodes only apply to basic parts
                 if (current.getUUID() != null) {
                     Part p = coll.getPart(current.getUUID(), false);
+                    
+                    //Special edge case of 
+                    
                     if (p.isBasic()) {
                         String type = p.getType().get(0);
                         if (p.getType().contains("_multiplex")) {
@@ -1243,8 +1246,9 @@ public class RavenController {
             String[] efficiencyArray = parameters.get("efficiency").toString().split(",");
 
             if (efficiencyArray.length > 0) {
-                for (int i = 0; i < efficiencyArray.length; i++) {
-                    efficiency.put(i + 2, Double.parseDouble(efficiencyArray[i]));
+                for (int i = 0; i < efficiencyArray.length; i++) {                    
+                    String effVal = efficiencyArray[i].replaceAll("\"", "");
+                    efficiency.put(i + 2, Double.parseDouble(effVal));
                 }
             }
         } else {
@@ -1265,8 +1269,12 @@ public class RavenController {
         
         //Initiate minimum cloning length
         int minCloneLength;
-        if (parameters.has("minCloneLength")) {
-            minCloneLength = Integer.valueOf(parameters.get("minCloneLength").toString());
+        if (parameters.has("minCloneLength") && parameters.get("minCloneLength") != "null") {
+            if (!parameters.get("minCloneLength").toString().equals("null")) {
+                minCloneLength = Integer.valueOf(parameters.get("minCloneLength").toString());
+            } else {
+                minCloneLength = 250;
+            }        
         } else {
             minCloneLength = 250;
         }
@@ -1333,7 +1341,7 @@ public class RavenController {
     
     //Using parameters from the client, run the algorithm
     //Gets solution graph, 
-    public JSONObject run(String designCount, JSONObject parameters, HashSet<Part> gps, HashMap<Integer, Vector> stageVectors) throws Exception {
+    public JSONObject run(String designCount, JSONObject parameters, HashSet<Part> gps, HashMap<Integer, Vector> stageVectors, boolean backend) throws Exception {
         
         //Check to make sure there is a method and efficieny, otherwise default to Gibson
         String method = "gibson";
@@ -1374,6 +1382,8 @@ public class RavenController {
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, parameters, 0.0, 0.0, 0.0, 0.0);
         getSolutionStats(method, gps);       
 
+        _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
+        
         //Create export files if a design number is specified
         JSONObject toReturn = new JSONObject();
         if (designCount != null) {
@@ -1390,7 +1400,7 @@ public class RavenController {
             String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
 
             //Instruction file
-            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
+//            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
             File file = new File(_path + _user + "/instructions" + designCount + ".txt");
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);
@@ -1566,6 +1576,11 @@ public class RavenController {
     //Add part to library
     public void addToVectorLibrary(Vector v) {
         _vectorLibrary.add(v);
+    }
+    
+    //Set the partVector library
+    public void setPartVectorPairs (HashMap<Part, Vector> partVec) {
+        _libraryPartsVectors = partVec;
     }
     
     //FIELDS
