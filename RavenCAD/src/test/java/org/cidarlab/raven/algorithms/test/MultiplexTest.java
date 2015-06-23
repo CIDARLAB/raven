@@ -56,7 +56,7 @@ public class MultiplexTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);           
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
     

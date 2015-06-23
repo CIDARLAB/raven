@@ -42,7 +42,7 @@ public class RavenController {
         _databaseConfig.add("cidar");
     }
     
-    public RavenController() {
+    public RavenController(String filePath) {
         _path = "raven";
         _user = "raven";
     }
@@ -1341,7 +1341,7 @@ public class RavenController {
     
     //Using parameters from the client, run the algorithm
     //Gets solution graph, 
-    public JSONObject run(String designCount, JSONObject parameters, HashSet<Part> gps, HashMap<Integer, Vector> stageVectors, boolean backend) throws Exception {
+    public JSONObject run(String designCount, JSONObject parameters, HashSet<Part> gps, HashMap<Integer, Vector> stageVectors, String instructionsFilePath) throws Exception {
         
         //Check to make sure there is a method and efficieny, otherwise default to Gibson
         String method = "gibson";
@@ -1380,12 +1380,23 @@ public class RavenController {
 
         //Get graph stats
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, parameters, 0.0, 0.0, 0.0, 0.0);
-        getSolutionStats(method, gps);       
+        getSolutionStats(method, gps);
 
         _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
         
         //Create export files if a design number is specified
         JSONObject toReturn = new JSONObject();
+        
+        //If instructionFilePath is specified
+        if (designCount == null && instructionsFilePath != null) {
+            
+            File file = new File(instructionsFilePath + "/instructionsRavenTest.txt");
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter out = new BufferedWriter(fw);
+            out.write(_instructions);
+            out.close();            
+        }
+        
         if (designCount != null) {
 
             //Generate graph and arc files
@@ -1400,13 +1411,14 @@ public class RavenController {
             String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
 
             //Instruction file
-//            _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
             File file = new File(_path + _user + "/instructions" + designCount + ".txt");
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);
             out.write(_instructions);
             out.close();
 
+            _instructionsFile = file;
+            
             //Pigeon text file
             file = new File(_path + _user + "/pigeon" + designCount + ".txt");
             fw = new FileWriter(file);
@@ -1492,6 +1504,11 @@ public class RavenController {
     //getter for accessing the instructions from RavenServlet
     public String getInstructions() {
         return _instructions;
+    }
+    
+    //getter for accessing the instructions from RavenServlet
+    public File getInstructionsFile() {
+        return _instructionsFile;
     }
 
 //    public String importClotho(JSONArray toImport) {
@@ -1584,6 +1601,7 @@ public class RavenController {
     }
     
     //FIELDS
+    private File _instructionsFile;
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
     private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();

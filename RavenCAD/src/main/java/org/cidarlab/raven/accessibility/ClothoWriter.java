@@ -435,13 +435,14 @@ public class ClothoWriter {
             
             String cName = composition.get(i);
             ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, false);
-            String cSeq = allPartsWithName.get(0).getSeq().replaceAll(" ", "");
+            Part firstPartWithName = allPartsWithName.get(0);
+            String cSeq = firstPartWithName.getSeq().replaceAll(" ", "");
             
             //Correct for direction
             String cDir = direction.get(i);
-            if (cDir.equals("-") && allPartsWithName.get(0).getDirections().get(0).equals("+")) {
+            if (cDir.equals("-") && firstPartWithName.getDirections().get(0).equals("+")) {
                 cSeq = PrimerDesign.reverseComplement(cSeq);
-            } else if (cDir.equals("+") && allPartsWithName.get(0).getDirections().get(0).equals("-")) {
+            } else if (cDir.equals("+") && firstPartWithName.getDirections().get(0).equals("-")) {
                 cSeq = PrimerDesign.reverseComplement(cSeq);
             }
 
