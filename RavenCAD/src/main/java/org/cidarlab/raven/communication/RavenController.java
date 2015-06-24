@@ -1395,6 +1395,8 @@ public class RavenController {
             BufferedWriter out = new BufferedWriter(fw);
             out.write(_instructions);
             out.close();            
+            
+            _instructionsFile = file;
         }
         
         if (designCount != null) {
@@ -1417,7 +1419,7 @@ public class RavenController {
             out.write(_instructions);
             out.close();
 
-            _instructionsFile = file;
+//            _instructionsFile = file;
             
             //Pigeon text file
             file = new File(_path + _user + "/pigeon" + designCount + ".txt");
