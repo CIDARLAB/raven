@@ -672,8 +672,8 @@ public class RavenController {
                     ArrayList<String> rDirections = new ArrayList();
                     rDirections.add("-");
                     
-                    Part newBasicPart = Part.generateBasic(name, sequence, null, new ArrayList(), directions, "", "", typeL);                    
-                    Part newReverseBasicPart = Part.generateBasic(name, PrimerDesign.reverseComplement(sequence), null, new ArrayList(), rDirections, "", "", typeL);
+                    Part newBasicPart = Part.generateBasic(name, sequence, null, typeL, directions, "", "");                    
+                    Part newReverseBasicPart = Part.generateBasic(name, PrimerDesign.reverseComplement(sequence), null, typeL, rDirections, "", "");
 
                     //Library logic
                     newBasicPart = newBasicPart.saveDefault(_collector);
@@ -706,6 +706,7 @@ public class RavenController {
                 String vectorName = tokens[8].trim();
                 ArrayList<String> directions = new ArrayList();
                 ArrayList<String> scars = new ArrayList();
+                ArrayList<String> linkers = new ArrayList();
 
                 //Parse composition tokens
                 for (int i = 9; i < tokens.length; i++) {
@@ -715,6 +716,7 @@ public class RavenController {
                     String bpForcedRight = " ";
                     String bpDirection = "+";
                     String scar = "_";
+                    String linker = "_";
                     String basicPartName = partNameTokens[0];                    
                     
                     //Scar upload
@@ -759,14 +761,20 @@ public class RavenController {
                                 String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
                                 ArrayList<String> typeL = new ArrayList();
                                 typeL.add(type);
-                                Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, leftOverhang, rightOverhang, typeL);
+                                Part newBasicPart = Part.generateBasic(basicPartName, "", null, typeL, bpDirections, leftOverhang, rightOverhang);
                                 
                                 _partLibrary.add(newBasicPart);
                                 newBasicPart.saveDefault(_collector);
                                 newBasicPart.setTransientStatus(false);
-                                
+        
                             } else {
 
+                                //Fusion coding sequences 
+                                //This should would be an accident by the user, but would be interpretted as just a basic part
+                                if (basicPartName.startsWith("(") && basicPartName.endsWith("(")) {
+                                    basicPartName = basicPartName.substring(1, basicPartName.length() - 1);
+                                }
+                                
                                 Part basic = null;
                                 ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
                                 for (Part aPart : allPartsWithName) {
@@ -778,7 +786,7 @@ public class RavenController {
                                 //Assumed that a basic part already exists, so this possible null pointer is on purpose
                                 String sequence = basic.getSeq().replaceAll(" ", "");
                                 ArrayList<String> type = basic.getType();
-                                Part newBasicPart = Part.generateBasic(basicPartName, sequence, null, new ArrayList(), bpDirections, leftOverhang, rightOverhang, type);
+                                Part newBasicPart = Part.generateBasic(basicPartName, sequence, null, type, bpDirections, leftOverhang, rightOverhang);
 
                                 //Library logic
                                 if (!tokens[0].trim().isEmpty()) {
@@ -796,12 +804,29 @@ public class RavenController {
                             String type = basicPartName.replaceAll("\\?", "") + "_multiplex";
                             ArrayList<String> typeL = new ArrayList();
                             typeL.add(type);
-                            Part newBasicPart = Part.generateBasic(basicPartName, "", null, new ArrayList(), bpDirections, "", "", typeL);
+                            Part newBasicPart = Part.generateBasic(basicPartName, "", null, typeL, bpDirections, "", "");
 
                             _partLibrary.add(newBasicPart);
                             newBasicPart.saveDefault(_collector);
                             newBasicPart.setTransientStatus(false);
                         }
+                    }
+                    
+                    //Fusion coding sequences 
+                    //In this case, it gets added to the part composition, but will not get converted into a node
+                    if (basicPartName.startsWith("(") && basicPartName.endsWith(")")) {             
+                        
+                        //Consecutive linkers edge case
+                        if (!linkers.get(linkers.size()-1).equals("_")) {
+                            linker = linkers.get(linkers.size()-1) + "|" + basicPartName.substring(1, basicPartName.length() - 1); 
+                            linkers.remove(linkers.size()-1);
+                        } else {
+                            linker = basicPartName.substring(1, basicPartName.length() - 1);
+                        }
+                        linkers.add(linker);
+                        continue;
+                    } else {
+                        linkers.add(linker);
                     }
                     
                     directions.add(bpDirection);
@@ -890,9 +915,9 @@ public class RavenController {
                 ArrayList<String> typeP = new ArrayList();
                 typeP.add("plasmid");
                 if (composition.size() > 1) {
-                    newPlasmid = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, typeP);
+                    newPlasmid = Part.generateComposite(name, composition, scarSeqs, scars, linkers, directions, leftOverhang, rightOverhang, typeP);
                 } else {
-                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition, scars, directions, leftOverhang, rightOverhang, typeP);
+                    newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition, typeP, directions, leftOverhang, rightOverhang);
                 }
                 newPlasmid = newPlasmid.saveDefault(_collector);
                 newPlasmid.setTransientStatus(false);
@@ -905,7 +930,7 @@ public class RavenController {
                     if (composition.size() > 1) {
                         ArrayList<String> typeC = new ArrayList();
                         typeC.add("composite");
-                        Part newComposite = Part.generateComposite(name, composition, scarSeqs, scars, directions, leftOverhang, rightOverhang, typeC);
+                        Part newComposite = Part.generateComposite(name, composition, scarSeqs, scars, linkers, directions, leftOverhang, rightOverhang, typeC);
                         newComposite = newComposite.saveDefault(_collector);
                         newComposite.setTransientStatus(false);
                         _partLibrary.add(newComposite);

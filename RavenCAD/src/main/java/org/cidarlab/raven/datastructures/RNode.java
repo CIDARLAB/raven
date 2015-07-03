@@ -24,6 +24,7 @@ public class RNode {
         _composition = new ArrayList<String>();
         _direction = new ArrayList<String>();
         _scars = new ArrayList<String>();
+        _linkers = new ArrayList<String>();
         _uuid = null;
         _type = new ArrayList<String>();
         _lOverhang = "";
@@ -35,7 +36,7 @@ public class RNode {
     }
 
     /** SDSNode constructor for intermediates with meta-data, neighbors and composition, but no part**/
-    public RNode(boolean recommended, boolean discouraged, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, String lOverhang, String rOverhang, int successCnt, int failureCnt, RVector vector) {
+    public RNode(boolean recommended, boolean discouraged, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> type, ArrayList<String> scars, ArrayList<String> fusions, String lOverhang, String rOverhang, int successCnt, int failureCnt, RVector vector) {
         _uuid = null;
         _recommended = recommended;
         _discouraged = discouraged;
@@ -44,6 +45,7 @@ public class RNode {
         _failureCnt = failureCnt;
         _neighbors = new ArrayList<RNode>();
         _scars = scars;
+        _linkers = fusions;
         _composition = composition;
         _direction = direction;
         _type = type;
@@ -69,6 +71,7 @@ public class RNode {
         clone._composition = this._composition;
         clone._direction = this._direction;
         clone._scars = this._scars;
+        clone._linkers = this._linkers;
         clone._name = this._name;
         clone._stage = this._stage;
         clone._vector = this._vector;
@@ -100,6 +103,7 @@ public class RNode {
             childClone._composition = child._composition;
             childClone._direction = child._direction;
             childClone._scars = child._scars;
+            childClone._linkers = child._linkers;
             childClone._name = child._name;
             childClone._stage = child._stage;
             childClone._vector = child._vector;
@@ -273,6 +277,11 @@ public class RNode {
         return _rSeq;
     }
     
+    /** Get the fusions for a node **/
+    public ArrayList<String> getFusions () {
+        return _linkers;
+    }
+    
     /** Get node keys for either forward or reverse direction **/
     public String getNodeKey(String dir) {
         
@@ -280,11 +289,12 @@ public class RNode {
         ArrayList<String> composition = this._composition;
         ArrayList<String> directions = this._direction;
         ArrayList<String> scars = this._scars;
+        ArrayList<String> linkers = this._linkers;
         String leftOverhang = this._lOverhang;
         String rightOverhang = this._rOverhang;
         
         if (dir.equals("+")) {           
-            String aPartLOcompRO = composition + "|" + directions + "|" + scars + "|" + leftOverhang + "|" + rightOverhang;
+            String aPartLOcompRO = composition + "|" + directions + "|" + scars + "|" + linkers + "|" + leftOverhang + "|" + rightOverhang;
             return aPartLOcompRO;
         } else {
             
@@ -312,7 +322,18 @@ public class RNode {
                     invertedScars.add(0,scar);
                 }
             }
-
+            
+            ArrayList<String> invertedLinkers = new ArrayList();
+            for (String linker: linkers) {
+                if (linker.contains("*")) {
+                    linker = linker.replace("*", "");
+                    invertedLinkers.add(0,linker);
+                } else {
+                    linker = linker + "*";
+                    invertedLinkers.add(0,linker);
+                }
+            }
+ 
             String invertedLeftOverhang = rightOverhang;
             String invertedRightOverhang = leftOverhang;
             if (invertedLeftOverhang.contains("*")) {
@@ -326,7 +347,7 @@ public class RNode {
                 invertedRightOverhang = invertedRightOverhang + "*";
             }
             
-            String aPartCompDirScarLOROR = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
+            String aPartCompDirScarLOROR = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLinkers + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
             return aPartCompDirScarLOROR;
         }
     }
@@ -449,6 +470,11 @@ public class RNode {
         _rSeq = seq;
     }
     
+    /** Set the fusions parts for a node **/
+    public void setLinkers(ArrayList<String> fusions) {
+        
+    }
+    
     //FIELDS
     private int _successCnt;
     private int _failureCnt;
@@ -462,6 +488,7 @@ public class RNode {
     private ArrayList<String> _composition;
     private ArrayList<String> _type;
     private ArrayList<String> _scars;
+    private ArrayList<String> _linkers;
     private String _lOverhang;
     private String _rOverhang;
     private RVector _vector;

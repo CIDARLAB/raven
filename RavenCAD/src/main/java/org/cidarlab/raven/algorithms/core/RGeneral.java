@@ -314,7 +314,7 @@ public class RGeneral extends Modularity {
                     //If not, make the new RNode
                     boolean rec = recommended.contains(comp.toString());
                     boolean dis = discouraged.contains(comp.toString());
-                    RNode aSubPart = new RNode(rec, dis, comp, dir, type, null, null, null, 0, 0, null);
+                    RNode aSubPart = new RNode(rec, dis, comp, dir, type, null, null, null, null, 0, 0, null);
                     allSubParts.add(aSubPart);
                 }
 

@@ -14,7 +14,7 @@ import lombok.Setter;
  */
 public class Part {
 
-    public static Part generateComposite(String name, ArrayList<Part> newComposition, ArrayList<String> scarSeqs, ArrayList<String> scars, ArrayList<String> directions, String LO, String RO, ArrayList<String> type) {
+    public static Part generateComposite(String name, ArrayList<Part> newComposition, ArrayList<String> scarSeqs, ArrayList<String> scars, ArrayList<String> fusions, ArrayList<String> directions, String LO, String RO, ArrayList<String> type) {
         Part newComposite = new Part();
         String sequence = "";
         
@@ -51,6 +51,7 @@ public class Part {
         newComposite._transient = true;        
         newComposite.directions = directions;
         newComposite.scars = scars;
+        newComposite.linkers = fusions;
         newComposite.type = type;
         newComposite.leftOverhang = LO;
         newComposite.rightOverhang = RO;
@@ -62,19 +63,20 @@ public class Part {
         this.uuid = "part_" + String.valueOf(UUID);
     }
 
-    public static Part generateBasic(String name, String sequence, ArrayList<Part> composition, ArrayList<String> scars, ArrayList<String> directions, String leftOverhang, String rightOverhang, ArrayList<String> type) {
+    public static Part generateBasic(String name, String sequence, ArrayList<Part> composition, ArrayList<String> type, ArrayList<String> directions, String leftOverhang, String rightOverhang) {
         Part newBasic = new Part();
         newBasic.name = name;
         newBasic.sequence = sequence;
         newBasic.isComposite = false;
-        newBasic.composition = new ArrayList<Part>();
+        newBasic.composition = new ArrayList();
         if (composition == null) {
             newBasic.composition.add(newBasic);
         } else {
             newBasic.composition.addAll(composition);
         }
         newBasic.directions = directions;
-        newBasic.scars = scars;
+        newBasic.scars = new ArrayList();
+        newBasic.linkers = new ArrayList();
         newBasic.type = type;
         newBasic.leftOverhang = leftOverhang;
         newBasic.rightOverhang = rightOverhang;
@@ -119,9 +121,6 @@ public class Part {
     //returns this part, or an exact match
     public Part saveDefault(Collector col) {
         Part toReturn = col.addPart(this);
-//        if (!this.equals(toReturn)) {
-//            UUID--;
-//        }
         return toReturn;
     }
 
@@ -165,6 +164,11 @@ public class Part {
     @Getter
     @Setter
     private ArrayList<String> directions;
+    
+    //Linker
+    @Getter
+    @Setter
+    private ArrayList<String> linkers;
     
     //Fields
     private ArrayList<Part> composition;

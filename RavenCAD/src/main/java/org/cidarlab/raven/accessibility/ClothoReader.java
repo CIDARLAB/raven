@@ -53,6 +53,7 @@ public class ClothoReader {
                     ArrayList<String> composition = new ArrayList<String>();
                     ArrayList<String> direction = libraryPart.getDirections();
                     ArrayList<String> scars = libraryPart.getScars();
+                    ArrayList<String> linkers = libraryPart.getLinkers();
 
                     //Get basic part types
                     for (Part libPartComponent : libPartComposition) {                        
@@ -67,6 +68,7 @@ public class ClothoReader {
                     libraryPartGraph.getRootNode().setType(type);
                     libraryPartGraph.getRootNode().setDirection(direction);
                     libraryPartGraph.getRootNode().setScars(scars);
+                    libraryPartGraph.getRootNode().setLinkers(linkers);
                     libraryPartGraph.getRootNode().setName(libraryPart.getName());
 
                     //If recommended, give graph a recommended score of 1, make root node recommended
@@ -117,6 +119,7 @@ public class ClothoReader {
             ArrayList<String> type = new ArrayList<String>();
             ArrayList<String> direction = goalPart.getDirections();
             ArrayList<String> scars = goalPart.getScars();
+            ArrayList<String> linkers = goalPart.getLinkers();
 
             //Get basic part types
             for (int j = 0; j < basicParts.size(); j++) {
@@ -131,7 +134,7 @@ public class ClothoReader {
             }
 
             //Create a new node with the specified composition, add it to goal parts, required intermediates and recommended intermediates for algorithm
-            RNode gp = new RNode(false, false, composition, direction, type, scars, "", "", 0, 0, null);
+            RNode gp = new RNode(false, false, composition, direction, type, scars, linkers, "", "", 0, 0, null);
             gp.setUUID(goalPart.getUUID());
             gp.setName(goalPart.getName());
             gpsNodes.add(gp);

@@ -95,6 +95,7 @@ public class ClothoWriter {
                 }
                 
                 //If the node has no uuid, make a new part
+                //This should be the case for new intermediates
                 if (currentNode.getUUID() == null) {
                     
                     //Get new intermediate name
@@ -181,7 +182,7 @@ public class ClothoWriter {
                                 bpComposition = currentPart.getComposition();
                             }
                             
-                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), new ArrayList(), "", "", new ArrayList());
+                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), new ArrayList(), "", "");
                             
                             //Make a new part
                             
@@ -192,7 +193,7 @@ public class ClothoWriter {
 //                                type = type.substring(1, type.length() - 1);
 //                            }
                             
-                            Part newBasic = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), currentNode.getDirection(), LO, RO, currentNode.getType());
+                            Part newBasic = Part.generateBasic(name, currentSeq, bpComposition, currentNode.getType(), currentNode.getDirection(), LO, RO);
                             newBasic.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
@@ -290,12 +291,12 @@ public class ClothoWriter {
                                 newComposition.add(exactPart);
                             }
 
-                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, new ArrayList(), new ArrayList(), "", "", new ArrayList());
+                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, new ArrayList(), null, new ArrayList(), "", "", new ArrayList());
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
                             ArrayList<String> typeC = new ArrayList();
                             typeC.add("composite");
-                            Part newComposite = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), currentNode.getDirection(), LO, RO, typeC);
+                            Part newComposite = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), null, currentNode.getDirection(), LO, RO, typeC);
                             newComposite.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
@@ -521,7 +522,7 @@ public class ClothoWriter {
             newComposition.add(exactPart);
         }
 
-        Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, direction, LO, RO, new ArrayList());
+        Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, null, direction, LO, RO, new ArrayList());
         return newPart;
     }
 
