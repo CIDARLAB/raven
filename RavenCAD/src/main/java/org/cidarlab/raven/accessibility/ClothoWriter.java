@@ -73,10 +73,15 @@ public class ClothoWriter {
                 ArrayList<String> scars = currentNode.getScars();
                 ArrayList<String> direction = currentNode.getDirection();
                 ArrayList<String> composition = currentNode.getComposition();
-                ArrayList<String> nodeType = currentNode.getType();
+                ArrayList<String> types = currentNode.getType();
                 String LO = currentNode.getLOverhang();
                 String RO = currentNode.getROverhang();
                 Part currentPart = null;
+                
+                ArrayList<String> typeP = new ArrayList();
+                typeP.add("plasmid");
+                ArrayList<String> typeC = new ArrayList();
+                typeC.add("composite");
 
                 //Get scar sequences
                 ArrayList<String> scarSeqs = scarsToSeqs(scars);
@@ -94,20 +99,21 @@ public class ClothoWriter {
                         partName = partName.substring(0, 255);
                     }
 
-                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO, scarSeqs);                    
+                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, composition, types, direction, scars, scarSeqs, typeP, LO, RO);                    
                     newPlasmid.getType().add("plasmid");
                     newPlasmid = newPlasmid.saveDefault(coll);
                     
-                    Part newComposite = generateNewClothoCompositePart(coll, partName, "", composition, direction, scars, LO, RO, scarSeqs);
+                    Part newComposite = generateNewClothoCompositePart(coll, partName, composition, types, direction, scars, scarSeqs, typeC, LO, RO);
                     newComposite.getType().add("composite");
                     newComposite.saveDefault(coll);
                     
                     currentNode.setName(partName);
                     currentNode.setUUID(newPlasmid.getUUID());
 
+                //These are parts that have a UUID (and thus already exist with different overhangs and or vectors)
                 } else {
 
-                    //If a part with this composition and overhangs does not exist, a new part is needed
+                    //Check to see if an exact match already exists
                     String seq = "";
                     ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(currentNode.getName(), true);
                     if (!allPartsWithName.isEmpty()) {
@@ -121,10 +127,9 @@ public class ClothoWriter {
                         }
                     }
                     
-                    ArrayList<String> type = new ArrayList();
-                    type.add("plasmid");
-                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), currentNode.getLOverhang(), currentNode.getROverhang(), type, currentNode.getScars(), currentNode.getDirection(), false);
+                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), currentNode.getLOverhang(), currentNode.getROverhang(), typeP, currentNode.getScars(), currentNode.getDirection(), false);
                     
+                    //If no such exact match exists, we must create a new part
                     if (currentPart == null) {
 
                         currentPart = coll.getPart(currentNode.getUUID(), true);
@@ -169,7 +174,7 @@ public class ClothoWriter {
                                 bpComposition = currentPart.getComposition();
                             }
                             
-                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), new ArrayList(), "", "");                            
+                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition, typeP, currentNode.getDirection(), LO, RO);                            
                             Part newBasic = Part.generateBasic(name, currentSeq, bpComposition, currentNode.getType(), currentNode.getDirection(), LO, RO);
                             newBasic.saveDefault(coll);
                             
@@ -182,12 +187,10 @@ public class ClothoWriter {
                         } else {
 
                             //If a new composite part needs to be made
-                            ArrayList<Part> newComposition = buildCompositePart(coll, composition, nodeType, direction, scars, LO, RO, currentPart);
-                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, new ArrayList(), null, new ArrayList(), "", "", new ArrayList());
+                            ArrayList<Part> newComposition = buildCompositePart(coll, composition, types, direction, scars, LO, RO, currentPart);
+                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), null, currentNode.getDirection(), LO, RO, typeP);
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
-                            ArrayList<String> typeC = new ArrayList();
-                            typeC.add("composite");
                             Part newComposite = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), null, currentNode.getDirection(), LO, RO, typeC);
                             newComposite.saveDefault(coll);
                             
@@ -198,12 +201,6 @@ public class ClothoWriter {
                                 }
                             }
                         }
-
-                        newPlasmid.setLeftOverhang(LO);
-                        newPlasmid.setRightOverhang(RO);
-                        newPlasmid.setDirections(currentNode.getDirection());
-                        newPlasmid.setScars(currentNode.getScars());
-                        newPlasmid.setType(type);
                         
                         if ((method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate")) || method.equalsIgnoreCase("gatewaygibson") || currentNode.getStage() > 0) {                          
 
@@ -315,14 +312,14 @@ public class ClothoWriter {
      * Make intermediate parts of graph with no uuid into Clotho parts
      * (typically only done for solution graphs) *
      */
-    private Part generateNewClothoCompositePart(Collector coll, String name, String description, ArrayList<String> composition, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, ArrayList<String> scarSeqs) throws Exception {
+    private Part generateNewClothoCompositePart(Collector coll, String name, ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, ArrayList<String> scarSeqs, ArrayList<String> type, String LO, String RO) throws Exception {
         if (_allCompositeParts.isEmpty() || _allBasicParts.isEmpty()) {
             refreshPartVectorList(coll);
         }
 
         //If a new composite part needs to be made
-        ArrayList<Part> newComposition = buildCompositePart(coll, composition, null, direction, scars, LO, RO, null);
-        Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, null, direction, LO, RO, new ArrayList());
+        ArrayList<Part> newComposition = buildCompositePart(coll, composition, types, direction, scars, LO, RO, null);
+        Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, null, direction, LO, RO, type);
         return newPart;
     }
 
@@ -503,6 +500,7 @@ public class ClothoWriter {
         ArrayList<Part> newComposition = new ArrayList<Part>();
         for (int i = 0; i < composition.size(); i++) {
             
+            //Part name and directions are the same for new parts and existing ones needing replacements
             String cName = composition.get(i);
             ArrayList<String> thisComp = new ArrayList<String>();
             thisComp.add(cName);
@@ -513,6 +511,7 @@ public class ClothoWriter {
             cDirs.add(cDir);              
             String cSeq;
             ArrayList<String> cType = new ArrayList();
+            cType.add(type.get(i));
             
             //Get sequence and type based upon whether or not a new part is being made or one is getting overwritten
             if (currentPart == null) {
@@ -526,11 +525,10 @@ public class ClothoWriter {
                 } else if (cDir.equals("+") && firstPartWithName.getDirections().get(0).equals("-")) {
                     cSeq = PrimerDesign.reverseComplement(cSeq);
                 }
-
-                cType = allPartsWithName.get(0).getType();
+            
+            //For replacements, type and composition can be acquired from the part
             } else {
                 cSeq = currentPart.getComposition().get(i).getSeq();
-                cType.add(type.get(i));
             }
             
             //Get internal overhangs from scars if there are any
