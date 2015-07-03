@@ -79,20 +79,7 @@ public class ClothoWriter {
                 Part currentPart = null;
 
                 //Get scar sequences
-                ArrayList<String> scarSeqs = new ArrayList<String>();
-                for (String scar : scars) {
-                    if ("BB".equals(scar)) {
-                        scarSeqs.add("tactagag");
-                    } else if ("BBm".equals(scar)) {
-                        scarSeqs.add("tactag");
-                    } else if (PrimerDesign.getMoCloOHseqs().containsKey(scar)) {
-                        scarSeqs.add(PrimerDesign.getMoCloOHseqs().get(scar));
-                    } else if (PrimerDesign.getGatewayGibsonOHseqs().containsKey(scar)) {
-                        scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get(scar));
-                    } else {
-                        scarSeqs.add(" ");
-                    }
-                }
+                ArrayList<String> scarSeqs = scarsToSeqs(scars);
                 
                 //If the node has no uuid, make a new part
                 //This should be the case for new intermediates
@@ -182,17 +169,7 @@ public class ClothoWriter {
                                 bpComposition = currentPart.getComposition();
                             }
                             
-                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), new ArrayList(), "", "");
-                            
-                            //Make a new part
-                            
-                            //Special types for merged parts 
-//                            ArrayList<String> type = currentNode.getType();
-//                            if (currentNode.getSpecialSeq() != null) {
-//                            } else {
-//                                type = type.substring(1, type.length() - 1);
-//                            }
-                            
+                            newPlasmid = Part.generateBasic(name, currentSeq, bpComposition, new ArrayList(), new ArrayList(), "", "");                            
                             Part newBasic = Part.generateBasic(name, currentSeq, bpComposition, currentNode.getType(), currentNode.getDirection(), LO, RO);
                             newBasic.saveDefault(coll);
                             
@@ -205,92 +182,7 @@ public class ClothoWriter {
                         } else {
 
                             //If a new composite part needs to be made
-                            ArrayList<Part> newComposition = new ArrayList<Part>();
-
-                            for (int i = 0; i < composition.size(); i++) {
-                                ArrayList<String> bpComp = new ArrayList<String>();
-                                bpComp.add(composition.get(i));
-                                String cSeq = currentPart.getComposition().get(i).getSeq();
-                                String cName = composition.get(i);
-                                String cDir = direction.get(i);
-                                String cType = nodeType.get(i);
-                                String cLO;
-                                String cRO;
-
-                                //Get internal overhangs from scars if there are any
-                                if (!scars.isEmpty()) {
-                                    if (i == 0) {
-                                        cLO = LO;
-                                        cRO = scars.get(i);
-                                    } else if (i == composition.size() - 1) {
-                                        cLO = scars.get(composition.size() - 2);
-                                        cRO = RO;
-                                    } else {
-                                        cLO = scars.get(i - 1);
-                                        cRO = scars.get(i);
-                                    }
-                                } else {
-                                    if (i == 0) {
-                                        cLO = LO;
-                                        cRO = composition.get(1) + direction.get(1);
-                                    } else if (i == composition.size() - 1) {
-                                        cLO = composition.get(composition.size() - 2) + direction.get(direction.size() - 2);
-                                        cRO = RO;
-                                    } else {
-                                        cLO = composition.get(i - 1) + direction.get(i - 1);
-                                        cRO = composition.get(i + 1) + direction.get(i + 1);
-                                    }
-                                }
-
-                                //BioBricks scars
-                                if (cLO.equals("BB") || cRO.equals("BB") || cLO.equals("BBm") || cRO.equals("BBm")) {
-                                    cLO = "EX";
-                                    cRO = "SP";
-                                }
-
-                                ArrayList<String> cDirs = new ArrayList();
-                                cDirs.add(cDir);
-                                ArrayList<String> cTypes = new ArrayList();
-                                cTypes.add(cType);
-                                Part exactPart = coll.getExactPart(cName, cSeq, bpComp, cLO, cRO, cTypes, new ArrayList(), cDirs, true);
-                                
-                                //Try to find the inverted version if this part does not exist
-                                if (exactPart == null) {
-                                    
-                                    String invertedcRO = cRO;
-                                    if (invertedcRO.contains("*")) {
-                                        invertedcRO = invertedcRO.substring(0, invertedcRO.length() - 1);
-                                    } else {
-                                        invertedcRO = invertedcRO + "*";
-                                    }
-                                    String invertedcLO = cLO;
-                                    if (invertedcLO.contains("*")) {
-                                        invertedcLO = invertedcLO.substring(0, invertedcLO.length() - 1);
-                                    } else {
-                                        invertedcLO = invertedcLO + "*";
-                                    }
-                                    String invertedcDir;
-                                    if (cDir.equals("+")) {
-                                        invertedcDir = "-";
-                                    } else {
-                                        invertedcDir = "+";
-                                    }
-                                    String rcSeq = PrimerDesign.reverseComplement(cSeq);
-                                    
-                                    ArrayList<String> invcDirs = new ArrayList();
-                                    invcDirs.add(invertedcDir);
-                                    
-                                    exactPart = coll.getExactPart(cName, rcSeq, bpComp, invertedcRO, invertedcLO, cTypes, new ArrayList(), invcDirs, true);
-                                }
-
-                                //In the edge case where the overhangs of a re-used composite part is changed
-                                if (exactPart == null) {
-                                    exactPart = coll.getExactPart(cName, cSeq, bpComp, "", "", cTypes, new ArrayList(), cDirs, true);
-                                }
-                                
-                                newComposition.add(exactPart);
-                            }
-
+                            ArrayList<Part> newComposition = buildCompositePart(coll, composition, nodeType, direction, scars, LO, RO, currentPart);
                             newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, new ArrayList(), null, new ArrayList(), "", "", new ArrayList());
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
@@ -311,8 +203,6 @@ public class ClothoWriter {
                         newPlasmid.setRightOverhang(RO);
                         newPlasmid.setDirections(currentNode.getDirection());
                         newPlasmid.setScars(currentNode.getScars());
-//                        ArrayList<String> type = new ArrayList();
-//                        type.add("plasmid");
                         newPlasmid.setType(type);
                         
                         if ((method.equalsIgnoreCase("moclo") || method.equalsIgnoreCase("biobricks") || method.equalsIgnoreCase("goldengate")) || method.equalsIgnoreCase("gatewaygibson") || currentNode.getStage() > 0) {                          
@@ -431,97 +321,7 @@ public class ClothoWriter {
         }
 
         //If a new composite part needs to be made
-        ArrayList<Part> newComposition = new ArrayList<Part>();
-        for (int i = 0; i < composition.size(); i++) {
-            
-            String cName = composition.get(i);
-            ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, false);
-            Part firstPartWithName = allPartsWithName.get(0);
-            String cSeq = firstPartWithName.getSeq().replaceAll(" ", "");
-            
-            //Correct for direction
-            String cDir = direction.get(i);
-            if (cDir.equals("-") && firstPartWithName.getDirections().get(0).equals("+")) {
-                cSeq = PrimerDesign.reverseComplement(cSeq);
-            } else if (cDir.equals("+") && firstPartWithName.getDirections().get(0).equals("-")) {
-                cSeq = PrimerDesign.reverseComplement(cSeq);
-            }
-
-            ArrayList<String> thisComp = new ArrayList<String>();
-            thisComp.add(cName);
-            String cLO;
-            String cRO;
-
-            //Get internal overhangs from scars if there are any
-            if (!scars.isEmpty()) {
-                if (i == 0) {
-                    cLO = LO;
-                    cRO = scars.get(i);
-                } else if (i == composition.size() - 1) {
-                    cLO = scars.get(composition.size() - 2);
-                    cRO = RO;
-                } else {
-                    cLO = scars.get(i - 1);
-                    cRO = scars.get(i);
-                }
-            } else {
-                if (i == 0) {
-                    cLO = LO;
-                    cRO = composition.get(1) + direction.get(1);
-                } else if (i == composition.size() - 1) {
-                    cLO = composition.get(composition.size() - 2) + direction.get(direction.size() - 2);
-                    cRO = RO;
-                } else {
-                    cLO = composition.get(i - 1) + direction.get(i - 1);
-                    cRO = composition.get(i + 1) + direction.get(i + 1);
-                }
-            }
-
-            //BioBricks scars
-            if (cLO.equals("BB") || cRO.equals("BB") || cLO.equals("BBm") || cRO.equals("BBm")) {
-                cLO = "EX";
-                cRO = "SP";
-            }
-
-            ArrayList<String> cDirs = new ArrayList();
-            cDirs.add(cDir);
-            Part exactPart = coll.getExactPart(cName, cSeq, thisComp, cLO, cRO, allPartsWithName.get(0).getType(), new ArrayList(), cDirs, true);
-            
-            //Try to find the inverted version if this part does not exist
-            if (exactPart == null) {
-                
-                String invertedcRO = cRO;
-                if (invertedcRO.contains("*")) {
-                    invertedcRO = invertedcRO.substring(0, invertedcRO.length() - 1);
-                } else {
-                    invertedcRO = invertedcRO + "*";
-                }
-                String invertedcLO = cLO;
-                if (invertedcLO.contains("*")) {
-                    invertedcLO = invertedcLO.substring(0, invertedcLO.length() - 1);
-                } else {
-                    invertedcLO = invertedcLO + "*";
-                }
-                String invertedcDir;
-                if (cDir.equals("+")) {
-                    invertedcDir = "-";
-                } else {
-                    invertedcDir = "+";
-                }
-                
-                ArrayList<String> invcDirs = new ArrayList();
-                invcDirs.add(invertedcDir);
-                exactPart = coll.getExactPart(cName, cSeq, thisComp, invertedcRO, invertedcLO, allPartsWithName.get(0).getType(), new ArrayList(), invcDirs,  true);
-            }    
-            
-            //In homologous recombinations, the overhangs are the neighbor, select the blank part
-            if (exactPart == null) {
-                exactPart = coll.getExactPart(cName, cSeq, thisComp, "", "", allPartsWithName.get(0).getType(), new ArrayList(), cDirs, true);
-            }
-            
-            newComposition.add(exactPart);
-        }
-
+        ArrayList<Part> newComposition = buildCompositePart(coll, composition, null, direction, scars, LO, RO, null);
         Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, null, direction, LO, RO, new ArrayList());
         return newPart;
     }
@@ -672,6 +472,139 @@ public class ClothoWriter {
             }
         }
     }
+    
+    /*
+     * Conver a set of scars to sequences
+     */
+    public static ArrayList<String> scarsToSeqs(ArrayList<String> scars) {
+        
+         ArrayList<String> scarSeqs = new ArrayList();
+        for (String scar : scars) {
+            if ("BB".equals(scar)) {
+                scarSeqs.add("tactagag");
+            } else if ("BBm".equals(scar)) {
+                scarSeqs.add("tactag");
+            } else if (PrimerDesign.getMoCloOHseqs().containsKey(scar)) {
+                scarSeqs.add(PrimerDesign.getMoCloOHseqs().get(scar));
+            } else if (PrimerDesign.getGatewayGibsonOHseqs().containsKey(scar)) {
+                scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get(scar));
+            } else {
+                scarSeqs.add(" ");
+            }
+        }
+        return scarSeqs;
+    }
+    
+    /*
+     * Build composite parts from the collector
+     */
+    private ArrayList<Part> buildCompositePart(Collector coll, ArrayList<String> composition, ArrayList<String> type, ArrayList<String> direction, ArrayList<String> scars, String LO, String RO, Part currentPart) {
+        
+        ArrayList<Part> newComposition = new ArrayList<Part>();
+        for (int i = 0; i < composition.size(); i++) {
+            
+            String cName = composition.get(i);
+            ArrayList<String> thisComp = new ArrayList<String>();
+            thisComp.add(cName);
+            String cLO;
+            String cRO;
+            ArrayList<String> cDirs = new ArrayList();
+            String cDir = direction.get(i);
+            cDirs.add(cDir);              
+            String cSeq;
+            ArrayList<String> cType = new ArrayList();
+            
+            //Get sequence and type based upon whether or not a new part is being made or one is getting overwritten
+            if (currentPart == null) {
+                ArrayList<Part> allPartsWithName = coll.getAllPartsWithName(cName, false);
+                Part firstPartWithName = allPartsWithName.get(0);
+                cSeq = firstPartWithName.getSeq().replaceAll(" ", "");
+
+                //Correct sequence for direction
+                if (cDir.equals("-") && firstPartWithName.getDirections().get(0).equals("+")) {
+                    cSeq = PrimerDesign.reverseComplement(cSeq);
+                } else if (cDir.equals("+") && firstPartWithName.getDirections().get(0).equals("-")) {
+                    cSeq = PrimerDesign.reverseComplement(cSeq);
+                }
+
+                cType = allPartsWithName.get(0).getType();
+            } else {
+                cSeq = currentPart.getComposition().get(i).getSeq();
+                cType.add(type.get(i));
+            }
+            
+            //Get internal overhangs from scars if there are any
+            if (!scars.isEmpty()) {
+                if (i == 0) {
+                    cLO = LO;
+                    cRO = scars.get(i);
+                } else if (i == composition.size() - 1) {
+                    cLO = scars.get(composition.size() - 2);
+                    cRO = RO;
+                } else {
+                    cLO = scars.get(i - 1);
+                    cRO = scars.get(i);
+                }
+            } else {
+                if (i == 0) {
+                    cLO = LO;
+                    cRO = composition.get(1) + direction.get(1);
+                } else if (i == composition.size() - 1) {
+                    cLO = composition.get(composition.size() - 2) + direction.get(direction.size() - 2);
+                    cRO = RO;
+                } else {
+                    cLO = composition.get(i - 1) + direction.get(i - 1);
+                    cRO = composition.get(i + 1) + direction.get(i + 1);
+                }
+            }
+
+            //BioBricks scars
+            if (cLO.equals("BB") || cRO.equals("BB") || cLO.equals("BBm") || cRO.equals("BBm")) {
+                cLO = "EX";
+                cRO = "SP";
+            }
+            
+            Part exactPart = coll.getExactPart(cName, cSeq, thisComp, cLO, cRO, cType, new ArrayList(), cDirs, true);
+            
+            //Try to find the inverted version if this part does not exist
+            if (exactPart == null) {
+                
+                String invertedcRO = cRO;
+                if (invertedcRO.contains("*")) {
+                    invertedcRO = invertedcRO.substring(0, invertedcRO.length() - 1);
+                } else {
+                    invertedcRO = invertedcRO + "*";
+                }
+                String invertedcLO = cLO;
+                if (invertedcLO.contains("*")) {
+                    invertedcLO = invertedcLO.substring(0, invertedcLO.length() - 1);
+                } else {
+                    invertedcLO = invertedcLO + "*";
+                }
+                String invertedcDir;
+                if (cDir.equals("+")) {
+                    invertedcDir = "-";
+                } else {
+                    invertedcDir = "+";
+                }
+                String rcSeq = PrimerDesign.reverseComplement(cSeq);
+                
+                ArrayList<String> invcDirs = new ArrayList();
+                invcDirs.add(invertedcDir);
+                exactPart = coll.getExactPart(cName, rcSeq, thisComp, invertedcRO, invertedcLO, cType, new ArrayList(), invcDirs,  true);
+            }    
+            
+            //In homologous recombinations, the overhangs are the neighbor, select the blank part
+            if (exactPart == null) {
+                exactPart = coll.getExactPart(cName, cSeq, thisComp, "", "", cType, new ArrayList(), cDirs, true);
+            }
+            
+            newComposition.add(exactPart);
+        }
+        
+        return newComposition;
+    }
+    
     //FIELDS
     private ArrayList<Part> _allCompositeParts;
     private ArrayList<Part> _allBasicParts;

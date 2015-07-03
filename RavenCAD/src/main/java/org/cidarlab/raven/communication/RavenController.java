@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import static org.cidarlab.raven.accessibility.ClothoWriter.scarsToSeqs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -895,20 +896,7 @@ public class RavenController {
                 }
 
                 //Get scar sequences
-                ArrayList<String> scarSeqs = new ArrayList<String>();
-                for (String scar : scars) {
-                    if ("BB".equals(scar)) {
-                        scarSeqs.add("tactagag");
-                    } else if ("BBm".equals(scar)) {
-                        scarSeqs.add("tactag");
-                    } else if (PrimerDesign.getMoCloOHseqs().containsKey(scar)) {
-                        scarSeqs.add(PrimerDesign.getMoCloOHseqs().get(scar));
-                    } else if (PrimerDesign.getGatewayGibsonOHseqs().containsKey(scar)) {
-                        scarSeqs.add(PrimerDesign.getGatewayGibsonOHseqs().get(scar));
-                    } else {
-                        scarSeqs.add(" ");
-                    }
-                }
+                ArrayList<String> scarSeqs = scarsToSeqs(scars);
                 
                 //Library logic - make new plasmids whether or not they are in the library
                 Part newPlasmid;
