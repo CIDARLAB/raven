@@ -71,6 +71,7 @@ public class ClothoWriter {
             for (RNode currentNode : nodes) {
 
                 ArrayList<String> scars = currentNode.getScars();
+                ArrayList<String> linkers = currentNode.getLinkers();
                 ArrayList<String> direction = currentNode.getDirection();
                 ArrayList<String> composition = currentNode.getComposition();
                 ArrayList<String> types = currentNode.getType();
@@ -85,6 +86,7 @@ public class ClothoWriter {
 
                 //Get scar sequences
                 ArrayList<String> scarSeqs = scarsToSeqs(scars);
+                ArrayList<String> linkerSeqs = getLinkerSeqs(coll, linkers);
                 
                 //If the node has no uuid, make a new part
                 //This should be the case for new intermediates
@@ -99,12 +101,10 @@ public class ClothoWriter {
                         partName = partName.substring(0, 255);
                     }
 
-                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, composition, types, direction, scars, scarSeqs, typeP, LO, RO);                    
-                    newPlasmid.getType().add("plasmid");
+                    Part newPlasmid = generateNewClothoCompositePart(coll, partName, composition, types, direction, scars, scarSeqs, linkers, linkerSeqs, typeP, LO, RO);                    
                     newPlasmid = newPlasmid.saveDefault(coll);
                     
-                    Part newComposite = generateNewClothoCompositePart(coll, partName, composition, types, direction, scars, scarSeqs, typeC, LO, RO);
-                    newComposite.getType().add("composite");
+                    Part newComposite = generateNewClothoCompositePart(coll, partName, composition, types, direction, scars, scarSeqs, linkers, linkerSeqs, typeC, LO, RO);
                     newComposite.saveDefault(coll);
                     
                     currentNode.setName(partName);
@@ -188,10 +188,10 @@ public class ClothoWriter {
 
                             //If a new composite part needs to be made
                             ArrayList<Part> newComposition = buildCompositePart(coll, composition, types, direction, scars, LO, RO, currentPart);
-                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), null, currentNode.getDirection(), LO, RO, typeP);
+                            newPlasmid = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), linkers, linkerSeqs, currentNode.getDirection(), LO, RO, typeP);
                             
                             //For homologous recombination methods, a new composite part needs to be made for re-use cases
-                            Part newComposite = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), null, currentNode.getDirection(), LO, RO, typeC);
+                            Part newComposite = Part.generateComposite(currentPart.getName(), newComposition, scarSeqs, currentNode.getScars(), linkers, linkerSeqs, currentNode.getDirection(), LO, RO, typeC);
                             newComposite.saveDefault(coll);
                             
                             //Assign this basic part to the node if scarless assembly
@@ -312,14 +312,14 @@ public class ClothoWriter {
      * Make intermediate parts of graph with no uuid into Clotho parts
      * (typically only done for solution graphs) *
      */
-    private Part generateNewClothoCompositePart(Collector coll, String name, ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, ArrayList<String> scarSeqs, ArrayList<String> type, String LO, String RO) throws Exception {
+    private Part generateNewClothoCompositePart(Collector coll, String name, ArrayList<String> composition, ArrayList<String> types, ArrayList<String> direction, ArrayList<String> scars, ArrayList<String> scarSeqs, ArrayList<String> linkers, ArrayList<String> linkerSeqs, ArrayList<String> type, String LO, String RO) throws Exception {
         if (_allCompositeParts.isEmpty() || _allBasicParts.isEmpty()) {
             refreshPartVectorList(coll);
         }
 
         //If a new composite part needs to be made
         ArrayList<Part> newComposition = buildCompositePart(coll, composition, types, direction, scars, LO, RO, null);
-        Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, null, direction, LO, RO, type);
+        Part newPart = Part.generateComposite(name, newComposition, scarSeqs, scars, linkers, linkerSeqs, direction, LO, RO, type);
         return newPart;
     }
 
@@ -475,7 +475,7 @@ public class ClothoWriter {
      */
     public static ArrayList<String> scarsToSeqs(ArrayList<String> scars) {
         
-         ArrayList<String> scarSeqs = new ArrayList();
+        ArrayList<String> scarSeqs = new ArrayList();
         for (String scar : scars) {
             if ("BB".equals(scar)) {
                 scarSeqs.add("tactagag");
@@ -490,6 +490,46 @@ public class ClothoWriter {
             }
         }
         return scarSeqs;
+    }
+    
+    /*
+     * Get a set of linker sequences
+     */
+    public static ArrayList<String> getLinkerSeqs(Collector c, ArrayList<String> linkers) {
+        
+        ArrayList<String> linkerSeqs = new ArrayList();
+        for (String linker : linkers) {
+            
+            ArrayList<Part> allPartsWithName = c.getAllPartsWithName(linker, false);
+            Part bp = null;
+
+            ArrayList<String> dir = new ArrayList();
+            if (linker.endsWith("*")) {
+                dir.add("-");
+            } else {
+                dir.add("+");
+            }
+            
+            //First pick the part with no overhangs, i.e. basic part
+            for (Part partWithName : allPartsWithName) {
+                String LO = partWithName.getLeftOverhang();
+                String RO = partWithName.getRightOverhang();
+                if (LO.isEmpty() && RO.isEmpty() && dir.equals(partWithName.getDirections())) {
+                    if (!partWithName.getType().contains("plasmid")) {
+                        bp = partWithName;
+                    }
+                }
+            }
+
+            //Add sequence if this part is found, else add blank
+            if (bp != null) {
+                linkerSeqs.add(bp.getSeq());
+            } else {
+                linkerSeqs.add(" ");
+            }
+        }
+        
+        return linkerSeqs;
     }
     
     /*

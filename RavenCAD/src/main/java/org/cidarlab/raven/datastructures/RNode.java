@@ -278,7 +278,7 @@ public class RNode {
     }
     
     /** Get the fusions for a node **/
-    public ArrayList<String> getFusions () {
+    public ArrayList<String> getLinkers () {
         return _linkers;
     }
     

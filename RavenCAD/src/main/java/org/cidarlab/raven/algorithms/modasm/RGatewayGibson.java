@@ -276,7 +276,7 @@ public class RGatewayGibson extends RGeneral {
             composition.add(newSpacer);
             composition.add(exactKanR);
             
-            Part newBasicPart = Part.generateComposite("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), composition, scarSeqs, adaptor.getScars(), null, adaptor.getDirection(), adaptor.getLOverhang(), "UNSX", adaptor.getType());
+            Part newBasicPart = Part.generateComposite("adaptor" + "_" + adaptor.getLOverhang() + "_" + adaptor.getROverhang(), composition, scarSeqs, adaptor.getScars(), null, null, adaptor.getDirection(), adaptor.getLOverhang(), "UNSX", adaptor.getType());
             newBasicPart = newBasicPart.saveDefault(collector);
             
             adaptor.setUUID(newBasicPart.getUUID());
@@ -330,7 +330,7 @@ public class RGatewayGibson extends RGeneral {
         
         ArrayList<String> plasmid = new ArrayList();
         plasmid.add("plasmid");
-        Part newTargetPart = Part.generateComposite(targetPart.getName() + "_GatewayGibson", newComposition, scarSeqs, newTargetPartScars, null, newTargetPartDirections, "", "", plasmid);
+        Part newTargetPart = Part.generateComposite(targetPart.getName() + "_GatewayGibson", newComposition, scarSeqs, newTargetPartScars, null, null, newTargetPartDirections, "", "", plasmid);
         newTargetPart.saveDefault(collector);
         rootNodeClone.setUUID(newTargetPart.getUUID());
         
