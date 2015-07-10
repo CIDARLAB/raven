@@ -1307,7 +1307,7 @@ public class RavenController {
         } else if (method.equalsIgnoreCase("cpec")) {
             RCPEC cpec = new RCPEC();
             assemblyGraphs = cpec.cpecClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
-            overhangValid = RCPEC.validateOverhangs(assemblyGraphs);
+            overhangValid = RGibson.validateOverhangs(assemblyGraphs);
         
         //Run Gibson    
         } else if (method.equalsIgnoreCase("gibson")) {
@@ -1337,7 +1337,7 @@ public class RavenController {
         } else if (method.equalsIgnoreCase("slic")) {
             RSLIC slic = new RSLIC();
             assemblyGraphs = slic.slicClothoWrapper(gps, required, recommended, forbidden, discouraged, partLibrary, efficiency, stageVectors, null, minCloneLength, collector);
-            overhangValid = RSLIC.validateOverhangs(assemblyGraphs);
+            overhangValid = RGibson.validateOverhangs(assemblyGraphs);
         }
         
         //Add extra nodes for multiplexing

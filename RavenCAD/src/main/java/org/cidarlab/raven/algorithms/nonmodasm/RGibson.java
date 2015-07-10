@@ -52,7 +52,7 @@ public class RGibson extends RGeneral {
     }
     
     /** Assign overhangs for scarless assembly **/
-    private void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<Integer, Vector> stageVectors, Integer minCloneLength, Collector collector) {
+    public static void assignOverhangs(ArrayList<RGraph> asmGraphs, HashMap<Integer, Vector> stageVectors, Integer minCloneLength, Collector collector) {
         
         //Initialize fields that record information to save complexity for future steps
         _rootBasicNodeHash = new HashMap<RNode, ArrayList<RNode>>();
@@ -125,7 +125,7 @@ public class RGibson extends RGeneral {
     }
     
     /** Overhang assignment helper **/
-    private void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors, RNode root, HashMap<Integer, RVector> stageRVectors, Integer minCloneLength, Collector collector) {
+    private static void assignOverhangsHelper(RNode parent, ArrayList<RNode> neighbors, RNode root, HashMap<Integer, RVector> stageRVectors, Integer minCloneLength, Collector collector) {
         
         ArrayList<RNode> children = new ArrayList<RNode>();
         
@@ -238,5 +238,5 @@ public class RGibson extends RGeneral {
         return true;
     }
     
-    private HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
+    private static HashMap<RNode, ArrayList<RNode>> _rootBasicNodeHash; //key: root node, value: ordered arrayList of level0 nodes in graph that root node belongs to
 }
