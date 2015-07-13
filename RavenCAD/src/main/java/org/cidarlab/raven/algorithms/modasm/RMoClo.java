@@ -14,6 +14,7 @@ import org.cidarlab.raven.accessibility.ClothoReader;
 import org.cidarlab.raven.algorithms.core.PrimerDesign;
 import org.cidarlab.raven.algorithms.core.RGeneral;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -109,6 +110,7 @@ public class RMoClo extends RGeneral {
 //        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
             cartesianLibraryAssignment(optimalGraphs, null, forcedOverhangHash, stageVectors, false);
+            assignLinkerFusions(optimalGraphs);
             assignScars(optimalGraphs);            
         }
 
@@ -185,6 +187,55 @@ public class RMoClo extends RGeneral {
         } else {
             return parent.getScars();
         }        
+    }
+    
+    /* 
+     * Determine fusion site for linker
+     */
+    private String getLinkerFusionSite (String linkerSeq, HashSet<String> takenOHs) {
+        
+        String fS = "";
+        HashMap<String, String> moCloOHseqs = PrimerDesign.getMoCloOHseqs();
+        ArrayList<String> sortedOHs = new ArrayList(moCloOHseqs.keySet());
+        Collections.sort(sortedOHs);
+        
+        //Loop through the overhang list in series to find the first fusion site contained in this linker
+        for (int i = 0; i < sortedOHs.size(); i++) {
+            
+            String OH = sortedOHs.get(i);
+            
+            //If the fusion site is found in the linker sequence, going in order for only forward sites not in the taken set
+            if (linkerSeq.contains(moCloOHseqs.get(OH)) && !OH.contains("*") && !takenOHs.contains(OH)) {
+                
+                //Hacky if statement to correct for choice made with the helical linker
+                if (!OH.equals("15")) {
+                    fS = OH;
+                    return fS;
+                }
+            }
+        }
+        
+        return fS;
+    }
+    
+    /*
+     * Assign linker fusions as post-processing... seems cleaner than getting it in the middle of overhang assignment
+     */
+    private void assignLinkerFusions(ArrayList<RGraph> optimalGraphs) {
+        
+        //Loop through each optimal graph and grab the root node to prime for the traversal
+        for (RGraph graph : optimalGraphs) {
+            RNode root = graph.getRootNode();
+            ArrayList<RNode> children = root.getNeighbors();
+            root.setScars(assignLinkerFusionsHelper(root, children));
+        }
+    }
+    
+    /**
+     * Overhang fusion linkers helper *
+     */
+    private ArrayList<String> assignLinkerFusionsHelper(RNode parent, ArrayList<RNode> children) {
+        return null;
     }
     
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {

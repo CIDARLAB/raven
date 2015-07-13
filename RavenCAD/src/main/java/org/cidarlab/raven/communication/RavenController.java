@@ -708,6 +708,7 @@ public class RavenController {
                 ArrayList<String> directions = new ArrayList();
                 ArrayList<String> scars = new ArrayList();
                 ArrayList<String> linkers = new ArrayList();
+                boolean previousIsLinker = false;
 
                 //Parse composition tokens
                 for (int i = 9; i < tokens.length; i++) {
@@ -718,6 +719,7 @@ public class RavenController {
                     String bpDirection = "+";
                     String scar = "_";
                     String linker = "_";
+                    boolean isLinker = false;                    
                     String basicPartName = partNameTokens[0];                    
                     
                     //Scar upload
@@ -752,6 +754,34 @@ public class RavenController {
                     ArrayList<String> bpDirections = new ArrayList();
                     bpDirections.add(bpDirection);
 
+                    //Fusion coding sequences 
+                    //In this case, it gets added to the part composition, but will not get converted into a node
+                    if (basicPartName.startsWith("(") && basicPartName.endsWith(")")) {     
+                        
+                        //Consecutive linkers edge case
+                        if (!linkers.get(linkers.size()-1).equals("_")) {
+                            linker = linkers.get(linkers.size()-1) + "|" + basicPartName.substring(1, basicPartName.length() - 1); 
+                            linkers.remove(linkers.size()-1);
+                        } else {
+                            linker = basicPartName.substring(1, basicPartName.length() - 1);
+                        }
+                        
+                        if (i > 9) {
+                            isLinker = true;
+                            previousIsLinker = true;
+                            linkers.add(linker);
+                        }
+
+                    } else {
+                        if (i > 9) {
+                            if (!previousIsLinker) {
+                                    linkers.add(linker);
+                            } else {
+                                previousIsLinker = false;
+                            }
+                        }
+                    }
+                    
                     //Basic part plasmids - add as new basic parts with overhang for re-use
                     if (tokens.length == 10) {
                         if (i == 9) {
@@ -811,61 +841,49 @@ public class RavenController {
                             newBasicPart.saveDefault(_collector);
                             newBasicPart.setTransientStatus(false);
                         }
-                    }
+                    }                    
                     
-                    //Fusion coding sequences 
-                    //In this case, it gets added to the part composition, but will not get converted into a node
-                    if (basicPartName.startsWith("(") && basicPartName.endsWith(")")) {             
-                        
-                        //Consecutive linkers edge case
-                        if (!linkers.get(linkers.size()-1).equals("_")) {
-                            linker = linkers.get(linkers.size()-1) + "|" + basicPartName.substring(1, basicPartName.length() - 1); 
-                            linkers.remove(linkers.size()-1);
-                        } else {
-                            linker = basicPartName.substring(1, basicPartName.length() - 1);
-                        }
-                        linkers.add(linker);
-                        continue;
-                    } else {
-                        linkers.add(linker);
-                    }
                     
-                    directions.add(bpDirection);
 
                     //Forming the composite part composition
-                    ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
-                    Part bp = null;
+                    if (!isLinker) {
+                        
+                        directions.add(bpDirection);
+                        
+                        ArrayList<Part> allPartsWithName = _collector.getAllPartsWithName(basicPartName, false);
+                        Part bp = null;
 
-                    //First pick the part with no overhangs, i.e. basic part
-                    for (Part partWithName : allPartsWithName) {
-                        String LO = partWithName.getLeftOverhang();
-                        String RO = partWithName.getRightOverhang();
-                        if (LO.isEmpty() && RO.isEmpty() && bpDirections.equals(partWithName.getDirections())) {
-                            if (!partWithName.getType().contains("plasmid")) {
-                                bp = partWithName;
+                        //First pick the part with no overhangs, i.e. basic part
+                        for (Part partWithName : allPartsWithName) {
+                            String LO = partWithName.getLeftOverhang();
+                            String RO = partWithName.getRightOverhang();
+                            if (LO.isEmpty() && RO.isEmpty() && bpDirections.equals(partWithName.getDirections())) {
+                                if (!partWithName.getType().contains("plasmid")) {
+                                    bp = partWithName;
+                                }
                             }
                         }
-                    }
 
-                    //Then try to find a match
-                    for (Part partWithName : allPartsWithName) {
-                        String LO = partWithName.getLeftOverhang();
-                        String RO = partWithName.getRightOverhang();
-                        if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight) && bpDirections.equals(partWithName.getDirections())) {
-                            if (!partWithName.getType().contains("plasmid")) {
-                                bp = partWithName;
+                        //Then try to find a match
+                        for (Part partWithName : allPartsWithName) {
+                            String LO = partWithName.getLeftOverhang();
+                            String RO = partWithName.getRightOverhang();
+                            if (LO.equals(bpForcedLeft) && RO.equals(bpForcedRight) && bpDirections.equals(partWithName.getDirections())) {
+                                if (!partWithName.getType().contains("plasmid")) {
+                                    bp = partWithName;
+                                }
                             }
                         }
-                    }
 
-                    composition.add(bp);
-                    
-                    //Add scar to scar set and fix if this is a gene or reporter with biobricks
-                    if (i > 9) {
-                        if (scar.equals("BB") && (bp.getType().get(0).equalsIgnoreCase("gene") || bp.getType().get(0).equalsIgnoreCase("reporter"))) {
-                            scar = "BBm";
+                        composition.add(bp);
+
+                        //Add scar to scar set and fix if this is a gene or reporter with biobricks
+                        if (i > 9) {
+                            if (scar.equals("BB") && (bp.getType().get(0).equalsIgnoreCase("gene") || bp.getType().get(0).equalsIgnoreCase("reporter"))) {
+                                scar = "BBm";
+                            }
+                            scars.add(scar);
                         }
-                        scars.add(scar);
                     }
                 }
 
