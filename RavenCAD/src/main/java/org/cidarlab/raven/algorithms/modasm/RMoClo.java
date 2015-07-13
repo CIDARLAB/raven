@@ -279,17 +279,13 @@ public class RMoClo extends RGeneral {
             }
             
             if (!leftLinker.equals("_")) {
-                ArrayList<String> leftLinkerList = new ArrayList<>();
-                leftLinkerList.add(leftLinker);
-                ArrayList<String> linkerSeqs = ClothoWriter.getLinkerSeqs(collector, leftLinkerList);
-                String linkerFS = getLinkerFusionSite(linkerSeqs.get(0), takenOHs);
+                String linkerSeq = ClothoWriter.getLinkerSeq(collector, leftLinker);
+                String linkerFS = getLinkerFusionSite(linkerSeq, takenOHs);
                 child.setLOverhang(linkerFS + "(" + leftLinker + ")");
             }
             if (!rightLinker.equals("_")) {
-                ArrayList<String> rightLinkerList = new ArrayList<>();
-                rightLinkerList.add(rightLinker);
-                ArrayList<String> linkerSeqs = ClothoWriter.getLinkerSeqs(collector, rightLinkerList);
-                String linkerFS = getLinkerFusionSite(linkerSeqs.get(0), takenOHs);
+                String linkerSeq = ClothoWriter.getLinkerSeq(collector, rightLinker);
+                String linkerFS = getLinkerFusionSite(linkerSeq, takenOHs);
                 child.setROverhang(linkerFS + "(" + rightLinker + ")");
             }
             
@@ -394,6 +390,23 @@ public class RMoClo extends RGeneral {
         Part currentPart = coll.getPart(node.getUUID(), true);
         String seq = currentPart.getSeq();
 
+        String leftLink = "";
+        String rightLink = "";
+        
+        String lOverhang = node.getLOverhang();
+        if (lOverhang.contains("(")) {
+            String linkerSeq = ClothoWriter.getLinkerSeq(coll, lOverhang.substring(lOverhang.indexOf("(") + 1, lOverhang.length() - 1));
+            lOverhang = lOverhang.substring(0, lOverhang.indexOf("("));
+            leftLink = linkerSeq.substring(linkerSeq.indexOf(overhangVariableSequenceHash.get(lOverhang).toUpperCase()) + 4, linkerSeq.length());
+        }
+        
+        String rOverhang = node.getROverhang();
+        if (rOverhang.contains("(")) {
+            String linkerSeq = ClothoWriter.getLinkerSeq(coll, rOverhang.substring(rOverhang.indexOf("(") + 1, rOverhang.length() - 1));            
+            rOverhang = rOverhang.substring(0, rOverhang.indexOf("("));
+            rightLink = linkerSeq.substring(0, linkerSeq.indexOf(overhangVariableSequenceHash.get(rOverhang).toUpperCase()));
+        }
+        
         String fwdHomology;
         String revHomology;
 
@@ -402,18 +415,18 @@ public class RMoClo extends RGeneral {
         if (seq.length() > minPCRLength) {
             fwdHomology = seq.substring(0, Math.min(seq.length(), PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, seq, true)));
             revHomology = seq.substring(Math.max(0, seq.length() - PrimerDesign.getPrimerHomologyLength(meltingTemp, targetLength, maxPrimerLength - 14, minPCRLength, PrimerDesign.reverseComplement(seq), true)));
-            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
-            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
+            forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(lOverhang).toUpperCase() + leftLink + fwdHomology;
+            reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + rightLink + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
         
         } else {
             if (seq.equals("")) {
                 fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
                 revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
-                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology;
-                reverseOligoSequence = PrimerDesign.reverseComplement(overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(lOverhang).toUpperCase() + leftLink + fwdHomology;
+                reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + rightLink + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
             } else {
                 fwdHomology = seq;
-                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(node.getLOverhang()).toUpperCase() + fwdHomology + overhangVariableSequenceHash.get(node.getROverhang()).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
+                forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(lOverhang).toUpperCase() + leftLink + fwdHomology + rightLink + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
                 reverseOligoSequence = PrimerDesign.reverseComplement(forwardOligoSequence);
 
             }
@@ -438,17 +451,27 @@ public class RMoClo extends RGeneral {
 
         String[] oligos = new String[2];
 
+        String lOverhang = vector.getLOverhang();
+        if (lOverhang.contains("(")) {
+            lOverhang = lOverhang.substring(0, lOverhang.indexOf("("));
+        }
+        
+        String rOverhang = vector.getROverhang();
+        if (rOverhang.contains("(")) {
+            rOverhang = rOverhang.substring(0, rOverhang.indexOf("("));
+        }
+        
         //Level 0, 2, 4, 6, etc. vectors
         String forwardOligoSequence;
         String reverseOligoSequence;
         if (vector.getLevel() % 2 == 0) {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite2 + "a" + overhangVariableSequenceHash.get(lOverhang).toUpperCase() + "at" + revEnzymeRecSite1 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "a" + revEnzymeRecSite2 + vectorPrimerSuffix);
 
             //Level 1, 3, 5, 7, etc. vectors
         } else {
-            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + overhangVariableSequenceHash.get(vector.getLOverhang()).toUpperCase() + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
-            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + overhangVariableSequenceHash.get(vector.getROverhang()).toUpperCase() + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
+            forwardOligoSequence = vectorPrimerPrefix + fwdEnzymeRecSite1 + "at" + overhangVariableSequenceHash.get(lOverhang).toUpperCase() + "a" + revEnzymeRecSite2 + "tgcaccatatgcggtgtgaaatac";
+            reverseOligoSequence = PrimerDesign.reverseComplement("ttaatgaatcggccaacgcgcggg" + fwdEnzymeRecSite2 + "t" + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "at" + revEnzymeRecSite1 + vectorPrimerSuffix);
         }
 
         oligos[0]=forwardOligoSequence;

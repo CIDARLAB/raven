@@ -913,15 +913,14 @@ public class RavenController {
                 }
 
                 //Get scar sequences
-                ArrayList<String> scarSeqs = ClothoWriter.scarsToSeqs(scars);
-                ArrayList<String> linkerSeqs = ClothoWriter.getLinkerSeqs(_collector, linkers);
+                ArrayList<String> scarSeqs = ClothoWriter.scarsToSeqs(scars, _collector);
                 
                 //Library logic - make new plasmids whether or not they are in the library
                 Part newPlasmid;
                 ArrayList<String> typeP = new ArrayList();
                 typeP.add("plasmid");
                 if (composition.size() > 1) {
-                    newPlasmid = Part.generateComposite(name, composition, scarSeqs, scars, linkers, linkerSeqs, directions, leftOverhang, rightOverhang, typeP);
+                    newPlasmid = Part.generateComposite(name, composition, scarSeqs, scars, linkers, directions, leftOverhang, rightOverhang, typeP);
                 } else {
                     newPlasmid = Part.generateBasic(name, composition.get(0).getSeq(), composition, typeP, directions, leftOverhang, rightOverhang);
                 }
@@ -936,7 +935,7 @@ public class RavenController {
                     if (composition.size() > 1) {
                         ArrayList<String> typeC = new ArrayList();
                         typeC.add("composite");
-                        Part newComposite = Part.generateComposite(name, composition, scarSeqs, scars, linkers, linkerSeqs, directions, leftOverhang, rightOverhang, typeC);
+                        Part newComposite = Part.generateComposite(name, composition, scarSeqs, scars, linkers, directions, leftOverhang, rightOverhang, typeC);
                         newComposite = newComposite.saveDefault(_collector);
                         newComposite.setTransientStatus(false);
                         _partLibrary.add(newComposite);

@@ -14,7 +14,7 @@ import lombok.Setter;
  */
 public class Part {
 
-    public static Part generateComposite(String name, ArrayList<Part> newComposition, ArrayList<String> scarSeqs, ArrayList<String> scars, ArrayList<String> linkers, ArrayList<String> linkerSeqs, ArrayList<String> directions, String LO, String RO, ArrayList<String> type) {
+    public static Part generateComposite(String name, ArrayList<Part> newComposition, ArrayList<String> scarSeqs, ArrayList<String> scars, ArrayList<String> linkers, ArrayList<String> directions, String LO, String RO, ArrayList<String> type) {
         Part newComposite = new Part();
         String sequence = "";
         
@@ -26,25 +26,17 @@ public class Part {
                 break;
             }
 
-            if (i > 0 && scarSeqs.size() == (newComposition.size() - 1) && linkerSeqs.size() == (newComposition.size() - 1)) {
+            if (i > 0 && scarSeqs.size() == (newComposition.size() - 1)) {
 
                 //Add sequences for scars and linkers
                 String scarSeq = scarSeqs.get(i - 1).trim().toUpperCase();
-                String linkerSeq = linkerSeqs.get(i - 1).trim().toUpperCase();
-
+                
                 //Add scar seq if it exists - for blank scar seqeunces, this adds trimmed whitespace
-                if (!scarSeq.isEmpty() && linkerSeq.isEmpty()) {
+                if (!scarSeq.isEmpty()) {
                     sequence = sequence + scarSeq + p.getSeq();
-                } else if (!scarSeq.isEmpty() && !linkerSeq.isEmpty()) {
-                    sequence = sequence + linkerSeq + p.getSeq();
-                } else if (scarSeq.isEmpty() && !linkerSeq.isEmpty()) {
-                    sequence = sequence + linkerSeq + p.getSeq();
                 } else {
                     sequence = sequence + p.getSeq();
                 }
-
-            } else if (i > 0 && scarSeqs.size() == (newComposition.size() - 1) && !(linkerSeqs.size() == (newComposition.size() - 1))) {
-                sequence = sequence + scarSeqs.get(i - 1).trim().toUpperCase() + p.getSeq();
             } else {
                 sequence = sequence + p.getSeq();
             }
