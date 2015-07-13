@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import static org.cidarlab.raven.accessibility.ClothoWriter.scarsToSeqs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -914,7 +913,7 @@ public class RavenController {
                 }
 
                 //Get scar sequences
-                ArrayList<String> scarSeqs = scarsToSeqs(scars);
+                ArrayList<String> scarSeqs = ClothoWriter.scarsToSeqs(scars);
                 ArrayList<String> linkerSeqs = ClothoWriter.getLinkerSeqs(_collector, linkers);
                 
                 //Library logic - make new plasmids whether or not they are in the library
