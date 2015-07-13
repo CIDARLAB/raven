@@ -471,8 +471,8 @@ public class RNode {
     }
     
     /** Set the fusions parts for a node **/
-    public void setLinkers(ArrayList<String> fusions) {
-        
+    public void setLinkers(ArrayList<String> linkers) {
+        _linkers = linkers;
     }
     
     //FIELDS

@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import org.cidarlab.raven.accessibility.ClothoWriter;
 
 /**
  *
@@ -28,7 +29,7 @@ public class RMoClo extends RGeneral {
     /**
      * Clotho part wrapper for sequence dependent one pot reactions *
      */
-    public ArrayList<RGraph> mocloClothoWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs) throws Exception {
+    public ArrayList<RGraph> mocloClothoWrapper(HashSet<Part> gps, ArrayList<Vector> vectorLibrary, HashSet<String> required, HashSet<String> recommended, HashSet<String> forbidden, HashSet<String> discouraged, ArrayList<Part> partLibrary, boolean modular, HashMap<Integer, Double> efficiencies, HashMap<Integer, Vector> stageVectors, ArrayList<Double> costs, HashMap<String, String> libraryOHs, Collector collector) throws Exception {
         
         _partLibrary = partLibrary;
         _vectorLibrary = vectorLibrary;
@@ -110,7 +111,7 @@ public class RMoClo extends RGeneral {
 //        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
             cartesianLibraryAssignment(optimalGraphs, null, forcedOverhangHash, stageVectors, false);
-            assignLinkerFusions(optimalGraphs);
+            assignLinkerFusions(optimalGraphs, collector);
             assignScars(optimalGraphs);            
         }
 
@@ -146,8 +147,9 @@ public class RMoClo extends RGeneral {
             if (i > 0) {
                 if (child.getLOverhang().isEmpty()) {
                     scars.add("_");
+                } else {
+                    scars.add(child.getLOverhang());
                 }
-                scars.add(child.getLOverhang());
             }
 
             //Make recursive call
@@ -196,16 +198,25 @@ public class RMoClo extends RGeneral {
         
         String fS = "";
         HashMap<String, String> moCloOHseqs = PrimerDesign.getMoCloOHseqs();
-        ArrayList<String> sortedOHs = new ArrayList(moCloOHseqs.keySet());
+        ArrayList<String> sortedOHStrings = new ArrayList(moCloOHseqs.keySet());
+        ArrayList<Integer> sortedOHs = new ArrayList<>();
+        for (String OHString : sortedOHStrings) {
+            if (!OHString.contains("*")) {
+                int OH = Integer.parseInt(OHString);
+                sortedOHs.add(OH);
+            }
+        }
+
         Collections.sort(sortedOHs);
         
         //Loop through the overhang list in series to find the first fusion site contained in this linker
         for (int i = 0; i < sortedOHs.size(); i++) {
             
-            String OH = sortedOHs.get(i);
+            int OHnum = sortedOHs.get(i);
+            String OH = String.valueOf(OHnum);
             
             //If the fusion site is found in the linker sequence, going in order for only forward sites not in the taken set
-            if (linkerSeq.contains(moCloOHseqs.get(OH)) && !OH.contains("*") && !takenOHs.contains(OH)) {
+            if (linkerSeq.toLowerCase().contains(moCloOHseqs.get(OH)) && !takenOHs.contains(OH)) {
                 
                 //Hacky if statement to correct for choice made with the helical linker
                 if (!OH.equals("15")) {
@@ -221,21 +232,82 @@ public class RMoClo extends RGeneral {
     /*
      * Assign linker fusions as post-processing... seems cleaner than getting it in the middle of overhang assignment
      */
-    private void assignLinkerFusions(ArrayList<RGraph> optimalGraphs) {
+    private void assignLinkerFusions(ArrayList<RGraph> optimalGraphs, Collector collector) {
         
         //Loop through each optimal graph and grab the root node to prime for the traversal
         for (RGraph graph : optimalGraphs) {
             RNode root = graph.getRootNode();
             ArrayList<RNode> children = root.getNeighbors();
-            root.setScars(assignLinkerFusionsHelper(root, children));
+            assignLinkerFusionsHelper(root, children, collector);
         }
     }
     
     /**
      * Overhang fusion linkers helper *
      */
-    private ArrayList<String> assignLinkerFusionsHelper(RNode parent, ArrayList<RNode> children) {
-        return null;
+    private void assignLinkerFusionsHelper(RNode parent, ArrayList<RNode> children, Collector collector) {
+        
+        int compositionIndex = 0;
+        ArrayList<String> linkers = new ArrayList<String>(parent.getLinkers());
+
+        //Loop through children to get takenOHs for the fusion site selection
+        HashSet<String> takenOHs = new HashSet<>();
+        for (RNode child : children) {
+            takenOHs.add(child.getLOverhang());
+            takenOHs.add(child.getROverhang());
+        }
+        
+        //Loop through each one of the children to assign rule-instructed overhangs... enumerated numbers currently
+        for (int i = 0; i < children.size(); i++) {
+
+            RNode child = children.get(i);
+            int size = child.getComposition().size();
+            ArrayList<String> childLinkers = new ArrayList<String>();
+            childLinkers.addAll(linkers.subList(compositionIndex, compositionIndex + size - 1));
+            child.setLinkers(childLinkers);
+            
+            //Replace overhangs with linker overhang
+            String leftLinker = "_";
+            String rightLinker = "_";
+            if (i == children.size() - 1) {
+                leftLinker = linkers.get(compositionIndex - 1);
+            } else if (i == 0) {
+                rightLinker = linkers.get(compositionIndex + size - 1);
+            } else {
+                rightLinker = linkers.get(compositionIndex + size - 1);
+                leftLinker = linkers.get(compositionIndex - 1);
+            }
+            
+            if (!leftLinker.equals("_")) {
+                ArrayList<String> leftLinkerList = new ArrayList<>();
+                leftLinkerList.add(leftLinker);
+                ArrayList<String> linkerSeqs = ClothoWriter.getLinkerSeqs(collector, leftLinkerList);
+                String linkerFS = getLinkerFusionSite(linkerSeqs.get(0), takenOHs);
+                child.setLOverhang(linkerFS + "(" + leftLinker + ")");
+            }
+            if (!rightLinker.equals("_")) {
+                ArrayList<String> rightLinkerList = new ArrayList<>();
+                rightLinkerList.add(rightLinker);
+                ArrayList<String> linkerSeqs = ClothoWriter.getLinkerSeqs(collector, rightLinkerList);
+                String linkerFS = getLinkerFusionSite(linkerSeqs.get(0), takenOHs);
+                child.setROverhang(linkerFS + "(" + rightLinker + ")");
+            }
+            
+            compositionIndex = compositionIndex + size;
+            
+            //Make recursive call
+            if (child.getStage() > 0) {
+
+                //Remove the current parent from the list
+                ArrayList<RNode> grandChildren = new ArrayList<RNode>();
+                grandChildren.addAll(child.getNeighbors());
+                if (grandChildren.contains(parent)) {
+                    grandChildren.remove(parent);
+                }
+                
+                assignLinkerFusionsHelper(child, grandChildren, collector);
+            }
+        }   
     }
     
     public static boolean validateOverhangs(ArrayList<RGraph> graphs) {

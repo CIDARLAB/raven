@@ -1348,7 +1348,7 @@ public class RavenController {
         //Run MoClo     
         } else if (method.equalsIgnoreCase("moclo")) {
             RMoClo moclo = new RMoClo();
-            assemblyGraphs = moclo.mocloClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiency, stageVectors, null, libraryOHHash);
+            assemblyGraphs = moclo.mocloClothoWrapper(gps, vectorLibrary, required, recommended, forbidden, discouraged, partLibrary, false, efficiency, stageVectors, null, libraryOHHash, collector);
             overhangValid = RMoClo.validateOverhangs(assemblyGraphs);
         
         //Run SLIC    
