@@ -127,7 +127,7 @@ public class ClothoWriter {
                         }
                     }
                     
-                    currentPart = coll.getExactPart(currentNode.getName(), seq, currentNode.getComposition(), currentNode.getLOverhang(), currentNode.getROverhang(), typeP, currentNode.getScars(), currentNode.getDirection(), false);
+                    currentPart = coll.getExactPart(currentNode.getName(), null, currentNode.getComposition(), currentNode.getLOverhang(), currentNode.getROverhang(), typeP, currentNode.getScars(), currentNode.getDirection(), false);
                     
                     //If no such exact match exists, we must create a new part
                     if (currentPart == null) {
@@ -484,32 +484,34 @@ public class ClothoWriter {
                 scar = split[0];
                 String linker = split[1].substring(0, split[1].length() - 1);
                 
-                ArrayList<Part> allPartsWithName = collector.getAllPartsWithName(linker, false);
-                Part bp = null;
+                if (collector != null) {
+                    ArrayList<Part> allPartsWithName = collector.getAllPartsWithName(linker, false);
+                    Part bp = null;
 
-                ArrayList<String> dir = new ArrayList();
-                if (linker.endsWith("*")) {
-                    dir.add("-");
-                } else {
-                    dir.add("+");
-                }
+                    ArrayList<String> dir = new ArrayList();
+                    if (linker.endsWith("*")) {
+                        dir.add("-");
+                    } else {
+                        dir.add("+");
+                    }
 
-                //First pick the part with no overhangs, i.e. basic part
-                for (Part partWithName : allPartsWithName) {
-                    String LO = partWithName.getLeftOverhang();
-                    String RO = partWithName.getRightOverhang();
-                    if (LO.isEmpty() && RO.isEmpty() && dir.equals(partWithName.getDirections())) {
-                        if (!partWithName.getType().contains("plasmid")) {
-                            bp = partWithName;
+                    //First pick the part with no overhangs, i.e. basic part
+                    for (Part partWithName : allPartsWithName) {
+                        String LO = partWithName.getLeftOverhang();
+                        String RO = partWithName.getRightOverhang();
+                        if (LO.isEmpty() && RO.isEmpty() && dir.equals(partWithName.getDirections())) {
+                            if (!partWithName.getType().contains("plasmid")) {
+                                bp = partWithName;
+                            }
                         }
                     }
-                }
 
-                //Add sequence if this part is found, else add blank
-                if (bp != null) {
-                    scarSeqs.add(bp.getSeq());
-                } else {
-                    scarSeqs.add(" ");
+                    //Add sequence if this part is found, else add blank
+                    if (bp != null) {
+                        scarSeqs.add(bp.getSeq());
+                    } else {
+                        scarSeqs.add(" ");
+                    }
                 }
             }            
             
