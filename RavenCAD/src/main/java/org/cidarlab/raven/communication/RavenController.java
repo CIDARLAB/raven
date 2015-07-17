@@ -1632,6 +1632,11 @@ public class RavenController {
         _libraryPartsVectors = partVec;
     }
     
+    //Set the libraryOH Hasg
+    public void setLibraryOHHash (HashMap <String, String> libraryOHHash) {
+        _libraryOHHash = libraryOHHash;
+    }
+    
     //FIELDS
     private File _instructionsFile;
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();

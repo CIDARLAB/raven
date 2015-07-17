@@ -76,17 +76,22 @@ public class RMoClo extends RGeneral {
             if (optimalGraph.getSteps() == 0) {
                 RNode root = optimalGraph.getRootNode();
                 String OHs = libraryOHs.get(root.getUUID());
-                String[] tokens = OHs.split("\\|");
-                if (tokens.length == 2) {
-                    boolean allInts = true;
-                    for (String token : tokens) {
-                        if (!token.matches("[*]?\\d+")) {
-                            allInts = false;
+                
+                if (OHs != null) {
+                    String[] tokens = OHs.split("\\|");
+                    if (tokens.length == 2) {
+                        boolean allInts = true;
+                        for (String token : tokens) {
+                            if (!token.matches("[*]?\\d+")) {
+                                allInts = false;
+                            }
+                        }
+                        if (allInts) {
+                            singlePartGraphs.add(optimalGraph);
                         }
                     }
-                    if (allInts) {
-                        singlePartGraphs.add(optimalGraph);
-                    }
+                } else {
+                    singlePartGraphs.add(optimalGraph);
                 }
             }
         }
