@@ -5,6 +5,7 @@
 package org.cidarlab.raven.datastructures;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -115,6 +116,85 @@ public class Part {
             toReturn.add(p.getName());
         }
         return toReturn;
+    }
+    
+    public String getPartKey (String dir) {
+        
+        //Forward key information
+        ArrayList<String> _composition = this.getStringComposition();
+        ArrayList<String> _directions = this.getDirections();
+        ArrayList<String> _scars = this.getScars();
+        ArrayList<String> _linkers = this.getLinkers();
+        String LO = this.getLeftOverhang();
+        String RO = this.getRightOverhang();
+        
+        if (dir.equals("+")) {           
+//            String aPartLOcompRO = _composition + "|" + _directions + "|" + _scars + "|" + _linkers + "|" + LO + "|" + RO;
+            String aPartLOcompRO = _composition + "|" + LO + "|" + RO + "|" + _directions;
+            return aPartLOcompRO;
+        } else {
+            
+            //Backward key information
+            ArrayList<String> revComp = (ArrayList<String>) _composition.clone();
+            Collections.reverse(revComp);
+            
+            ArrayList<String> invertedDirections = new ArrayList();
+
+            for(String d: _directions) {
+                if(d.equals("+")) {
+                    invertedDirections.add(0,"-");
+                } else {
+                    invertedDirections.add(0,"+");
+                }
+            }
+            
+            ArrayList<String> invertedScars = new ArrayList();
+            for (String scar: _scars) {
+                if (scar.contains("*")) {
+                    scar = scar.replace("*", "");
+                    invertedScars.add(0,scar);
+                } else {
+                    scar = scar + "*";
+                    invertedScars.add(0,scar);
+                }
+            }
+            
+            ArrayList<String> invertedLinkers = new ArrayList();
+            for (String linker: _linkers) {
+                if (linker.contains("*")) {
+                    linker = linker.replace("*", "");
+                    invertedLinkers.add(0,linker);
+                } else {
+                    linker = linker + "*";
+                    invertedLinkers.add(0,linker);
+                }
+            }
+ 
+            String invertedLeftOverhang = RO;
+            String invertedRightOverhang = LO;
+            if (invertedLeftOverhang.contains("*")) {
+                invertedLeftOverhang = invertedLeftOverhang.replace("*", "");
+            } else {
+                if (!invertedLeftOverhang.isEmpty()) {
+                    invertedLeftOverhang = invertedLeftOverhang + "*";
+                } else {
+                    invertedLeftOverhang = invertedLeftOverhang;
+                }                
+            }
+            if (invertedRightOverhang.contains("*")) {
+                invertedRightOverhang = invertedRightOverhang.replace("*", "");
+            } else {
+                if (!invertedRightOverhang.isEmpty()) {
+                    invertedRightOverhang = invertedRightOverhang + "*";
+                } else {
+                    invertedRightOverhang = invertedRightOverhang;
+                }  
+            }
+            
+//            String aPartCompDirScarLOROR = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLinkers + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
+            String aPartCompDirScarLOROR = revComp  + "|" + invertedLeftOverhang + "|" + invertedRightOverhang + "|" + invertedDirections;
+            return aPartCompDirScarLOROR;
+        }
     }
 
     //returns this part, or an exact match

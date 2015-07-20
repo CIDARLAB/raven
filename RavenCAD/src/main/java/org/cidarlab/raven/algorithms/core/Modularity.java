@@ -1033,8 +1033,10 @@ public class Modularity extends Partitioning {
         //For each of the parts in the library, create a hash of overhangs (left and right) seen for each level 0 node's composition             
         //For each part in the library, build hash of overhangs for each composition
         for (Part libraryPart : _partLibrary) {
-
-            _partKeys.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+            
+//            _partKeys.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+            _partKeys.add(libraryPart.getPartKey("+"));
+            _partKeys.add(libraryPart.getPartKey("-"));
             String composition = libraryPart.getStringComposition().toString();
 
             //Correction for multiplexing
@@ -1042,7 +1044,11 @@ public class Modularity extends Partitioning {
                 for (String aMType : multiplexTypes) {
                     if (libraryPart.getType().get(0).equalsIgnoreCase(aMType)) {
                         composition = "[" + aMType + "?]";
-                        _partKeys.add(composition + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+//                        _partKeys.add(composition + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+                        String fwdKey = libraryPart.getPartKey("+");
+                        String revKey = libraryPart.getPartKey("-");
+                        _partKeys.add(composition + fwdKey.substring(fwdKey.indexOf("|")));
+                        _partKeys.add(composition + revKey.substring(revKey.indexOf("|")));
                     }
                 }
             }
@@ -1344,7 +1350,7 @@ public class Modularity extends Partitioning {
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
                     
                     //If the current path does not contain this neighbor's overhang or the neighbor is a blank, make a new edge
-                    if (currentPath.indexOf(neighbor.getLibraryOverhang()) < 0 || neighbor.getLibraryOverhang().equals("#")) {
+//                    if (currentPath.indexOf(neighbor.getLibraryOverhang()) < 0 || neighbor.getLibraryOverhang().equals("#")) {
                         String edge = currentPath + "->" + neighbor.getLibraryOverhang();
                         
                         //Add to stack and parent hash if the edge hasn't been seen and the neighbor is the next level
@@ -1355,7 +1361,7 @@ public class Modularity extends Partitioning {
                                 childrenCount++;
                             }
                         }
-                    }
+//                    }
 
                 }
                 
@@ -1402,6 +1408,7 @@ public class Modularity extends Partitioning {
         
         //Loop through each complete assignment and score the solutions
         for (ArrayList<String> assignment : completeAssignments) {
+            
             HashMap<String, String> currentAssignment = new HashMap();
             
             //Forced overhangs
@@ -1472,7 +1479,16 @@ public class Modularity extends Partitioning {
                 }
             }
                 
-//            currentScore = currentScore - matched.size();
+//            currentScore = currentScore - matched.size();            
+            boolean hasWildcard = false;
+            for (String OH : assignment) {
+                if (OH.equals("#")) {
+                    hasWildcard = true;
+                }
+            }
+            if (!hasWildcard) {
+                String flag = "";
+            }
             
             //If this is the new best score, replace the former best score and assignment
             if (currentScore < bestScore) {
