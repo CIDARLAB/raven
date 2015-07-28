@@ -187,56 +187,56 @@ public class ClothoReader {
      */
     public static HashSet<String> getExistingPartKeys(ArrayList<Part> partLib) {
 
-        HashSet<String> startPartsLOcompRO = new HashSet();
+        HashSet<String> partKeys = new HashSet();
 
         //Go through parts library, put all compositions into hash of things that already exist
         for (Part aPart : partLib) {
 
-            //Get forward and reverse part key string
-            ArrayList<String> comp = aPart.getStringComposition();
-            ArrayList<String> revComp = (ArrayList<String>) comp.clone();
-            Collections.reverse(revComp);
+//            //Get forward and reverse part key string
+//            ArrayList<String> comp = aPart.getStringComposition();
+//            ArrayList<String> revComp = (ArrayList<String>) comp.clone();
+//            Collections.reverse(revComp);
+//
+//            ArrayList<String> dir = aPart.getDirections();
+//            ArrayList<String> scars = aPart.getScars();
+//
+//            ArrayList<String> revDir = (ArrayList<String>) dir.clone();
+//            Collections.reverse(revDir);
+//            ArrayList<String> revScars = (ArrayList<String>) scars.clone();
+//            Collections.reverse(revScars);
+//            for (String aRevScar : revScars) {
+//                if (aRevScar.contains("*")) {
+//                    aRevScar = aRevScar.replace("*", "");
+//                } else {
+//                    aRevScar = aRevScar + "*";
+//                }
+//            }
+//
+//            String lOverhang = aPart.getLeftOverhang();
+//            String rOverhang = aPart.getRightOverhang();
+//            String lOverhangR = rOverhang;
+//            String rOverhangR = lOverhang;
+//            
+//            // invert the right overhang
+//            if (lOverhangR.contains("*")) {
+//                lOverhangR = lOverhangR.replace("*", "");
+//            } else {
+//                lOverhangR = lOverhangR + "*";
+//            }
+//            if (rOverhangR.contains("*")) {
+//                rOverhangR = rOverhangR.replace("*", "");
+//            } else {
+//                rOverhangR = rOverhangR + "*";
+//            }
+//
+//            String aPartCompDirScarLORO = aPart.getPartKey("+");
+//            String raPartCompDirScarLORO = aPart.getPartKey("-");
 
-            ArrayList<String> dir = aPart.getDirections();
-            ArrayList<String> scars = aPart.getScars();
-
-            ArrayList<String> revDir = (ArrayList<String>) dir.clone();
-            Collections.reverse(revDir);
-            ArrayList<String> revScars = (ArrayList<String>) scars.clone();
-            Collections.reverse(revScars);
-            for (String aRevScar : revScars) {
-                if (aRevScar.contains("*")) {
-                    aRevScar = aRevScar.replace("*", "");
-                } else {
-                    aRevScar = aRevScar + "*";
-                }
-            }
-
-            String lOverhang = aPart.getLeftOverhang();
-            String rOverhang = aPart.getRightOverhang();
-            String lOverhangR = rOverhang;
-            String rOverhangR = lOverhang;
-            
-            // invert the right overhang
-            if (lOverhangR.contains("*")) {
-                lOverhangR = lOverhangR.replace("*", "");
-            } else {
-                lOverhangR = lOverhangR + "*";
-            }
-            if (rOverhangR.contains("*")) {
-                rOverhangR = rOverhangR.replace("*", "");
-            } else {
-                rOverhangR = rOverhangR + "*";
-            }
-
-            String aPartCompDirScarLORO = comp + "|" + dir + "|" + scars + "|" + lOverhang + "|" + rOverhang;
-            String raPartCompDirScarLORO = revComp + "|" + revDir + "|" + revScars + "|" + rOverhangR + "|" + lOverhangR;
-
-            startPartsLOcompRO.add(aPartCompDirScarLORO);
-            startPartsLOcompRO.add(raPartCompDirScarLORO);
+            partKeys.add(aPart.getPartKey("+", false));
+            partKeys.add(aPart.getPartKey("-", false));
         }
 
-        return startPartsLOcompRO;
+        return partKeys;
     }
 
     /**
@@ -266,9 +266,17 @@ public class ClothoReader {
             }
             int stage = aVec.getLevel();
 
-            String aVecLOlevelRO = aVec.getName() + "|" + lOverhang + "|" + stage + "|" + rOverhang;
-            String aVecLOlevelROR = aVec.getName() + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
-
+            String aVecLOlevelRO;
+            String aVecLOlevelROR;
+            String vecName = aVec.getName();
+            if (vecName.contains("_")) {
+                aVecLOlevelRO = vecName.substring(0, vecName.indexOf("_")) + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+                aVecLOlevelROR = vecName.substring(0, vecName.indexOf("_")) + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+            } else {
+                aVecLOlevelRO = vecName + "|" + lOverhang + "|" + stage + "|" + rOverhang;
+                aVecLOlevelROR = vecName + "|" + lOverhangR + "|" + stage + "|" + rOverhangR;
+            }
+            
             startVectorsLOlevelRO.add(aVecLOlevelRO);
             startVectorsLOlevelRO.add(aVecLOlevelROR);
         }

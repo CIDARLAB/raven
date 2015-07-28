@@ -5,6 +5,7 @@
 package org.cidarlab.raven.datastructures;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,10 +47,16 @@ public class Vector {
     }
 
     //returns this vector or an exact match
-    public Vector saveDefault(Collector coll) {
+    public Vector saveDefault(Collector coll, HashMap<Part, Vector> partVectorPairs) {
         Vector toReturn =  coll.addVector(this);
-        if(!this.equals(toReturn)) {
-            UUID--;
+        
+        //If this is a copy of an existing vector, be sure to correct partVectoPairs
+        if (this != toReturn) {
+            for (Part p : partVectorPairs.keySet()) {
+                if (partVectorPairs.get(p) == this) {
+                    partVectorPairs.put(p, toReturn);
+                }
+            }
         }
         return toReturn;
     }

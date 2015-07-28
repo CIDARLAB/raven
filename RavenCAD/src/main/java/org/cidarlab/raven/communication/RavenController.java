@@ -618,7 +618,7 @@ public class RavenController {
                     Vector newVector = Vector.generateVector(name, sequence, leftOverhang, rightOverhang, type, "", "", resistance, -1);
 
                     _vectorLibrary.add(newVector);
-                    newVector.saveDefault(_collector);
+                    newVector.saveDefault(_collector, _libraryPartsVectors);
                     newVector.setTransientStatus(false);
 
                 } catch (Exception e) {
@@ -647,7 +647,7 @@ public class RavenController {
                         Vector newVector = Vector.generateVector(name, sequence, leftOverhang, rightOverhang, type, name, composition, resistance, level);
 
                         _vectorLibrary.add(newVector);
-                        newVector.saveDefault(_collector);
+                        newVector.saveDefault(_collector, _libraryPartsVectors);
                         newVector.setTransientStatus(false);
                     }
 
@@ -897,19 +897,19 @@ public class RavenController {
                     }
                     
                     //This is a patch for the vector counting problem on data upload - God this parsing code and data management blows asshole
-                    if (vector == null) {
-                        int level = -1;
-                        if (!tokens[7].isEmpty()) {
-                            level = Integer.valueOf(tokens[7].trim());
-                        }
-                        
-                        Vector newVector = Vector.generateVector(vectorName, vectors.get(0).getSeq(), leftOverhang, rightOverhang, "destination vector", vectorName, "", vectors.get(0).getResistance(), level);
-                        
-                        _vectorLibrary.add(newVector);
-                        newVector.saveDefault(_collector);
-                        newVector.setTransientStatus(true);
-                        vector = newVector;
-                    }
+//                    if (vector == null) {
+//                        int level = -1;
+//                        if (!tokens[7].isEmpty()) {
+//                            level = Integer.valueOf(tokens[7].trim());
+//                        }
+//                        
+//                        Vector newVector = Vector.generateVector(vectorName, vectors.get(0).getSeq(), leftOverhang, rightOverhang, "destination vector", vectorName, "", vectors.get(0).getResistance(), level);
+//                        
+//                        _vectorLibrary.add(newVector);
+//                        newVector.saveDefault(_collector);
+//                        newVector.setTransientStatus(true);
+//                        vector = newVector;
+//                    }
                 }
 
                 //Get scar sequences
@@ -1630,6 +1630,11 @@ public class RavenController {
     //Set the partVector library
     public void setPartVectorPairs (HashMap<Part, Vector> partVec) {
         _libraryPartsVectors = partVec;
+    }
+    
+    //Get the partVector library pairs
+    public HashMap<Part, Vector> getPartVectorPairs () {
+        return _libraryPartsVectors;
     }
     
     //Set the libraryOH Hasg

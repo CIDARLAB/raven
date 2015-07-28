@@ -287,11 +287,13 @@ public class RMoClo extends RGeneral {
                 String linkerSeq = ClothoWriter.getLinkerSeq(collector, leftLinker);
                 String linkerFS = getLinkerFusionSite(linkerSeq, takenOHs);
                 child.setLOverhang(linkerFS + "(" + leftLinker + ")");
+                child.getVector().setLOverhang(linkerFS);
             }
             if (!rightLinker.equals("_")) {
                 String linkerSeq = ClothoWriter.getLinkerSeq(collector, rightLinker);
                 String linkerFS = getLinkerFusionSite(linkerSeq, takenOHs);
                 child.setROverhang(linkerFS + "(" + rightLinker + ")");
+                child.getVector().setROverhang(linkerFS);
             }
             
             compositionIndex = compositionIndex + size;
@@ -428,7 +430,7 @@ public class RMoClo extends RGeneral {
                 fwdHomology = "[ PART " + currentPart.getName() + " FORWARD HOMOLOGY REGION ]";
                 revHomology = "[ PART " + currentPart.getName() + " REVERSE HOMOLOGY REGION ]";
                 forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(lOverhang).toUpperCase() + leftLink + fwdHomology;
-                reverseOligoSequence = PrimerDesign.reverseComplement(revHomology + rightLink + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix);
+                reverseOligoSequence = PrimerDesign.reverseComplement(rightLink + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix) + revHomology;
             } else {
                 fwdHomology = seq;
                 forwardOligoSequence = partPrimerPrefix + fwdEnzymeRecSite1 + "gt" + overhangVariableSequenceHash.get(lOverhang).toUpperCase() + leftLink + fwdHomology + rightLink + overhangVariableSequenceHash.get(rOverhang).toUpperCase() + "ag" + revEnzymeRecSite1 + partPrimerSuffix;
@@ -447,8 +449,8 @@ public class RMoClo extends RGeneral {
     public static String[] generateVectorPrimers(RVector vector) {
 
         HashMap<String, String> overhangVariableSequenceHash = PrimerDesign.getMoCloOHseqs();
-        String vectorPrimerPrefix = "actagtg";
-        String vectorPrimerSuffix = "tactagt";
+        String vectorPrimerPrefix = "gttctttactagtg";
+        String vectorPrimerSuffix = "tactagtagcggccgc";
         String fwdEnzymeRecSite1 = "gaagac";
         String revEnzymeRecSite1 = "gtcttc";
         String fwdEnzymeRecSite2 = "ggtctc";

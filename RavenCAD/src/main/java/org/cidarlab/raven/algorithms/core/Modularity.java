@@ -1035,8 +1035,8 @@ public class Modularity extends Partitioning {
         for (Part libraryPart : _partLibrary) {
             
 //            _partKeys.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
-            _partKeys.add(libraryPart.getPartKey("+"));
-            _partKeys.add(libraryPart.getPartKey("-"));
+            _partKeys.add(libraryPart.getPartKey("+", true));
+            _partKeys.add(libraryPart.getPartKey("-", true));
             String composition = libraryPart.getStringComposition().toString();
 
             //Correction for multiplexing
@@ -1045,8 +1045,8 @@ public class Modularity extends Partitioning {
                     if (libraryPart.getType().get(0).equalsIgnoreCase(aMType)) {
                         composition = "[" + aMType + "?]";
 //                        _partKeys.add(composition + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
-                        String fwdKey = libraryPart.getPartKey("+");
-                        String revKey = libraryPart.getPartKey("-");
+                        String fwdKey = libraryPart.getPartKey("+", true);
+                        String revKey = libraryPart.getPartKey("-", true);
                         _partKeys.add(composition + fwdKey.substring(fwdKey.indexOf("|")));
                         _partKeys.add(composition + revKey.substring(revKey.indexOf("|")));
                     }

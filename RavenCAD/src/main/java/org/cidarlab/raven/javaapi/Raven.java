@@ -77,7 +77,7 @@ public class Raven {
             raven.addToPartLibrary(p);
         }
         for (Vector v : vectorLib) {
-            v.saveDefault(raven.getCollector());
+            v.saveDefault(raven.getCollector(), raven.getPartVectorPairs());
             raven.addToVectorLibrary(v);
         }
         
@@ -92,22 +92,27 @@ public class Raven {
         
         //Add library to Raven collector and save parts to library
         RavenController raven = new RavenController(filePath);
+        HashMap<String, String> makeLibraryOHHash = raven.makeLibraryOHHash(partsLib);
+        makeLibraryOHHash.putAll(raven.makeLibraryOHHash(targetParts));
+        raven.setLibraryOHHash(makeLibraryOHHash);
+        raven.setPartVectorPairs(partVectorPairs);
+        
         for (Part p : partsLib) {
             p = p.saveDefault(raven.getCollector());
             raven.addToPartLibrary(p);            
         }
         for (Vector v : vectorLib) {
-            v = v.saveDefault(raven.getCollector());
+            v = v.saveDefault(raven.getCollector(), raven.getPartVectorPairs());
             raven.addToVectorLibrary(v);
         }
         for (Part t : targetParts) {
             t = t.saveDefault(raven.getCollector());
         }
         
-        HashMap<String, String> makeLibraryOHHash = raven.makeLibraryOHHash(partsLib);
-        makeLibraryOHHash.putAll(raven.makeLibraryOHHash(targetParts));
-        raven.setLibraryOHHash(makeLibraryOHHash);
-        raven.setPartVectorPairs(partVectorPairs);
+//        HashMap<String, String> makeLibraryOHHash = raven.makeLibraryOHHash(partsLib);
+//        makeLibraryOHHash.putAll(raven.makeLibraryOHHash(targetParts));
+//        raven.setLibraryOHHash(makeLibraryOHHash);
+//        raven.setPartVectorPairs(partVectorPairs);
         raven.run(null, parameters, targetParts, stageVectors, filePath);
 //        String instructions = raven.getInstructions();
         File assmInstructions = raven.getInstructionsFile();

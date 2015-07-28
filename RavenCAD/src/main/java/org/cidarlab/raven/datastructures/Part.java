@@ -118,7 +118,7 @@ public class Part {
         return toReturn;
     }
     
-    public String getPartKey (String dir) {
+    public String getPartKey (String dir, Boolean OHAssignment) {
         
         //Forward key information
         ArrayList<String> _composition = this.getStringComposition();
@@ -128,9 +128,13 @@ public class Part {
         String LO = this.getLeftOverhang();
         String RO = this.getRightOverhang();
         
-        if (dir.equals("+")) {           
-//            String aPartLOcompRO = _composition + "|" + _directions + "|" + _scars + "|" + _linkers + "|" + LO + "|" + RO;
-            String aPartLOcompRO = _composition + "|" + LO + "|" + RO + "|" + _directions;
+        if (dir.equals("+")) {
+            String aPartLOcompRO;
+            if (!OHAssignment) {
+                aPartLOcompRO = _composition + "|" + _directions + "|" + _scars + "|" + _linkers + "|" + LO + "|" + RO;
+            } else {
+                aPartLOcompRO = _composition + "|" + LO + "|" + RO + "|" + _directions;
+            }
             return aPartLOcompRO;
         } else {
             
@@ -191,9 +195,13 @@ public class Part {
                 }  
             }
             
-//            String aPartCompDirScarLOROR = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLinkers + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
-            String aPartCompDirScarLOROR = revComp  + "|" + invertedLeftOverhang + "|" + invertedRightOverhang + "|" + invertedDirections;
-            return aPartCompDirScarLOROR;
+            String aPartLOcompRO;
+            if (!OHAssignment) {
+                aPartLOcompRO = revComp + "|" + invertedDirections + "|" + invertedScars + "|" + invertedLinkers + "|" + invertedLeftOverhang + "|" + invertedRightOverhang;
+            } else {
+                aPartLOcompRO = revComp + "|" + invertedLeftOverhang + "|" + invertedRightOverhang + "|" + invertedDirections;
+            }
+            return aPartLOcompRO;
         }
     }
 
