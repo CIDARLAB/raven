@@ -1040,7 +1040,7 @@ public class RavenController {
     /**
      * Traverse a solution graph for statistics *
      */
-    private void getSolutionStats(String method, HashSet<Part> gps) throws Exception {
+    private void getSolutionStats(String method, ArrayList<HashSet<Part>> listTargetSets) throws Exception {
 
         int steps = 0;
         int stages = 0;
@@ -1072,13 +1072,18 @@ public class RavenController {
             eff = sum / effArray.size();
         }
 
+        int totalParts = 0;
+        for (HashSet<Part> gps : listTargetSets) {
+            totalParts = totalParts + gps.size();
+        }
+        
         _statistics.setEfficiency(eff);
         _statistics.setRecommended(recCnt);
         _statistics.setDiscouraged(disCnt);
         _statistics.setStages(stages);
         _statistics.setSteps(steps);
         _statistics.setSharing(shr);
-        _statistics.setGoalParts(gps.size());
+        _statistics.setGoalParts(totalParts);
         _statistics.setExecutionTime(Statistics.getTime());
         _statistics.setReaction(rxn);
         _statistics.setValid(_valid);
@@ -1371,7 +1376,7 @@ public class RavenController {
     
     //Using parameters from the client, run the algorithm
     //Gets solution graph, 
-    public JSONObject run(String designCount, JSONObject parameters, HashSet<Part> gps, HashMap<Integer, Vector> stageVectors, String instructionsFilePath) throws Exception {
+    public JSONObject run(String designCount, JSONObject parameters, ArrayList<HashSet<Part>> listTargetSets, HashMap<Integer, Vector> stageVectors, String instructionsFilePath) throws Exception {
         
         //Check to make sure there is a method and efficieny, otherwise default to Gibson
         String method = "gibson";
@@ -1386,8 +1391,13 @@ public class RavenController {
         
         //Solve the assembly
         _statistics = new Statistics();
-        Statistics.start();        
-        _assemblyGraphs = solve(gps, _partLibrary, _vectorLibrary, parameters, stageVectors, _libraryOHHash, _collector);        
+        Statistics.start(); 
+        
+        ArrayList<RGraph> assemblyGraphs = new ArrayList<RGraph>();
+        for (HashSet<Part> gps : listTargetSets) {
+            assemblyGraphs.addAll(solve(gps, _partLibrary, _vectorLibrary, parameters, stageVectors, _libraryOHHash, _collector));  
+        }
+        _assemblyGraphs = assemblyGraphs;
         Statistics.stop();
 
         //Get target root node list for instructions and picture generation
@@ -1410,7 +1420,7 @@ public class RavenController {
 
         //Get graph stats
         RGraph.getGraphStats(_assemblyGraphs, _partLibrary, _vectorLibrary, parameters, 0.0, 0.0, 0.0, 0.0);
-        getSolutionStats(method, gps);
+        getSolutionStats(method, listTargetSets);
 
         _instructions = RInstructions.generateInstructions(targetRootNodes, _collector, _partLibrary, _vectorLibrary, parameters, true, method);
         
