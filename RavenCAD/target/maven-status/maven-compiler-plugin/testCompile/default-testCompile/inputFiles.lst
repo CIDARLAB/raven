@@ -1,5 +1,5 @@
-/Users/evanappleton/dfx_git/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/MultiplexTest.java
-/Users/evanappleton/dfx_git/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/PrimerParameterTest.java
-/Users/evanappleton/dfx_git/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/CoreTest.java
-/Users/evanappleton/dfx_git/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/FusionTest.java
-/Users/evanappleton/dfx_git/raven/RavenCAD/src/test/java/org/cidarlab/web/test/AuthenticationTest.java
+/Users/evanappleton/raven/RavenCAD/src/test/java/org/cidarlab/web/test/AuthenticationTest.java
+/Users/evanappleton/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/CoreTest.java
+/Users/evanappleton/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/PrimerParameterTest.java
+/Users/evanappleton/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/FusionTest.java
+/Users/evanappleton/raven/RavenCAD/src/test/java/org/cidarlab/raven/algorithms/test/MultiplexTest.java

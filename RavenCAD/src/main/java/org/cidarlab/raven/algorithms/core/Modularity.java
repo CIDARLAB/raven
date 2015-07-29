@@ -1054,7 +1054,11 @@ public class Modularity extends Partitioning {
             }
             
             //Only add MoClo overhangs
-            if (libraryPart.getLeftOverhang().matches("[*]?\\d+")) {
+            String LO = libraryPart.getLeftOverhang();
+            if (libraryPart.getLeftOverhang().contains("(")) {
+                LO = libraryPart.getLeftOverhang().substring(0, libraryPart.getLeftOverhang().indexOf("("));
+            }
+            if (LO.matches("\\d+\\*|\\d+")) {
 
                 //If the library part composition is seen in the left hash, add it or put a new entry for the composition
                 if (partCompLHash.containsKey(composition)) {
@@ -1065,9 +1069,14 @@ public class Modularity extends Partitioning {
                     partCompLHash.put(composition, toAddLeft);
                 }
             }
+            
 
             //Only add MoClo overhangs
-            if (libraryPart.getRightOverhang().matches("[*]?\\d+")) {
+            String RO = libraryPart.getRightOverhang();
+            if (libraryPart.getRightOverhang().contains("(")) {
+                RO = libraryPart.getRightOverhang().substring(0, libraryPart.getRightOverhang().indexOf("("));
+            }
+            if (RO.matches("\\d+\\*|\\d+")) {
 
                 //If the library part composition is seen in the right hash, add it or put a new entry for the composition    
                 if (partCompRHash.containsKey(composition)) {
