@@ -426,7 +426,7 @@ public class RavenController {
                         + "\",\"Sequence\":\"" + p.getSeq()
                         + "\",\"LO\":\"" + p.getLeftOverhang()
                         + "\",\"RO\":\"" + p.getRightOverhang()
-                        + "\",\"Type\":\"" + type
+                        + "\",\"Type\":\"" + type.get(0)
                         + "\",\"Vector\":\"" + vectorName
                         + "\",\"Composition\":\"" + compositions
                         + "\",\"Resistance\":\"\",\"Level\":\"\"},";

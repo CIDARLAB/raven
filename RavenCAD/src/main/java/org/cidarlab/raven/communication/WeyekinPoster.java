@@ -33,21 +33,21 @@ public class WeyekinPoster {
     private static String mGraphVizString;
     private static String mGraphVizImageIdentifier = "Weyekin output image";
     private static URI mGraphVizURI;
-    private static String mGraphVizPath = "http://cidar1.bu.edu:5801/graphviz/";
+    private static String mGraphVizPath = "http://synbiotools.bu.edu:5801/graphviz/";
     private static String mGraphVizDotText = "digraph { a [shape=pentagon]; a -> b }";
     private static String mGraphVizAspectRatioString = "";
     //*****Pigeon variables**********\\
     private static String mPigeonString;
     private static String mPigeonImageIdentifier = "Weyekin output image";
     private static URI mPigeonURI;
-    private static String mPigeonPath = "http://cidar1.bu.edu:5801/";
+    private static String mPigeonPath = "http://synbiotools.bu.edu:5801/";
     private static String mPigeonText = "| foo \n | bar";
     private static String mPigeonBackgroundColorHexString = "";
     private static boolean _shouldILaunchBrowserPage = true;
 
     public static void postMyVision() {
         DefaultHttpClient httpclient = new DefaultHttpClient();
-        HttpPost httpPost = new HttpPost("http://cidar1.bu.edu:5801/graphviz/graphviz.php");
+        HttpPost httpPost = new HttpPost("http://synbiotools.bu.edu:5801/graphviz/graphviz.php");
         List<NameValuePair> nvps = new ArrayList<NameValuePair>();
         nvps.add(new BasicNameValuePair("gviz", mGraphVizDotText));
         if (!mGraphVizAspectRatioString.isEmpty()) {
@@ -78,7 +78,7 @@ public class WeyekinPoster {
             Logger.getLogger(WeyekinPoster.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            httpPost.setURI(new URI("http://cidar1.bu.edu:5801/graphviz/graphviz1.php"));
+            httpPost.setURI(new URI("http://synbiotools.bu.edu:5801/graphviz/graphviz1.php"));
             try {
                 httpPost.setEntity(new UrlEncodedFormEntity(nvps));
                 try {
@@ -115,7 +115,7 @@ public class WeyekinPoster {
     public static void postMyBird() {
         DefaultHttpClient httpclient = new DefaultHttpClient();
 //        HttpPost httpPost = new HttpPost("http://128.197.164.27/pigeon1.php");
-        HttpPost httpPost = new HttpPost("http://cidar1.bu.edu:5801/pigeon1.php");
+        HttpPost httpPost = new HttpPost("http://synbiotools.bu.edu:5801/pigeon1.php");
         List<NameValuePair> nvps = new ArrayList<NameValuePair>();
         nvps.add(new BasicNameValuePair("desc", mPigeonText));
         if (!mPigeonBackgroundColorHexString.isEmpty()) {
@@ -147,7 +147,7 @@ public class WeyekinPoster {
         }
         try {
 //            httpPost.setURI(new URI("http://128.197.164.27/pigeon.php"));
-            httpPost.setURI(new URI("http://cidar1.bu.edu:5801/pigeon.php"));
+            httpPost.setURI(new URI("http://synbiotools.bu.edu:5801/pigeon.php"));
             try {
                 httpPost.setEntity(new UrlEncodedFormEntity(nvps));
                 try {
