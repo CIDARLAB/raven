@@ -449,7 +449,7 @@ public class RGraph {
                 comp.add(name);
             }
 
-            RNode node = new RNode(false, false, comp, aPart.getDirections(), null, aPart.getScars(), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0, null);
+            RNode node = new RNode(false, false, comp, aPart.getDirections(), aPart.getType(), aPart.getScars(), aPart.getLinkers(), aPart.getLeftOverhang(), aPart.getRightOverhang(), 0, 0, null);
             keys.add(node.getNodeKey("+"));
             keys.add(node.getNodeKey("-"));
         }
@@ -505,7 +505,7 @@ public class RGraph {
                 comp.add(name);
             }
 
-            RNode node = new RNode(false, false, comp, part.getDirections(), null, part.getScars(), part.getLeftOverhang(), part.getRightOverhang(), 0, 0, null);
+            RNode node = new RNode(false, false, comp, part.getDirections(), part.getType(), part.getScars(), part.getLinkers(), part.getLeftOverhang(), part.getRightOverhang(), 0, 0, null);
             String nodeKey = node.getNodeKey("+");
             String revNodeKey = node.getNodeKey("-");
 

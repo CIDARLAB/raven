@@ -64,7 +64,8 @@ public class RGeneral extends Modularity {
                 RGraph newGraph = createAsmGraph_sgp(gp, hashMem, libCompDir, required, recommended, forbidden, discouraged, slack, sharingHash, efficiencies);
                 newGraph.getRootNode().setUUID(gp.getUUID());
                 newGraph.getRootNode().setName(gp.getName());
-
+                newGraph.getRootNode().setLinkers(gp.getLinkers());
+                
                 if (newGraph.getRootNode().getComposition().isEmpty()) {
                     System.out.println("WARNING, GOAL PART " + gp.getComposition() + " CANNOT BE BUILT WITH THIS FORBIDDEN SET!");
                     return null;
@@ -314,7 +315,7 @@ public class RGeneral extends Modularity {
                     //If not, make the new RNode
                     boolean rec = recommended.contains(comp.toString());
                     boolean dis = discouraged.contains(comp.toString());
-                    RNode aSubPart = new RNode(rec, dis, comp, dir, type, null, null, null, 0, 0, null);
+                    RNode aSubPart = new RNode(rec, dis, comp, dir, type, null, null, null, null, 0, 0, null);
                     allSubParts.add(aSubPart);
                 }
 
@@ -374,6 +375,8 @@ public class RGeneral extends Modularity {
         RNode bestGraphRoot = bestGraph.getRootNode();
         partsHash.put(bestGraphRoot.getComposition().toString() + bestGraphRoot.getDirection().toString(), bestGraph);
 
+//        bestGraph.getRootNode().setLinkers(goalPartNode.getLinkers());
+//        
         //Return best graph for the initial goal part
         return bestGraph;
     }

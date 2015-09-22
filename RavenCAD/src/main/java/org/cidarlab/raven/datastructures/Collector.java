@@ -92,9 +92,16 @@ public class Collector {
         if (allPartsWithName != null) {
             for (Part p : allPartsWithName) {
                 if (allowTransient || !p.isTransient()) {
-                    if (p.getSeq().equals(seq) && composition.equals(p.getStringComposition()) && p.getLeftOverhang().equals(leftOverhang) && p.getRightOverhang().equals(rightOverhang) && p.getType().equals(type) && p.getScars().equals(scars) && p.getDirections().equals(directions)) {
-                        toReturn = p;
-                        return toReturn;
+                    if (seq != null) {
+                        if (p.getSeq().equals(seq) && composition.equals(p.getStringComposition()) && p.getLeftOverhang().equals(leftOverhang) && p.getRightOverhang().equals(rightOverhang) && p.getType().equals(type) && p.getScars().equals(scars) && p.getDirections().equals(directions)) {
+                            toReturn = p;
+                            return toReturn;
+                        }
+                    } else {
+                        if (composition.equals(p.getStringComposition()) && p.getLeftOverhang().equals(leftOverhang) && p.getRightOverhang().equals(rightOverhang) && p.getType().equals(type) && p.getScars().equals(scars) && p.getDirections().equals(directions)) {
+                            toReturn = p;
+                            return toReturn;
+                        }
                     }
                 }
             }

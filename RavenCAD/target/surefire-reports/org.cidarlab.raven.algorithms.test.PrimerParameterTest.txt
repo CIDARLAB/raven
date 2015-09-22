@@ -1,4 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: org.cidarlab.raven.algorithms.test.PrimerParameterTest
 -------------------------------------------------------------------------------
+<<<<<<< HEAD
 Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.902 sec
+=======
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.544 sec
+>>>>>>> 53ce710ac69aca930697fe86748583dcf1bd0233

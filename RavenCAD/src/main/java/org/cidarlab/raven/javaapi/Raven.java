@@ -28,11 +28,11 @@ public class Raven {
     
     //Upload a file, calculate assembly for all plasmids in a file that are not in the library
     //This will also automatically apply parameters at the bottom of the file unless external parameters are applied
-    public ArrayList<RGraph> assembleFile (ArrayList<File> ravenFiles, JSONObject parameters, boolean save) throws Exception {
+    public ArrayList<RGraph> assembleFileInput (ArrayList<File> ravenFiles, JSONObject parameters, boolean save) throws Exception {
         
         //Load data
         HashSet<Part> gps = new HashSet();
-        RavenController raven = new RavenController();
+        RavenController raven = new RavenController(null);
         raven.loadUploadedFiles(ravenFiles);
         for (Part p : raven.getCollector().getAllParts(true)) {
             if (p.getType().contains("plasmid") && p.isComposite()) {
@@ -56,7 +56,9 @@ public class Raven {
             }
         }
         
-        raven.run(null, parameters, gps, null);
+        ArrayList<HashSet<Part>> listTargetSets = new ArrayList();
+        listTargetSets.add(gps);
+        raven.run(null, parameters, listTargetSets, null, null);
         if (save) {
             raven.save(new HashSet(raven.getCollector().getAllParts(true)), new HashSet(raven.getCollector().getAllVectors(true)), false);
         }
@@ -68,43 +70,58 @@ public class Raven {
     }
     
     //This will run Raven for a given library, set of targets and design parameters
-    public ArrayList<RGraph> assemble (HashSet<Part> targetParts, HashSet<Part> partsLib, HashSet<Vector> vectorLib, HashMap<Part, Part> partVectorPairs, HashMap<Integer, Vector> stageVectors, JSONObject parameters) throws Exception {
+    public ArrayList<RGraph> assemble (ArrayList<HashSet<Part>> listTargetSets, HashSet<Part> partsLib, HashSet<Vector> vectorLib, HashMap<Part, Part> partVectorPairs, HashMap<Integer, Vector> stageVectors, JSONObject parameters) throws Exception {
         
         //Add library to Raven collector and save parts to library
-        RavenController raven = new RavenController();
+        RavenController raven = new RavenController(null);
         for (Part p : partsLib) {
             p.saveDefault(raven.getCollector());
             raven.addToPartLibrary(p);
         }
         for (Vector v : vectorLib) {
-            v.saveDefault(raven.getCollector());
+            v.saveDefault(raven.getCollector(), raven.getPartVectorPairs());
             raven.addToVectorLibrary(v);
         }
         
-        raven.run(null, parameters, targetParts, stageVectors);
+        raven.run(null, parameters, listTargetSets, stageVectors, null);
         ArrayList<RGraph> assemblyGraphs = raven.getAssemblyGraphs();
         
         return assemblyGraphs;
     }
     
     //This will run Raven for a given library, set of targets and design parameters and return the instruction file
-    public String assemblyInstructions (HashSet<Part> targetParts, HashSet<Part> partsLib, HashSet<Vector> vectorLib, HashMap<Part, Vector> partVectorPairs, HashMap<Integer, Vector> stageVectors, JSONObject parameters) throws Exception {
+    public File assemblyInstructions (ArrayList<HashSet<Part>> listTargetSets, HashSet<Part> partsLib, HashSet<Vector> vectorLib, HashMap<Part, Vector> partVectorPairs, HashMap<Integer, Vector> stageVectors, JSONObject parameters, String filePath) throws Exception {
         
         //Add library to Raven collector and save parts to library
-        RavenController raven = new RavenController();
+        RavenController raven = new RavenController(filePath);
+        HashMap<String, String> makeLibraryOHHash = raven.makeLibraryOHHash(partsLib);
+        for (HashSet<Part> targetParts : listTargetSets) {
+            makeLibraryOHHash.putAll(raven.makeLibraryOHHash(targetParts));
+            for (Part t : targetParts) {
+                t = t.saveDefault(raven.getCollector());
+            }
+        }
+        raven.setLibraryOHHash(makeLibraryOHHash);
+        raven.setPartVectorPairs(partVectorPairs);
+        
         for (Part p : partsLib) {
-            p.saveDefault(raven.getCollector());
-            raven.addToPartLibrary(p);
+            p = p.saveDefault(raven.getCollector());
+            raven.addToPartLibrary(p);            
         }
         for (Vector v : vectorLib) {
-            v.saveDefault(raven.getCollector());
+            v = v.saveDefault(raven.getCollector(), raven.getPartVectorPairs());
             raven.addToVectorLibrary(v);
         }
+//        for (Part t : targetParts) {
+//            t = t.saveDefault(raven.getCollector());
+//        }
         
-        raven.run("1", parameters, targetParts, stageVectors);
-        String instructions = raven.getInstructions();
+//        ArrayList<HashSet<Part>> listTargetSets = new ArrayList();
+//        listTargetSets.add(targetParts);
+        raven.run(null, parameters, listTargetSets, stageVectors, filePath);
+        File assmInstructions = raven.getInstructionsFile();
         
-        return instructions;
+        return assmInstructions;
     }
     
     //Merge parameters from multiple input files

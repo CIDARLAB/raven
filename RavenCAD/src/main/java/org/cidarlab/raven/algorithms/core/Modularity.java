@@ -978,6 +978,8 @@ public class Modularity extends Partitioning {
         HashMap<String, HashSet<String>> partCompRHash = new HashMap<String, HashSet<String>>(); //key: composition, value: set of all part right overhangs associated with that composition
         _invertedOverhangs = new HashSet<String>(); //inverted (*) overhangs from second pass   
         
+        HashSet<String> multiplexTypes = new HashSet<>();
+        
         //For each of the graphs in the solution set, create a hash of overhangs (left and right) seen for each level 0 node's composition
         for (RGraph graph : graphs) {
             
@@ -1020,18 +1022,43 @@ public class Modularity extends Partitioning {
                 } else {
                     _invertedOverhangs.add(RO);
                 }
+                
+                //If this part is a multiplex part, record part types so that library parts may be mapped properly
+                if (l0Node.getComposition().get(0).endsWith("?")) {
+                    multiplexTypes.add(l0Node.getType().get(0).substring(0, l0Node.getType().get(0).indexOf("_multiplex")));
+                }                
             }
         }
         
         //For each of the parts in the library, create a hash of overhangs (left and right) seen for each level 0 node's composition             
         //For each part in the library, build hash of overhangs for each composition
         for (Part libraryPart : _partLibrary) {
-
-            _partKeys.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+            
+//            _partKeys.add(libraryPart.getStringComposition() + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+            _partKeys.add(libraryPart.getPartKey("+", true));
+            _partKeys.add(libraryPart.getPartKey("-", true));
             String composition = libraryPart.getStringComposition().toString();
 
+            //Correction for multiplexing
+            if (!multiplexTypes.isEmpty()) {
+                for (String aMType : multiplexTypes) {
+                    if (libraryPart.getType().get(0).equalsIgnoreCase(aMType)) {
+                        composition = "[" + aMType + "?]";
+//                        _partKeys.add(composition + "|" + libraryPart.getLeftOverhang() + "|" + libraryPart.getRightOverhang() + "|" + libraryPart.getDirections());
+                        String fwdKey = libraryPart.getPartKey("+", true);
+                        String revKey = libraryPart.getPartKey("-", true);
+                        _partKeys.add(composition + fwdKey.substring(fwdKey.indexOf("|")));
+                        _partKeys.add(composition + revKey.substring(revKey.indexOf("|")));
+                    }
+                }
+            }
+            
             //Only add MoClo overhangs
-            if (libraryPart.getLeftOverhang().matches("[*]?\\d+")) {
+            String LO = libraryPart.getLeftOverhang();
+            if (libraryPart.getLeftOverhang().contains("(")) {
+                LO = libraryPart.getLeftOverhang().substring(0, libraryPart.getLeftOverhang().indexOf("("));
+            }
+            if (LO.matches("\\d+\\*|\\d+")) {
 
                 //If the library part composition is seen in the left hash, add it or put a new entry for the composition
                 if (partCompLHash.containsKey(composition)) {
@@ -1042,9 +1069,14 @@ public class Modularity extends Partitioning {
                     partCompLHash.put(composition, toAddLeft);
                 }
             }
+            
 
             //Only add MoClo overhangs
-            if (libraryPart.getRightOverhang().matches("[*]?\\d+")) {
+            String RO = libraryPart.getRightOverhang();
+            if (libraryPart.getRightOverhang().contains("(")) {
+                RO = libraryPart.getRightOverhang().substring(0, libraryPart.getRightOverhang().indexOf("("));
+            }
+            if (RO.matches("\\d+\\*|\\d+")) {
 
                 //If the library part composition is seen in the right hash, add it or put a new entry for the composition    
                 if (partCompRHash.containsKey(composition)) {
@@ -1327,7 +1359,7 @@ public class Modularity extends Partitioning {
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
                     
                     //If the current path does not contain this neighbor's overhang or the neighbor is a blank, make a new edge
-                    if (currentPath.indexOf(neighbor.getLibraryOverhang()) < 0 || neighbor.getLibraryOverhang().equals("#")) {
+//                    if (currentPath.indexOf(neighbor.getLibraryOverhang()) < 0 || neighbor.getLibraryOverhang().equals("#")) {
                         String edge = currentPath + "->" + neighbor.getLibraryOverhang();
                         
                         //Add to stack and parent hash if the edge hasn't been seen and the neighbor is the next level
@@ -1338,7 +1370,7 @@ public class Modularity extends Partitioning {
                                 childrenCount++;
                             }
                         }
-                    }
+//                    }
 
                 }
                 
@@ -1385,6 +1417,7 @@ public class Modularity extends Partitioning {
         
         //Loop through each complete assignment and score the solutions
         for (ArrayList<String> assignment : completeAssignments) {
+            
             HashMap<String, String> currentAssignment = new HashMap();
             
             //Forced overhangs
@@ -1455,7 +1488,16 @@ public class Modularity extends Partitioning {
                 }
             }
                 
-//            currentScore = currentScore - matched.size();
+//            currentScore = currentScore - matched.size();            
+            boolean hasWildcard = false;
+            for (String OH : assignment) {
+                if (OH.equals("#")) {
+                    hasWildcard = true;
+                }
+            }
+            if (!hasWildcard) {
+                String flag = "";
+            }
             
             //If this is the new best score, replace the former best score and assignment
             if (currentScore < bestScore) {

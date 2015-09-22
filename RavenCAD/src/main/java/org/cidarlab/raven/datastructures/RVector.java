@@ -76,6 +76,10 @@ public class RVector {
         String name = this._name;
         int stage = this._level;
 
+        if (name.contains("_")) {
+            name = name.substring(0, name.indexOf("_"));
+        }
+        
         if (direction.equals("+")) {
             String aVecLOlevelRO = name + "|" + lOverhang + "|" + stage + "|" + rOverhang;
             return aVecLOlevelRO;

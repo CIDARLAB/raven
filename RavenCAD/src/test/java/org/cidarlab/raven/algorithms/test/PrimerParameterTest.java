@@ -56,7 +56,7 @@ public class PrimerParameterTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);           
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
     
@@ -72,7 +72,7 @@ public class PrimerParameterTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);           
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
         
         //Primer parameter tests
@@ -86,7 +86,7 @@ public class PrimerParameterTest {
             parameters.put("minCloneLength", "100");
             parameters.put("maxPrimerLength", "100");
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
     
@@ -102,7 +102,7 @@ public class PrimerParameterTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);           
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
 }

@@ -1,8 +1,0 @@
-Library,Name,Sequence,Left Overhang,Right Overhang,Type,Resistance,Level,Vector,Composition,,,
-x,J23100,,,,promoter,,,,,,,
-x,E0030,,,,reporter,,,,,,,
-x,B0015,,,,terminator,,,,,,,
-x,B0032,,,,rbs,,,,,,,
-x,B0034,,,,rbs,,,,,,,
-,P_1_2,,,,plasmid,,,,J23100,B0032,E0030,B0015
-,P_2_2,,,,plasmid,,,,J23100,B0034,E0030,B0015

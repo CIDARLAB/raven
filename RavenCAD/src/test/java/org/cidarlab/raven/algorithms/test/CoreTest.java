@@ -56,7 +56,7 @@ public class CoreTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);           
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
         
         //Forbidden required test
@@ -66,7 +66,7 @@ public class CoreTest {
             parameters.put("required", "[P7_Promoter|+, attB_TP901|+, attB_Bxb1|+, B0015|+]");
             parameters.put("forbidden", "[attP_Bxb1|-, attP_TP901|-, JBEI_RBS|+, Superfolder_gfp|+, B0015|+]");            
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
     
@@ -83,7 +83,7 @@ public class CoreTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, true);
+            raven.assembleFileInput(ravenFiles, parameters, true);
         }
     }
     
@@ -99,7 +99,7 @@ public class CoreTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
     
@@ -115,7 +115,7 @@ public class CoreTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
     
@@ -131,7 +131,7 @@ public class CoreTest {
             JSONObject parameters = new JSONObject();
             parameters.put("method", method);
             Raven raven = new Raven();
-            raven.assembleFile(ravenFiles, parameters, false);
+            raven.assembleFileInput(ravenFiles, parameters, false);
         }
     }
 //    
