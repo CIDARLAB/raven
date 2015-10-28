@@ -124,6 +124,35 @@ public class Raven {
         return assmInstructions;
     }
     
+    //This will run Raven for a given library, set of targets and design parameters and return the controller object
+    public RavenController assemblyObject (ArrayList<HashSet<Part>> listTargetSets, HashSet<Part> partsLib, HashSet<Vector> vectorLib, HashMap<Part, Vector> partVectorPairs, HashMap<Integer, Vector> stageVectors, JSONObject parameters, String filePath) throws Exception {
+        
+        //Add library to Raven collector and save parts to library
+        RavenController raven = new RavenController(filePath);
+        HashMap<String, String> makeLibraryOHHash = raven.makeLibraryOHHash(partsLib);
+        for (HashSet<Part> targetParts : listTargetSets) {
+            makeLibraryOHHash.putAll(raven.makeLibraryOHHash(targetParts));
+            for (Part t : targetParts) {
+                t = t.saveDefault(raven.getCollector());
+            }
+        }
+        raven.setLibraryOHHash(makeLibraryOHHash);
+        raven.setPartVectorPairs(partVectorPairs);
+        
+        for (Part p : partsLib) {
+            p = p.saveDefault(raven.getCollector());
+            raven.addToPartLibrary(p);            
+        }
+        for (Vector v : vectorLib) {
+            v = v.saveDefault(raven.getCollector(), raven.getPartVectorPairs());
+            raven.addToVectorLibrary(v);
+        }
+        
+        raven.run(null, parameters, listTargetSets, stageVectors, filePath);
+        
+        return raven;
+    }
+    
     //Merge parameters from multiple input files
     public JSONObject mergeParameters (JSONObject existing, JSONObject merge) {
         

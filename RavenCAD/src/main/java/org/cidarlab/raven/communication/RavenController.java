@@ -1411,6 +1411,11 @@ public class RavenController {
             }
         }
         
+        //Keep a copy of the unmerged graphs for other tools if they want assembly information for a assembly
+        for (RGraph g : _assemblyGraphs) {
+            _unmergedGraphs.add(g.clone());
+        }
+        
         //Merge graphs and make new clotho parts where appropriate
         _assemblyGraphs = RGraph.mergeGraphs(_assemblyGraphs);
         ClothoWriter writer = new ClothoWriter();
@@ -1439,27 +1444,25 @@ public class RavenController {
             _instructionsFile = file;
         }
         
+        //Generate graph and arc files
+//      ArrayList<String> graphTextFiles = new ArrayList();
+        ArrayList<String> arcTextFiles = new ArrayList();
+        for (RGraph result : _assemblyGraphs) {
+            ArrayList<String> postOrderEdges = result.getPostOrderEdges();
+            arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
+            _graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method));
+        }
+        String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
+        String mergedGraphText = RGraph.mergeWeyekinFiles(_graphTextFiles);
+        
         if (designCount != null) {
-
-            //Generate graph and arc files
-            ArrayList<String> graphTextFiles = new ArrayList();
-            ArrayList<String> arcTextFiles = new ArrayList();
-            for (RGraph result : _assemblyGraphs) {
-                ArrayList<String> postOrderEdges = result.getPostOrderEdges();
-                arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-                graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method));
-            }
-            String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
-            String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
-
+            
             //Instruction file
             File file = new File(_path + _user + "/instructions" + designCount + ".txt");
             FileWriter fw = new FileWriter(file);
             BufferedWriter out = new BufferedWriter(fw);
             out.write(_instructions);
             out.close();
-
-//            _instructionsFile = file;
             
             //Pigeon text file
             file = new File(_path + _user + "/pigeon" + designCount + ".txt");
@@ -1622,6 +1625,10 @@ public class RavenController {
         return _assemblyGraphs;
     }
     
+    public ArrayList<String> getPigeonTextFiles() {
+        return _graphTextFiles;
+    }
+    
     //Get assembly stats
     public Statistics getStatistics() {
         return _statistics;
@@ -1654,9 +1661,12 @@ public class RavenController {
     
     //FIELDS
     private File _instructionsFile;
+    private ArrayList<String> _graphTextFiles = new ArrayList();
+//    private ArrayList<String> _arcTextFiles = new ArrayList();
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
     private Statistics _statistics = new Statistics();
     private ArrayList<RGraph> _assemblyGraphs = new ArrayList<RGraph>();
+    private ArrayList<RGraph> _unmergedGraphs = new ArrayList<RGraph>();
     private HashMap<String, String> _libraryOHHash = new HashMap<String, String>();
     private ArrayList<Part> _partLibrary = new ArrayList<Part>();
     private ArrayList<Vector> _vectorLibrary = new ArrayList<Vector>();

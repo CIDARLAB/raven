@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite failures="0" time="0.705" errors="0" skipped="0" tests="2" name="org.cidarlab.raven.algorithms.test.PrimerParameterTest">
+<testsuite failures="0" time="1.025" errors="0" skipped="0" tests="2" name="org.cidarlab.raven.algorithms.test.PrimerParameterTest">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home/jre/lib"/>
@@ -32,7 +32,7 @@
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.class.version" value="51.0"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
-    <property name="os.version" value="10.10.1"/>
+    <property name="os.version" value="10.10.5"/>
     <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="user.home" value="/Users/evanappleton"/>
     <property name="user.timezone" value="America/New_York"/>
@@ -62,6 +62,6 @@
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase time="0.459" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="endyORGateTest"/>
-  <testcase time="0.245" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="libraryReUseTest"/>
+  <testcase time="0.703" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="endyORGateTest"/>
+  <testcase time="0.322" classname="org.cidarlab.raven.algorithms.test.PrimerParameterTest" name="libraryReUseTest"/>
 </testsuite>
