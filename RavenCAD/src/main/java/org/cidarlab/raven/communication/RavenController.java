@@ -1445,15 +1445,17 @@ public class RavenController {
         }
         
         //Generate graph and arc files
-//      ArrayList<String> graphTextFiles = new ArrayList();
+      ArrayList<String> graphTextFiles = new ArrayList();
         ArrayList<String> arcTextFiles = new ArrayList();
         for (RGraph result : _assemblyGraphs) {
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();
             arcTextFiles.add(result.printArcsFile(_collector, postOrderEdges, method));
-            _graphTextFiles.add(result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method));
+            String pigeonCode = result.generateWeyekinFile(_partLibrary, _vectorLibrary, _libraryPartsVectors, targetRootNodes, method);
+            graphTextFiles.add(pigeonCode);
+            _graphTextFileMap.put(result.getRootNode().getName(), pigeonCode);
         }
         String mergedArcText = RGraph.mergeArcFiles(arcTextFiles);
-        String mergedGraphText = RGraph.mergeWeyekinFiles(_graphTextFiles);
+        String mergedGraphText = RGraph.mergeWeyekinFiles(graphTextFiles);
         
         if (designCount != null) {
             
@@ -1625,8 +1627,9 @@ public class RavenController {
         return _assemblyGraphs;
     }
     
-    public ArrayList<String> getPigeonTextFiles() {
-        return _graphTextFiles;
+    //Get pigeon graph text file (Key is part name, value is pigeon code)
+    public HashMap<String, String> getPigeonTextFiles() {
+        return _graphTextFileMap;
     }
     
     //Get assembly stats
@@ -1661,7 +1664,8 @@ public class RavenController {
     
     //FIELDS
     private File _instructionsFile;
-    private ArrayList<String> _graphTextFiles = new ArrayList();
+//    private ArrayList<String> _graphTextFiles = new ArrayList();
+    private HashMap<String, String> _graphTextFileMap = new HashMap();
 //    private ArrayList<String> _arcTextFiles = new ArrayList();
     private HashMap<Part, Vector> _libraryPartsVectors = new HashMap<Part, Vector>();
     private Statistics _statistics = new Statistics();
