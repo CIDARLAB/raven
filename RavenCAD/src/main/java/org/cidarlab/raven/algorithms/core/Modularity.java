@@ -369,7 +369,7 @@ public class Modularity extends Partitioning {
     /* 
      * Third step of overhang assignment - A partial cartesian product given a library of parts
      */   
-    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String,String> predeterminedAssignment, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors, Boolean gwgibson) {
+    protected void cartesianLibraryAssignment(ArrayList<RGraph> graphs, HashMap<String,String> predeterminedAssignment, HashMap<String, String> forcedOverhangHash, HashMap<Integer, Vector> stageVectors, Boolean gwgibson, HashMap<String, HashSet<String>> secondPassOHHash) {
         
         //Initialize node and library overhang hashes
         HashMap<String, HashSet<String>> nodePartOHHashes = initializePartOHHashes(graphs);
@@ -381,7 +381,7 @@ public class Modularity extends Partitioning {
         
         //Perform a partial cartesian product on library re-use
         ArrayList<CartesianNode> cartestianRootNodes = makeCartesianGraph(sortedNodeOverhangs, nodePartOHHashes, nodeVectorOHHash);
-        ArrayList<ArrayList<String>> completeAssignments = traverseCertesianGraph (cartestianRootNodes, sortedNodeOverhangs.size());
+        ArrayList<ArrayList<String>> completeAssignments = traverseCertesianGraph (cartestianRootNodes, sortedNodeOverhangs.size(), secondPassOHHash);
         HashMap<String, String> bestAssignment = scoreAssignments(completeAssignments, sortedNodeOverhangs, forcedOverhangHash);
         
         //Assign overhang to nodes and vectors
@@ -957,6 +957,77 @@ public class Modularity extends Partitioning {
         
     }
     
+    /*
+    * Create a map for second pass to first pass overhangs, then use this to determine which second round overhangs cannot appear in same construct
+    */
+    protected HashMap<String, HashSet<String>> createSecondPassOverhangExclusiveSet(ArrayList<RGraph> optimalGraphs) {
+        
+        //Create map of second pass OH to first pass OHs (one to many)
+        HashMap<String, HashSet<String>> secondPassExclusiveOHHash = new HashMap(); //this is the reverse of _firstPassSecondPassHash 
+
+        for (RGraph graph : optimalGraphs) {
+            RNode rootNode = graph.getRootNode();
+            secondPassExclusiveOHHash = createSecondPassOverhangExclusiveSetHelper(rootNode, secondPassExclusiveOHHash);
+        }
+
+//        for (String firstPassOH : _firstPassSecondPassHash.keySet()) {
+//            if (secondPassExclusiveOHHash.containsKey(_firstPassSecondPassHash.get(firstPassOH))) {
+//                HashSet<String> firstPassOHs = secondPassExclusiveOHHash.get(_firstPassSecondPassHash.get(firstPassOH));
+//                firstPassOHs.add(firstPassOH);
+//            } else {
+//                HashSet<String> firstPassOHs = new HashSet();
+//                firstPassOHs.add(firstPassOH);
+//                secondPassExclusiveOHHash.put(_firstPassSecondPassHash.get(firstPassOH), firstPassOHs);
+//            }
+//        }
+//        
+//        //Map list of first round OH to second round OHs
+//        for (String key : secondPassExclusiveOHHash.keySet()) {
+//            HashSet<String> firstRoundOHs = secondPassExclusiveOHHash.get(key);
+//            HashSet<String> secondRoundOHs = new HashSet();
+//            for (String frOH : firstRoundOHs) {
+//                secondRoundOHs.add(_firstPassSecondPassHash.get(frOH));
+//            }
+//            secondPassExclusiveOHHash.put(key, secondRoundOHs);
+//        }
+        
+        String s = "";
+        return secondPassExclusiveOHHash;
+    }
+
+    private HashMap<String, HashSet<String>> createSecondPassOverhangExclusiveSetHelper(RNode node, HashMap<String, HashSet<String>> secondPassExclusiveOHHash) {
+        
+        //Find children, make set of OHs for this step
+        ArrayList<RNode> children = new ArrayList();
+        HashSet<String> OHThisStep = new HashSet();
+        for (RNode neighbor : node.getNeighbors()) {
+            if (neighbor.getStage() < node.getStage()) {
+                children.add(neighbor);
+                OHThisStep.add(neighbor.getLOverhang());
+                OHThisStep.add(neighbor.getROverhang());
+            }
+        }
+        
+        //Add all overhangs to exclusive OH hash
+        for (String OH : OHThisStep) {
+            if (secondPassExclusiveOHHash.containsKey(OH)) {
+                HashSet<String> exclusiveOHs = secondPassExclusiveOHHash.get(OH);
+                exclusiveOHs.addAll(OHThisStep);
+            } else {
+                HashSet<String> exclusiveOHs = new HashSet();
+                exclusiveOHs.addAll(OHThisStep);
+                secondPassExclusiveOHHash.put(OH, exclusiveOHs);
+            }
+        }
+        
+        //Recursively call this method to add to hash for children
+        for (RNode child : children) {
+            secondPassExclusiveOHHash = createSecondPassOverhangExclusiveSetHelper(child, secondPassExclusiveOHHash);
+        }
+        
+        return secondPassExclusiveOHHash;
+    }
+    
     /**
      * ************************************************************************
      *
@@ -1321,7 +1392,7 @@ public class Modularity extends Partitioning {
     /*
      * Traverse cartesian graph to produce all complete candidate assignments
      */
-    private ArrayList<ArrayList<String>> traverseCertesianGraph (ArrayList<CartesianNode> cartestianRootNodes, Integer targetLength) {
+    private ArrayList<ArrayList<String>> traverseCertesianGraph (ArrayList<CartesianNode> cartestianRootNodes, Integer targetLength, HashMap<String, HashSet<String>> secondPassOHHash) {
         
         ArrayList<ArrayList<String>> completeAssignments = new ArrayList<ArrayList<String>>();
         HashMap<CartesianNode, CartesianNode> parentHash = new HashMap<CartesianNode, CartesianNode>(); //key: node, value: parent node
@@ -1331,6 +1402,7 @@ public class Modularity extends Partitioning {
         for (CartesianNode cartesianRoot : cartestianRootNodes) {
             
             currentSolution = new ArrayList<String>();
+            HashMap<String, String> currentPathAssignments = new HashMap();
             ArrayList<CartesianNode> stack = new ArrayList<CartesianNode>();
             stack.add(cartesianRoot);
             boolean toParent = false; // am i returning to a parent node?
@@ -1339,14 +1411,15 @@ public class Modularity extends Partitioning {
             while (!stack.isEmpty()) {
                 
                 CartesianNode currentNode = stack.get(0);
-                stack.remove(0);
+                stack.remove(0);                
                 String currentPath = currentSolution.toString();
-                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->").replaceAll(" ", "");
+                currentPath = currentPath.substring(1, currentPath.length() - 1).replaceAll(",", "->").replaceAll(" ", "");             
                 
                 //
                 if (!toParent) {
                     currentSolution.add(currentNode.getLibraryOverhang());
                     currentPath = currentPath + "->" + currentNode.getLibraryOverhang();
+                    currentPathAssignments.put(currentNode.getAbstractOverhang(), currentNode.getLibraryOverhang());
                     seenPaths.add(currentPath);
                 } else {
                     toParent = false;
@@ -1359,8 +1432,18 @@ public class Modularity extends Partitioning {
                 for (CartesianNode neighbor : currentNode.getNeighbors()) {
                     
                     //If the current path does not contain this neighbor's overhang or the neighbor is a blank, make a new edge
-//                    if (currentPath.indexOf(neighbor.getLibraryOverhang()) < 0 || neighbor.getLibraryOverhang().equals("#")) {
+                    HashSet<String> illegalConcreteOHs = new HashSet();
+                    HashSet<String> secondPassOHs = secondPassOHHash.get(neighbor.getAbstractOverhang());
+                    for (String secondPassOH : secondPassOHs) {
+                        if (currentPathAssignments.containsKey(secondPassOH) && !currentPathAssignments.get(secondPassOH).equals("#")) {
+                            illegalConcreteOHs.add(currentPathAssignments.get(secondPassOH));
+                        }                            
+                    }
+                    
+                    if (!illegalConcreteOHs.contains(neighbor.getLibraryOverhang()) || neighbor.getLibraryOverhang().equals("#")) {
+//                    if (!currentPath.contains(neighbor.getLibraryOverhang()) || neighbor.getLibraryOverhang().equals("#")) {
                         String edge = currentPath + "->" + neighbor.getLibraryOverhang();
+                        //currentPathAssignments.put(neighbor.getAbstractOverhang(), neighbor.getLibraryOverhang());
                         
                         //Add to stack and parent hash if the edge hasn't been seen and the neighbor is the next level
                         if (!seenPaths.contains(edge)) {                            
@@ -1370,8 +1453,9 @@ public class Modularity extends Partitioning {
                                 childrenCount++;
                             }
                         }
-//                    }
-
+                    } else {
+                        String pause = "";
+                    }
                 }
                 
                 //If there are no more children, i.e. we've reached the end of a branch
@@ -1389,6 +1473,10 @@ public class Modularity extends Partitioning {
                     if (parent != null) {
                         toParent = true;
                         stack.add(0, parent);
+                        
+                        if (completeAssignments.size() % 100000 == 0) {
+                            String pause = "";
+                        }
                     }
                 }
             }

@@ -113,9 +113,10 @@ public class RMoClo extends RGeneral {
         if (!optimalGraphs.isEmpty()) {
             propagatePrimaryOverhangs(optimalGraphs);
             maximizeOverhangSharing(optimalGraphs);
+            HashMap<String, HashSet<String>> secondPassOHHash = createSecondPassOverhangExclusiveSet(optimalGraphs);
 //        HashMap<String, String> forcedOverhangHash = assignForcedOverhangs(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
-            cartesianLibraryAssignment(optimalGraphs, null, forcedOverhangHash, stageVectors, false);
+            cartesianLibraryAssignment(optimalGraphs, null, forcedOverhangHash, stageVectors, false, secondPassOHHash);
             assignLinkerFusions(optimalGraphs, collector);
             assignScars(optimalGraphs);            
         }

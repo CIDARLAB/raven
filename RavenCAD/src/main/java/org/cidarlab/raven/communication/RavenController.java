@@ -1445,7 +1445,7 @@ public class RavenController {
         }
         
         //Generate graph and arc files
-      ArrayList<String> graphTextFiles = new ArrayList();
+        ArrayList<String> graphTextFiles = new ArrayList();
         ArrayList<String> arcTextFiles = new ArrayList();
         for (RGraph result : _assemblyGraphs) {
             ArrayList<String> postOrderEdges = result.getPostOrderEdges();

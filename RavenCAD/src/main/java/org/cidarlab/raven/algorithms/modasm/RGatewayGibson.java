@@ -124,7 +124,7 @@ public class RGatewayGibson extends RGeneral {
             
 //            maximizeOverhangSharing(optimalGraphs);
             HashMap<String, String> forcedOverhangHash = new HashMap<String, String>();
-            cartesianLibraryAssignment(optimalGraphs, forcedGibsonOHs, forcedOverhangHash, stageVectors, true);
+            cartesianLibraryAssignment(optimalGraphs, forcedGibsonOHs, forcedOverhangHash, stageVectors, true, new HashMap());
         }
         
         optimalGraphs.addAll(singlePartGraphs);
